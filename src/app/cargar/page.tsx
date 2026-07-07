@@ -51,7 +51,12 @@ export default function LoadPage() {
   const onFile = async (file: File | undefined) => {
     if (!file) return;
     setState({ phase: "validating" });
-    runImport(await file.text());
+    try {
+      runImport(await file.text());
+    } catch {
+      // El picker del teléfono puede fallar al leer (permisos, archivo movido)
+      setState({ phase: "error", error: "invalid-json" });
+    }
   };
 
   const errorMessage = (

@@ -146,12 +146,10 @@ export function parseDietJson(text: string): ParseDietResult {
   let raw: unknown;
   try {
     raw = JSON.parse(text);
-  } catch (e) {
-    return {
-      ok: false,
-      error: "invalid-json",
-      detail: e instanceof Error ? e.message : "JSON",
-    };
+  } catch {
+    // OJO: jamás incluir el mensaje de JSON.parse — V8 adjunta un EXTRACTO del
+    // texto de entrada y este detail termina en logs (regla: cero contenido).
+    return { ok: false, error: "invalid-json", detail: "unparseable JSON" };
   }
   const parsed = dietPlanSchema.safeParse(raw);
   if (!parsed.success) {

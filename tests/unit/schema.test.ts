@@ -10,9 +10,14 @@ describe("dietPlanSchema", () => {
     expect(() => dietPlanSchema.parse(demoRaw)).not.toThrow();
   });
 
-  it("rejects invalid JSON with a typed error", () => {
-    const result = parseDietJson("esto no es json {");
+  it("rejects invalid JSON with a typed error that NEVER leaks input content", () => {
+    const result = parseDietJson("texto con datos sensibles del niño {");
     expect(result).toMatchObject({ ok: false, error: "invalid-json" });
+    // Regla de privacidad: el detail va a logs — no puede contener el texto pegado
+    if (!result.ok) {
+      expect(result.detail).toBe("unparseable JSON");
+      expect(result.detail).not.toContain("sensibles");
+    }
   });
 
   it("rejects a valid JSON that is not a diet", () => {
