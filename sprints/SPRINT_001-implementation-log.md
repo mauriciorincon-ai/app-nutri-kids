@@ -21,6 +21,7 @@ opened: 2026-07-07
 | K3  | El job Lighthouse de `ci.yml` solo audita `/`; la DoD exige `/` y `/dieta`                                                                                                                                        | Gate de performance incompleto                                        | Extender `--collect.url` en `ci.yml`                    |
 | K4  | `CLAUDE.md` estampado dice "kit-app v1.1.0" pero el commit de estampado dice v1.1.4                                                                                                                               | Cosmético (trazabilidad de versión)                                   | Solo se registra aquí                                   |
 | K5  | ~~gitleaks no instalado~~ **RESUELTO antes del sprint:** el pre-commit del primer commit corrió gitleaks OK ("no leaks found") — la nota de la orden estaba desactualizada                                        | Ninguno: el gate de secrets SÍ protege                                | Nada — corregir la nota en la próxima orden             |
+| K7  | La tabla de aprovisionamiento de la orden decía "Sentry (cuenta existente)" — la cuenta NO existía; el usuario la creó al cierre del sprint (con GitHub SSO, recomendado)                                         | Retrasó la observabilidad en prod hasta el cierre                     | Para la retro: verificar los "existente" de la orden    |
 
 ## Decisiones (ADRs por tema — se formalizan en `decisions/`)
 
