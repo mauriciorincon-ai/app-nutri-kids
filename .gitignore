@@ -1,0 +1,15 @@
+# Renombrar a .gitignore al estampar la app
+node_modules/
+.next/
+out/
+build/
+coverage/
+playwright-report/
+test-results/
+.env
+.env.local
+.env.*.local
+*.tsbuildinfo
+.vercel/
+.DS_Store
+Thumbs.db
