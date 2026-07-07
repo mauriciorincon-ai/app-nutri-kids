@@ -46,14 +46,16 @@ Regla A11y dura: el color solo REFUERZA; el símbolo y el texto comunican solos.
 
 ### Tipografía
 
-| Rol                        | Familia                                  | Uso                          |
-| -------------------------- | ---------------------------------------- | ---------------------------- |
-| Títulos (`--font-heading`) | **Fraunces** (serif cálida, óptica soft) | h1–h3, cifras del día        |
-| Cuerpo (`--font-sans`)     | **Nunito Sans** (humanista redonda)      | todo lo demás                |
-| Mono (`--font-geist-mono`) | Geist Mono                               | solo códigos E-* de aditivos |
+| Rol                        | Familia                             | Uso                          |
+| -------------------------- | ----------------------------------- | ---------------------------- |
+| Títulos (`--font-heading`) | **Fraunces** (serif cálida)         | h1–h3, cifras del día        |
+| Cuerpo (`--font-sans`)     | **Nunito Sans** (humanista redonda) | todo lo demás                |
+| Mono (`--font-mono`)       | stack de sistema (ui-monospace…)    | solo códigos E-* de aditivos |
 
 Escala: 30/24/20 títulos (peso 600), 16 cuerpo, 14 secundario, 13 metadatos. `tabular-nums` en
 horas y conteos. Fuentes con `display: swap` (regla del kit: el budget LCP ya lo contempla).
+**Presupuesto de fuentes (gate LCP):** máximo 2 familias webfont, variables SIN ejes extra — el
+eje SOFT de Fraunces disparaba el LCP a ~5.4s en móvil throttled (medido en CI, sprint 1).
 
 ### Spacing, radios, sombras, motion
 

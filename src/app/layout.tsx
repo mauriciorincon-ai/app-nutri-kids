@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Geist_Mono, Nunito_Sans } from "next/font/google";
+import { Fraunces, Nunito_Sans } from "next/font/google";
 import "./globals.css";
 
 import { AppHeader } from "@/components/app-shell/app-header";
@@ -10,21 +10,17 @@ import { SwRegister } from "@/components/app-shell/sw-register";
 import { DietProvider } from "@/components/diet-provider";
 import { I18nProvider } from "@/i18n";
 
+// Presupuesto de fuentes (gate LCP): 2 familias variables sin ejes extra.
+// El eje SOFT de Fraunces multiplicaba el peso del archivo y atrasaba el
+// font-swap del candidato LCP ~5s en móvil throttled. Mono = stack de sistema.
 const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin"],
   display: "swap",
-  axes: ["SOFT", "opsz"],
 });
 
 const nunitoSans = Nunito_Sans({
   variable: "--font-nunito-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
   display: "swap",
 });
@@ -50,7 +46,7 @@ export default function RootLayout({
     // actualiza en el cliente si la preferencia guardada es EN.
     <html
       lang="es"
-      className={`${fraunces.variable} ${nunitoSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${nunitoSans.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <I18nProvider>

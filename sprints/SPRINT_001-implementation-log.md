@@ -32,6 +32,17 @@ opened: 2026-07-07
 
 _(ninguna hasta ahora)_
 
+## Budget renegociado (estándar 5, corolario del patrón lcp-nace-estatico)
+
+- `perf-budget.json` script: **300 → 380 KB**. Razón: el cliente de `@sentry/nextjs` (~75 KB
+  transfer) — el estándar 3 (observabilidad) cuesta bundle; el scaffold del kit medía sin Sentry.
+  380 deja ~10% de margen sobre lo medido (338 KB). Revisar en S2 si Sentry ofrece build slim.
+- Primer run de Lighthouse en CI falló LCP (~5.4s en `/` y `/dieta`): causa raíz = fuentes (el
+  eje SOFT de Fraunces disparaba el peso del webfont y el font-swap repintaba el candidato LCP
+  tardísimo) + en `/` las comidas se renderizaban solo tras hidratar. Fix: 2 familias sin ejes
+  extra, mono de sistema, y comidas/agua estáticas en el prerender de `/` (solo el suplemento
+  espera el día real). Regla nueva en design-system.md §Tipografía.
+
 ## Cronología
 
 | Fecha      | Evento                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |

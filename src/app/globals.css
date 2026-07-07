@@ -8,7 +8,8 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-nunito-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Mono solo para códigos E-*: stack de sistema (presupuesto de fuentes/LCP) */
+  --font-mono: ui-monospace, "Cascadia Mono", "Segoe UI Mono", Menlo, monospace;
   --font-heading: var(--font-fraunces);
   /* Semáforo — lenguaje central (design-system.md §Semáforo). SOLO refuerza: símbolo+texto mandan */
   --color-tl-green: var(--tl-green);

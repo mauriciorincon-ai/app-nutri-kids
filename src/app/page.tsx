@@ -7,13 +7,20 @@ import { DaySummary } from "@/components/day-checklist/day-summary";
 import { useDayLog, useToday } from "@/components/day-checklist/use-today";
 import { useDiet } from "@/components/diet-provider";
 import { fmt, useI18n } from "@/i18n";
-import { buildDayChecklist, type ChecklistItem } from "@/lib/diet/logic";
+import {
+  buildDayChecklist,
+  waterGlassesTarget,
+  type ChecklistItem,
+} from "@/lib/diet/logic";
 import { formatTime } from "@/lib/format";
+
+type Row = ChecklistItem & { done: boolean };
 
 /**
  * Hoy — el checklist del día (outcome secundario del sprint).
- * LCP móvil: el h1 + resumen nacen estáticos (sin motion, sin opacity 0).
- * El contenido depende del día real → se completa al hidratar (skeleton mínimo).
+ * LCP móvil: h1, resumen, COMIDAS y AGUA nacen estáticos (no dependen de la
+ * fecha → van en el HTML del prerender con la demo). Solo la tarjeta de
+ * suplemento espera a conocer el día real del dispositivo (skeleton mínimo).
  */
 export default function TodayPage() {
   const { diet } = useDiet();
@@ -21,7 +28,33 @@ export default function TodayPage() {
   const today = useToday();
   const { doneIds, toggle } = useDayLog(today);
 
+  // Con fecha real: checklist completo. Sin ella (prerender): comidas + agua
+  // estáticas, sin marcas — el HTML inicial ya contiene el candidato LCP.
   const checklist = today ? buildDayChecklist(diet, today, doneIds) : null;
+
+  const mealRows: Row[] =
+    checklist?.items.filter((i) => i.kind === "meal") ??
+    diet.dailyMenu.map((meal) => ({
+      checkId: `meal:${meal.id}`,
+      kind: "meal",
+      meal,
+      done: false,
+    }));
+
+  const waterTarget = waterGlassesTarget(diet);
+  const waterRows: Row[] =
+    checklist?.items.filter((i) => i.kind === "water") ??
+    Array.from({ length: waterTarget }, (_, i) => ({
+      checkId: `water:${i + 1}`,
+      kind: "water",
+      index: i + 1,
+      total: waterTarget,
+      done: false,
+    }));
+
+  const supplementRows: Row[] | null = checklist
+    ? checklist.items.filter((i) => i.kind === "supplement")
+    : null;
 
   const labelFor = (checkId: string): string => {
     const item = checklist?.items.find((i) => i.checkId === checkId);
@@ -31,7 +64,7 @@ export default function TodayPage() {
     return fmt(t.today.waterGlass, { n: item.index });
   };
 
-  const rowFor = (item: ChecklistItem & { done: boolean }) => {
+  const rowFor = (item: Row) => {
     if (item.kind === "meal") {
       return (
         <ChecklistRow
@@ -74,11 +107,6 @@ export default function TodayPage() {
     );
   };
 
-  const meals = checklist?.items.filter((i) => i.kind === "meal") ?? [];
-  const supplements =
-    checklist?.items.filter((i) => i.kind === "supplement") ?? [];
-  const water = checklist?.items.filter((i) => i.kind === "water") ?? [];
-
   return (
     <div className="flex flex-col gap-5 pb-6">
       <h1 className="text-3xl">{t.today.title}</h1>
@@ -86,24 +114,17 @@ export default function TodayPage() {
       {checklist ? (
         <DaySummary checklist={checklist} labelFor={labelFor} />
       ) : (
-        // Cargando: mismo layout, sin motion (skeleton estático)
-        <div
-          aria-label={t.a11y.loading}
-          className="h-14 rounded-xl bg-accent"
-        />
+        // Prerender: mismo texto del estado "sin marcas" (LCP estático, sin salto)
+        <section className="rounded-xl bg-accent px-4 py-3 text-accent-foreground">
+          <p className="font-heading text-lg font-semibold">
+            {t.today.summaryEmpty}
+          </p>
+        </section>
       )}
 
       <section className="flex flex-col gap-2" aria-label={t.today.meals}>
         <h2 className="text-lg text-muted-foreground">{t.today.meals}</h2>
-        {meals.length > 0
-          ? meals.map(rowFor)
-          : Array.from({ length: 3 }, (_, i) => (
-              <div
-                key={i}
-                className="h-14 rounded-xl border bg-card"
-                aria-hidden
-              />
-            ))}
+        {mealRows.map(rowFor)}
       </section>
 
       <section
@@ -114,7 +135,13 @@ export default function TodayPage() {
           <Pill aria-hidden className="size-4" />
           {t.today.supplementCard}
         </h2>
-        {checklist && supplements.length === 0 ? (
+        {supplementRows === null ? (
+          // Aún no conocemos el día del dispositivo (pre-hidratación)
+          <div
+            aria-label={t.a11y.loading}
+            className="h-14 rounded-xl border bg-card"
+          />
+        ) : supplementRows.length === 0 ? (
           <div className="rounded-xl border border-dashed bg-card px-4 py-3">
             <p className="font-semibold">{t.today.noSupplementToday}</p>
             <p className="mt-0.5 text-sm text-muted-foreground">
@@ -122,7 +149,7 @@ export default function TodayPage() {
             </p>
           </div>
         ) : (
-          supplements.map(rowFor)
+          supplementRows.map(rowFor)
         )}
       </section>
 
@@ -131,7 +158,7 @@ export default function TodayPage() {
           <Droplets aria-hidden className="size-4" />
           {t.today.water}
         </h2>
-        {water.map(rowFor)}
+        {waterRows.map(rowFor)}
       </section>
     </div>
   );
