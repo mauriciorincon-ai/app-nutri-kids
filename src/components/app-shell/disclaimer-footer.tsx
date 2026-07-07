@@ -12,11 +12,11 @@ import { useI18n } from "@/i18n";
 export function DisclaimerFooter() {
   const { t } = useI18n();
   return (
-    <p className="mx-auto flex max-w-md items-center justify-center gap-1.5 px-4 py-3 text-center text-sm text-muted-foreground">
+    <footer className="mx-auto flex w-full max-w-md items-center justify-center gap-1.5 px-4 py-3 text-center text-sm text-muted-foreground">
       <Stethoscope aria-hidden className="size-4 shrink-0" />
       <Link href="/ajustes" className="underline-offset-2 hover:underline">
         {t.disclaimer.short}
       </Link>
-    </p>
+    </footer>
   );
 }

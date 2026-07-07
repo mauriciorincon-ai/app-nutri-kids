@@ -30,7 +30,7 @@ propone aquí primero.
 | Acento           | `--primary`          | `oklch(0.55 0.11 45)`   | terracota — CTAs, foco, lo importante. Se gasta con avaricia |
 | Acento suave     | `--accent`           | `oklch(0.93 0.03 60)`   | fondos de énfasis leve                                       |
 | Borde            | `--border`           | `oklch(0.89 0.015 75)`  |                                                              |
-| Destructivo      | `--destructive`      | `oklch(0.55 0.19 25)`   | solo "borrar datos"                                          |
+| Destructivo      | `--destructive`      | `oklch(0.50 0.18 25)`   | solo "borrar datos" (0.50: AA en variante suave del botón)   |
 
 ### Semáforo (lenguaje central — SIEMPRE símbolo + texto + color)
 

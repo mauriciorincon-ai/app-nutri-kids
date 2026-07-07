@@ -6,6 +6,7 @@ import { AppHeader } from "@/components/app-shell/app-header";
 import { BottomNav } from "@/components/app-shell/bottom-nav";
 import { DisclaimerFooter } from "@/components/app-shell/disclaimer-footer";
 import { FirstUseDialog } from "@/components/app-shell/first-use-dialog";
+import { SwRegister } from "@/components/app-shell/sw-register";
 import { DietProvider } from "@/components/diet-provider";
 import { I18nProvider } from "@/i18n";
 
@@ -63,6 +64,7 @@ export default function RootLayout({
             </div>
             <BottomNav />
             <FirstUseDialog />
+            <SwRegister />
           </DietProvider>
         </I18nProvider>
       </body>
