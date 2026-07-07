@@ -111,6 +111,16 @@ motor puro con fecha inyectada hizo triviales los tests de "amanece vacío"; el 
    del LCP simulado aunque el paint sea 100% estático (observado 242 ms vs. simulado 3.8 s,
    evidencia en la bitácora). El job debería auditar la **preview de Vercel** (red real) o usar
    throttling DevTools; mientras tanto, budgets LCP de apps client-side necesitan margen Lantern.
+5. **(Feedback del usuario, 2026-07-07) Claude Design bajo demanda, no de arranque:** segunda app
+   consecutiva donde el proyecto Design se crea al inicio y no se usa. El default que funcionó 2
+   veces: el builder bosqueja `design-system.md` → el usuario aprueba sobre la preview. Crear el
+   proyecto de claude.ai/design SOLO si el gate visual falla o el usuario quiere explorar (mover
+   el paso 07 del método a "condicional").
+6. **(Feedback del usuario, 2026-07-07) El aprovisionamiento debe re-presentarse en el momento
+   accionable:** Sentry/Vercel se listaron en la orden y en el plan, pero el usuario llegó al
+   final sin tenerlo claro. Regla propuesta: al ABRIR el PR, el builder emite un checklist
+   explícito de aprovisionamiento pendiente con pasos de 2 minutos (esto ya se había pedido en
+   el proyecto anterior — reincidencia de método, no del builder puntual).
 
 ## Deuda técnica aceptada
 
