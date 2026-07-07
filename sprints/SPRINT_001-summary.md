@@ -1,9 +1,9 @@
 ---
 sprint: 001
 app: nutri-kids
-status: ready-to-close # pasa a "closed" cuando el usuario apruebe preview + gate de diseño y mergee el PR
+status: closed
 opened: 2026-07-06
-closed: pendiente-de-merge
+closed: 2026-07-07
 branch: sprint-001/dieta-viva-y-hoy
 pr: https://github.com/mauriciorincon-ai/app-nutri-kids/pull/1
 ---
@@ -42,7 +42,7 @@ no-médico permanente y "borrar datos" en un toque.
 | ------------------ | ------ | -------------------------------------------------------------------------------------------------------------------------------------- |
 | Testing            | ✅     | 66 unit + 28 e2e (móvil/desktop, clock mockeado); cobertura `lib/diet` ~99% (gate 80)                                                  |
 | CI/CD              | ✅     | CI del PR #1 verde (quality/e2e/lighthouse) + preview Vercel desplegada y probada por el usuario                                       |
-| Observabilidad     | ✅     | Pino estructurado (import: SOLO metadatos — fix de privacidad al detail de JSON inválido); Sentry cableado, DSN por env                |
+| Observabilidad     | ✅     | Pino estructurado (import: SOLO metadatos — fix de privacidad); Sentry verificado en la preview de Vercel (envelope 200, 2026-07-07)   |
 | Seguridad          | ✅     | gitleaks en cada commit (0 leaks); audit: 0 high/critical (1 moderate aceptada: postcss vía Next, build-time); cero secrets            |
 | Performance        | ✅     | gate Lighthouse verde en `/` y `/dieta`; LCP observado 242–327 ms; budgets renegociados con evidencia (bitácora)                       |
 | UX/A11y            | ✅     | axe limpio 6 rutas + diálogo; teclado e2e; táctil ≥44px; semáforo símbolo+texto; visto bueno del usuario sobre la preview (2026-07-07) |
