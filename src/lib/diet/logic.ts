@@ -215,7 +215,8 @@ export function supplementsForDate(diet: DietPlan, date: Date): Supplement[] {
 }
 
 /** El menú tipo v1 es igual todos los días; la firma con fecha anticipa menús por día. */
-export function mealsForDate(diet: DietPlan, _date: Date): Meal[] {
+export function mealsForDate(diet: DietPlan, date: Date): Meal[] {
+  void date; // reservado para menús por día (v2)
   return diet.dailyMenu;
 }
 

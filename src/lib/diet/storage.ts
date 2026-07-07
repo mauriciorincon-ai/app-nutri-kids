@@ -22,9 +22,12 @@ export const STORAGE_KEYS = {
 
 export type DietSource = "demo" | "real";
 
+let demoDietCache: DietPlan | null = null;
+
 /** La demo del repo, validada por el mismo schema (si está malformada, los tests fallan). */
 export function getDemoDiet(): DietPlan {
-  return dietPlanSchema.parse(demoRaw);
+  demoDietCache ??= dietPlanSchema.parse(demoRaw);
+  return demoDietCache;
 }
 
 function storage(): Storage | null {
