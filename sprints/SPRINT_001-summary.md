@@ -38,17 +38,17 @@ no-médico permanente y "borrar datos" en un toque.
 
 ## DoD — checklist (6+1)
 
-| Estándar           | Estado                     | Evidencia                                                                                                                              |
-| ------------------ | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Testing            | ✅                         | 66 unit + 28 e2e (móvil/desktop, clock mockeado); cobertura `lib/diet` ~99% (gate 80)                                                  |
-| CI/CD              | ⏳ CI del PR               | gates locales verdes (typecheck/lint/test/build/audit); preview Vercel pendiente de proyecto                                           |
-| Observabilidad     | ✅                         | Pino estructurado (import: SOLO metadatos — fix de privacidad al detail de JSON inválido); Sentry cableado, DSN por env                |
-| Seguridad          | ✅                         | gitleaks en cada commit (0 leaks); audit: 0 high/critical (1 moderate aceptada: postcss vía Next, build-time); cero secrets            |
-| Performance        | ⏳ CI del PR               | LCP estático por ruta (patrón lcp-nace-estatico); gate Lighthouse en CI ahora cubre `/` y `/dieta`                                     |
-| UX/A11y            | ✅ código · ⏳ gate visual | axe limpio 6 rutas + diálogo; teclado e2e; táctil ≥44px; semáforo símbolo+texto; falta visto bueno del usuario sobre la preview        |
-| IA embebida        | n/a                        | sin LLM en S1 (por diseño)                                                                                                             |
-| Manual de uso      | ✅                         | `docs/MANUAL-DE-USO.md` completo en español llano                                                                                      |
-| Revisión de diseño | ⏳                         | checklist `diseno-ui` corrido en código; aprobación visual del usuario sobre preview PENDIENTE (ideal: la mamá importa en su teléfono) |
+| Estándar           | Estado | Evidencia                                                                                                                              |
+| ------------------ | ------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Testing            | ✅     | 66 unit + 28 e2e (móvil/desktop, clock mockeado); cobertura `lib/diet` ~99% (gate 80)                                                  |
+| CI/CD              | ✅     | CI del PR #1 verde (quality/e2e/lighthouse) + preview Vercel desplegada y probada por el usuario                                       |
+| Observabilidad     | ✅     | Pino estructurado (import: SOLO metadatos — fix de privacidad al detail de JSON inválido); Sentry cableado, DSN por env                |
+| Seguridad          | ✅     | gitleaks en cada commit (0 leaks); audit: 0 high/critical (1 moderate aceptada: postcss vía Next, build-time); cero secrets            |
+| Performance        | ✅     | gate Lighthouse verde en `/` y `/dieta`; LCP observado 242–327 ms; budgets renegociados con evidencia (bitácora)                       |
+| UX/A11y            | ✅     | axe limpio 6 rutas + diálogo; teclado e2e; táctil ≥44px; semáforo símbolo+texto; visto bueno del usuario sobre la preview (2026-07-07) |
+| IA embebida        | n/a    | sin LLM en S1 (por diseño)                                                                                                             |
+| Manual de uso      | ✅     | `docs/MANUAL-DE-USO.md` completo en español llano                                                                                      |
+| Revisión de diseño | ✅     | checklist `diseno-ui` corrido + aprobación visual del usuario sobre la preview ("impecable", 2026-07-07); sin Claude Design en S1      |
 
 ## Métricas técnicas
 
