@@ -137,6 +137,11 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* El script inline del layout marca <html> ANTES del primer paint si el
+     primer uso ya fue aceptado — el overlay SSR no parpadea para usuarios que vuelven */
+  html[data-first-use-seen] .first-use-overlay {
+    display: none;
+  }
   body {
     @apply bg-background text-foreground;
   }

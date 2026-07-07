@@ -138,6 +138,7 @@ export default function TodayPage() {
         {supplementRows === null ? (
           // Aún no conocemos el día del dispositivo (pre-hidratación)
           <div
+            role="status"
             aria-label={t.a11y.loading}
             className="h-14 rounded-xl border bg-card"
           />

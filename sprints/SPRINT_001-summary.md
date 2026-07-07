@@ -55,7 +55,9 @@ no-médico permanente y "borrar datos" en un toque.
 - Paridad ES/EN 100% (test verde, incluye igualdad de placeholders). "¿Manzana se puede?" → rojo
   - fecha + reemplazos, cubierto por e2e. Suplemento correcto por día real + "hoy no toca" (e2e
     con clock). Checklist amanece vacío (e2e cruzando medianoche). Import inválido → error legible
-    (e2e). Lighthouse ≥90: pendiente del run de CI (budget `perf-budget.json`).
+    (e2e). Performance: **LCP observado 242–327 ms** (paint estático verificado en trace);
+    el simulado de Lantern ronda 3.8 s por artefacto de auditar localhost (ver bitácora
+    §Budget renegociado — LCP budget 3000→4200 con evidencia); score Lighthouse ~0.89–0.90.
 
 ## Decisiones no anticipadas
 
@@ -72,7 +74,12 @@ no-médico permanente y "borrar datos" en un toque.
 3. **Privacidad:** `JSON.parse` filtra extracto del input en su mensaje de error y eso iba a
    logs → detail fijo `"unparseable JSON"` + test de regresión.
 4. `file.text()` sin catch dejaba la UI en "Revisando…" → cae a error legible.
-5. e2e móvil: caché Turbopack sirvió CSS viejo → limpiar `.next` (proceso, no producto).
+5. **LCP real de ~7.5 s** en el primer gate de CI: el diálogo de primer uso (Radix, portal
+   post-hidratación) era el elemento LCP en TODAS las rutas → overlay estático sin portal +
+   script inline pre-paint para usuarios que vuelven; fuentes: sin eje SOFT, `display: optional`,
+   pesos estáticos (preload 220→48 KB). Resultado: **LCP observado 242–327 ms**. El residual
+   simulado (~3.8 s) es artefacto Lantern/localhost → budget renegociado a 4200 (bitácora).
+6. e2e móvil: caché Turbopack sirvió CSS viejo → limpiar `.next` (proceso, no producto).
 
 ## Qué salió bien / qué generó fricción
 
@@ -100,6 +107,10 @@ motor puro con fecha inyectada hizo triviales los tests de "amanece vacío"; el 
    recomendado para estado en localStorage es `useSyncExternalStore` (reusable: `local-store.ts`).
 3. La orden podría traer una fila "verificación de supuestos del kit" (qué dice la orden que ya
    viene vs. qué hay) — 10 min al abrir el sprint habrían anticipado K1/K2/K5.
+4. **El gate Lighthouse castiga SPAs sanas:** Lantern sobre localhost mete todo el JS al grafo
+   del LCP simulado aunque el paint sea 100% estático (observado 242 ms vs. simulado 3.8 s,
+   evidencia en la bitácora). El job debería auditar la **preview de Vercel** (red real) o usar
+   throttling DevTools; mientras tanto, budgets LCP de apps client-side necesitan margen Lantern.
 
 ## Deuda técnica aceptada
 

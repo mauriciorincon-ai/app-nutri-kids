@@ -42,7 +42,11 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const locale = useLocalStore(() => loadPrefs().locale, "es");
 
   useEffect(() => {
-    document.documentElement.lang = locale;
+    // Guard: mutar `lang` (aun al mismo valor) invalida estilos de toda la
+    // página → repaint post-hidratación que se vuelve el LCP (medido: ~3.7s).
+    if (document.documentElement.lang !== locale) {
+      document.documentElement.lang = locale;
+    }
   }, [locale]);
 
   const setLocale = useCallback((next: Locale) => {
