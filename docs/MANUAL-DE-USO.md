@@ -65,6 +65,27 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
 - **Limitaciones conocidas:** las marcas viven en ese teléfono; todavía no se comparten entre
   cuidadores (eso viene en una versión futura).
 
+### Pregúntale a la dieta (Chat) · desde Sprint 002
+
+- **Qué hace:** un chat donde preguntas con tus palabras. Responde de dos formas:
+  1. **Al instante y sin internet** las preguntas de "¿esto se puede?" — como "¿la manzana se
+     puede?" o "¿le doy mandarina?". Te muestra la tarjeta del semáforo (con reemplazos si aplica).
+     Abajo dice **"Desde tu plan · sin IA"**: la respuesta salió de tu dieta, aquí en el teléfono.
+  2. **Con ayuda de un asistente de IA** las preguntas más abiertas — como "no tengo pollo, ¿qué le
+     doy?" o "¿qué merienda le preparo?". El asistente lee tu plan y responde **solo con lo que la
+     dieta permite**. Estas respuestas necesitan internet y llevan la nota **"Respuesta de IA"**.
+- **Cómo se usa:** ve a **Chat** (abajo). Escribe tu pregunta o toca una de las sugerencias. La
+  primera vez verás una nota corta que explica cómo funciona.
+- **Cosas importantes:**
+  - **No es consejo médico.** Si preguntas por dosis, medicinas o síntomas ("¿le subo la B12?"),
+    el chat te devuelve amablemente a tu pediatra o nutricionista — no responde eso.
+  - **La conversación no se guarda.** Al cerrar o recargar, el chat queda en blanco. Es a propósito
+    (privacidad de los datos del peque).
+  - Para las preguntas abiertas, tu dieta (con el nombre del peque oculto) se envía a un servicio de
+    IA para redactar la respuesta. Lo explica la nota de **Ajustes → Asistente IA del chat**.
+  - **Si el asistente no responde** (sin señal o en mantenimiento), verás un aviso y las preguntas
+    de "¿se puede?" siguen funcionando igual.
+
 ### Suplementos de la semana · desde Sprint 001
 
 - **Qué hace:** el calendario Lunes–Domingo de los suplementos, con dosis y momento ("con el
@@ -86,9 +107,15 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
   **Cargar**.
 - **¿La app cuenta calorías o pesa al niño?** No, y no lo hará: el enfoque es qué alimentos sí y
   cuáles descansan, sin números de peso ni calorías.
+- **¿El chat inventa cosas?** Está hecho para responder solo con lo que dice tu plan. Aun así,
+  como cualquier asistente de IA, conviene verificar con tu profesional lo importante — por eso
+  cada respuesta lleva ese recordatorio.
+- **¿El chat funciona sin internet?** Las preguntas de "¿se puede?" sí (salen de tu teléfono). Las
+  preguntas abiertas necesitan internet porque las responde el asistente de IA.
 
 ## Historial
 
-| Sprint | Features añadidas a este manual                                                                                                                            |
-| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 001    | Cargar dieta (archivo + pegar) · semáforo con reemplazos · checklist "Hoy" · suplementos de la semana · idioma ES/EN · borrar datos · instalación como app |
+| Sprint | Features añadidas a este manual                                                                                                                                   |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 001    | Cargar dieta (archivo + pegar) · semáforo con reemplazos · checklist "Hoy" · suplementos de la semana · idioma ES/EN · borrar datos · instalación como app        |
+| 002    | Chat "Pregúntale a la dieta": consultas "¿se puede?" al instante sin internet + preguntas abiertas con asistente de IA anclado al plan · nota de transparencia IA |

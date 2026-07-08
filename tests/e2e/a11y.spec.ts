@@ -24,6 +24,7 @@ const ROUTES = [
   "/",
   "/dieta",
   "/dieta/manzana",
+  "/chat",
   "/suplementos",
   "/cargar",
   "/ajustes",
