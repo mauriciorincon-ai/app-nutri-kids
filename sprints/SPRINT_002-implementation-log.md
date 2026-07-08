@@ -1,0 +1,48 @@
+---
+sprint: 002
+app: nutri-kids
+branch: sprint-002/habla-con-tu-dieta
+opened: 2026-07-07
+---
+
+# Sprint 002 — Bitácora de implementación · "Habla con tu dieta"
+
+> Orden: `portafolio/nutri-kids/ordenes/SPRINT_002-orden.md` (planeadora, READ-ONLY).
+> Plan aprobado por el usuario el 2026-07-07 (plan mode). Arquitectura de dos caminos: el Camino A
+> ("¿X se puede?") es 100% local (motor `search.ts`, sin LLM, sin red); el Camino B (preguntas
+> abiertas) usa el LLM vía adapter env-switchable. "Offline" = solo el Camino A; el B degrada con
+> honestidad si no hay proveedor/red.
+
+## Verificación de supuestos del kit (obligatoria — G-Metodo 2026-07-07)
+
+Repo estampado con kit v1.1.5; K1–K6 ya resueltos en S1. Verificado en la apertura del S2:
+
+| Supuesto                                                       | Estado en este repo                       |
+| -------------------------------------------------------------- | ----------------------------------------- |
+| `vitest.config.ts` / `playwright.config.ts` / `tests/setup.ts` | ✅ existen (creados en S1)                |
+| Sentry cableado (instrumentation + env)                        | ✅ `instrumentation*.ts`, DSN por env     |
+| `devIndicators: false`                                         | ✅ en `next.config.ts`                    |
+| hook gitleaks                                                  | ✅ activo (0 leaks en cada commit del S1) |
+| `lighthouse-urls.json`                                         | ❌ **NO existía** — ver fricción K8       |
+
+## Fricción del kit (⭐ separada del producto)
+
+| #   | Fricción                                                                                                                                              | Impacto                                       | Acción en este sprint                                             |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------- |
+| K8  | La orden asume `lighthouse-urls.json` (patrón kit v1.2.0) pero este repo se estampó con v1.1.5: las URLs de Lighthouse están hardcodeadas en `ci.yml` | Añadir `/chat` exigía editar YAML, no un JSON | Crear `lighthouse-urls.json` y hacer que `ci.yml` lo lea con `jq` |
+
+## Decisiones (ADRs por tema — se formalizan en `decisions/`)
+
+- Proveedor LLM + adapter env-switchable (Vercel AI SDK) — ADR pendiente (re-verificar precios Groq).
+- Estrategia de grounding (serialización compacta mono-idioma) — ADR pendiente (medir tokens).
+- Privacidad del chat (no-persistencia, logs solo-metadatos) — ADR pendiente.
+
+## Desviación del plan
+
+_(ninguna hasta ahora)_
+
+## Cronología
+
+| Fecha      | Evento                                                                                                                                                                                                                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-07-07 | Branch `sprint-002/habla-con-tu-dieta` creado; plan aprobado (arquitectura de dos caminos aclarada con el usuario). Fase 0 iniciada: deps del AI SDK (`ai` + `@ai-sdk/{react,groq,google,azure,anthropic,openai-compatible}`), `.env.example` con bloque chat, `lighthouse-urls.json` (K8) |
