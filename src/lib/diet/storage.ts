@@ -113,9 +113,18 @@ export function clearAllData(): void {
 // Preferencias (idioma, disclaimer visto) — no son datos del niño.
 // ---------------------------------------------------------------------------
 
-export type Prefs = { locale: "es" | "en"; disclaimerSeen: boolean };
+export type Prefs = {
+  locale: "es" | "en";
+  disclaimerSeen: boolean;
+  /** Nota de transparencia IA del chat vista (Sprint 002). */
+  chatIntroSeen: boolean;
+};
 
-const DEFAULT_PREFS: Prefs = { locale: "es", disclaimerSeen: false };
+const DEFAULT_PREFS: Prefs = {
+  locale: "es",
+  disclaimerSeen: false,
+  chatIntroSeen: false,
+};
 
 export function loadPrefs(): Prefs {
   const raw = storage()?.getItem(STORAGE_KEYS.prefs);
@@ -125,6 +134,7 @@ export function loadPrefs(): Prefs {
     return {
       locale: parsed.locale === "en" ? "en" : "es",
       disclaimerSeen: parsed.disclaimerSeen === true,
+      chatIntroSeen: parsed.chatIntroSeen === true,
     };
   } catch {
     return DEFAULT_PREFS;

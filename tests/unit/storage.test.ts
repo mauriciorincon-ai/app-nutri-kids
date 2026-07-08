@@ -100,7 +100,7 @@ describe("clearAllData ('borrar datos')", () => {
   it("removes imported diet AND day-log, keeps locale pref, returns to demo", () => {
     importDiet(fakeRealDiet);
     toggleDone(day1, "meal:desayuno");
-    savePrefs({ locale: "en", disclaimerSeen: true });
+    savePrefs({ locale: "en", disclaimerSeen: true, chatIntroSeen: false });
 
     clearAllData();
 
@@ -112,15 +112,27 @@ describe("clearAllData ('borrar datos')", () => {
 });
 
 describe("prefs", () => {
-  it("defaults to es + disclaimer not seen, and survives corrupt data", () => {
-    expect(loadPrefs()).toEqual({ locale: "es", disclaimerSeen: false });
+  it("defaults to es + flags not seen, and survives corrupt data", () => {
+    expect(loadPrefs()).toEqual({
+      locale: "es",
+      disclaimerSeen: false,
+      chatIntroSeen: false,
+    });
     window.localStorage.setItem(STORAGE_KEYS.prefs, "###");
-    expect(loadPrefs()).toEqual({ locale: "es", disclaimerSeen: false });
+    expect(loadPrefs()).toEqual({
+      locale: "es",
+      disclaimerSeen: false,
+      chatIntroSeen: false,
+    });
   });
 
-  it("persists locale and disclaimer flag", () => {
-    savePrefs({ locale: "en", disclaimerSeen: true });
-    expect(loadPrefs()).toEqual({ locale: "en", disclaimerSeen: true });
+  it("persists locale, disclaimer and chat-intro flags", () => {
+    savePrefs({ locale: "en", disclaimerSeen: true, chatIntroSeen: true });
+    expect(loadPrefs()).toEqual({
+      locale: "en",
+      disclaimerSeen: true,
+      chatIntroSeen: true,
+    });
   });
 });
 

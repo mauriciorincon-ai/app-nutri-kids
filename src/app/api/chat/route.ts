@@ -46,12 +46,20 @@ function lastUserText(messages: UIMessage[]): string {
 }
 
 /** Streamea un texto estático como respuesta del asistente (sin tokens). */
-async function streamStatic(text: string, messages: UIMessage[]) {
+async function streamStatic(
+  text: string,
+  messages: UIMessage[],
+  outcome: string,
+) {
   const result = streamText({
     model: staticModel(text),
     messages: await convertToModelMessages(messages),
   });
-  return result.toUIMessageStreamResponse();
+  // El cliente lee `x-chat-outcome` para pintar el rechazo distinto de una
+  // respuesta de IA (sin la etiqueta "Respuesta de IA").
+  return result.toUIMessageStreamResponse({
+    headers: { "x-chat-outcome": outcome },
+  });
 }
 
 export async function POST(req: Request) {
@@ -120,7 +128,7 @@ export async function POST(req: Request) {
   const screen = screenInput(userText);
   if (screen !== "ok") {
     log.info({ event: "chat", outcome: screen, provider, locale });
-    return streamStatic(rejectionMessage(screen, locale), messages);
+    return streamStatic(rejectionMessage(screen, locale), messages, screen);
   }
 
   // 5) LLM grounded, en streaming.

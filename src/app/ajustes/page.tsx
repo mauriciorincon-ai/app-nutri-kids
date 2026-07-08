@@ -19,8 +19,11 @@ import { clearAllData } from "@/lib/diet/storage";
 import { formatShortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+const AI_ENABLED = process.env.NEXT_PUBLIC_CHAT_ENABLED === "true";
+
 /** Ajustes: idioma ES/EN, dieta cargada, borrar datos (confirmación) y disclaimer completo. */
 export default function SettingsPage() {
+  const aiEnabled = AI_ENABLED;
   const { diet, source, refresh } = useDiet();
   const { t, l, locale, setLocale } = useI18n();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -121,6 +124,23 @@ export default function SettingsPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-lg">{t.settings.aiTitle}</h2>
+        <p className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <span
+            aria-hidden
+            className={cn(
+              "size-2 rounded-full",
+              aiEnabled ? "bg-tl-green" : "bg-muted-foreground/50",
+            )}
+          />
+          {aiEnabled ? t.settings.aiStatusEnabled : t.settings.aiStatusDisabled}
+        </p>
+        <p className="rounded-xl border bg-card px-4 py-3 text-sm leading-relaxed text-muted-foreground">
+          {t.settings.aiBody}
+        </p>
       </section>
 
       <section className="flex flex-col gap-2">

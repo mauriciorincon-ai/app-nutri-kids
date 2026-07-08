@@ -61,7 +61,7 @@ export default function RootLayout({
             Debe correr ANTES de pintar — por eso es inline y síncrono. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{if(JSON.parse(localStorage.getItem("nutrikids.prefs.v1")||"{}").disclaimerSeen)document.documentElement.setAttribute("data-first-use-seen","")}catch(e){}`,
+            __html: `try{var p=JSON.parse(localStorage.getItem("nutrikids.prefs.v1")||"{}");if(p.disclaimerSeen)document.documentElement.setAttribute("data-first-use-seen","");if(p.chatIntroSeen)document.documentElement.setAttribute("data-chat-intro-seen","")}catch(e){}`,
           }}
         />
         <I18nProvider>

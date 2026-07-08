@@ -142,6 +142,10 @@
   html[data-first-use-seen] .first-use-overlay {
     display: none;
   }
+  /* Misma técnica para la nota de transparencia IA del chat (Sprint 002). */
+  html[data-chat-intro-seen] .chat-intro-overlay {
+    display: none;
+  }
   body {
     @apply bg-background text-foreground;
   }
