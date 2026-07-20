@@ -5,7 +5,7 @@ status: closed
 opened: 2026-07-20
 closed: 2026-07-20
 branch: sprint-003/el-dia-completo
-pr: <se completa al abrir el PR>
+pr: https://github.com/mauriciorincon-ai/app-nutri-kids/pull/3
 ---
 
 # Sprint 003 Summary — Nutri-Kids
