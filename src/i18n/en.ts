@@ -69,6 +69,7 @@ export const en: Dictionary = {
     notePlaceholder: "Something short worth remembering (optional)",
     noteSave: "Save",
     noteRemove: "Remove note",
+    noteCancel: "Cancel",
     historyLink: "See previous days",
   },
   reminder: {
@@ -94,6 +95,7 @@ export const en: Dictionary = {
     noteLabel: "Note:",
     at: "at {time}",
     timeUnknown: "no time",
+    unknownItem: "Item from a previous diet",
     back: "Back to Today",
   },
   diet: {

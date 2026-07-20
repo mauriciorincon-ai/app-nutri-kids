@@ -3,10 +3,13 @@ import { describe, expect, it } from "vitest";
 import {
   buildDayChecklist,
   buildReminder,
+  checkIdFor,
   clockLabel,
   currentMealSlot,
   dateKey,
   isRestrictionActive,
+  parseCheckId,
+  resolveCheckTarget,
   resolveItemStatus,
   restrictionDaysRemaining,
   searchItems,
@@ -258,41 +261,45 @@ describe("buildReminder — qué toca ahora (7 días con reloj falso)", () => {
   for (const c of cases) {
     it(`${c.weekday}: pending supplement = ${c.supplement ?? "none"}`, () => {
       const reminder = buildReminder(diet, new Date(`${c.date}T07:30:00`), []);
-      const ids = reminder.supplementsPending.map((s) => s.id);
       if (c.supplement) {
-        expect(ids).toEqual([c.supplement]);
-        expect(reminder.supplementsToday).toBe(1);
+        expect(reminder.supplements).toEqual({
+          kind: "pending",
+          pending: [expect.objectContaining({ id: c.supplement })],
+        });
       } else {
-        expect(ids).toEqual([]);
-        expect(reminder.supplementsToday).toBe(0); // hoy NO toca ninguno
+        // hoy NO toca ninguno (≠ "ya los tomó todos")
+        expect(reminder.supplements).toEqual({ kind: "none-today" });
       }
     });
   }
 
   it("distingue 'hoy no toca ninguno' de 'ya los tomó todos' (bug del recordatorio)", () => {
-    // Jueves: ningún suplemento programado → 0 hoy, 0 pendientes (NO es 'ya está').
+    // Jueves: ningún suplemento programado → none-today (NO 'all-done').
     const thursday = buildReminder(diet, new Date("2026-07-09T07:30:00"), []);
-    expect(thursday.supplementsToday).toBe(0);
-    expect(thursday.supplementsPending).toEqual([]);
+    expect(thursday.supplements).toEqual({ kind: "none-today" });
 
-    // Lunes con el suplemento marcado → SÍ tocaba (1) pero ya no queda pendiente.
+    // Domingo: idem (el otro día sin suplemento del ciclo demo).
+    const sunday = buildReminder(diet, new Date("2026-07-12T07:30:00"), []);
+    expect(sunday.supplements).toEqual({ kind: "none-today" });
+
+    // Lunes con el suplemento marcado → SÍ tocaba pero ya no queda: all-done.
     const mondayDone = buildReminder(diet, new Date("2026-07-06T07:30:00"), [
       "supplement:multivitaminico-demo",
     ]);
-    expect(mondayDone.supplementsToday).toBe(1);
-    expect(mondayDone.supplementsPending).toEqual([]);
+    expect(mondayDone.supplements).toEqual({ kind: "all-done" });
   });
 
   it("drops a supplement from pending once it is marked done", () => {
     const monday7am = new Date("2026-07-06T07:30:00");
     const before = buildReminder(diet, monday7am, []);
-    expect(before.supplementsPending.map((s) => s.id)).toEqual([
-      "multivitaminico-demo",
-    ]);
+    expect(before.supplements).toMatchObject({
+      kind: "pending",
+      pending: [expect.objectContaining({ id: "multivitaminico-demo" })],
+    });
     const after = buildReminder(diet, monday7am, [
       "supplement:multivitaminico-demo",
     ]);
-    expect(after.supplementsPending).toEqual([]);
+    expect(after.supplements).toEqual({ kind: "all-done" });
   });
 
   it("counts water done against the target without moralizing", () => {
@@ -303,10 +310,113 @@ describe("buildReminder — qué toca ahora (7 días con reloj falso)", () => {
     expect(reminder.water).toEqual({ target: 4, done: 2 });
   });
 
+  it("water done never exceeds target even with an out-of-range id", () => {
+    // 4 vasos válidos + "water:9" (fuera del objetivo): done cuenta 1..target.
+    const reminder = buildReminder(diet, new Date("2026-07-06T07:30:00"), [
+      "water:1",
+      "water:2",
+      "water:3",
+      "water:4",
+      "water:9",
+    ]);
+    expect(reminder.water).toEqual({ target: 4, done: 4 });
+  });
+
   it("carries the current meal slot for the injected time", () => {
     const reminder = buildReminder(diet, new Date("2026-07-06T12:45:00"), []);
     expect(reminder.slot).toMatchObject({ kind: "during" });
     if (reminder.slot?.kind === "during")
       expect(reminder.slot.meal.id).toBe("almuerzo");
+  });
+
+  it("con dailyMenu vacío el recordatorio no tiene franja (slot null)", () => {
+    const empty = { ...diet, dailyMenu: [] };
+    const reminder = buildReminder(empty, new Date("2026-07-06T07:30:00"), []);
+    expect(reminder.slot).toBeNull();
+  });
+});
+
+describe("currentMealSlot — casos límite y menús atípicos (7 días de reloj)", () => {
+  const at = (hhmm: string) => new Date(`2026-07-06T${hhmm}:00`);
+
+  it("en el inicio EXACTO de una franja: during (start inclusivo)", () => {
+    const slot = currentMealSlot(diet, at("07:00"));
+    expect(slot).toMatchObject({ kind: "during" });
+    if (slot?.kind === "during") expect(slot.meal.id).toBe("desayuno");
+  });
+
+  it("en el fin EXACTO de la última franja: during (end inclusivo)", () => {
+    const slot = currentMealSlot(diet, at("19:00"));
+    expect(slot).toMatchObject({ kind: "during" });
+    if (slot?.kind === "during") {
+      expect(slot.meal.id).toBe("cena");
+      expect(slot.next).toBeNull();
+    }
+  });
+
+  it("medianoche (00:00): antes de la primera comida", () => {
+    expect(currentMealSlot(diet, at("00:00"))).toMatchObject({
+      kind: "before-first",
+    });
+  });
+
+  it("fin del día (23:59): después de la última comida", () => {
+    expect(currentMealSlot(diet, at("23:59"))).toMatchObject({
+      kind: "after-last",
+    });
+  });
+
+  it("menú contiguo (una comida empieza donde termina la previa): 'sigue' no la salta", () => {
+    const contiguous = {
+      ...diet,
+      dailyMenu: [
+        { ...diet.dailyMenu[0], id: "a", start: "07:00", end: "08:00" },
+        { ...diet.dailyMenu[1], id: "b", start: "08:00", end: "09:00" },
+      ],
+    };
+    // Durante la primera, la contigua (start === end previa) ES la siguiente.
+    const during = currentMealSlot(contiguous, at("07:30"));
+    expect(during).toMatchObject({ kind: "during" });
+    if (during?.kind === "during") {
+      expect(during.meal.id).toBe("a");
+      expect(during.next?.id).toBe("b");
+    }
+    // En el instante compartido 08:00 resuelve UNA sola franja (during).
+    expect(currentMealSlot(contiguous, at("08:00"))).toMatchObject({
+      kind: "during",
+    });
+  });
+
+  it("menú vacío: null", () => {
+    expect(currentMealSlot({ ...diet, dailyMenu: [] }, at("07:30"))).toBeNull();
+  });
+});
+
+describe("codec del checkId + resolveCheckTarget", () => {
+  it("checkIdFor/parseCheckId son inversos; parte por el PRIMER ':' (id con ':')", () => {
+    expect(checkIdFor("meal", "desayuno")).toBe("meal:desayuno");
+    expect(checkIdFor("water", 3)).toBe("water:3");
+    expect(parseCheckId("meal:sub:id")).toEqual({ kind: "meal", id: "sub:id" });
+    expect(parseCheckId("sinDosPuntos")).toEqual({
+      kind: "sinDosPuntos",
+      id: "",
+    });
+  });
+
+  it("resuelve comida/suplemento/agua contra la dieta activa", () => {
+    const meal = resolveCheckTarget(diet, "meal:desayuno");
+    expect(meal).toMatchObject({ kind: "meal", meal: { id: "desayuno" } });
+    const sup = resolveCheckTarget(diet, "supplement:multivitaminico-demo");
+    expect(sup).toMatchObject({ kind: "supplement" });
+    expect(resolveCheckTarget(diet, "water:2")).toEqual({
+      kind: "water",
+      index: 2,
+    });
+  });
+
+  it("id huérfano (de otra dieta) o agua no numérica → null (la UI decide el rótulo)", () => {
+    expect(resolveCheckTarget(diet, "meal:no-existe")).toBeNull();
+    expect(resolveCheckTarget(diet, "water:x")).toBeNull();
+    expect(resolveCheckTarget(diet, "otra:cosa")).toBeNull();
   });
 });

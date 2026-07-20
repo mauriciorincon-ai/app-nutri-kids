@@ -7,16 +7,12 @@ import { ChecklistRow } from "@/components/day-checklist/checklist-row";
 import { DaySummary } from "@/components/day-checklist/day-summary";
 import { NoteEditor } from "@/components/day-checklist/note-editor";
 import { ReminderCard } from "@/components/day-checklist/reminder-card";
-import {
-  useDayLog,
-  useNow,
-  useToday,
-} from "@/components/day-checklist/use-today";
+import { useDayLog, useToday } from "@/components/day-checklist/use-today";
 import { useDiet } from "@/components/diet-provider";
 import { fmt, useI18n } from "@/i18n";
 import {
   buildDayChecklist,
-  buildReminder,
+  checkIdFor,
   dateKey,
   waterGlassesTarget,
   type ChecklistItem,
@@ -36,11 +32,7 @@ export default function TodayPage() {
   const { diet } = useDiet();
   const { t, l, locale } = useI18n();
   const today = useToday();
-  const now = useNow();
   const { record, doneIds, toggle, saveNote } = useDayLog(today);
-
-  // Recordatorio: necesita la HORA real (useNow); null pre-hidratación → skeleton.
-  const reminder = now ? buildReminder(diet, now, doneIds) : null;
 
   // Con fecha real: checklist completo. Sin ella (prerender): comidas + agua
   // estáticas, sin marcas — el HTML inicial ya contiene el candidato LCP.
@@ -49,7 +41,7 @@ export default function TodayPage() {
   const mealRows: Row[] =
     checklist?.items.filter((i) => i.kind === "meal") ??
     diet.dailyMenu.map((meal) => ({
-      checkId: `meal:${meal.id}`,
+      checkId: checkIdFor("meal", meal.id),
       kind: "meal",
       meal,
       done: false,
@@ -59,7 +51,7 @@ export default function TodayPage() {
   const waterRows: Row[] =
     checklist?.items.filter((i) => i.kind === "water") ??
     Array.from({ length: waterTarget }, (_, i) => ({
-      checkId: `water:${i + 1}`,
+      checkId: checkIdFor("water", i + 1),
       kind: "water",
       index: i + 1,
       total: waterTarget,
@@ -152,7 +144,7 @@ export default function TodayPage() {
     <div className="flex flex-col gap-5 pb-6">
       <h1 className="text-3xl">{t.today.title}</h1>
 
-      <ReminderCard reminder={reminder} />
+      <ReminderCard diet={diet} doneIds={doneIds} />
 
       {checklist ? (
         <DaySummary checklist={checklist} labelFor={labelFor} />

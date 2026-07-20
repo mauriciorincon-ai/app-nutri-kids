@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import demoRaw from "../../data/demo-diet.json";
 import {
@@ -6,7 +6,9 @@ import {
   getDayRecord,
   getMarkTime,
   getNote,
+  listDayEntries,
   listRecordedDays,
+  listRecordedEntries,
   markDone,
   setNote,
   toggleDone,
@@ -224,6 +226,26 @@ describe("day-log v2: migración desde el estado real de un usuario S1/S2", () =
     window.localStorage.setItem("nutrikids.daylog.v1", "{roto");
     expect(getDayRecord(day1)).toEqual({ marks: {}, notes: {} });
   });
+
+  it("con v1 Y v2 presentes gana la v2 y NO se re-migra sobre ella", () => {
+    window.localStorage.setItem(
+      "nutrikids.daylog.v1",
+      JSON.stringify({ "2026-07-06": ["meal:cena"] }),
+    );
+    window.localStorage.setItem(
+      DAY_LOG_KEY,
+      JSON.stringify({
+        "2026-07-06": {
+          marks: { "meal:desayuno": { at: "07:00" } },
+          notes: {},
+        },
+      }),
+    );
+    // La v2 manda; la marca "meal:cena" de la v1 NUNCA pisa a la v2.
+    expect(getDoneIds(day1)).toEqual(["meal:desayuno"]);
+    // Y la v1 queda intacta (solo la migración —que aquí no corrió— la borra).
+    expect(window.localStorage.getItem("nutrikids.daylog.v1")).not.toBeNull();
+  });
 });
 
 describe("clearAllData ('borrar datos')", () => {
@@ -273,5 +295,115 @@ describe("clearDayLog", () => {
     clearDayLog();
     expect(getDoneIds(day1)).toEqual([]);
     expect(getDoneIds(day2)).toEqual([]);
+  });
+});
+
+describe("day-log v2: hora por defecto = reloj del sistema (mockeable)", () => {
+  it("toggleDone sin `at` estampa la hora local del dispositivo", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-06T07:30:00"));
+    toggleDone(day1, "meal:desayuno"); // sin `at` → clockLabel(new Date())
+    expect(getMarkTime(day1, "meal:desayuno")).toBe("07:30");
+    vi.useRealTimers();
+  });
+});
+
+describe("day-log v2: coerción fail-safe ante JSON válido con forma inválida", () => {
+  it.each([
+    ["v2 es un array", DAY_LOG_KEY, "[]"],
+    ["v2 es un número", DAY_LOG_KEY, "42"],
+    ["v1 es un array", "nutrikids.daylog.v1", "[1,2]"],
+    ["v1 con día no-array", "nutrikids.daylog.v1", '{"2026-07-06":"meal:x"}'],
+  ])("%s → registro vacío, sin lanzar", (_label, key, raw) => {
+    window.localStorage.setItem(key, raw);
+    expect(() => getDayRecord(day1)).not.toThrow();
+    expect(getDayRecord(day1)).toEqual({ marks: {}, notes: {} });
+  });
+
+  it("descarta claves de día basura y `at`/chips inválidos, conserva lo válido", () => {
+    window.localStorage.setItem(
+      DAY_LOG_KEY,
+      JSON.stringify({
+        "no-fecha": { marks: { "meal:x": { at: "07:00" } }, notes: {} },
+        "2026-07-06": {
+          marks: {
+            "meal:desayuno": { at: "zz:zz" }, // hora basura → null
+            "water:1": { at: "07:05" }, // hora válida → se conserva
+          },
+          notes: { "meal:desayuno": { chips: ["bogus", "pain"], text: 5 } },
+        },
+      }),
+    );
+    // La clave de día basura se ignora por completo (no llega a Intl.format).
+    expect(listRecordedDays()).toEqual(["2026-07-06"]);
+    // `at` inválido degrada a null (sigue siendo marca); el válido se conserva.
+    expect(getMarkTime(day1, "meal:desayuno")).toBeNull();
+    expect(getMarkTime(day1, "water:1")).toBe("07:05");
+    // chip inválido descartado; text no-string → "".
+    expect(getNote(day1, "meal:desayuno")).toEqual({
+      chips: ["pain"],
+      text: "",
+    });
+  });
+
+  it("re-trunca al LEER una nota gigante del store (no solo en setNote)", () => {
+    window.localStorage.setItem(
+      DAY_LOG_KEY,
+      JSON.stringify({
+        "2026-07-06": {
+          marks: {},
+          notes: { "meal:x": { chips: [], text: "z".repeat(500) } },
+        },
+      }),
+    );
+    expect(getNote(day1, "meal:x")?.text.length).toBe(140);
+  });
+});
+
+describe("day-log v2: escritura resiliente (storage lleno)", () => {
+  it("QuotaExceeded al escribir no lanza ni corrompe lo ya guardado", () => {
+    markDone(day1, "meal:desayuno", "07:00");
+    const spy = vi
+      .spyOn(Storage.prototype, "setItem")
+      .mockImplementation(() => {
+        throw new DOMException("quota", "QuotaExceededError");
+      });
+    expect(() => toggleDone(day1, "water:1", "08:00")).not.toThrow();
+    spy.mockRestore();
+    // La marca previa sobrevive; la nueva no persistió, pero nada se rompió.
+    expect(getDoneIds(day1)).toEqual(["meal:desayuno"]);
+  });
+});
+
+describe("listDayEntries / listRecordedEntries (historial)", () => {
+  it("ordena por hora real; sin hora (y solo-nota) al final", () => {
+    markDone(day1, "meal:cena", "19:00");
+    markDone(day1, "meal:desayuno", "07:00");
+    markDone(day1, "water:1", null);
+    setNote(day1, "meal:almuerzo", { chips: ["pain"], text: "" });
+
+    const entries = listDayEntries(getDayRecord(day1));
+    expect(entries.map((e) => e.checkId)).toEqual([
+      "meal:desayuno", // 07:00
+      "meal:cena", // 19:00
+      "water:1", // marca sin hora
+      "meal:almuerzo", // solo nota
+    ]);
+    expect(entries.find((e) => e.checkId === "meal:almuerzo")).toMatchObject({
+      marked: false,
+      note: { chips: ["pain"], text: "" },
+    });
+  });
+
+  it("listRecordedEntries trae día + record, del más reciente al más antiguo", () => {
+    markDone(day1, "meal:desayuno", "07:00");
+    markDone(day2, "meal:cena", "18:40");
+    const entries = listRecordedEntries();
+    expect(entries.map((e) => e.day)).toEqual(["2026-07-07", "2026-07-06"]);
+    expect(entries[0].record.marks["meal:cena"]).toEqual({ at: "18:40" });
+  });
+
+  it("listRecordedDays con store vacío es []", () => {
+    expect(listRecordedDays()).toEqual([]);
   });
 });

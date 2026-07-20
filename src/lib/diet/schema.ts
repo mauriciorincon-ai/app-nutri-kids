@@ -19,8 +19,16 @@ const isoDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "expected YYYY-MM-DD");
 
-/** Hora "HH:MM" de 24h para los momentos del menú. */
-const timeSchema = z.string().regex(/^\d{2}:\d{2}$/, "expected HH:MM");
+/** Hora "HH:MM" de 24h VÁLIDA (00–23:00–59) para los momentos del menú. */
+const timeSchema = z
+  .string()
+  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "expected HH:MM (24h, valid range)");
+
+/** Minutos desde medianoche de un "HH:MM" ya validado (para comparar start/end). */
+function minutesOfTime(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
+}
 
 export const weekdaySchema = z.enum([
   "mon",
@@ -119,7 +127,22 @@ export const dietPlanSchema = z.object({
   equivalences: z.array(equivalenceSchema),
   supplements: z.array(supplementSchema).min(1),
   supplementNotes: localizedTextSchema.optional(),
-  dailyMenu: z.array(mealSchema).min(1),
+  dailyMenu: z
+    .array(mealSchema)
+    .min(1)
+    .superRefine((meals, ctx) => {
+      // El `end` de una comida no puede caer antes que su `start` (una franja
+      // 22:00→01:00 no se modela así): el recordatorio daría salidas absurdas.
+      meals.forEach((meal, i) => {
+        if (minutesOfTime(meal.end) < minutesOfTime(meal.start)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [i, "end"],
+            message: "meal end must be >= start",
+          });
+        }
+      });
+    }),
   hydration: z.object({
     targetLitersMin: z.number().positive(),
     targetLitersMax: z.number().positive(),

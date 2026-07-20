@@ -84,6 +84,13 @@ describe("microcopy: frase-vs-métrica del recordatorio (agua)", () => {
       target: reminder.water.target,
     });
     expect(phrase).toBe("Agua: 2 de 4 vasos");
+    // Y en EN, la misma métrica exacta (sin inflar).
+    expect(
+      fmt(en.reminder.water, {
+        done: reminder.water.done,
+        target: reminder.water.target,
+      }),
+    ).toBe("Water: 2 of 4 glasses");
     // Cero vasos ⇒ "0 de 4" (nunca esconde ni redondea a favor).
     const empty = buildReminder(diet, monday, []);
     expect(

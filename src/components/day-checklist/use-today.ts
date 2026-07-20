@@ -22,7 +22,14 @@ import { notifyLocalStore, useLocalStore } from "@/lib/local-store";
 
 function subscribeToDayChange(listener: () => void): () => void {
   document.addEventListener("visibilitychange", listener);
-  return () => document.removeEventListener("visibilitychange", listener);
+  // El día también rueda con la pestaña ABIERTA: un tick por minuto detecta el
+  // cruce de medianoche sin depender de re-renders de otros componentes (así
+  // "Hoy" amanece vacío y el historial deja de rotularse "Hoy" solos, sin reload).
+  const id = window.setInterval(listener, 60_000);
+  return () => {
+    document.removeEventListener("visibilitychange", listener);
+    window.clearInterval(id);
+  };
 }
 
 export function useToday(): Date | null {
@@ -38,8 +45,9 @@ export function useToday(): Date | null {
 /**
  * Instante vivo con hora (para el recordatorio "qué toca AHORA"). null hasta
  * hidratar; tras hidratar refresca cada minuto y al volver a la pestaña. A
- * diferencia de useToday, conserva la HORA — por eso vive aparte y solo lo usa
- * el bloque de recordatorio (no re-renderiza todo "Hoy" cada minuto).
+ * diferencia de useToday, conserva la HORA — por eso vive aparte y SOLO lo
+ * consume ReminderCard (el tick por minuto re-renderiza esa tarjeta, no toda
+ * "Hoy"; el rollover del día lo lleva `subscribeToDayChange` por su cuenta).
  * Mockeable con el clock de Playwright (controla `new Date()` en e2e).
  */
 export function useNow(): Date | null {
@@ -75,17 +83,30 @@ export function useDayLog(today: Date | null) {
   );
   const doneIds = useMemo(() => Object.keys(record.marks), [record]);
 
+  // Si cruzamos la medianoche con la pestaña abierta (antes de que el día ruede
+  // en pantalla), la escritura pertenece al día REAL, no al que renderizó este
+  // árbol — así una marca a las 00:00:30 no cae en el historial de ayer.
+  const writeTarget = (): Date => {
+    const now = new Date();
+    return today && dateKey(now) === dateKey(today) ? today : now;
+  };
+
   const toggle = (checkId: string) => {
     if (!today) return;
-    const wasDone = getDoneIds(today).includes(checkId);
-    toggleDone(today, checkId);
+    const target = writeTarget();
+    // Camino común (mismo día): `record` ya está en scope → sin re-leer el store.
+    const wasDone =
+      target === today
+        ? checkId in record.marks
+        : getDoneIds(target).includes(checkId);
+    toggleDone(target, checkId);
     notifyLocalStore();
     if (!wasDone) trackMark(checkId); // evento solo al MARCAR, jamás al desmarcar
   };
 
   const saveNote = (checkId: string, note: DayNote | null) => {
     if (!today) return;
-    setNote(today, checkId, note);
+    setNote(writeTarget(), checkId, note);
     notifyLocalStore();
     if (note && (note.chips.length > 0 || note.text.trim().length > 0)) {
       trackNote(note);

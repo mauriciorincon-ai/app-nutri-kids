@@ -233,6 +233,57 @@ export function waterGlassesTarget(diet: DietPlan): number {
   return diet.hydration.glassesPerDay ?? DEFAULT_WATER_GLASSES;
 }
 
+// ---------------------------------------------------------------------------
+// Codec del checkId — "<kind>:<id>". Contrato del motor: se construye y parsea
+// SOLO aquí (la UI no decodifica ids a mano). El id puede contener ":".
+// ---------------------------------------------------------------------------
+
+export type CheckKind = "meal" | "supplement" | "water";
+
+/** Construye un checkId ("meal:desayuno", "water:1"). */
+export function checkIdFor(kind: CheckKind, id: string | number): string {
+  return `${kind}:${id}`;
+}
+
+/** Parte un checkId por el PRIMER ":" (un id de comida puede contener ":"). */
+export function parseCheckId(checkId: string): { kind: string; id: string } {
+  const i = checkId.indexOf(":");
+  if (i < 0) return { kind: checkId, id: "" };
+  return { kind: checkId.slice(0, i), id: checkId.slice(i + 1) };
+}
+
+export type CheckTarget =
+  | { kind: "meal"; meal: Meal }
+  | { kind: "supplement"; supplement: Supplement }
+  | { kind: "water"; index: number };
+
+/**
+ * Resuelve un checkId contra la dieta ACTIVA. `null` si el id no existe en ella
+ * (p.ej. el historial guarda ids de una dieta anterior a la cargada) — la UI
+ * decide el rótulo de reemplazo; jamás muestra el id crudo.
+ */
+export function resolveCheckTarget(
+  diet: DietPlan,
+  checkId: string,
+): CheckTarget | null {
+  const { kind, id } = parseCheckId(checkId);
+  if (kind === "meal") {
+    const meal = diet.dailyMenu.find((m) => m.id === id);
+    return meal ? { kind: "meal", meal } : null;
+  }
+  if (kind === "supplement") {
+    const supplement = diet.supplements.find((s) => s.id === id);
+    return supplement ? { kind: "supplement", supplement } : null;
+  }
+  if (kind === "water") {
+    const index = Number(id);
+    return Number.isInteger(index) && index > 0
+      ? { kind: "water", index }
+      : null;
+  }
+  return null;
+}
+
 export type ChecklistItem =
   | { checkId: string; kind: "meal"; meal: Meal }
   | { checkId: string; kind: "supplement"; supplement: Supplement }
@@ -258,17 +309,17 @@ export function buildDayChecklist(
   const water = waterGlassesTarget(diet);
   const items: ChecklistItem[] = [
     ...mealsForDate(diet, date).map((meal) => ({
-      checkId: `meal:${meal.id}`,
+      checkId: checkIdFor("meal", meal.id),
       kind: "meal" as const,
       meal,
     })),
     ...supplementsForDate(diet, date).map((supplement) => ({
-      checkId: `supplement:${supplement.id}`,
+      checkId: checkIdFor("supplement", supplement.id),
       kind: "supplement" as const,
       supplement,
     })),
     ...Array.from({ length: water }, (_, i) => ({
-      checkId: `water:${i + 1}`,
+      checkId: checkIdFor("water", i + 1),
       kind: "water" as const,
       index: i + 1,
       total: water,
@@ -322,8 +373,11 @@ export function currentMealSlot(diet: DietPlan, at: Date): MealSlot | null {
     (m) => now >= minutesOf(m.start) && now <= minutesOf(m.end),
   );
   if (during) {
-    const next = meals.find((m) => minutesOf(m.start) > minutesOf(during.end));
-    return { kind: "during", meal: during, next: next ?? null };
+    // "Sigue" = la próxima comida EN EL ORDEN por `start`, no la primera que
+    // empieza tras el `end` de la actual — así una comida contigua o solapada
+    // (start === end previa) no se salta.
+    const next = meals[meals.indexOf(during) + 1] ?? null;
+    return { kind: "during", meal: during, next };
   }
 
   const first = meals[0];
@@ -334,26 +388,35 @@ export function currentMealSlot(diet: DietPlan, at: Date): MealSlot | null {
   if (now > minutesOf(last.end)) return { kind: "after-last", prev: last };
 
   // Hueco entre dos franjas: prev = última terminada, next = próxima por empezar.
-  const prev = [...meals].reverse().find((m) => minutesOf(m.end) < now)!;
-  const next = meals.find((m) => minutesOf(m.start) > now)!;
+  // Con datos bien formados ambas existen (los guards previos lo garantizan);
+  // ante datos corruptos degradamos a null en vez de asertar (typing honesto).
+  const prev = [...meals].reverse().find((m) => minutesOf(m.end) < now);
+  const next = meals.find((m) => minutesOf(m.start) > now);
+  if (!prev || !next) return null;
   return { kind: "between", prev, next };
 }
 
+/**
+ * Estado de los suplementos del día como UNIÓN DISCRIMINADA — el motor CLASIFICA
+ * el estado del dominio; la UI solo elige la cadena por rama (un `switch`
+ * exhaustivo). Antes la UI lo infería de dos conteos y el orden de los ternarios
+ * mintió (BUG-S3-1: afirmó "ya está" un día sin suplemento). Ahora es imposible.
+ */
+export type SupplementStatus =
+  | { kind: "none-today" } // hoy NO toca ninguno (≠ "ya los tomó todos")
+  | { kind: "pending"; pending: Supplement[] } // tocan hoy y faltan
+  | { kind: "all-done" }; // tocaban hoy y ya están todos
+
 export type Reminder = {
   slot: MealSlot | null;
-  /** Cuántos suplementos toca HOY (0 = hoy no toca ninguno — distinto de "todos hechos"). */
-  supplementsToday: number;
-  /** Suplementos que tocan HOY y aún no se han marcado. */
-  supplementsPending: Supplement[];
+  supplements: SupplementStatus;
   water: { target: number; done: number };
 };
 
 /**
- * El recordatorio del momento: franja vigente/siguiente + suplementos del día
- * pendientes + hidratación. Puro y con hora inyectada. La UI redacta el copy
- * (sin culpa); el motor solo resuelve QUÉ mostrar. `supplementsToday` deja a la
- * UI distinguir "hoy no toca ninguno" de "ya los tomó todos" (jamás afirmar un
- * suplemento cumplido que nunca existió ese día).
+ * El recordatorio del momento: franja vigente/siguiente + estado de los
+ * suplementos del día + hidratación. Puro y con hora inyectada. La UI redacta el
+ * copy (sin culpa); el motor resuelve QUÉ mostrar y en qué estado.
  */
 export function buildReminder(
   diet: DietPlan,
@@ -361,19 +424,25 @@ export function buildReminder(
   doneIds: string[],
 ): Reminder {
   const done = new Set(doneIds);
-  const supplementsToday = supplementsForDate(diet, at);
-  const supplementsPending = supplementsToday.filter(
-    (s) => !done.has(`supplement:${s.id}`),
+  const todays = supplementsForDate(diet, at);
+  const pending = todays.filter(
+    (s) => !done.has(checkIdFor("supplement", s.id)),
   );
+  const supplements: SupplementStatus =
+    todays.length === 0
+      ? { kind: "none-today" }
+      : pending.length > 0
+        ? { kind: "pending", pending }
+        : { kind: "all-done" };
+
   const target = waterGlassesTarget(diet);
-  const waterDone = Array.from(
-    { length: target },
-    (_, i) => `water:${i + 1}`,
+  const waterDone = Array.from({ length: target }, (_, i) =>
+    checkIdFor("water", i + 1),
   ).filter((id) => done.has(id)).length;
+
   return {
     slot: currentMealSlot(diet, at),
-    supplementsToday: supplementsToday.length,
-    supplementsPending,
+    supplements,
     water: { target, done: waterDone },
   };
 }

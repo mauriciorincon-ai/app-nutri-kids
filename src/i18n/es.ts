@@ -70,6 +70,7 @@ export const es = {
     notePlaceholder: "Algo corto que quieras recordar (opcional)",
     noteSave: "Guardar",
     noteRemove: "Quitar nota",
+    noteCancel: "Cancelar",
     historyLink: "Ver días anteriores",
   },
   reminder: {
@@ -95,6 +96,7 @@ export const es = {
     noteLabel: "Nota:",
     at: "a las {time}",
     timeUnknown: "sin hora",
+    unknownItem: "Elemento de una dieta anterior",
     back: "Volver a Hoy",
   },
   diet: {

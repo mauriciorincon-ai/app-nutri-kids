@@ -2,6 +2,7 @@
 
 import { useDayLog, useToday } from "@/components/day-checklist/use-today";
 import { useDiet } from "@/components/diet-provider";
+import { TodayBadge } from "@/components/today-badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { fmt, useI18n } from "@/i18n";
 import { weekdayFromDate } from "@/lib/diet/logic";
@@ -45,11 +46,7 @@ export default function SupplementsPage() {
                 <span className="font-heading text-lg font-semibold">
                   {t.weekdays[day]}
                 </span>
-                {isToday && (
-                  <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-primary-foreground">
-                    {t.supplements.todayLabel}
-                  </span>
-                )}
+                {isToday && <TodayBadge>{t.supplements.todayLabel}</TodayBadge>}
               </p>
 
               {daySupplements.length === 0 ? (
