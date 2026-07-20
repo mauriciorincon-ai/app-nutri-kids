@@ -92,3 +92,30 @@ Enumerados en el plan aprobado y confirmados en el código antes de la fase 1:
 - **Privacidad estructural:** `grounding.ts` sigue siendo puro sobre `(diet, locale, date)` — no
   importa `day-log`; el registro no tiene ruta al grounding por construcción (el test negativo de
   la fase 3 lo afirma).
+
+## Fase 2 — UI (bilingüe en el mismo paso) · COMPLETA
+
+- **"Hoy" extendida** (`src/app/page.tsx`): al marcar una comida se muestra la **hora real**
+  ("Hecho · 12:35"; "Hecho" sin hora si es una marca migrada); `NoteEditor` por comida (chips
+  rechazó/dolor/antojo/otro + texto corto, accesibles por teclado ≥44px); bloque
+  **`ReminderCard`** ("Ahora mismo") con `aria-live="polite"` y esqueleto estático
+  pre-hidratación (no envuelve el candidato LCP — patrón `lcp-nace-estatico`, riesgo e mitigado);
+  enlace a `/historial`.
+- **`useNow()`** (nuevo, en `use-today.ts`): instante vivo con HORA (tick 60 s +
+  `visibilitychange`), aparte de `useToday` para no re-renderizar todo "Hoy" cada minuto; null
+  pre-hidratación; mockeable con el clock de Playwright (riesgo d resuelto).
+- **`useDayLog` extendido:** devuelve `record` (marcas con hora + notas) + `saveNote`; `toggle`
+  registra la hora real vía `toggleDone` (default `new Date()` → mockeable). API previa intacta →
+  `/suplementos` sin tocar.
+- **`/historial`** (`src/app/historial/page.tsx`): lista solo-lectura por fecha descendente con
+  horas reales y notas; estado vacío que invita; enlace de vuelta a "Hoy". Ruta pública, estática
+  en el build.
+- **Ajustes:** copy de "Borrar datos" ahora nombra explícitamente el registro (marcas, horas y
+  notas) en ES/EN.
+- **Observabilidad** (`src/lib/diet/day-events.ts`): eventos `registro_marcado` (solo la
+  categoría meal/supplement/water) · `nota_agregada` (chipCount + hasText, JAMÁS los valores ni el
+  texto) · `recordatorio_visto`. Cero contenido del registro.
+- **Bilingüe:** claves nuevas en `es.ts` **y** `en.ts` en el mismo paso (secciones `reminder`,
+  `history`, y `today`/`settings` extendidas). Paridad verde (test + tipo `Dictionary`).
+- **Estado:** typecheck limpio · lint limpio · 148 unit/integration verde · build OK
+  (`/historial` prerender estático). e2e y regla 9 → fase 3.
