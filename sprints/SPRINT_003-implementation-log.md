@@ -163,3 +163,26 @@ Enumerados en el plan aprobado y confirmados en el código antes de la fase 1:
 - **`/deploy-check`:** todas las verificaciones automáticas verde (167 unit + 54 e2e, typecheck,
   lint, build, audit high limpio, axe). Cobertura app 97% / lib/diet 96%. Sin env vars nuevas.
   **NO MERGE aún:** faltan entregables de cierre (fase 5) + gate ⭐ del usuario.
+
+## Fase 5 — Cierre de ciclo · COMPLETA (falta solo el gate ⭐ del usuario)
+
+- **ADR-007** — registro local + minimización (local-only, ratifica ADR-001; el registro JAMÁS a
+  red/repo/grounding; logs solo-metadatos; "borrar datos" lo cubre; migración v1→v2). `decisions/`.
+- **MANUAL-DE-USO** — "Hoy" extendida (hora + nota), recordatorio "Ahora mismo", "Días anteriores";
+  borrar datos nombra horas/notas; FAQ + fila de historial S3. Español llano para la mamá.
+- **Kit de prueba** (`docs/kit-de-prueba/`): README + preguntas de calibración del chat + día de
+  registro de ejemplo. La dieta real se entrega aparte (regla de privacidad: repo público).
+- **Guía v1 ACUMULATIVA S1–S3** (`docs/GUIA-DE-PRUEBA.html`): HTML autocontenido (cero CDNs),
+  **26 pruebas** con origen por línea (17 heredadas S1/S2 = regresión · 2 mejoradas · 7 nuevas S3),
+  filtros (Todo 26 · Cambió en S3 9 · Gate mínimo ⭐ 6), `localStorage` versionado `s3`, paleta
+  cálida de la app. Gate ⭐: Groq real (paga el diferido del S2) + migración en dispositivo real +
+  PWA + recorrido de la mamá con dieta real + aprobación visual.
+- **BLUEPRINT.html** — as-built de la fase 1: local-first sin BD (datos solo en el dispositivo),
+  Vercel Hobby, Groq opcional (solo Camino B), CI con 3 checks, observabilidad Pino+Sentry, costo
+  **US$0/mes**, punto único de falla = el dispositivo (por diseño de privacidad). SVG embebido,
+  Supabase multi-cuidador punteado como fase 2.
+- **`/design-sync`** — design system publicado en Claude Design (proyecto "Nutri-Kids — Design
+  System", 6 tarjetas: overview, paleta, tipografía, StatusChip/ItemCard, ChecklistRow/DaySummary,
+  ReminderCard/NoteEditor del S3). Cierra el gate visual diferido del S2 en su vía de publicación.
+- **Verificación visual del builder:** capturas de "Hoy", `/historial`, guía y blueprint — todas
+  coherentes con `design-system.md`. Aprobación visual del USUARIO = gate ⭐ (pendiente).

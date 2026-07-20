@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nutri-Kids — Blueprint de infraestructura (as-built)</title>
+<style>
+  :root {
+    --fondo: #fbf9f5; --tinta: #33291f; --tinta-suave: #6d6255;
+    --borde: #e7ded0; --tarjeta: #ffffff; --acento: #b0552f;
+    --acento-suave: #f3e2d6; --ok: #4f7a4a; --alerta: #a4432f;
+    --futuro: #7c5ba6; --caja-svg: #ffffff; --bd-svg: #f3e2d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fondo: #17130f; --tinta: #f1eae0; --tinta-suave: #a89a8b;
+      --borde: #382c22; --tarjeta: #211a14; --acento: #e0a17e;
+      --acento-suave: #33231a; --ok: #8dbd86; --alerta: #f0b3a2;
+      --futuro: #c0a3e0; --caja-svg: #211a14; --bd-svg: #33231a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 2rem 1rem 4rem; background: var(--fondo); color: var(--tinta);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.55;
+  }
+  main { max-width: 980px; margin: 0 auto; }
+  h1 { font-size: 1.6rem; margin: 0 0 .25rem; }
+  h2 { font-size: 1.15rem; margin: 2.2rem 0 .8rem; border-bottom: 2px solid var(--borde); padding-bottom: .35rem; }
+  .badge {
+    display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .05em;
+    background: var(--acento-suave); color: var(--acento); border-radius: 999px;
+    padding: .15rem .6rem; vertical-align: middle; text-transform: uppercase;
+  }
+  .meta { color: var(--tinta-suave); font-size: .9rem; margin: .2rem 0 1rem; }
+  .nota {
+    background: var(--tarjeta); border: 1px solid var(--borde); border-left: 4px solid var(--acento);
+    border-radius: 8px; padding: .8rem 1rem; font-size: .88rem; color: var(--tinta-suave);
+  }
+  .diagrama { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 12px; padding: 1rem; overflow-x: auto; }
+  .diagrama svg { display: block; min-width: 760px; width: 100%; height: auto; }
+  .caja { fill: var(--caja-svg); stroke: var(--borde); stroke-width: 1.5; }
+  .caja-principal { stroke: var(--acento); stroke-width: 2; }
+  .caja-bd { fill: var(--bd-svg); stroke: var(--acento); stroke-width: 1.5; }
+  .caja-futuro { fill: none; stroke: var(--futuro); stroke-width: 1.5; stroke-dasharray: 6 5; }
+  .titulo-caja { font: 700 13px system-ui, sans-serif; fill: var(--tinta); }
+  .detalle-caja { font: 400 11px system-ui, sans-serif; fill: var(--tinta-suave); }
+  .detalle-futuro { fill: var(--futuro); }
+  .flecha { stroke: var(--tinta-suave); stroke-width: 1.5; fill: none; marker-end: url(#punta); }
+  .flecha-futura { stroke: var(--futuro); stroke-dasharray: 6 5; }
+  .etiqueta-flecha { font: 600 10.5px system-ui, sans-serif; fill: var(--tinta-suave); }
+  table { width: 100%; border-collapse: collapse; font-size: .88rem; background: var(--tarjeta); border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: .55rem .7rem; border: 1px solid var(--borde); vertical-align: top; }
+  th { background: var(--acento-suave); font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+  tr.critica td { font-weight: 700; }
+  .tabla-scroll { overflow-x: auto; }
+  details { margin: 1rem 0; font-size: .85rem; color: var(--tinta-suave); }
+  details summary { cursor: pointer; font-weight: 600; }
+  footer { margin-top: 3rem; font-size: .8rem; color: var(--tinta-suave); border-top: 1px solid var(--borde); padding-top: .8rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Nutri-Kids — Blueprint de infraestructura <span class="badge">as-built</span></h1>
+  <p class="meta">Ciclo: <strong>Fase 1 (MVP personal)</strong> · Cerrado: <strong>2026-07-20</strong> · Sprints del ciclo: <strong>S1–S3</strong> (dieta viva · chat · día completo) · Última actualización: <strong>2026-07-20</strong></p>
+  <p class="nota"><strong>Entregable del CIERRE DE CICLO</strong> (método v1.8.1 · kit v1.7.1): el mapa real de TODA la infraestructura que soporta la app, escrito con lo <strong>DESPLEGADO de verdad</strong>. Rasgo definitorio de Nutri-Kids: es <strong>local-first sin backend</strong> — los datos del niño viven SOLO en el dispositivo (ADR-001, ratificado por ADR-007); a la red solo viaja la dieta anonimizada cuando el chat usa el asistente de IA. Vivo y acumulativo entre ciclos. HTML autocontenido con SVG embebido — cero CDNs.</p>
+
+  <h2>Diagrama</h2>
+  <div class="diagrama">
+  <svg viewBox="0 0 960 450" role="img" aria-label="Diagrama de infraestructura de Nutri-Kids: local-first, Vercel, Groq opcional">
+    <defs>
+      <marker id="punta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" opacity="0.65"/>
+      </marker>
+    </defs>
+
+    <!-- Cuidador + teléfono -->
+    <rect class="caja" x="20" y="150" width="185" height="80" rx="10"/>
+    <text class="titulo-caja" x="112" y="178" text-anchor="middle">Cuidador(es)</text>
+    <text class="detalle-caja" x="112" y="196" text-anchor="middle">teléfono · PWA instalable</text>
+    <text class="detalle-caja" x="112" y="212" text-anchor="middle">móvil-first (360–420px)</text>
+
+    <!-- Datos locales (en el dispositivo) -->
+    <rect class="caja caja-bd" x="20" y="300" width="185" height="110" rx="10"/>
+    <text class="titulo-caja" x="112" y="326" text-anchor="middle">Datos LOCALES</text>
+    <text class="detalle-caja" x="112" y="344" text-anchor="middle">localStorage del dispositivo</text>
+    <text class="detalle-caja" x="112" y="360" text-anchor="middle">dieta · registro del día</text>
+    <text class="detalle-caja" x="112" y="376" text-anchor="middle">(marcas · horas · notas)</text>
+    <text class="detalle-caja" x="112" y="395" text-anchor="middle" style="fill:var(--acento);font-weight:700">nunca sale del dispositivo</text>
+
+    <!-- Hosting Vercel -->
+    <rect class="caja caja-principal" x="315" y="140" width="245" height="120" rx="10"/>
+    <text class="titulo-caja" x="437" y="168" text-anchor="middle">Vercel Hobby</text>
+    <text class="detalle-caja" x="437" y="187" text-anchor="middle">Next.js PWA · TS strict</text>
+    <text class="detalle-caja" x="437" y="204" text-anchor="middle">rutas estáticas + /api/chat</text>
+    <text class="detalle-caja" x="437" y="221" text-anchor="middle">preview por PR · prod desde main</text>
+    <text class="detalle-caja" x="437" y="240" text-anchor="middle">*.vercel.app</text>
+
+    <!-- Groq (IA, opcional) -->
+    <rect class="caja" x="665" y="60" width="275" height="100" rx="10"/>
+    <text class="titulo-caja" x="802" y="88" text-anchor="middle">Groq — asistente IA (opcional)</text>
+    <text class="detalle-caja" x="802" y="106" text-anchor="middle">adapter conmutable por env</text>
+    <text class="detalle-caja" x="802" y="123" text-anchor="middle">free tier · llama-3.3-70b</text>
+    <text class="detalle-caja" x="802" y="140" text-anchor="middle">kill-switch CHAT_ENABLED · fallback local</text>
+
+    <!-- Observabilidad -->
+    <rect class="caja" x="665" y="300" width="275" height="86" rx="10"/>
+    <text class="titulo-caja" x="802" y="328" text-anchor="middle">Observabilidad</text>
+    <text class="detalle-caja" x="802" y="346" text-anchor="middle">Pino (logs solo-metadatos)</text>
+    <text class="detalle-caja" x="802" y="363" text-anchor="middle">Sentry free (inerte sin DSN)</text>
+
+    <!-- GitHub -->
+    <rect class="caja" x="315" y="330" width="245" height="86" rx="10"/>
+    <text class="titulo-caja" x="437" y="358" text-anchor="middle">GitHub (repo PÚBLICO)</text>
+    <text class="detalle-caja" x="437" y="376" text-anchor="middle">ruleset main-protegida</text>
+    <text class="detalle-caja" x="437" y="393" text-anchor="middle">CI: quality · e2e · lighthouse</text>
+
+    <!-- Futuro: Supabase -->
+    <rect class="caja-futuro" x="665" y="190" width="275" height="86" rx="10"/>
+    <text class="titulo-caja detalle-futuro" x="802" y="216" text-anchor="middle">(futuro · fase 2)</text>
+    <text class="detalle-caja detalle-futuro" x="802" y="234" text-anchor="middle">Supabase — estado compartido</text>
+    <text class="detalle-caja detalle-futuro" x="802" y="251" text-anchor="middle">multi-cuidador + RLS · lo abre un F0</text>
+
+    <!-- Flechas -->
+    <path class="flecha" d="M 205 185 L 310 190"/>
+    <text class="etiqueta-flecha" x="257" y="178" text-anchor="middle">HTTPS (carga la app)</text>
+
+    <path class="flecha" d="M 112 300 L 112 232"/>
+    <text class="etiqueta-flecha" x="120" y="270">lee/escribe local</text>
+
+    <path class="flecha" d="M 560 180 L 660 120"/>
+    <text class="etiqueta-flecha" x="610" y="135" text-anchor="middle">dieta anonimizada</text>
+    <text class="etiqueta-flecha" x="610" y="149" text-anchor="middle">(solo Camino B)</text>
+
+    <path class="flecha" d="M 560 210 L 660 330"/>
+    <text class="etiqueta-flecha" x="628" y="270" text-anchor="middle">logs (metadatos)</text>
+
+    <path class="flecha" d="M 437 330 L 437 262"/>
+    <text class="etiqueta-flecha" x="445" y="300">CI/CD → deploy</text>
+
+    <path class="flecha flecha-futura" d="M 205 340 C 420 430 560 300 663 250"/>
+    <text class="etiqueta-flecha detalle-futuro" x="470" y="410" text-anchor="middle">(sync multi-cuidador — fase 2)</text>
+  </svg>
+  </div>
+
+  <h2>Tabla por pieza</h2>
+  <div class="tabla-scroll">
+  <table>
+    <thead><tr><th>Pieza</th><th>Servicio + plan</th><th>Detalle operativo</th></tr></thead>
+    <tbody>
+      <tr><td>Código / versionamiento</td><td>GitHub <code>mauriciorincon-ai/app-nutri-kids</code> (público)</td><td>ruleset <code>main-protegida</code>; checks requeridos <code>quality</code>/<code>e2e</code>/<code>lighthouse</code>; jamás datos del niño en el repo</td></tr>
+      <tr><td>CI/CD</td><td>GitHub Actions</td><td>install + typecheck + lint + unit + build (quality) · Playwright móvil+desktop (e2e) · Lighthouse vs <code>perf-budget.json</code> (lighthouse) — los tres gatean el merge</td></tr>
+      <tr><td>Hosting / publicación</td><td>Vercel Hobby (free)</td><td>Next.js PWA; preview por PR, prod desde <code>main</code>; <code>*.vercel.app</code>; uso personal/familiar (no comercial)</td></tr>
+      <tr><td>Base de datos</td><td><strong>SIN BD — local-first</strong></td><td>Toda la data (dieta importada + registro del día) vive en <code>localStorage</code> del dispositivo, claves versionadas (<code>nutrikids.diet.v1</code>, <code>nutrikids.daylog.v2</code>, <code>nutrikids.prefs.v1</code>). Decisión: ADR-001, ratificada por ADR-007 (privacidad de menor). Sin región, sin RLS: no hay servidor de datos</td></tr>
+      <tr><td>Auth</td><td>No aplica</td><td>Un dispositivo, un cuidador; sin cuentas ni login. La multi-cuidadoría con auth es fase 2</td></tr>
+      <tr><td>Almacenamiento de archivos</td><td>No aplica</td><td>La dieta se importa como texto JSON (file picker o pegado) y se guarda en <code>localStorage</code>; no hay bucket</td></tr>
+      <tr><td>Email / notificaciones</td><td>No aplica</td><td>Los recordatorios son deterministas y locales (información visible al abrir la app); sin push ni permisos del sistema — push queda fase 2 si el uso lo pide</td></tr>
+      <tr><td>IA embebida</td><td>Groq (free tier) — <strong>opcional</strong></td><td>Chat "habla con tu dieta": adapter multi-proveedor conmutable por env (ADR-004); grounding de la dieta <strong>anonimizada</strong> (ADR-005); Camino A (lookups) resuelve local sin IA; kill-switch <code>CHAT_ENABLED</code> + circuit breaker → fallback local. ADR "código primero" cumplido: la IA es acento, no columna. El registro del día JAMÁS entra al grounding (ADR-006/007)</td></tr>
+      <tr><td>Observabilidad</td><td>Pino + Sentry (free)</td><td>Pino: logs estructurados <strong>solo-metadatos</strong> (versión de schema, conteos, outcome — jamás contenido de dieta ni registro). Sentry client-only, inerte sin <code>NEXT_PUBLIC_SENTRY_DSN</code></td></tr>
+      <tr><td>Crons / keep-alives</td><td>NINGUNO</td><td>Sin backend que mantener despierto; la app estática no los necesita</td></tr>
+      <tr><td>Secretos</td><td>Vercel env vars + <code>.env.local</code> (gitignored)</td><td>Único secreto: <code>GROQ_API_KEY</code> (para el chat con IA real). Doble gate gitleaks (hook pre-commit + PreToolUse). Hoy sin configurar → el chat degrada a local, honesto</td></tr>
+      <tr><td>Dominio</td><td>Subdominio de Vercel (<code>*.vercel.app</code>)</td><td>Administrado en Vercel; sin dominio propio en fase 1</td></tr>
+      <tr class="critica"><td>Costo real / mes</td><td><strong>US$0</strong></td><td>Vercel Hobby (100 GB-h, uso mínimo) · GitHub Free (2000 min CI/mes) · Sentry free · Groq free tier (~30 preguntas/día bajo 100K TPD, medido en ADR-005). Presupuesto techo declarado: ≤US$10/mes</td></tr>
+      <tr class="critica"><td>Punto único de falla</td><td><strong>El dispositivo del usuario</strong></td><td>Los datos del niño viven SOLO en el teléfono, sin respaldo en la nube (decisión de privacidad, no descuido). Mitigación: la dieta se re-importa desde su archivo original; el registro del día es local y aceptado como fase-1 (sync multi-dispositivo = fase 2). "Borrar datos" es intencional y confirmado. Secundario: Vercel como host — pero la PWA sirve el Camino A (semáforo + checklist) aun sin señal una vez cargada</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Historial del blueprint</h2>
+  <div class="tabla-scroll">
+  <table>
+    <thead><tr><th>Fecha</th><th>Ciclo</th><th>Cambios</th></tr></thead>
+    <tbody>
+      <tr><td>2026-07-20</td><td>Fase 1 (S1–S3)</td><td>Versión inicial (as-built retroactivo al cierre del ciclo fase 1). Recoge: S1 dieta viva local-first (localStorage, PWA, Vercel, CI con 3 checks), S2 chat con adapter Groq + grounding anonimizado + fallback local, S3 registro del día v2 (hora + nota + historial) con minimización ADR-007. BD: ninguna (ratificada). Costo: US$0. SPOF: el dispositivo (por diseño de privacidad).</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <footer>Blueprint as-built de Nutri-Kids · pipeline AI-APPs · se actualiza en cada cierre de ciclo (método v1.8.1). Archivo del repo — sin CDNs ni dependencias externas. Jamás contiene secretos ni datos del niño.</footer>
+</main>
+</body>
+</html>
