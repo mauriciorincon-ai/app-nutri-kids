@@ -107,17 +107,17 @@ export default function TodayPage() {
             item: l(item.meal.name),
           })}
         />
-        {/* Nota solo cuando conocemos el día real (hay registro editable).
-            key por día: al cruzar medianoche con la pestaña abierta, el editor
-            se remonta con la nota del día nuevo (no arrastra la de ayer). */}
-        {checklist && today && (
-          <NoteEditor
-            key={dateKey(today)}
-            mealName={l(item.meal.name)}
-            note={record.notes[item.checkId] ?? null}
-            onSave={(note) => saveNote(item.checkId, note)}
-          />
-        )}
+        {/* La nota se renderiza SIEMPRE (también en el prerender) para reservar
+            su altura → cero CLS al hidratar. Pre-hidratación `saveNote` es no-op
+            (no hay día) y no hay nota que mostrar. key por día: al cruzar
+            medianoche con la pestaña abierta, el editor se remonta con la nota
+            del día nuevo (no arrastra la de ayer). */}
+        <NoteEditor
+          key={today ? dateKey(today) : "static"}
+          mealName={l(item.meal.name)}
+          note={record.notes[item.checkId] ?? null}
+          onSave={(note) => saveNote(item.checkId, note)}
+        />
       </div>
     );
   };

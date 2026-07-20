@@ -32,7 +32,9 @@ export function ReminderCard({ reminder }: { reminder: Reminder | null }) {
     <section
       aria-live="polite"
       aria-label={t.reminder.heading}
-      className="rounded-xl border border-primary/30 bg-card px-4 py-3"
+      // min-h reserva la altura del estado lleno (hasta 5 líneas): el paso
+      // esqueleto→contenido al hidratar NO empuja el resto de "Hoy" (CLS=0).
+      className="min-h-[8.75rem] rounded-xl border border-primary/30 bg-card px-4 py-3"
     >
       <h2 className="flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-primary">
         <Clock aria-hidden className="size-4" />
