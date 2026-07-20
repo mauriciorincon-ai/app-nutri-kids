@@ -143,3 +143,23 @@ Enumerados en el plan aprobado y confirmados en el código antes de la fase 1:
   checklist, nombre accesible único). `/historial` añadido al gate axe.
 - **Estado:** **54/54 e2e verde en móvil (Pixel 7) + desktop** · 149 unit/integration verde ·
   typecheck y lint limpios.
+
+## Fase 4 — Calidad · COMPLETA
+
+- **Microcopy sin culpa (gate nuevo `tests/unit/microcopy.test.ts`, 18 tests):** términos
+  prohibidos (calorías/peso/IMC/percentil/kcal/BMI/weight) = 0 en ES y EN; tono no coercitivo en
+  `reminder`/`history` (cero "olvidaste/no marcaste/deberías/forgot/failed…"); **frase-vs-métrica**
+  del agua (el número de "Agua: N de M vasos" es el de vasos MARCADOS, no el objetivo — patrón
+  `la-ci-verifica-comportamiento-no-experiencia`).
+- **Lighthouse:** `/historial` añadido a `lighthouse-urls.json` (ruta pública). Budget LCP 4200;
+  "Hoy" sigue estática de nacimiento; el bloque recordatorio es esqueleto pre-hidratación.
+- **`/self-review` (staff engineer):** 2 nits arreglados — `next-env.d.ts` (churn del dev-server,
+  restaurado a main; el build lo regenera) y aserciones `note!` en `note-editor` (narrado con
+  `note &&`, sin non-null). Cero `console.log`/`TODO`/`any` en el código nuevo.
+- **Verificación visual (autochequeo del builder):** capturas móviles de "Hoy" (recordatorio +
+  "Hecho · hora" + nota) y `/historial` — coherentes con `design-system.md` (Fraunces, paleta
+  cálida, símbolo+texto, disclaimer permanente, HOY tag). El gate visual ⭐ del usuario sigue
+  pendiente (acumulado S1–S3).
+- **`/deploy-check`:** todas las verificaciones automáticas verde (167 unit + 54 e2e, typecheck,
+  lint, build, audit high limpio, axe). Cobertura app 97% / lib/diet 96%. Sin env vars nuevas.
+  **NO MERGE aún:** faltan entregables de cierre (fase 5) + gate ⭐ del usuario.

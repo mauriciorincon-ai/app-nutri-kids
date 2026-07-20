@@ -74,9 +74,9 @@ export function NoteEditor({
           <NotebookPen aria-hidden className="size-4" />
           {hasNote ? t.today.editNote : t.today.addNote}
         </button>
-        {hasNote && (note!.chips.length > 0 || note!.text) && (
+        {note && (note.chips.length > 0 || note.text) && (
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {[...note!.chips.map((c) => t.today[CHIP_KEY[c]]), note!.text]
+            {[...note.chips.map((c) => t.today[CHIP_KEY[c]]), note.text]
               .filter(Boolean)
               .join(" · ")}
           </p>
