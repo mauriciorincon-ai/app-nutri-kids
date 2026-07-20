@@ -27,5 +27,12 @@ export default defineConfig({
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    // Chat en modo determinístico: provider `mock` (cero red), IA habilitada.
+    // NEXT_PUBLIC_* se inlinea en build → debe estar presente para `pnpm build`.
+    env: {
+      CHAT_PROVIDER: "mock",
+      CHAT_ENABLED: "true",
+      NEXT_PUBLIC_CHAT_ENABLED: "true",
+    },
   },
 });

@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarCheck, FolderUp, Pill, Salad, Settings } from "lucide-react";
+import {
+  CalendarCheck,
+  FolderUp,
+  MessageCircleHeart,
+  Pill,
+  Salad,
+  Settings,
+} from "lucide-react";
 
 import { useI18n } from "@/i18n";
 import { cn } from "@/lib/utils";
@@ -18,6 +25,7 @@ export function BottomNav() {
   const items = [
     { href: "/", label: t.nav.today, Icon: CalendarCheck },
     { href: "/dieta", label: t.nav.diet, Icon: Salad },
+    { href: "/chat", label: t.nav.chat, Icon: MessageCircleHeart },
     { href: "/suplementos", label: t.nav.supplements, Icon: Pill },
     { href: "/cargar", label: t.nav.load, Icon: FolderUp },
     { href: "/ajustes", label: t.nav.settings, Icon: Settings },

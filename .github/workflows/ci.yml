@@ -47,7 +47,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - name: Lighthouse CI contra perf-budget.json
-        # DoD S1: el gate cubre / (Hoy) y /dieta (K3 de la bitácora)
+        # Rutas auditadas viven en lighthouse-urls.json (S1: / y /dieta; S2: +/chat).
         run: |
           npm i -g @lhci/cli
-          lhci autorun --collect.startServerCommand="pnpm start" --collect.url=http://localhost:3000 --collect.url=http://localhost:3000/dieta --assert.budgetsFile=./perf-budget.json
+          URL_FLAGS=$(jq -r '.urls[] | "--collect.url=" + .' lighthouse-urls.json | tr '\n' ' ')
+          lhci autorun --collect.startServerCommand="pnpm start" $URL_FLAGS --assert.budgetsFile=./perf-budget.json

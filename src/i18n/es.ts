@@ -12,6 +12,7 @@ export const es = {
   nav: {
     today: "Hoy",
     diet: "Dieta",
+    chat: "Chat",
     supplements: "Suplementos",
     load: "Cargar",
     settings: "Ajustes",
@@ -76,6 +77,38 @@ export const es = {
     alsoAvoid: "También evitar",
     groupPortion: "Porción: {portion}",
     seeDetail: "Ver detalle de {name}",
+  },
+  chat: {
+    title: "Pregúntale a la dieta",
+    intro: "Escribe como le hablas a alguien. Dos formas de responder:",
+    emptyHint: "Prueba con una de estas:",
+    sugg1: "¿La manzana se puede?",
+    sugg2: "¿Qué merienda le doy?",
+    sugg3: "No tengo pollo, ¿qué le doy?",
+    inputPlaceholder: "Escribe tu pregunta…",
+    send: "Enviar",
+    sending: "Enviando…",
+    thinking: "Pensando…",
+    fromPlanBadge: "Desde tu plan · sin IA",
+    aiBadge: "Respuesta de IA",
+    aiDisclaimer:
+      "Lo genera una IA sobre tu plan. Verifícalo con tu profesional.",
+    replacementsTitle: "Si no hay, usa…",
+    additiveTitle: "Aditivo a evitar",
+    additiveFoundIn: "Suele venir en: {where}",
+    restrictedUntil: "En descanso hasta el {date}",
+    restrictionEnded: "El descanso ya terminó — consulta al profesional.",
+    errorTitle: "El asistente no está disponible",
+    errorBody:
+      "No pudimos conectar con el asistente ahora. Las consultas rápidas de “¿se puede?” siguen funcionando.",
+    disabledTitle: "El asistente está en pausa",
+    disabledBody:
+      "La parte de IA está apagada por ahora. Puedes seguir preguntando “¿la manzana se puede?” y te respondo al instante desde tu plan.",
+    introTitle: "Cómo funciona este chat",
+    introBody:
+      "Las preguntas de “¿se puede?” se responden al instante desde tu plan, aquí en el teléfono. Para preguntas más abiertas, una IA lee tu plan (con el nombre del peque oculto) y responde solo con lo que el plan permite. No es consejo médico.",
+    introAccept: "Entendido",
+    aiDot: "Asistente IA",
   },
   detail: {
     whyTitle: "¿Por qué?",
@@ -154,6 +187,11 @@ export const es = {
     clearConfirmNo: "Cancelar",
     clearedToast: "Datos borrados. Volviste a la dieta demo.",
     disclaimerTitle: "Sobre esta app",
+    aiTitle: "Asistente IA del chat",
+    aiBody:
+      "Cuando haces una pregunta abierta en el chat, tu plan (con el nombre del peque oculto) se envía a un proveedor de IA para redactar la respuesta. Las preguntas de “¿se puede?” se responden en el teléfono, sin salir. Nada de la conversación se guarda ni queda en registros.",
+    aiStatusEnabled: "Asistente IA: activo",
+    aiStatusDisabled: "Asistente IA: en pausa",
   },
   a11y: {
     mainNav: "Navegación principal",

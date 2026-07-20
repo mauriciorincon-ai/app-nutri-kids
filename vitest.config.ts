@@ -11,9 +11,10 @@ export default defineConfig({
     include: ["tests/unit/**/*.test.{ts,tsx}"],
     coverage: {
       provider: "v8",
-      // El gate de cobertura aplica al motor de la dieta (CLAUDE.md exige >80% en lib/diet).
-      // utils/log del kit quedan fuera: se cubren indirectamente vía componentes y e2e.
-      include: ["src/lib/diet/**"],
+      // El gate cubre el motor de la dieta (CLAUDE.md exige >80% en lib/diet) y
+      // la capa IA del S2 (estándar 7). utils/log del kit quedan fuera: se
+      // cubren indirectamente vía componentes y e2e.
+      include: ["src/lib/diet/**", "src/lib/ia/**", "src/lib/rate-limit.ts"],
       thresholds: {
         lines: 80,
         functions: 80,
