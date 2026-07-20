@@ -119,3 +119,27 @@ Enumerados en el plan aprobado y confirmados en el código antes de la fase 1:
   `history`, y `today`/`settings` extendidas). Paridad verde (test + tipo `Dictionary`).
 - **Estado:** typecheck limpio · lint limpio · 148 unit/integration verde · build OK
   (`/historial` prerender estático). e2e y regla 9 → fase 3.
+
+## Fase 3 — Integración + e2e · COMPLETA
+
+- **`tests/e2e/registro.spec.ts` (nuevo, 4 tests):**
+  1. **Flujo completo + CERO red:** marcar desayuno → "Hecho · hora" → nota (chip + texto) →
+     recargar (persiste) → cambiar idioma (nada se pierde; el texto de la nota NO se traduce) →
+     historial muestra el día con su nota. **Contador de red: 0 llamadas a `/api/*` y 0 a
+     orígenes externos** en todo el flujo (garantía arquitectónica del registro local).
+  2. **Recordatorio determinista** con hora inyectada (07:30 durante desayuno → "Es momento de
+     Desayuno" + "Sigue: Media mañana"; 09:00 → "Un respiro entre comidas"; al marcar el
+     suplemento → "ya está", sin reproche).
+  3. **Migración v1→v2** desde el estado real de un usuario S1/S2 (clave `daylog.v1` sembrada):
+     2 marcas migradas siguen (2 de 10), la v1 se elimina, la v2 queda; se sigue marcando encima.
+  4. **Negativo del grounding (e2e):** con una nota centinela plantada en el registro, el POST a
+     `/api/chat` lleva EXACTAMENTE `{messages, diet, locale}` y el centinela (nota + hora) no
+     aparece en NINGUNA parte del payload.
+- **Negativo del grounding (unit):** `grounding.test.ts` — `buildGroundedSystem` nunca contiene la
+  nota/hora centinela del registro (minimización estructural, ADR-007). Doble red de seguridad.
+- **Regla 9 (kit v1.7.3):** las suites ENTERAS de `happy-path`, `chat` y `a11y` corren en esta
+  fase. Adaptados solo los asserts donde el comportamiento cambió legítimamente (el suplemento
+  ahora aparece también en el recordatorio → los asserts de "Hoy" apuntan al checkbox del
+  checklist, nombre accesible único). `/historial` añadido al gate axe.
+- **Estado:** **54/54 e2e verde en móvil (Pixel 7) + desktop** · 149 unit/integration verde ·
+  typecheck y lint limpios.

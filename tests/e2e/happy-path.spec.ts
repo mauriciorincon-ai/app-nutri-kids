@@ -64,8 +64,12 @@ test("la app entera funciona con la demo: semáforo → detalle → Hoy → chec
   await expect(page.getByText("pera")).toBeVisible(); // equivalencia
 
   // Hoy: marcar el suplemento del lunes y un vaso de agua
+  // (el suplemento aparece también en el recordatorio "Ahora mismo" desde el S3,
+  // por eso apuntamos al CHECKBOX del checklist, cuyo nombre accesible es único).
   await page.getByRole("link", { name: "Hoy" }).click();
-  await expect(page.getByText("Multivitamínico demo")).toBeVisible();
+  await expect(
+    page.getByRole("checkbox", { name: /Multivitamínico demo/ }),
+  ).toBeVisible();
   await page.getByRole("checkbox", { name: /Multivitamínico demo/ }).click();
   await expect(page.getByText("Ya hiciste 1 de 10")).toBeVisible();
   await page.getByRole("checkbox", { name: /Vaso 1/ }).click();
@@ -78,7 +82,9 @@ test("la app entera funciona con la demo: semáforo → detalle → Hoy → chec
   await expect(
     page.getByText("Así se ve el día de hoy", { exact: false }),
   ).toBeVisible();
-  await expect(page.getByText("Omega demo")).toBeVisible();
+  await expect(
+    page.getByRole("checkbox", { name: /Omega demo/ }),
+  ).toBeVisible();
 });
 
 test("los suplementos de la semana muestran el día de hoy y comparten el day-log", async ({

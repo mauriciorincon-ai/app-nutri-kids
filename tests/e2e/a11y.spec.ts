@@ -28,6 +28,7 @@ const ROUTES = [
   "/suplementos",
   "/cargar",
   "/ajustes",
+  "/historial",
 ];
 
 for (const route of ROUTES) {
