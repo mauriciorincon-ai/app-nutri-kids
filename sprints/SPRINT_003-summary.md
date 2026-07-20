@@ -38,17 +38,19 @@ Con el gate ⭐ del usuario, el **MVP personal de un dispositivo queda COMPLETO*
 
 ## DoD — checklist (6+1)
 
-- [x] **Testing:** 168 unit/integration + 56 e2e (móvil Pixel 7 + desktop) verde. Registro
-      (guardar/hora/nota/migración desde estado real S1/S2), recordatorio ×7 días con reloj falso,
-      paridad ES/EN, **cero requests de red** en el flujo (contador en e2e), **regla 9** (suites enteras
-      de Hoy/chat/a11y). Cobertura `lib/diet` 96% / app 97%.
+- [x] **Testing:** 198 unit/integration + 60 e2e (móvil Pixel 7 + desktop) verde. Registro
+      (guardar/hora/nota/migración desde estado real S1/S2), recordatorio ×7 días con reloj falso +
+      bordes de franja y menú vacío, coerción fail-safe ante store hostil, cruce de medianoche,
+      paridad ES/EN, **cero requests de red** en el flujo (contador `context.route`), **regla 9**
+      (suites enteras de Hoy/chat/a11y). Cobertura `lib/diet` 97% (day-events 100%) / app 97%.
 - [x] **CI/CD:** pipeline verde esperado (quality/e2e/lighthouse); sin jobs nuevos (ruleset intacta).
       `/historial` añadida a `lighthouse-urls.json`.
 - [x] **Observabilidad:** eventos `registro_marcado`/`nota_agregada`/`recordatorio_visto` SOLO
       metadatos (jamás el texto de la nota — test con centinela). Sentry sin contenido del registro.
 - [x] **Seguridad:** cero red en el registro (garantía arquitectónica por e2e); gitleaks vivo
       (carnada PARTIDA probada); `pnpm audit --audit-level high` limpio (1 moderate postcss, deuda
-      declarada). Test negativo del grounding (doble: unit + e2e).
+      declarada; el high `brace-expansion` GHSA-3jxr-9vmj-r5cp se parcheó por override). Test
+      negativo del grounding (doble: unit + e2e).
 - [x] **Performance:** "Hoy" sigue estática de nacimiento; el recordatorio nace esqueleto
       pre-hidratación (patrón `lcp-nace-estatico`); budget LCP 4200 sin cambios.
 - [x] **UX/A11y:** axe AA en 8 rutas incl. `/historial`; chips por teclado; `aria-live` en el
@@ -63,7 +65,7 @@ Con el gate ⭐ del usuario, el **MVP personal de un dispositivo queda COMPLETO*
 
 ## Métricas técnicas
 
-- 168 unit/integration + 56 e2e (2 proyectos) · typecheck + lint limpios · build OK.
+- 198 unit/integration + 60 e2e (2 proyectos) · typecheck + lint limpios · build OK.
 - Cobertura `lib/diet` 96.2% stmts / 84.6% branch (>80 exigido); app 97%.
 - **US$0/mes** (cero servicios nuevos). Cero dependencias añadidas. 31 archivos, +2891/−158.
 
@@ -105,11 +107,28 @@ era `day-log.ts`); ambas anotadas como desviación menor sin impacto de alcance.
 
 ## Deuda técnica aceptada
 
+- **Nota sin guardar se pierde al cruzar la medianoche con la pestaña abierta:** el `NoteEditor` se
+  remonta por `key` de día al rotar, descartando texto tecleado y NO guardado. Es diseño consciente
+  (no arrastra la nota de ayer al día nuevo); el descarte de un borrador en curso solo ocurre en la
+  ventana <60 s tras medianoche con el editor abierto. Auto-guardar al desmontar persistiría un
+  borrador que la mamá no confirmó — peor. Se documenta; se revisita si el uso real lo pide.
 - **day-log v2 ante rollback de despliegue** (obs. A/B del remate): coexistencia v1+v2 o v2 corrupto
   con v1 presente solo se dan tras un rollback de ops S3→S2→S3 o manipulación externa del storage —
-  no en avance normal. Deuda defensiva; se paga si la app deja de ser mono-dispositivo (fase 2).
+  no en avance normal (ya endurecido contra crash en la Fase 2: nunca lanza, degrada a fail-safe).
+  Deuda defensiva; se paga si la app deja de ser mono-dispositivo (fase 2).
 - **Heredadas a su momento:** rate-limit in-memory (volumen real) · postcss moderate (upstream) ·
   dark mode (fase 2) · estado compartido multi-cuidador + push (fase 2, con su F0).
+
+## Auditoría final + correcciones (Fase 2, pre-cierre)
+
+4 revisores adversariales → 0 Críticos · 6 Altos · 10 Medios · 12 Bajos, **todos corregidos y
+verificados** (detalle en `sprints/SPRINT_003-implementation-log.md` § Fase 2). Lo estructural:
+`Reminder.supplements` como unión discriminada (BUG-S3-1 imposible por construcción) · motor
+endurecido contra `localStorage` hostil (jamás llega a `Intl` → sin crash de Hoy//historial) ·
+cruce de medianoche corregido (día real + rollover automático) · candado de "solo metadatos"
+(`day-events` 0%→100%) · resolución de rótulos centralizada (`resolveCheckTarget`, sin ids crudos).
+**Parche de seguridad:** `brace-expansion ≥1.1.16` vía override (advisory GHSA-3jxr-9vmj-r5cp
+posterior al audit del sprint; dev-only, cero deps nuevas) → `audit --high` limpio.
 
 ## Archivos clave (máx. 10)
 
@@ -126,7 +145,7 @@ era `day-log.ts`); ambas anotadas como desviación menor sin impacto de alcance.
 
 ## Cómo probar
 
-1. `pnpm install` → `pnpm test` (168 unit) → `pnpm test:e2e` (56 e2e, móvil + desktop).
+1. `pnpm install` → `pnpm test` (198 unit) → `pnpm test:e2e` (60 e2e, móvil + desktop).
 2. Local: `pnpm dev`, abrir `/` — marcar una comida (aparece la hora), "Agregar nota", ver "Ahora
    mismo", "Ver días anteriores"; cambiar idioma en Ajustes; "Borrar mis datos".
 3. Gate ⭐ ACUMULADO: abrir `docs/GUIA-DE-PRUEBA.html` (filtro **Gate mínimo ⭐**, 6 pruebas) —

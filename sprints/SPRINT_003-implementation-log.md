@@ -227,3 +227,67 @@ fase encontrar → fase verificar-refutando. Igual que en habla S3, el remate ju
   Medido con la API `layout-shift` (Pixel 7): CLS de `/` **0.0000**. 168 unit + 56 e2e siguen verde.
   Confirma el patrón `lcp-nace-estatico`/CLS: lo que aparece al hidratar reserva su espacio o
   la CI lo caza (el gate de perf hizo su trabajo).
+
+## Fase 2 — correcciones de la auditoría final (revisión pre-cierre)
+
+Auditoría de solo lectura con 4 revisores adversariales (correctitud · seguridad/privacidad ·
+tests · diseño/deps) sobre `git diff main...HEAD`. Veredicto Fase 1: 0 Críticos, 6 Altos, 10 Medios,
+12 Bajos; privacidad ESTRUCTURAL (el registro no puede llegar al grounding — grafo de imports +
+doble test negativo). El usuario aprobó **corregir todo**. Resumen de lo aplicado (todo verificado:
+198 unit + 60 e2e verde, typecheck/lint/build limpios):
+
+**Altos**
+
+- **A1 — comida contigua/solapada:** `currentMealSlot` calculaba "sigue" con `>` sobre el `end`;
+  una comida con `start === end` previa se saltaba (invisible con la demo —tiene huecos— pero real
+  con la dieta importada). Ahora la siguiente es `meals[indexOf(during)+1]`. + unit contiguo (07:00–
+  08:00 · 08:00–09:00) que antes fallaba.
+- **A2 — `day-events.ts` sin candado:** el módulo que sostiene "solo metadatos" (ADR-007) estaba al
+  0% de cobertura y el gate global de 80% no lo delataba. Nuevo `tests/unit/day-events.test.ts`
+  (centinela de texto/chips/id) → 100%. Si alguien añade el texto al payload, FALLA.
+- **A3 — cruce de medianoche con la pestaña abierta:** `useToday` solo escuchaba `visibilitychange`
+  → el día no rotaba solo y una marca a las 00:00:30 caía en el día anterior. `subscribeToDayChange`
+  ahora tiene su propio `setInterval(60s)`; `toggle`/`saveNote` escriben al día REAL si se cruzó la
+  medianoche. + e2e que avanza el reloj con `clock.fastForward` y verifica el amanecer sin reload.
+- **A4 — hora real sin assert de valor:** el e2e afirmaba "Hecho ·" sin el valor. Ahora `/Hecho ·
+7:30/` + unit con `vi.setSystemTime` para el camino por defecto de `toggleDone`.
+- **A5 — localStorage hostil tumbaba el render:** un `at`/clave de día basura llegaba a `Intl` →
+  RangeError (crash de Hoy//historial); `QuotaExceededError` en la migración reventaba el render en
+  bucle. `coerceRecord`/`coerceStore` validan con regex y truncan al leer; `writeStore` devuelve
+  bool y solo borra la v1 si la v2 quedó escrita; `storage()` y `format.ts` con guardas. + `it.each`
+  de formas corruptas, quota, y precedencia v1+v2.
+- **A6 — /historial mostraba ids crudos:** reimplementaba la resolución de rótulos y pintaba
+  `meal:algo` si el id era de otra dieta. Nuevo motor: `parseCheckId`/`checkIdFor`/`resolveCheckTarget`
+  (parte por el PRIMER `:`) + clave i18n `history.unknownItem`.
+
+**Medios (10):** `Reminder.supplements` pasó a UNIÓN DISCRIMINADA (`none-today`/`pending`/`all-done`)
+resuelta en el motor y consumida por un `switch` exhaustivo — el orden de ternarios ya no puede
+mentir (raíz de BUG-S3-1) · `useNow`+`buildReminder` movidos DENTRO de `ReminderCard` (el tick por
+minuto ya no re-renderiza todo "Hoy") · `listDayEntries` (orden del día, sin el centinela "99:99")
+y `listRecordedEntries` (una sola lectura del store, O(días) en historial) en el motor · `NOTE_TEXT_MAX`
+exportado (fin del duplicado motor/UI) · `NoteSummary`+`CHIP_I18N_KEY` compartidos (fin del mapa/join
+gemelos) · foco gestionado en `NoteEditor` (Escape/Cancelar + retorno de foco) · `Dictionary`
+re-exportado de `@/i18n` · contador de red por `context.route("**")` + `serviceWorkers:"block"` ·
+axe sobre `/historial` CON contenido sembrado · bordes de franja (07:00/19:00/00:00/23:59) y
+`dailyMenu` vacío en unit.
+
+**Bajos:** `TodayBadge` (fin de la pastilla duplicada historial↔suplementos) · `aria-live` acotado
+a la franja (fin del doble anuncio) · non-null asserts fuera de `logic.ts` · `<time dateTime>` ·
+frase de agua assertada también en EN · guard del init-script de migración · sync PWA+pestaña por
+listener `storage` en `local-store.ts` · `schema.ts` endurece `timeSchema` (rango válido) + exige
+`end ≥ start` por comida. Registro en `design-system.md`: eyebrow-heading + altura de reserva CLS.
+
+## Desviación del plan — parche de seguridad (dep transitiva)
+
+Al verificar el gate de seguridad surgió un advisory **nuevo** (posterior al audit verde del sprint):
+`brace-expansion <1.1.16` — ReDoS **GHSA-3jxr-9vmj-r5cp** (severidad **high**). Entra SOLO
+transitivamente por la cadena de `eslint` (devDependency; `minimatch@3 → brace-expansion@1.1.x`),
+no se envía al usuario, y estaba igual en `main` (cero deps nuevas en el sprint). Como el CI
+gatea con `pnpm audit --audit-level high` (ci.yml:23), habría puesto rojo el próximo run. **Fix:**
+`overrides` en `pnpm-workspace.yaml` fijando `brace-expansion@<1.1.16 → ^1.1.16` (se mantiene en la
+línea 1.x, compatible con `minimatch@3`; se evitó `>=1.1.16` porque pnpm resolvía a 5.0.7, un salto
+mayor). No es dependencia nueva: es un pin de seguridad de una transitiva ya presente. `audit --high`
+queda limpio (solo persiste el postcss moderate, deuda ya declarada); lint/tests siguen verde.
+
+**Estado final (pre-CI):** 198 unit/integration + 60 e2e (móvil + desktop) verde · typecheck · lint ·
+build · `audit --high` limpio · cobertura lib/diet 97% (day-events 100%).
