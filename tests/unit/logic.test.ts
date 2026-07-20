@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildDayChecklist,
+  buildReminder,
+  clockLabel,
+  currentMealSlot,
   dateKey,
   isRestrictionActive,
   resolveItemStatus,
@@ -168,5 +171,123 @@ describe("buildDayChecklist", () => {
   it("ignores stale done ids that no longer exist in the diet", () => {
     const list = buildDayChecklist(diet, monday, ["meal:fantasma"]);
     expect(list.doneCount).toBe(0);
+  });
+});
+
+// Demo menu slots: desayuno 07:00–08:00 · media-manana 10:00–10:30 ·
+// almuerzo 12:30–13:30 · merienda 16:00–16:30 · cena 18:30–19:00.
+describe("clockLabel", () => {
+  it("formats device local time as HH:MM (zero-padded)", () => {
+    expect(clockLabel(new Date("2026-07-06T07:05:00"))).toBe("07:05");
+    expect(clockLabel(new Date("2026-07-06T18:30:00"))).toBe("18:30");
+    expect(clockLabel(new Date("2026-07-06T00:00:00"))).toBe("00:00");
+  });
+});
+
+describe("currentMealSlot — franja vigente / siguiente (reloj inyectado)", () => {
+  const at = (hhmm: string) => new Date(`2026-07-06T${hhmm}:00`);
+
+  it("before the first meal: points to breakfast as next", () => {
+    const slot = currentMealSlot(diet, at("06:00"));
+    expect(slot).toMatchObject({ kind: "before-first" });
+    if (slot?.kind === "before-first") expect(slot.next.id).toBe("desayuno");
+  });
+
+  it("during a slot: current meal + the one that follows (inclusive end)", () => {
+    const inside = currentMealSlot(diet, at("07:30"));
+    expect(inside).toMatchObject({ kind: "during" });
+    if (inside?.kind === "during") {
+      expect(inside.meal.id).toBe("desayuno");
+      expect(inside.next?.id).toBe("media-manana");
+    }
+    const atEnd = currentMealSlot(diet, at("08:00"));
+    expect(atEnd).toMatchObject({ kind: "during" });
+    if (atEnd?.kind === "during") expect(atEnd.meal.id).toBe("desayuno");
+  });
+
+  it("in a gap between slots: previous done + next coming", () => {
+    const slot = currentMealSlot(diet, at("09:00"));
+    expect(slot).toMatchObject({ kind: "between" });
+    if (slot?.kind === "between") {
+      expect(slot.prev.id).toBe("desayuno");
+      expect(slot.next.id).toBe("media-manana");
+    }
+  });
+
+  it("during the last slot: next is null", () => {
+    const slot = currentMealSlot(diet, at("18:45"));
+    expect(slot).toMatchObject({ kind: "during" });
+    if (slot?.kind === "during") {
+      expect(slot.meal.id).toBe("cena");
+      expect(slot.next).toBeNull();
+    }
+  });
+
+  it("after the last meal: only the previous one", () => {
+    const slot = currentMealSlot(diet, at("20:00"));
+    expect(slot).toMatchObject({ kind: "after-last" });
+    if (slot?.kind === "after-last") expect(slot.prev.id).toBe("cena");
+  });
+});
+
+describe("buildReminder — qué toca ahora (7 días con reloj falso)", () => {
+  // Suplementos demo: multivitamínico lun/mié/vie · omega mar/sáb.
+  const cases: { date: string; weekday: string; supplement: string | null }[] =
+    [
+      {
+        date: "2026-07-06",
+        weekday: "lunes",
+        supplement: "multivitaminico-demo",
+      },
+      { date: "2026-07-07", weekday: "martes", supplement: "omega-demo" },
+      {
+        date: "2026-07-08",
+        weekday: "miércoles",
+        supplement: "multivitaminico-demo",
+      },
+      { date: "2026-07-09", weekday: "jueves", supplement: null },
+      {
+        date: "2026-07-10",
+        weekday: "viernes",
+        supplement: "multivitaminico-demo",
+      },
+      { date: "2026-07-11", weekday: "sábado", supplement: "omega-demo" },
+      { date: "2026-07-12", weekday: "domingo", supplement: null },
+    ];
+
+  for (const c of cases) {
+    it(`${c.weekday}: pending supplement = ${c.supplement ?? "none"}`, () => {
+      const reminder = buildReminder(diet, new Date(`${c.date}T07:30:00`), []);
+      const ids = reminder.supplementsPending.map((s) => s.id);
+      if (c.supplement) expect(ids).toEqual([c.supplement]);
+      else expect(ids).toEqual([]);
+    });
+  }
+
+  it("drops a supplement from pending once it is marked done", () => {
+    const monday7am = new Date("2026-07-06T07:30:00");
+    const before = buildReminder(diet, monday7am, []);
+    expect(before.supplementsPending.map((s) => s.id)).toEqual([
+      "multivitaminico-demo",
+    ]);
+    const after = buildReminder(diet, monday7am, [
+      "supplement:multivitaminico-demo",
+    ]);
+    expect(after.supplementsPending).toEqual([]);
+  });
+
+  it("counts water done against the target without moralizing", () => {
+    const reminder = buildReminder(diet, new Date("2026-07-06T07:30:00"), [
+      "water:1",
+      "water:3",
+    ]);
+    expect(reminder.water).toEqual({ target: 4, done: 2 });
+  });
+
+  it("carries the current meal slot for the injected time", () => {
+    const reminder = buildReminder(diet, new Date("2026-07-06T12:45:00"), []);
+    expect(reminder.slot).toMatchObject({ kind: "during" });
+    if (reminder.slot?.kind === "during")
+      expect(reminder.slot.meal.id).toBe("almuerzo");
   });
 });

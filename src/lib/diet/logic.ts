@@ -27,6 +27,13 @@ export function dateKey(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+/** Hora local "HH:MM" del dispositivo (la hora real a la que se marca una comida). */
+export function clockLabel(date: Date): string {
+  const h = String(date.getHours()).padStart(2, "0");
+  const m = String(date.getMinutes()).padStart(2, "0");
+  return `${h}:${m}`;
+}
+
 // ---------------------------------------------------------------------------
 // Restricciones con vigencia
 // ---------------------------------------------------------------------------
@@ -275,5 +282,92 @@ export function buildDayChecklist(
     items: withDone,
     doneCount: withDone.filter((i) => i.done).length,
     totalCount: withDone.length,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Recordatorio determinista — "qué toca AHORA y qué sigue"
+// ---------------------------------------------------------------------------
+
+/** Minutos desde medianoche de una hora "HH:MM". */
+function minutesOf(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
+}
+
+/** Minutos desde medianoche de un instante local (la hora real del dispositivo). */
+function minutesNow(at: Date): number {
+  return at.getHours() * 60 + at.getMinutes();
+}
+
+/**
+ * La franja de comida respecto a un instante. 100% determinista desde los
+ * horarios `start`/`end` del menú (sin `Date.now()`): la hora entra por parámetro.
+ * Cubre los cuatro casos, incluidos los HUECOS entre franjas.
+ */
+export type MealSlot =
+  | { kind: "before-first"; next: Meal }
+  | { kind: "during"; meal: Meal; next: Meal | null }
+  | { kind: "between"; prev: Meal; next: Meal }
+  | { kind: "after-last"; prev: Meal };
+
+export function currentMealSlot(diet: DietPlan, at: Date): MealSlot | null {
+  const meals = [...diet.dailyMenu].sort(
+    (a, b) => minutesOf(a.start) - minutesOf(b.start),
+  );
+  if (meals.length === 0) return null;
+  const now = minutesNow(at);
+
+  const during = meals.find(
+    (m) => now >= minutesOf(m.start) && now <= minutesOf(m.end),
+  );
+  if (during) {
+    const next = meals.find((m) => minutesOf(m.start) > minutesOf(during.end));
+    return { kind: "during", meal: during, next: next ?? null };
+  }
+
+  const first = meals[0];
+  if (now < minutesOf(first.start))
+    return { kind: "before-first", next: first };
+
+  const last = meals[meals.length - 1];
+  if (now > minutesOf(last.end)) return { kind: "after-last", prev: last };
+
+  // Hueco entre dos franjas: prev = última terminada, next = próxima por empezar.
+  const prev = [...meals].reverse().find((m) => minutesOf(m.end) < now)!;
+  const next = meals.find((m) => minutesOf(m.start) > now)!;
+  return { kind: "between", prev, next };
+}
+
+export type Reminder = {
+  slot: MealSlot | null;
+  /** Suplementos que tocan HOY y aún no se han marcado. */
+  supplementsPending: Supplement[];
+  water: { target: number; done: number };
+};
+
+/**
+ * El recordatorio del momento: franja vigente/siguiente + suplementos del día
+ * pendientes + hidratación. Puro y con hora inyectada. La UI redacta el copy
+ * (sin culpa); el motor solo resuelve QUÉ mostrar.
+ */
+export function buildReminder(
+  diet: DietPlan,
+  at: Date,
+  doneIds: string[],
+): Reminder {
+  const done = new Set(doneIds);
+  const supplementsPending = supplementsForDate(diet, at).filter(
+    (s) => !done.has(`supplement:${s.id}`),
+  );
+  const target = waterGlassesTarget(diet);
+  const waterDone = Array.from(
+    { length: target },
+    (_, i) => `water:${i + 1}`,
+  ).filter((id) => done.has(id)).length;
+  return {
+    slot: currentMealSlot(diet, at),
+    supplementsPending,
+    water: { target, done: waterDone },
   };
 }

@@ -70,3 +70,25 @@ Enumerados en el plan aprobado y confirmados en el código antes de la fase 1:
   Declarado: la validación real con Groq queda para el gate ⭐ acumulado (como anticipa la orden);
   el chat degrada a local honesto mientras tanto. Checklist de aprovisionamiento se re-emite en el
   PR con su humo (`curl …/models → 200`).
+
+## Fase 1 — Motor (unit primero, todo puro con fecha inyectada) · COMPLETA
+
+- **`src/lib/diet/day-log.ts` → schema v2** (`nutrikids.daylog.v2`): cada marca guarda
+  `{ at: "HH:MM" | null }` (hora real, o null = desconocida); cada comida puede llevar
+  `DayNote { chips, text }` (chips de vocabulario cerrado `rejected|pain|craving|other`, texto
+  acotado a 140). API nueva: `getDayRecord`, `getMarkTime`, `getNote`, `markDone`, `unmark`,
+  `setNote`, `listRecordedDays`. **API v1 preservada** (`getDoneIds`, `toggleDone`, `clearDayLog`,
+  `DAY_LOG_KEY`) → `/suplementos` y "Hoy" siguen sin tocarse (riesgo f mitigado).
+- **Migración v1→v2** al primer read: las marcas del S1/S2 entran con `at: null` (honesto), se
+  escribe la v2 y se elimina la v1 (una sola fuente de verdad). Test desde el estado REAL de un
+  usuario (`daylog.v1` sembrado). v1 corrupto ⇒ v2 fresco (fail-safe).
+- **`src/lib/diet/logic.ts` — recordatorio determinista:** `clockLabel(date)` ("HH:MM" local);
+  `currentMealSlot(diet, at)` → franja vigente/siguiente desde `start`/`end` del menú, cubre los 4
+  casos incluidos los HUECOS entre franjas; `buildReminder(diet, at, doneIds)` → franja +
+  suplementos del día pendientes + hidratación (target/done). Cero `Date.now()` — hora inyectada.
+- **Tests:** +85 sobre el motor (logic + storage): migración, hora, notas (chips inválidos y cap
+  de texto), historial descendente, franja ×5 tiempos, recordatorio ×7 días con reloj falso.
+  **Suite unit: 146/146 verde; typecheck limpio.** Piso >80% de `lib/diet/` intacto.
+- **Privacidad estructural:** `grounding.ts` sigue siendo puro sobre `(diet, locale, date)` — no
+  importa `day-log`; el registro no tiene ruta al grounding por construcción (el test negativo de
+  la fase 3 lo afirma).
