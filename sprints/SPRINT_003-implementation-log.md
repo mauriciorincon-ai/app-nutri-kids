@@ -186,3 +186,32 @@ Enumerados en el plan aprobado y confirmados en el código antes de la fase 1:
   ReminderCard/NoteEditor del S3). Cierra el gate visual diferido del S2 en su vía de publicación.
 - **Verificación visual del builder:** capturas de "Hoy", `/historial`, guía y blueprint — todas
   coherentes con `design-system.md`. Aprobación visual del USUARIO = gate ⭐ (pendiente).
+
+## Remate de auditoría de dos fases (v1.9.1) · COMPLETO — cazó 1 defecto latente
+
+Recomendado al diferir el gate ⭐. Dos auditores adversariales en paralelo (privacidad · correctness),
+fase encontrar → fase verificar-refutando. Igual que en habla S3, el remate justificó su costo:
+
+- **BUG-S3-1 (confirmado, media severidad — ARREGLADO):** el recordatorio decía **"Suplemento de
+  hoy: ya está"** en días SIN suplemento programado (jueves/domingo en la demo) — le afirmaba a la
+  mamá un suplemento cumplido que ese día no existía (viola "sin culpa / honesto"). La cadena i18n
+  correcta `reminder.noSupplement` existía pero **nunca se cableó**; el tipo `Reminder` no llevaba
+  el conteo de suplementos PROGRAMADOS, así que la UI no distinguía "no toca ninguno" de "todos
+  hechos". **Fix:** `buildReminder` expone `supplementsToday` (conteo programado); `reminder-card`
+  usa tres estados (no toca / pendiente / hecho). **Regresión cubierta:** unit (jueves/domingo →
+  `supplementsToday: 0`; la distinción de los 3 estados) + e2e (jueves → "Hoy no toca suplemento",
+  jamás "ya está"). El caso solo se probaba en lunes antes; ~2 de cada 7 días afectados.
+- **Obs. C (bajo/improbable — endurecido):** `NoteEditor` derivaba su estado de props sin re-sync;
+  solo se desincroniza en el cruce de medianoche con la pestaña abierta. **Fix barato:** `key` por
+  día en el `NoteEditor` → se remonta con la nota del día nuevo.
+- **Obs. A y B (aceptadas, no alcanzables en uso forward-only):** coexistencia v1+v2 tras un
+  **rollback de despliegue** S3→S2→S3 (marcas del rollback quedan huérfanas en v1) · v2 corrupto
+  con v1 presente. Ninguna ocurre en avance normal (la migración escribe v2 y borra v1 atómicamente
+  en la misma llamada síncrona); requieren manipulación externa del storage o un rollback de ops.
+  Deuda defensiva declarada, no de fase 1 (app personal de un dispositivo).
+- **Verificado como correcto por el remate:** migración v1→v2 sin pérdida (formato real confirmado
+  en git), `getDoneIds` compat S1, `currentMealSlot` en TODOS los bordes horarios, `useNow`/
+  `useToday` sin loops, y el invariante de privacidad de ADR-007 (cero caminos de fuga del registro
+  a red/logs/grounding — auditados uno a uno).
+
+**Estado final:** 168 unit/integration + 56 e2e verde · typecheck + lint limpios.

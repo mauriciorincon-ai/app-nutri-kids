@@ -93,11 +93,13 @@ function ReminderBody({
   }
 
   const supplementLine =
-    reminder.supplementsPending.length > 0
-      ? fmt(t.reminder.supplementDue, {
-          names: reminder.supplementsPending.map((s) => l(s.name)).join(", "),
-        })
-      : t.reminder.supplementsDone;
+    reminder.supplementsToday === 0
+      ? t.reminder.noSupplement
+      : reminder.supplementsPending.length > 0
+        ? fmt(t.reminder.supplementDue, {
+            names: reminder.supplementsPending.map((s) => l(s.name)).join(", "),
+          })
+        : t.reminder.supplementsDone;
 
   return (
     <div className="mt-1.5 flex flex-col gap-1">

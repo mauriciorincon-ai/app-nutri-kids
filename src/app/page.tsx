@@ -17,6 +17,7 @@ import { fmt, useI18n } from "@/i18n";
 import {
   buildDayChecklist,
   buildReminder,
+  dateKey,
   waterGlassesTarget,
   type ChecklistItem,
 } from "@/lib/diet/logic";
@@ -106,9 +107,12 @@ export default function TodayPage() {
             item: l(item.meal.name),
           })}
         />
-        {/* Nota solo cuando conocemos el día real (hay registro editable). */}
-        {checklist && (
+        {/* Nota solo cuando conocemos el día real (hay registro editable).
+            key por día: al cruzar medianoche con la pestaña abierta, el editor
+            se remonta con la nota del día nuevo (no arrastra la de ayer). */}
+        {checklist && today && (
           <NoteEditor
+            key={dateKey(today)}
             mealName={l(item.meal.name)}
             note={record.notes[item.checkId] ?? null}
             onSave={(note) => saveNote(item.checkId, note)}

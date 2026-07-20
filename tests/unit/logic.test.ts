@@ -259,10 +259,29 @@ describe("buildReminder — qué toca ahora (7 días con reloj falso)", () => {
     it(`${c.weekday}: pending supplement = ${c.supplement ?? "none"}`, () => {
       const reminder = buildReminder(diet, new Date(`${c.date}T07:30:00`), []);
       const ids = reminder.supplementsPending.map((s) => s.id);
-      if (c.supplement) expect(ids).toEqual([c.supplement]);
-      else expect(ids).toEqual([]);
+      if (c.supplement) {
+        expect(ids).toEqual([c.supplement]);
+        expect(reminder.supplementsToday).toBe(1);
+      } else {
+        expect(ids).toEqual([]);
+        expect(reminder.supplementsToday).toBe(0); // hoy NO toca ninguno
+      }
     });
   }
+
+  it("distingue 'hoy no toca ninguno' de 'ya los tomó todos' (bug del recordatorio)", () => {
+    // Jueves: ningún suplemento programado → 0 hoy, 0 pendientes (NO es 'ya está').
+    const thursday = buildReminder(diet, new Date("2026-07-09T07:30:00"), []);
+    expect(thursday.supplementsToday).toBe(0);
+    expect(thursday.supplementsPending).toEqual([]);
+
+    // Lunes con el suplemento marcado → SÍ tocaba (1) pero ya no queda pendiente.
+    const mondayDone = buildReminder(diet, new Date("2026-07-06T07:30:00"), [
+      "supplement:multivitaminico-demo",
+    ]);
+    expect(mondayDone.supplementsToday).toBe(1);
+    expect(mondayDone.supplementsPending).toEqual([]);
+  });
 
   it("drops a supplement from pending once it is marked done", () => {
     const monday7am = new Date("2026-07-06T07:30:00");

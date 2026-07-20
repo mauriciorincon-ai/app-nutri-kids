@@ -341,6 +341,8 @@ export function currentMealSlot(diet: DietPlan, at: Date): MealSlot | null {
 
 export type Reminder = {
   slot: MealSlot | null;
+  /** Cuántos suplementos toca HOY (0 = hoy no toca ninguno — distinto de "todos hechos"). */
+  supplementsToday: number;
   /** Suplementos que tocan HOY y aún no se han marcado. */
   supplementsPending: Supplement[];
   water: { target: number; done: number };
@@ -349,7 +351,9 @@ export type Reminder = {
 /**
  * El recordatorio del momento: franja vigente/siguiente + suplementos del día
  * pendientes + hidratación. Puro y con hora inyectada. La UI redacta el copy
- * (sin culpa); el motor solo resuelve QUÉ mostrar.
+ * (sin culpa); el motor solo resuelve QUÉ mostrar. `supplementsToday` deja a la
+ * UI distinguir "hoy no toca ninguno" de "ya los tomó todos" (jamás afirmar un
+ * suplemento cumplido que nunca existió ese día).
  */
 export function buildReminder(
   diet: DietPlan,
@@ -357,7 +361,8 @@ export function buildReminder(
   doneIds: string[],
 ): Reminder {
   const done = new Set(doneIds);
-  const supplementsPending = supplementsForDate(diet, at).filter(
+  const supplementsToday = supplementsForDate(diet, at);
+  const supplementsPending = supplementsToday.filter(
     (s) => !done.has(`supplement:${s.id}`),
   );
   const target = waterGlassesTarget(diet);
@@ -367,6 +372,7 @@ export function buildReminder(
   ).filter((id) => done.has(id)).length;
   return {
     slot: currentMealSlot(diet, at),
+    supplementsToday: supplementsToday.length,
     supplementsPending,
     water: { target, done: waterDone },
   };

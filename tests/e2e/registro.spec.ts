@@ -119,6 +119,17 @@ test("recordatorio determinista: qué toca AHORA según la hora inyectada", asyn
   await expect(reminder.getByText("Suplemento de hoy: ya está")).toBeVisible();
 });
 
+test("recordatorio: un día SIN suplemento dice 'no toca', jamás 'ya está'", async ({
+  page,
+}) => {
+  // Jueves 2026-07-09: ningún suplemento demo programado (lun/mié/vie y mar/sáb).
+  await openAt(page, "/", new Date("2026-07-09T07:30:00"));
+  const reminder = page.getByRole("region", { name: "Ahora mismo" });
+  await expect(reminder.getByText("Hoy no toca suplemento")).toBeVisible();
+  // NUNCA debe afirmar un suplemento cumplido que ese día no existía.
+  await expect(reminder.getByText("Suplemento de hoy: ya está")).toBeHidden();
+});
+
 test("migración v1→v2: el estado de un usuario S1/S2 no pierde marcas", async ({
   page,
 }) => {
