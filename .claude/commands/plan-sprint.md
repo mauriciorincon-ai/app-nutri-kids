@@ -16,13 +16,22 @@ indique (o la más reciente en `portafolio/<slug>/ordenes/` de la planeadora,
 3. Lee los estándares del pipeline (`estandares/estandares.md` de la planeadora) — los 6+1 gates.
 4. Analiza el estado actual del código de **este** repo.
 5. Propón un plan de ejecución por fases:
-   - **Fase 0 — Setup:** deps, config, scaffolding si falta.
+   - **Fase 0 — Setup:** deps, config, scaffolding si falta. **Humo de credenciales (kit v1.7.4):**
+     si el sprint usa un proveedor externo cuya key ya esté configurada, corre su comando de humo
+     (columna "Humo" de la orden) ANTES de la fase 1; si no está, decláralo — la validación real
+     queda para el gate.
    - **Fase 1 — Motor/núcleo:** lógica pura con tests (y `lib/ia/` si el sprint toca LLM — skill `ia-embebida`).
    - **Fase 2 — UI:** integración visual (paleta/microcopy del prototipo, construido desde cero).
    - **Fase 3 — Integración + e2e:** tests end-to-end + axe.
    - **Fase 4 — Calidad:** gates de los 6+1 estándares (`/deploy-check`).
 6. Para cada fase: archivos a crear/modificar, tests a escribir, criterio observable de "fase completa".
-7. **Detente y espera aprobación del usuario** antes de escribir código.
+   **Sección obligatoria del plan (kit v1.7.3): "Riesgos de integración con lo existente"** — lee
+   EL CÓDIGO de las features que la nueva toca (e2e que asumen el layout actual, claves de storage
+   nuevas, motores compartidos) y enumera lo que encuentres; el riesgo nº 1 suele no estar en la orden.
+7. **El plan aprobado NO arranca la construcción** (gate de arranque, kit v1.6.2). **Detente**;
+   emite el **bloque de arranque** — recomendación de **modelo y esfuerzo** para el sprint (por
+   fase si difiere) + recordatorio de que el usuario los fija con `/model` + espacio para sus
+   ajustes — y espera su palabra explícita **«construye»**. Prohibido crear o editar archivos antes.
 
 ## Output esperado
 

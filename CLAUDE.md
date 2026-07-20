@@ -5,10 +5,10 @@
 
 ## Las dos casas (regla dura)
 
-| Casa | Path | Escritor único | Qué vive ahí |
-|---|---|---|---|
+| Casa           | Path                            | Escritor único   | Qué vive ahí                                                                     |
+| -------------- | ------------------------------- | ---------------- | -------------------------------------------------------------------------------- |
 | **Planeadora** | `C:\Code\hr01-develop-ai-apps\` | su propia sesión | brief, VISION, sprints (plan+retro), órdenes de construcción, método, estándares |
-| **Esta app** | este repo | **tú** | código, tests, ADRs de implementación, bitácora y summary del sprint |
+| **Esta app**   | este repo                       | **tú**           | código, tests, ADRs de implementación, bitácora y summary del sprint             |
 
 - ✅ Puedes **leer** la planeadora (agregada como `additionalDirectories`, o por path absoluto).
 - ❌ **Nunca escribes** en la planeadora. Si el plan necesita cambio, lo anotas en tu
@@ -84,17 +84,24 @@ decisions/NNN-titulo.md   (ADRs de implementación)
 6. **Commits convencionales**; branch `sprint-NNN/<tema>`; **jamás push directo a `main`** (hook lo
    bloquea); PR con CI verde + preview probado.
 7. **Secrets solo en `.env.local` (gitignored) y Vercel env vars.** Doble protección gitleaks
-   (hook PreToolUse + `githooks/pre-commit`). En esta app el gate de privacidad es doble: secrets
-   Y datos personales (regla dura 1).
+   (hook PreToolUse + `githooks/pre-commit`). El hook nace ejecutable (100755) y `core.hooksPath`
+   se re-aplica en cada `pnpm install` (script `prepare` — K12); si un commit con secreto de
+   prueba NO es bloqueado, el gate está muerto — repáralo antes de seguir. **Carnada canónica
+   verificada (kit v1.6.3; desde v1.7.3 viaja PARTIDA aquí para no disparar el hook al comitear
+   este archivo): ármala concatenando `AWS_ACCESS_KEY_ID=` + `AKIAQ7RTZ4PX` + `KM2WNB3S` SOLO en
+   el archivo de prueba del hook** — no improvises el secreto de prueba: las reglas modernas de
+   gitleaks exigen alfabeto real (base32 tras `AKIA`) y entropía, y una carnada floja pasa en
+   silencio (lección 2026-07-15: dos falsos "todo bien" seguidos). En esta app el gate de
+   privacidad es doble: secrets Y datos personales (regla dura 1).
 8. **Presupuesto de esfuerzo:** ~12 pasos por pantalla; si lo excedes, detente y simplifica o consulta.
 9. **Manual de uso vivo (`docs/MANUAL-DE-USO.md`, obligatorio).** Escrito PARA LA MAMÁ en español
    llano: cómo cargar la dieta, leer el semáforo, usar el checklist de "Hoy", borrar datos. Toda
    feature que llegue a `main` queda documentada en el mismo sprint.
 10. **Diseño con gate (`design-system.md` + skill `diseno-ui`).** No hay prototipo previo: el
-   sprint 1 CREA el `design-system.md` (exploración en Claude Design). Tono visual: cálido,
-   familiar, calmado — NO clínico, NO gamificado infantil. Cada sprint con UI cierra con el
-   checklist de revisión de diseño + aprobación visual del usuario sobre la preview (ideal: la
-   mamá completa el flujo en su teléfono).
+    sprint 1 CREA el `design-system.md` (exploración en Claude Design). Tono visual: cálido,
+    familiar, calmado — NO clínico, NO gamificado infantil. Cada sprint con UI cierra con el
+    checklist de revisión de diseño + aprobación visual del usuario sobre la preview (ideal: la
+    mamá completa el flujo en su teléfono).
 
 ## Estándares (los 6+1, gates en CI)
 
@@ -107,7 +114,10 @@ planeadora (read-only). Ítem rojo ⇒ deuda técnica explícita en el summary o
 **Apertura** — el usuario trae la **orden de construcción**
 (`portafolio/nutri-kids/ordenes/SPRINT_NNN-orden.md` de la planeadora). Léela entera + sus
 referencias (SPRINT_NNN.md, VISION.md, brief, extracción de la dieta).
-**Plan mode primero, siempre.** Branch `sprint-NNN/<tema>`.
+**Plan mode primero, siempre.** **La aprobación del plan NO arranca la construcción** (gate de
+arranque, kit v1.6.2): tras aprobarse el plan, emite el bloque de arranque — tu recomendación de
+**modelo y esfuerzo** para el sprint (el usuario los fija con `/model`) + espacio para sus ajustes
+— y espera su **«construye»** explícito antes de tocar cualquier archivo. Branch `sprint-NNN/<tema>`.
 
 **Durante** — construye por fases (setup → motor → UI → integración → e2e). Mantén viva la
 bitácora `sprints/SPRINT_NNN-implementation-log.md`. ADRs en `decisions/` para decisiones no
@@ -118,6 +128,15 @@ fricción del kit v1.1.0 en la bitácora, SEPARADA del trabajo del producto (val
 **Cierre — summary OBLIGATORIO.** Con la DoD completa: `/deploy-check` → genera
 `sprints/SPRINT_NNN-summary.md` (plantilla abajo) → PR → merge con CI verde. **Sin summary el
 sprint NO está cerrado** (es lo que la planeadora lee para la retrospectiva).
+
+**Cierre de CICLO (método v1.8.0 — cuando este sprint es el ÚLTIMO de un ciclo H1/fase/MVP; la
+orden lo declara):** además de la DoD, el sprint entrega (1) **`docs/BLUEPRINT.html`** — as-built
+de TODA la infraestructura que soporta la app (plantilla `BLUEPRINT.plantilla.html` del kit: HTML
+autocontenido con diagrama SVG embebido — jamás mermaid ni CDNs — + tabla por pieza + costo real +
+punto único de falla), vivo y acumulativo entre ciclos; (2) el **design system publicado en Claude
+Design** (`/design-sync`); y (3) la **guía v1 ACUMULATIVA** con el **gate ⭐ ACUMULADO** del usuario
+(remate de auditoría de dos fases RECOMENDADO antes del merge, método v1.9.1). Todo ciclo tiene
+MÍNIMO 3 sprints (regla dura 2026-07-17).
 
 ### Plantilla del summary
 
@@ -131,16 +150,27 @@ closed: YYYY-MM-DD
 branch: sprint-NNN/<tema>
 pr: <link>
 ---
+
 # Sprint NNN Summary — Nutri-Kids
-## Outcome            [¿Se logró el outcome del SPRINT_NNN.md? Sí/No/Parcial + 1 frase]
-## Qué se construyó   [features/pantallas/componentes]
-## DoD — checklist    [los 6+1 estándares, uno a uno, con evidencia breve]
-## Métricas técnicas  [cumplidas vs. no, del SPRINT_NNN.md]
-## Decisiones no anticipadas  [ADR-NNN: resumen]
+
+## Outcome [¿Se logró el outcome del SPRINT_NNN.md? Sí/No/Parcial + 1 frase]
+
+## Qué se construyó [features/pantallas/componentes]
+
+## DoD — checklist [los 6+1 estándares, uno a uno, con evidencia breve]
+
+## Métricas técnicas [cumplidas vs. no, del SPRINT_NNN.md]
+
+## Decisiones no anticipadas [ADR-NNN: resumen]
+
 ## Bugs + resoluciones
-## Qué salió bien / qué generó fricción   [S1: fricciones del kit v1.1.0 aparte]
-## Sugerencias de mejora al método  [¿algo de metodo/metodo.md debería cambiar?]
-## Deuda técnica aceptada  [qué, por qué, sprint de pago]
+
+## Qué salió bien / qué generó fricción [S1: fricciones del kit v1.1.0 aparte]
+
+## Sugerencias de mejora al método [¿algo de metodo/metodo.md debería cambiar?]
+
+## Deuda técnica aceptada [qué, por qué, sprint de pago]
+
 ## Archivos clave (máx. 10) · ## Cómo probar
 ```
 

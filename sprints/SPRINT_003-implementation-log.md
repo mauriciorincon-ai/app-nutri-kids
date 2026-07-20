@@ -1,0 +1,72 @@
+# Sprint 003 — Bitácora de implementación · "El día completo" + cierre de ciclo fase 1
+
+> Branch `sprint-003/el-dia-completo` (nace de `main` `4c7856d`, merge del PR #2 del S2).
+> Registro vivo de progreso, decisiones, bugs y desviaciones. La planeadora es READ-ONLY —
+> las desviaciones se anotan aquí y se avisan al usuario.
+
+## Riesgos de integración con lo existente (kit v1.7.3 — leídos EN EL CÓDIGO)
+
+Enumerados en el plan aprobado y confirmados en el código antes de la fase 1:
+
+- **(a) e2e de "Hoy" del S1 asumen el layout/textos actuales.** `tests/e2e/happy-path.spec.ts`
+  asevera `"Ya hiciste 1 de 10"`, checkboxes por nombre accesible (`/Multivitamínico demo/`,
+  `/Vaso 1/`), `"Te falta:"` y el amanecer del martes. Añadir hora + chips de nota cambia
+  accessible names y DOM. → **Regla 9:** la suite ENTERA de `happy-path` corre en la fase que
+  toque "Hoy"; los asserts se adaptan solo donde el comportamiento cambió, jamás se borra
+  cobertura de regresión.
+- **(b) Claves nuevas de storage (precedente `chatIntroSeen`, S2).** Los e2e siembran
+  `nutrikids.prefs.v1` con merge; `tests/unit/storage.test.ts` fija la forma de `Prefs` y del
+  day-log. La clave nueva `nutrikids.daylog.v2` obliga a actualizar `clearAllData` (+ unit) y el
+  e2e de "Borrar datos" para que cubra el registro. NO se toca `Prefs` (no hace falta pref nueva).
+- **(c) El grounding del chat consume `logic.ts` — el registro NO debe filtrarse.** Hoy el payload
+  a `/api/chat` es exactamente `{messages, diet, locale}` y `grounding.ts` es puro sobre
+  `(diet, locale, date)`. → **Test negativo obligatorio (doble):** unit (nota centinela plantada
+  en el registro jamás aparece en la serialización del grounding) + e2e (el body del POST tiene
+  EXACTAMENTE `{messages, diet, locale}`, cero rastro del centinela).
+- **(d) `useToday` fija la fecha a mediodía** (`T12:00:00`) — correcto para lógica por-día, inútil
+  para "qué toca AHORA" (siempre diría la franja del almuerzo). → El recordatorio necesita un
+  `useNow()` propio (tick por minuto + `visibilitychange`, mockeable con el clock de Playwright),
+  acotado al componente del recordatorio para no re-renderizar todo "Hoy" cada minuto.
+- **(e) LCP de "Hoy" nace estático y debe seguir así.** El bloque "Ahora toca / Sigue" depende de
+  la hora real → nace como esqueleto estático pre-hidratación (mismo patrón de la tarjeta de
+  suplementos), sin envolver el candidato LCP actual (patrón `lcp-nace-estatico`).
+- **(f) `/suplementos` comparte el day-log.** El API v2 conserva `getDoneIds` (derivada de las
+  marcas) — `/suplementos` sigue funcionando sin tocarlo; su e2e corre entero (regla 9).
+
+## Desviación del plan (aviso a la planeadora)
+
+1. **La orden dice "franja vigente desde `logic.ts` — ya existe". NO existe.** `logic.ts` no tiene
+   resolutor de franja; lo que existe son los horarios `start`/`end` del menú en el schema. Este
+   sprint crea `currentMealSlot`/`buildReminder` — es la extensión prevista, solo que parte de
+   menos de lo que la orden asume. Sin impacto en alcance.
+2. **La orden nombra `src/lib/local-store.ts` como lo que se extiende.** Ese archivo es el puente
+   React↔localStorage (`useSyncExternalStore`). La persistencia real a extender es
+   `src/lib/diet/day-log.ts` (+ `storage.ts` para "borrar datos"). Misma arquitectura, nombre
+   distinto. Sin impacto en alcance.
+
+## Fase 0 — Setup (deltas kit ×8 + carnada + branch) · COMPLETA
+
+- Branch `sprint-003/el-dia-completo` creada desde `main` actualizado.
+- **8 deltas del kit v1.1.5→v1.7.5 aplicados:**
+  1. v1.6.2 gate de arranque → `.claude/commands/plan-sprint.md` (paso 7→7+8) + `CLAUDE.md`
+     § Workflow (Apertura).
+  2. v1.6.3/v1.7.3 carnada canónica PARTIDA → `CLAUDE.md` regla 7 (armada solo en archivo de
+     prueba).
+  3. v1.6.4 § e2e-BD-real → `testing-patterns.md` (documental: la app no tiene BD; ADR-007 lo
+     ratifica).
+  4. v1.7.1 bloque "Cierre de CICLO" → `CLAUDE.md` § Workflow (este sprint lo ejecuta).
+  5. v1.7.2 anti-flakiness 6–8 + "Lighthouse solo páginas públicas" → `testing-patterns.md`.
+  6. v1.7.3 regla 9 + § riesgos de integración → `testing-patterns.md` + `plan-sprint.md`.
+  7. v1.7.4 humo de credenciales + mock de primera clase → `plan-sprint.md` fase 0 +
+     `ia-embebida.md` §7/§8.
+  8. v1.7.5 variante efímera de primera clase + notas AI SDK v7 → `ia-embebida.md` §2/§1 (el chat
+     del S2 es el precedente, ADR-006). El skill local estaba atrás (solo §1–5 + checklist viejo);
+     se sincronizó con la versión canónica v1.7.5 del kit — trae también §6/§7 y strict/import-type
+     (v1.2.2) que nunca se habían aplicado a nutri-kids.
+- **Prueba del hook gitleaks (carnada ARMADA):** carnada concatenada solo en archivo de prueba
+  temporal (scratchpad) → `./githooks/pre-commit` la detectó (`leaks found: 1`, exit 1,
+  "commit bloqueado"). Limpieza total, cero rastro en el repo. Hook vivo ✅ (K12 pagada `5e7850b`).
+- **Humo de credenciales (v1.7.4):** `.env.local` NO existe → la GROQ_API_KEY no está configurada.
+  Declarado: la validación real con Groq queda para el gate ⭐ acumulado (como anticipa la orden);
+  el chat degrada a local honesto mientras tanto. Checklist de aprovisionamiento se re-emite en el
+  PR con su humo (`curl …/models → 200`).
