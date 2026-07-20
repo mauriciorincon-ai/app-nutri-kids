@@ -214,4 +214,16 @@ fase encontrar → fase verificar-refutando. Igual que en habla S3, el remate ju
   `useToday` sin loops, y el invariante de privacidad de ADR-007 (cero caminos de fuga del registro
   a red/logs/grounding — auditados uno a uno).
 
-**Estado final:** 168 unit/integration + 56 e2e verde · typecheck + lint limpios.
+**Estado final (pre-CI):** 168 unit/integration + 56 e2e verde · typecheck + lint limpios.
+
+## PR #3 — CI y fix de Lighthouse
+
+- PR #3 abierto (`sprint-003/el-dia-completo`). Primer run: **quality ✅ · e2e ✅ · Vercel ✅ ·
+  lighthouse ❌** — CLS **0.170** en `/` (budget 0.1). Defecto de perf que introduje: el
+  `ReminderCard` crecía de esqueleto (2 líneas) a contenido (~5) al hidratar, y los botones
+  "Agregar nota" solo aparecían post-hidratación — ambos empujaban el contenido de abajo.
+- **Fix:** `min-h-[8.75rem]` en el ReminderCard (reserva el estado lleno) + el `NoteEditor` se
+  renderiza también en el prerender (reserva su altura; `saveNote` es no-op pre-hidratación).
+  Medido con la API `layout-shift` (Pixel 7): CLS de `/` **0.0000**. 168 unit + 56 e2e siguen verde.
+  Confirma el patrón `lcp-nace-estatico`/CLS: lo que aparece al hidratar reserva su espacio o
+  la CI lo caza (el gate de perf hizo su trabajo).
