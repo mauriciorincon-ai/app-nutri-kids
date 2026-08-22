@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 
 /**
@@ -16,7 +16,12 @@ const raiz = resolve(__dirname, "../..");
 const leer = (p: string) => readFileSync(resolve(raiz, p), "utf8");
 
 const exportRaw = leer("docs/brochure-export.json");
-type Metrica = { clave: string; valor: number; fuente: string; detalle: string };
+type Metrica = {
+  clave: string;
+  valor: number;
+  fuente: string;
+  detalle: string;
+};
 type Feature = { nombre: string; que_hace: string; seccion_manual: string };
 type Grupo = { features: Feature[] };
 type Export = {
@@ -141,6 +146,29 @@ describe("brochure: reglas de la pieza", () => {
     for (const palabra of ["calorías", "peso", "IMC", "percentil"]) {
       expect(listaNo).toContain(palabra);
     }
+  });
+
+  it("cada tarjeta lleva su muestra de interfaz, DIBUJADA y no incrustada", () => {
+    // Delta 1: donde más información hay, la palabra va acompañada de la pantalla de
+    // la que habla. Dibujadas en SVG a propósito: una captura incrustada engordaría el
+    // archivo, envejecería en silencio y podría arrastrar píxeles no revisados.
+    const muestras = brochure.match(/<figure class="muestra">/g) ?? [];
+    expect(muestras.length).toBe(5);
+    expect(brochure).not.toMatch(/data:image/i);
+    expect(brochure).not.toMatch(/<img\b/i);
+    // El SVG es ilustración: el sentido lo carga el pie, en palabras.
+    const pies = brochure.match(/<figcaption>/g) ?? [];
+    expect(pies.length).toBe(5);
+  });
+
+  it("el peso declarado en el export es el del archivo de verdad", () => {
+    // Una métrica «medida» que nadie vuelve a medir se convierte en una afirmación.
+    const peso = exportado.metricas.find((m) => m.clave === "peso_brochure");
+    expect(peso, "falta la métrica peso_brochure").toBeTruthy();
+    expect(peso!.fuente).toBe("medido");
+    expect(peso!.valor).toBe(
+      statSync(resolve(raiz, "docs/BROCHURE.html")).size,
+    );
   });
 
   it("la ruta /conoce sirve los MISMOS bytes que docs/BROCHURE.html", () => {

@@ -74,6 +74,30 @@ eje SOFT de Fraunces disparaba el LCP a ~5.4s en móvil throttled (medido en CI,
   CLS = 0). Caso vivo: `ReminderCard` (`min-h-[8.75rem]`, hasta 5 líneas). Es la única excepción
   aceptada al "prohibido el valor mágico suelto": va justificada en comentario y ligada al gate.
 
+### Apertura por lectura (patrón de piezas largas — brochure, entrega 2026-08-22)
+
+Cuando la mayor parte de la información vive dentro de **tarjetas desplegables**, pedir un toque
+por tarjeta es cobrar un peaje por cada una: en el teléfono, mucha gente nunca abre ninguna. La
+tarjeta se abre **al llegar a ella**, con estas reglas (implementación de referencia:
+`docs/BROCHURE.html`, bloque «M1 · Apertura por lectura»):
+
+1. **Abre bajando**, cuando ⅓ de la tarjeta entra en la **zona de lectura** = viewport menos su
+   15% inferior. Medir contra el borde crudo la abriría fuera de cuadro: una tarjeta cerrada de
+   ~95 px cumple el tercio asomando 32 px. Con el margen, cuando se abre ya la estás mirando.
+2. **Ancla arriba**: crece hacia abajo. El borde superior no se mueve, lo que se desplaza queda
+   bajo el pliegue — así el CLS no se dispara (0.0000 al cargar; 0.0118 en un recorrido completo).
+3. **Subiendo no abre nada, nunca.**
+4. **Cierra solo lo que ya saliste por abajo** (banda de gracia ~8%): jamás se cierra algo que la
+   persona esté mirando. Y no cierra si al encoger la página el documento quedara más corto que la
+   posición actual (Chrome/Firefox lo compensan con scroll anchoring; **Safari no**).
+5. **El toque gana**: tocar una tarjeta la saca del automático para el resto de la visita.
+6. **`prefers-reduced-motion`**: el automático no existe — todas llegan abiertas y quietas.
+
+Acompaña siempre a la regla del semáforo: donde hay mucha información, la palabra va con **una
+muestra de la pantalla de la que habla**, dibujada en SVG con estos tokens (nunca una captura
+incrustada: engorda el archivo, envejece en silencio y mete píxeles no revisados en un repo
+público). El SVG es ilustración (`aria-hidden`) y el `<figcaption>` carga el sentido en palabras.
+
 ## Componentes canon (shadcn personalizados)
 
 - **StatusChip** (`components/traffic-light/`): pastilla estado = ícono + texto + tinta semáforo

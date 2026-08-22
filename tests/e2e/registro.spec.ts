@@ -38,15 +38,16 @@ test.describe("registro sin red (service worker bloqueado)", () => {
 
   test("registro: marcar guarda la hora real, la nota persiste y ayer se consulta — CERO red", async ({
     page,
+    baseURL,
   }) => {
     const violations: string[] = [];
+    // El origen propio sale de la config, no de un literal: con el puerto quemado, correr
+    // la suite en otro puerto convertía CADA petición de la propia app en «violación».
+    const propio = new URL(baseURL!).origin;
     await page.context().route("**", (route) => {
       const url = new URL(route.request().url());
       // Prohibido: cualquier backend (/api/*) o cualquier origen externo.
-      if (
-        url.origin !== "http://localhost:3000" ||
-        url.pathname.startsWith("/api/")
-      ) {
+      if (url.origin !== propio || url.pathname.startsWith("/api/")) {
         violations.push(url.href);
       }
       return route.continue();

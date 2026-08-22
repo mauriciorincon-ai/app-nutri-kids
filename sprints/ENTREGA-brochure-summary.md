@@ -24,7 +24,7 @@ preview y la **última milla sin sesión**.
 
 | Pieza                                    | Qué es                                                                                                                                              |
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `docs/BROCHURE.html`                     | El anti-manual: 9 escenas, 5 tarjetas, 19 funcionalidades. 56 KB, cero CDNs, abre con doble clic sin internet.                                      |
+| `docs/BROCHURE.html`                     | El anti-manual: 9 escenas, 5 tarjetas, 19 funcionalidades y 5 muestras de interfaz. 73 KB, cero CDNs, abre con doble clic sin internet.             |
 | `/conoce`                                | La misma pieza servida por la app (rewrite en `next.config.ts` → `public/conoce.html`, copiado en `prebuild` y verificado byte a byte por un test). |
 | `docs/brochure-export.json`              | Contrato v1.0.0 adoptado (no calcado): `_schema` tal cual, 10 métricas con `fuente` medida, `estado: "inicial"`.                                    |
 | `sprints/ENTREGA-brochure-storyboard.md` | El guion aprobado ANTES de una línea de HTML (regla cero).                                                                                          |
@@ -38,7 +38,7 @@ El inventario de la planeadora declaraba **1 fuga**; el comando encontró **2 fr
 | #   | Dónde                            | Hallazgo                                      | Acción                             |
 | --- | -------------------------------- | --------------------------------------------- | ---------------------------------- |
 | 1   | Campo `homepage` del repo        | La URL de producción, tal cual                | `gh repo edit --homepage ""`       |
-| 2   | `docs/BLUEPRINT.html` (3 líneas) | Literal `*.vercel.app` como patrón de dominio | Reescrito a «subdominio de Vercel» |
+| 2   | `docs/BLUEPRINT.html` (3 líneas) | El dominio del proveedor escrito como literal | Reescrito a «subdominio de Vercel» |
 
 **Gate verificado (dos veces: al abrir y al cerrar la entrega):**
 `grep -rn "vercel\.app\|workers\.dev" --include="*.md" --include="*.html" --include="*.json" .` → **vacío** ·
@@ -150,10 +150,10 @@ que esta entrega usa para servir `/conoce`. No era diferible:
 | ----------------------------- | -------------- | ---------------------------------------------- |
 | Funcionalidades               | 19             | medido (contra el manual, verificado por test) |
 | Pantallas del producto        | 8              | medido (`page.tsx`; `/conoce` no cuenta)       |
-| Pruebas unitarias             | 212            | medido (`pnpm test`)                           |
-| Pruebas e2e                   | 78             | medido (2 proyectos)                           |
+| Pruebas unitarias             | 214            | medido (`pnpm test`)                           |
+| Pruebas e2e                   | 86             | medido (2 proyectos)                           |
 | Cobertura de líneas del motor | 99.52 %        | medido (v8)                                    |
-| Peso del brochure             | 56 502 bytes   | medido (`wc -c`)                               |
+| Peso del brochure             | 73 421 bytes   | medido (`wc -c`, con las 5 muestras SVG)       |
 | CLS / LCP de `/conoce`        | 0.0000 / 68 ms | medido (Playwright, móvil)                     |
 | Costo de operación            | US$0/mes       | calculada                                      |
 
@@ -170,3 +170,99 @@ que esta entrega usa para servir `/conoce`. No era diferible:
 2. **Última milla:** `/conoce` desde afuera, **sin sesión** (incógnito), sin publicar la URL.
 3. Tras el merge: **re-limpiar el campo `homepage`** (Vercel lo reescribe en el deploy de prod).
 4. El **sello** (INICIAL → SELLADO) queda a tu ritmo, sin fecha: no se espera aquí.
+
+---
+
+# Delta 1 (2026-08-22) — La apertura por lectura + las muestras de interfaz
+
+> Entra **después** del merge del PR #4, tras el gate visual del usuario sobre la preview.
+> Regla 11: toda feature que cambia actualiza brochure **y** export en su mismo PR.
+
+## Qué pidió el usuario, literal
+
+Las tarjetas desplegables concentran la mayor parte de la información y **cobran un peaje por
+cada una**. Que se abran al bajar (nunca antes de que haya salido **⅓** de la tarjeta), con una
+animación que se vea; que al devolverse estén cerradas y solo se desplieguen hacia abajo; y que
+ahí —donde más información hay— haya **muestras de las interfaces** de las que hablan.
+No es un capricho de esta app: **se repite en varias apps del portafolio**, y por eso el usuario
+pidió llevarlo a la planeadora como estándar (bloque listo más abajo).
+
+## Cómo quedó
+
+| Regla                  | Implementación (medida, no supuesta)                                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| ⅓ visible para abrir   | `threshold 1/3` contra la **zona de lectura** (viewport −15% inferior). Medido: abre con el borde superior al **72–79%** de pantalla. |
+| Se ve abrirse          | La misma transición del toque (0.45 s) + muestra y features alzando detrás (0.08 → 0.33 s).                                           |
+| Solo hacia abajo       | Ancla superior fija: lo que se desplaza queda bajo el pliegue.                                                                        |
+| Al devolverme, cerrada | Cierra **solo** la que salió completa por abajo (gracia 8%). Verificado subiendo la pieza entera: las 5 quedan cerradas.              |
+| Subiendo no abre       | e2e que recorre hacia arriba afirmando que **ninguna** pasó de cerrada a abierta.                                                     |
+| Muestras               | 5 recortes **dibujados en SVG** con el texto real de la dieta demo, uno por tarjeta.                                                  |
+
+**CLS: 0.0000 al cargar · 0.0118 en un recorrido completo** (bajar → subir → bajar), muy por
+debajo del 0.1 de «bueno». Era el riesgo declarado del delta y se midió antes de proponerlo.
+
+## Decisiones
+
+- **Dibujar las muestras, no incrustar capturas** (elección del usuario sobre 3 opciones): +17 KB
+  en vez de ~200 KB, escalan sin pixelarse, usan los tokens del design system y **no pueden
+  arrastrar un píxel que no esté escrito en el archivo** — la regla mayor se cumple por
+  construcción, no por revisión. Fidelidad verificada contra capturas reales de las 7 pantallas
+  corriendo con la dieta demo; esas capturas **no entran al repo**.
+- **Cerrar al salir por abajo**, no al primer gesto hacia arriba: cerrar lo que la persona está
+  mirando es peor que dejarlo abierto.
+- **El toque siempre gana.** Una página que corrige lo que hiciste con el dedo se siente rota.
+- **Copy reescrito**: la portada y la capa 1 prometían «ninguna se abre sola». Habría quedado
+  mintiendo — el texto es parte de la feature, no decoración.
+
+## Lo que cazó esta ronda
+
+1. **El gate de cero enlaces me delató a mí.** Al documentar la Fase 0 escribí el literal del
+   dominio dentro de la tabla del summary, así que el `grep` del gate **dejó de salir vacío**.
+   Corregido aquí. Lección: el gate no distingue entre una fuga y su acta — y hace bien.
+2. **La limpieza del `homepage` es recurrente, confirmada en vivo:** tras el merge del PR #4,
+   Vercel volvió a escribir la URL de producción. Limpiada y re-verificada (`""`).
+3. **Una banda de gracia de 25% dejaba la primera tarjeta abierta** al volver arriba del todo:
+   estaba fuera de la pantalla pero «dentro» del margen. Ajustada a 8%.
+4. **El helper de los e2e corría contra el propio automático**: leía «cerrada» y, entre la lectura
+   y el toque, la tarjeta se abría sola — el toque la cerraba y 7 tests fallaban. Ahora reintenta
+   (el primer toque la pasa a manual, así que converge siempre).
+5. **Los retrasos del stagger iban por `nth-child`**: insertar la `<figure>` habría corrido toda
+   la secuencia en silencio. Pasados a `nth-of-type`, que cuenta solo los `.feature`.
+
+6. **El gate e2e podía estar midiendo OTRA app.** La suite completa cayó en masa (8 de 86) sin
+   una sola pista: otro proyecto del portafolio tenía tomado el puerto 3000 y, con
+   `reuseExistingServer`, Playwright **lo reutilizó**. Pasó dos veces el mismo día (dos apps
+   distintas). El falso rojo se ve; **el peligro real es el falso verde**. Reparado: puerto
+   configurable (`E2E_PORT`) y `tests/e2e/global-setup.ts`, un **gate de identidad** que exige
+   que quien conteste sea Nutri-Kids antes de correr el primer test, con la salida en el
+   mensaje de error. De paso apareció un literal `localhost:3000` quemado dentro del test de
+   privacidad «CERO red»: ahora el origen propio sale de la config.
+
+## Propuesta de estándar para la planeadora
+
+> **Esta casa no escribe en la planeadora.** El bloque va listo para que el usuario lo lleve a
+> `metodo/` o `estandares/` como corresponda. Aquí queda como registro de lo acordado.
+
+**Estándar propuesto — «Apertura por lectura» en piezas con tarjetas desplegables** (brochures y
+cualquier documento largo del portafolio):
+
+1. Si las tarjetas desplegables concentran la mayor parte de la información, **se abren al llegar
+   a ellas**, no al toque. El toque es el control, no el peaje.
+2. Disparo: **⅓ de la tarjeta dentro de la zona de lectura** (viewport menos su 15% inferior).
+   Nunca contra el borde crudo: la apertura ocurriría fuera de cuadro.
+3. **Ancla superior**: la tarjeta crece hacia abajo. Lo que se desplaza queda bajo el pliegue.
+   Consecuencia medible: el CLS no se dispara — y se **mide**, no se supone.
+4. **Subiendo no se abre nada.** Cierra solo lo que ya salió completo por abajo, con una banda de
+   gracia; jamás lo que la persona esté mirando; y nunca si al encoger la página el documento
+   quedara más corto que la posición actual (Safari no compensa).
+5. **El toque saca la tarjeta del automático** para el resto de la visita.
+6. **`prefers-reduced-motion`**: el automático no existe; todo llega abierto y quieto.
+7. **Donde más información hay, va una muestra de la interfaz** de la que se habla, **dibujada en
+   SVG** con los tokens del design system — no una captura incrustada (peso, envejecimiento
+   silencioso y píxeles no revisados en un repo público). El SVG es ilustración; el `figcaption`
+   carga el sentido en palabras.
+8. Se verifica con **e2e reales de scroll** (abre al llegar · no abre subiendo · queda cerrada al
+   volver · el toque gana · la rama reduced-motion) y con **CLS medido en un recorrido completo**.
+
+Implementación de referencia y su porqué: `docs/BROCHURE.html` (bloque «M1 · Apertura por
+lectura») y `design-system.md` de esta app.
