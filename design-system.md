@@ -94,9 +94,14 @@ tarjeta se abre **al llegar a ella**, con estas reglas (implementación de refer
 3. **La apertura dura 0.62 s** y va acompañada de un pulso de acento en el borde (0.9 s, una vez).
    Con 0.45 s y sin pulso se confunde con el propio scroll.
 4. **Subiendo no abre nada, nunca.**
-5. **Cierra solo lo que ya saliste por abajo** (banda de gracia ~8%): jamás se cierra algo que la
-   persona esté mirando. Y no cierra si al encoger la página el documento quedara más corto que la
-   posición actual (Chrome/Firefox lo compensan con scroll anchoring; **Safari no**).
+5. **Cierra lo que salió ENTERO de la pantalla**, por el borde que sea, y solo en la dirección que
+   lo explica (por arriba bajando, por abajo subiendo): jamás algo que la persona esté mirando, ni
+   por haber sido empujado fuera de cuadro por otra apertura. Al cerrar por arriba hay que
+   **descontar del scroll la altura que desaparece** —a mano, en un frame, con `overflow-anchor:
+   none` para que el navegador no corrija dos veces—; si no, la página da un tirón (Chrome y
+   Firefox lo compensarían solos; **Safari no**). Y **se mide todo antes de cerrar nada**: cerrar
+   dentro del bucle que mide provoca cascadas. Una tarjeta recién cerrada no vuelve a ser
+   candidata hasta entrar entera otra vez (si no, rebota).
 6. **El toque gana**: tocar una tarjeta la saca del automático para el resto de la visita.
 7. **`prefers-reduced-motion`**: el mismo mecanismo **sin transición** (cambia de estado, no se
    anima). Entregarlas todas abiertas es peor: se llega a un muro de texto ya desplegado.

@@ -194,7 +194,7 @@ pidió llevarlo a la planeadora como estándar (bloque listo más abajo).
 | Se ve abrirse          | Abre **cuando te detienes** (140 ms sin scroll) con la cabecera en la banda de lectura (−12% a 72%). Apertura de **0.62 s** + pulso de borde. Respaldo cada 700 ms para el scroll lento. |
 | Se ve abrirse          | La misma transición del toque (0.45 s) + muestra y features alzando detrás (0.08 → 0.33 s).                                           |
 | Solo hacia abajo       | Ancla superior fija: lo que se desplaza queda bajo el pliegue.                                                                        |
-| Al devolverme, cerrada | Cierra **solo** la que salió completa por abajo (gracia 8%). Verificado subiendo la pieza entera: las 5 quedan cerradas.              |
+| Al devolverme, cerrada | Cierra la que salió **entera de la pantalla**, por el borde que sea y solo en la dirección que lo explica. Cerrar por arriba se compensa en el scroll: **0 px de movimiento visible, medido en los cinco cierres**. |
 | Subiendo no abre       | e2e que recorre hacia arriba afirmando que **ninguna** pasó de cerrada a abierta.                                                     |
 | Muestras               | 5 recortes **dibujados en SVG** con el texto real de la dieta demo, uno por tarjeta.                                                  |
 
@@ -238,13 +238,40 @@ scroll y no se percibe a ninguna altura.** La versión que sí se ve:
 **Lo que se paga, dicho claro:** si vuelas de un tirón sobre todo el bloque, solo se abre la que
 quedó en la banda; las que sobrevolaste se quedan cerradas y abren con un toque.
 
-**Tres lecciones para el estándar:**
+### Cuarta ronda: el ciclo se cierra
+
+_«Cuando regreso deberían cerrarse; no si están en mi pantalla, sino cuando hayan salido; y
+mantenerse cerradas mientras subo; y si está cerrada y vuelvo a bajar, que se despliegue otra vez.»_
+
+Hasta aquí la tarjeta que dejabas atrás **bajando** se quedaba abierta, y al subir te la volvías a
+encontrar desplegada. Ahora se cierra cuando sale **entera** de la pantalla, por el borde que sea,
+y cada cierre va atado a la dirección que lo explica. Tres precisiones, cada una con su medición:
+
+1. **Compensar el scroll al cerrar por arriba.** Lo que desaparece está encima de lo que miras: sin
+   descontarlo, la página pega un tirón. Se hace a mano en un frame, con el scroll anchoring del
+   navegador apagado para no corregir dos veces (Safari no lo tiene). **Verificado midiendo el
+   movimiento real de lo que está en pantalla: 0 px en los cinco cierres.**
+2. **Medir todo primero y cerrar después.** Cerrar dentro del mismo bucle que mide hacía que cada
+   cierre empujara a la siguiente tarjeta y esta pareciera haber salido: cascada que cerraba la
+   pieza entera y la reabría (T3 se cerró cinco veces en una sola bajada).
+3. **Una espera antes de reabrir.** Tras compensar, la recién cerrada queda pegada al filo superior
+   —dentro de la banda— y se reabría en bucle: el scroll rebotaba entre y=1800 e y=262 **sin
+   avanzar nunca**. Vuelve a ser candidata solo cuando entra entera otra vez.
+
+También hubo un falso positivo instructivo: mi propio medidor atribuía 3.48 de CLS a los cierres.
+Medir el **movimiento real de un elemento en pantalla** lo desmintió (0 px): el desplazamiento era
+de las aperturas, que siguen animándose 0.62 s cuando el cierre ocurre. **Una métrica agregada no
+prueba una causa.**
+
+**Cuatro lecciones para el estándar:**
 
 1. **Una animación fuera del campo visual no existe**, por más que el test la vea.
 2. **El momento importa más que la posición**: con la página quieta, la apertura se lee sola.
 3. **Disparar por altura encadena**; abrir una a la vez al reposo lo elimina por construcción.
+4. **Todo cambio de layout fuera de cuadro se compensa y se verifica en píxeles**, no en métricas
+   agregadas.
 
-Ningún gate automático caza esto: lo caza una persona mirando. Tres rondas de gate visual, tres
+Ningún gate automático caza esto: lo caza una persona mirando. Cuatro rondas de gate visual, cuatro
 correcciones, cada una con su medición.
 
 ## Decisiones
@@ -300,9 +327,10 @@ cualquier documento largo del portafolio):
    periódico para el scroll lento que nunca reposa. Una a la vez: disparar por altura encadena.
 3. **Ancla superior**: la tarjeta crece hacia abajo. Lo que se desplaza queda bajo el pliegue.
    Consecuencia medible: el CLS no se dispara — y se **mide**, no se supone.
-4. **Subiendo no se abre nada.** Cierra solo lo que ya salió completo por abajo, con una banda de
-   gracia; jamás lo que la persona esté mirando; y nunca si al encoger la página el documento
-   quedara más corto que la posición actual (Safari no compensa).
+4. **Subiendo no se abre nada.** Cierra lo que salió **entero** de la pantalla, por el borde que
+   sea y solo en la dirección que lo explica; jamás lo que la persona esté mirando, ni por haber
+   sido empujado fuera de cuadro por otra apertura. Cerrar por arriba **exige compensar el scroll**
+   (a mano, con `overflow-anchor: none`) y verificar en píxeles que nada visible se movió.
 5. **El toque saca la tarjeta del automático** para el resto de la visita.
 6. **`prefers-reduced-motion`**: el automático no existe; todo llega abierto y quieto.
 7. **Donde más información hay, va una muestra de la interfaz** de la que se habla, **dibujada en

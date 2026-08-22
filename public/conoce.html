@@ -30,6 +30,12 @@
     el bloque «M1 · Apertura por lectura» del script, al final del archivo.
 -->
 <style>
+  /* La compensación de scroll al cerrar una tarjeta por arriba se hace a mano y en un solo
+     frame (ver «cerrarLoQueSalio»). Si además el navegador aplicara SU scroll anchoring, la
+     corrección se haría dos veces y la página daría un tirón: aquí se apaga para que el
+     comportamiento sea el mismo en Chrome, Firefox y Safari. */
+  html { overflow-anchor: none; }
+
   :root {
     color-scheme: light; /* light-only: el DS de la app lo es por decisión del S1 (no se finge un modo oscuro) */
 
@@ -164,6 +170,10 @@
   .detalle { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.62s var(--ease-asentar); }
   .tarjeta[data-abierta] .detalle { grid-template-rows: 1fr; }
   .detalle-interior { overflow: hidden; visibility: hidden; transition: visibility 0.62s; }
+  /* Cerrar fuera de cuadro es instantáneo: animar lo que nadie ve solo sirve para que la
+     compensación de scroll no cuadre (ver «cerrarLoQueSalio» en el script). */
+  .tarjeta.sin-transicion .detalle,
+  .tarjeta.sin-transicion .detalle-interior { transition: none; }
   .tarjeta[data-abierta] .detalle-interior { visibility: visible; }
   .detalle-cuerpo { padding: 2px 16px 18px; border-top: 1px solid var(--border); }
   .feature { padding: 13px 0; border-top: 1px solid var(--border); }
@@ -1033,8 +1043,9 @@
      · CRECE HACIA ABAJO: el borde superior está anclado, así que lo que estás leyendo no
        se mueve. El CLS de carga sigue en 0 (nada se abre sin que bajes); lo que se desplaza
        al abrirse es el efecto pedido, y se mide.
-     · CIERRA solo cuando ya la dejaste atrás y salió COMPLETA por abajo de la pantalla.
-       Jamás se cierra algo que estés mirando.
+     · CIERRA cuando sale COMPLETA de la pantalla, por arriba o por abajo — jamás mientras
+       la estés viendo. Al devolverte lo encuentras todo cerrado, y al volver a bajar se
+       despliega otra vez. Cerrar por arriba se compensa en el scroll: no salta nada.
      · TU DEDO GANA: tocar una tarjeta la saca del automático para siempre.
      · Con movimiento reducido el mecanismo es EL MISMO; lo que desaparece es la transición
        (el CSS la apaga): la tarjeta pasa de cerrada a abierta sin animación. Se probó la
@@ -1081,16 +1092,78 @@
 
     var candidata = function () {
       var vh = window.innerHeight;
+      var elegida = null;
       for (var i = 0; i < tarjetas.length; i++) {
         var t = tarjetas[i];
-        if (t.hasAttribute("data-manual") || t.hasAttribute("data-abierta")) continue;
         var arriba = t.getBoundingClientRect().top;
-        if (arriba >= vh * BANDA_ALTA && arriba <= vh * BANDA_BAJA) return t;
+        /* La que acaba de cerrarse al salir por arriba queda, tras compensar el scroll,
+           justo pegada al filo superior — es decir, DENTRO de la banda. Sin esta espera se
+           reabriría de inmediato y la página entraría en un bucle de abrir/cerrar (pasó:
+           el scroll rebotaba entre y=1800 e y=262 sin avanzar nunca). Vuelve a ser
+           candidata cuando entre entera otra vez, que es justo lo que pediste: si te
+           devuelves y vuelves a bajar, se despliega de nuevo. */
+        if (t.hasAttribute("data-espera")) {
+          if (arriba >= 0) t.removeAttribute("data-espera");
+          else continue;
+        }
+        if (t.hasAttribute("data-manual") || t.hasAttribute("data-abierta")) continue;
+        if (!elegida && arriba >= vh * BANDA_ALTA && arriba <= vh * BANDA_BAJA) elegida = t;
       }
-      return null;
+      return elegida;
     };
 
-    var abrirCandidata = function () {
+    /* CERRAR LO QUE YA NO ESTÁ EN PANTALLA — en lote y también al detenerte.
+       Se cierran solo las que salieron ENTERAS de cuadro, nunca lo que estás mirando; así,
+       al devolverte lo encuentras todo cerrado y al volver a bajar se despliega otra vez.
+
+       Va en UN SOLO paso con UNA SOLA compensación de scroll a propósito. La versión por
+       observador cerraba de a una y cada cierre movía el scroll: con dos tarjetas cerrándose
+       casi a la vez, las compensaciones se pisaban, el recorrido se desplazaba de más y las
+       dos últimas tarjetas se quedaban sin abrir nunca (medido). Sumar primero y compensar
+       una vez es exacto.
+
+       Por qué hay que compensar: lo que desaparece por ARRIBA está por encima de lo que
+       miras, así que sin descontarlo del scroll la página daría un tirón. Chrome y Firefox
+       harían algo parecido solos (scroll anchoring, aquí apagado para no corregir dos
+       veces); Safari —el teléfono de la mamá— no lo hace. */
+    var cerrarLoQueSalio = function () {
+      var vh = window.innerHeight, perdidoArriba = 0;
+
+      /* PRIMERO se mide TODO, después se cierra. Medir y cerrar en el mismo bucle era un
+         error sutil y caro: al cerrar una tarjeta, las de abajo suben, la siguiente parece
+         haber salido por arriba y se cierra también — una cascada que iba cerrando la
+         pieza entera y luego reabriéndola (medido: T3 se cerró 5 veces en una sola bajada).
+         Las posiciones que deciden son las de ANTES de tocar nada. */
+      var fuera = [];
+      tarjetas.forEach(function (t) {
+        if (!t.hasAttribute("data-abierta") || t.hasAttribute("data-manual")) return;
+        var r = t.getBoundingClientRect();
+        /* Cada salida se cierra SOLO en la dirección que la explica: por arriba, bajando;
+           por abajo, subiendo. Sin esa condición, una tarjeta que abre empuja a la siguiente
+           fuera del pliegue y esta se cierra sin que tú hayas pasado por ella — luego vuelve
+           a subir a cuadro y reabre. Churn puro, invisible pero real (medido). */
+        if (bajando && r.bottom <= 0) fuera.push({ t: t, alto: r.height, arriba: true });
+        else if (!bajando && r.top >= vh && cabeElEncogimiento(t))
+          fuera.push({ t: t, arriba: false });
+      });
+
+      fuera.forEach(function (f) {
+        if (!f.arriba) { abrir(f.t, false); return; }  // bajo el pliegue: encoger no se ve
+        f.t.classList.add("sin-transicion");
+        abrir(f.t, false);
+        perdidoArriba += f.alto - f.t.getBoundingClientRect().height;
+        f.t.setAttribute("data-espera", "");
+        window.requestAnimationFrame(function () { f.t.classList.remove("sin-transicion"); });
+      });
+
+      if (perdidoArriba > 0) {
+        window.scrollBy(0, -perdidoArriba);
+        ultimoY = window.pageYOffset; // el evento que viene es nuestro: no cuenta como gesto
+      }
+    };
+
+    var alDetenerse = function () {
+      cerrarLoQueSalio();
       if (!huboScroll || !bajando) return;
       var t = candidata();
       if (t) abrir(t, true);
@@ -1100,37 +1173,17 @@
     window.addEventListener("scroll", function () {
       /* Al detenerte: 140 ms sin un solo evento de scroll es «me quedé mirando esto». */
       window.clearTimeout(alReposar);
-      alReposar = window.setTimeout(abrirCandidata, 140);
+      alReposar = window.setTimeout(alDetenerse, 140);
       /* Y si bajas lento y sin parar (rueda de trackpad), el reposo no llega nunca: cada
-         700 ms se mira si hay una tarjeta plantada en la banda. Ahí sí está a la vista. */
+         700 ms se mira si hay algo que abrir o que cerrar. */
       if (!mientrasBaja) {
         mientrasBaja = window.setTimeout(function () {
           mientrasBaja = null;
-          abrirCandidata();
+          alDetenerse();
         }, 700);
       }
     }, { passive: true });
 
-    /* DESPEDIDA. Solo cierra la que salió por ABAJO (subiste y la dejaste debajo de la
-       pantalla). La que sale por arriba se queda abierta: si te devuelves un poco, la
-       encuentras como la dejaste. */
-    var despedida = new IntersectionObserver(function (entradas) {
-      entradas.forEach(function (e) {
-        var t = e.target;
-        if (e.isIntersecting) return;
-        if (t.hasAttribute("data-manual") || !t.hasAttribute("data-abierta")) return;
-        var r = e.rootBounds;
-        if (!r || e.boundingClientRect.top < r.bottom) return;
-        if (!cabeElEncogimiento(t)) return;
-        abrir(t, false);
-      });
-    /* El 8% es holgura, no geometría: basta con que el borde superior pase el filo inferior
-       para que encoger sea invisible, y esa franja evita que una tarjeta parpadee si te
-       quedas meciendo el pulgar justo en el límite (la de abrir está en el 85%, así que
-       entre una y otra hay casi un cuarto de pantalla de histéresis). */
-    }, { threshold: 0, rootMargin: "0px 0px 8% 0px" });
-
-    tarjetas.forEach(function (t) { despedida.observe(t); });
   }
 
   /* ——— G3 · coreografía de entrada. Con reduced-motion el CSS ya lo muestra todo:

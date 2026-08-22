@@ -355,3 +355,22 @@ un pulso de borde. Subir la altura no bastaba: al 55% las aperturas se encadenab
 **Lo que se paga, dicho claro:** si vuelas de un tirón sobre todo el bloque de tarjetas, solo se
 abre la que quedó en la banda; las que sobrevolaste se quedan cerradas y se abren con un toque.
 Es el precio de no abrir nada a ciegas, y es reversible.
+
+## Cuarta ronda — el ciclo se cierra
+
+_«Cuando regreso deberían cerrarse; no si están en mi pantalla, sino cuando hayan salido; y
+mantenerse cerradas mientras subo; y si está cerrada y vuelvo a bajar, que se despliegue otra vez.»_
+
+La tarjeta ahora se cierra **cuando sale ENTERA de la pantalla**, por el borde que sea, y cada
+cierre va atado a la dirección que lo explica (por arriba solo bajando, por abajo solo subiendo).
+Tres precisiones que costaron su medición:
+
+1. **Compensar el scroll al cerrar por arriba.** Lo que desaparece está encima de lo que miras: sin
+   descontarlo, la página da un tirón. Se hace a mano y en un frame, con el scroll anchoring del
+   navegador apagado para no corregir dos veces. **Verificado: 0 px de movimiento** en lo visible.
+2. **Medir todo primero, cerrar después.** Cerrar dentro del mismo bucle que mide hacía que cada
+   cierre empujara a la siguiente tarjeta y esta pareciera haber salido: una cascada que cerraba la
+   pieza entera y la reabría (T3 se cerró cinco veces en una sola bajada).
+3. **Una espera antes de reabrir.** Tras compensar, la recién cerrada queda pegada al filo superior
+   —dentro de la banda— y se reabría en bucle: el scroll rebotaba entre y=1800 e y=262 sin avanzar.
+   Vuelve a ser candidata solo cuando entra entera otra vez, que es exactamente lo pedido.

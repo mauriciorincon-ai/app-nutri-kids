@@ -126,18 +126,42 @@ test.describe("brochure /conoce", () => {
     ).toBeGreaterThan(-alto * 0.15);
   });
 
-  test("M1 · subiendo no se abre nada, y al volver arriba quedan cerradas otra vez", async ({
+  test("M1 · el ciclo completo: se abre al llegar, se cierra al salir de pantalla, subiendo no abre nada, y al bajar otra vez se despliega", async ({
     page,
   }) => {
     await page.goto("/conoce");
-    await bajarHastaQueAbra(page, 4); // baja hasta la última: quedan las 5 abiertas
-    expect(await estados(page)).toEqual(Array(5).fill("true"));
+
+    // Bajando: las CINCO se abren, cada una cuando llegas a ella.
+    const abiertasAlgunaVez = new Set<number>();
+    for (let ronda = 0; ronda < 45; ronda++) {
+      for (let paso = 0; paso < 4; paso++) {
+        await page.mouse.wheel(0, PASO);
+        await page.waitForTimeout(30);
+      }
+      await page.waitForTimeout(320);
+      (await estados(page)).forEach((v, i) => {
+        if (v === "true") abiertasAlgunaVez.add(i);
+      });
+      const alFinal = await page.evaluate(
+        () =>
+          window.pageYOffset + window.innerHeight >=
+          document.documentElement.scrollHeight - 4,
+      );
+      if (alFinal) break;
+    }
+    expect(
+      [...abiertasAlgunaVez].sort(),
+      "alguna tarjeta nunca se abrió sola al bajar",
+    ).toEqual([0, 1, 2, 3, 4]);
+
+    // Y cada una se cerró sola al salir de pantalla: al final no queda ninguna abierta.
+    expect(await estados(page)).toEqual(Array(5).fill("false"));
 
     const abrioSubiendo = await subirDelTodo(page);
     expect(abrioSubiendo, "una tarjeta se abrió mientras subías").toBe(false);
     expect(await estados(page)).toEqual(Array(5).fill("false"));
 
-    // Y al volver a bajar, se abre de nuevo: el gesto se puede repetir.
+    // Y al volver a bajar, se despliega de nuevo: el gesto se puede repetir.
     await bajarHastaQueAbra(page, 0);
   });
 
