@@ -16,6 +16,10 @@ import { es, type Dictionary } from "./es";
 
 export type Locale = "es" | "en";
 
+/** Shape canónico del diccionario — re-exportado para tipar props sin
+ *  `ReturnType<typeof useI18n>` en los componentes que lo consumen. */
+export type { Dictionary } from "./es";
+
 const DICTIONARIES: Record<Locale, Dictionary> = { es, en };
 
 type I18nContextValue = {

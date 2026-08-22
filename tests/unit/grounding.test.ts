@@ -60,3 +60,28 @@ describe("buildGroundedSystem", () => {
     expect(sys).toMatch(/Multivitamínico demo/);
   });
 });
+
+// Test NEGATIVO (ADR-007 · minimización): el registro del día son datos de
+// salud del menor y JAMÁS entran al grounding del chat. El grounding es puro
+// sobre (diet, locale, date) — ni siquiera recibe el day-log. Este test lo fija:
+// una nota centinela plantada en el registro no puede aparecer en el prompt.
+describe("el registro del día NO entra al grounding (minimización, ADR-007)", () => {
+  it("una nota/hora centinela del registro jamás aparece en el system prompt", async () => {
+    const SENTINEL = "NOTA-SECRETA-DEL-REGISTRO-9f3a";
+    const SENTINEL_TIME = "13:47";
+    // Plantamos el centinela en el registro real (jsdom expone localStorage).
+    const { markDone, setNote, clearDayLog } =
+      await import("@/lib/diet/day-log");
+    clearDayLog();
+    markDone(monday, "meal:almuerzo", SENTINEL_TIME);
+    setNote(monday, "meal:almuerzo", { chips: ["rejected"], text: SENTINEL });
+
+    // El grounding se arma SOLO con la dieta anonimizada + contexto del día.
+    for (const locale of ["es", "en"] as const) {
+      const sys = buildGroundedSystem(diet, locale, monday);
+      expect(sys).not.toContain(SENTINEL);
+      expect(sys).not.toContain(SENTINEL_TIME);
+    }
+    clearDayLog();
+  });
+});

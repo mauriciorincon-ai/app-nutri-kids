@@ -27,6 +27,13 @@ export function dateKey(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+/** Hora local "HH:MM" del dispositivo (la hora real a la que se marca una comida). */
+export function clockLabel(date: Date): string {
+  const h = String(date.getHours()).padStart(2, "0");
+  const m = String(date.getMinutes()).padStart(2, "0");
+  return `${h}:${m}`;
+}
+
 // ---------------------------------------------------------------------------
 // Restricciones con vigencia
 // ---------------------------------------------------------------------------
@@ -226,6 +233,57 @@ export function waterGlassesTarget(diet: DietPlan): number {
   return diet.hydration.glassesPerDay ?? DEFAULT_WATER_GLASSES;
 }
 
+// ---------------------------------------------------------------------------
+// Codec del checkId — "<kind>:<id>". Contrato del motor: se construye y parsea
+// SOLO aquí (la UI no decodifica ids a mano). El id puede contener ":".
+// ---------------------------------------------------------------------------
+
+export type CheckKind = "meal" | "supplement" | "water";
+
+/** Construye un checkId ("meal:desayuno", "water:1"). */
+export function checkIdFor(kind: CheckKind, id: string | number): string {
+  return `${kind}:${id}`;
+}
+
+/** Parte un checkId por el PRIMER ":" (un id de comida puede contener ":"). */
+export function parseCheckId(checkId: string): { kind: string; id: string } {
+  const i = checkId.indexOf(":");
+  if (i < 0) return { kind: checkId, id: "" };
+  return { kind: checkId.slice(0, i), id: checkId.slice(i + 1) };
+}
+
+export type CheckTarget =
+  | { kind: "meal"; meal: Meal }
+  | { kind: "supplement"; supplement: Supplement }
+  | { kind: "water"; index: number };
+
+/**
+ * Resuelve un checkId contra la dieta ACTIVA. `null` si el id no existe en ella
+ * (p.ej. el historial guarda ids de una dieta anterior a la cargada) — la UI
+ * decide el rótulo de reemplazo; jamás muestra el id crudo.
+ */
+export function resolveCheckTarget(
+  diet: DietPlan,
+  checkId: string,
+): CheckTarget | null {
+  const { kind, id } = parseCheckId(checkId);
+  if (kind === "meal") {
+    const meal = diet.dailyMenu.find((m) => m.id === id);
+    return meal ? { kind: "meal", meal } : null;
+  }
+  if (kind === "supplement") {
+    const supplement = diet.supplements.find((s) => s.id === id);
+    return supplement ? { kind: "supplement", supplement } : null;
+  }
+  if (kind === "water") {
+    const index = Number(id);
+    return Number.isInteger(index) && index > 0
+      ? { kind: "water", index }
+      : null;
+  }
+  return null;
+}
+
 export type ChecklistItem =
   | { checkId: string; kind: "meal"; meal: Meal }
   | { checkId: string; kind: "supplement"; supplement: Supplement }
@@ -251,17 +309,17 @@ export function buildDayChecklist(
   const water = waterGlassesTarget(diet);
   const items: ChecklistItem[] = [
     ...mealsForDate(diet, date).map((meal) => ({
-      checkId: `meal:${meal.id}`,
+      checkId: checkIdFor("meal", meal.id),
       kind: "meal" as const,
       meal,
     })),
     ...supplementsForDate(diet, date).map((supplement) => ({
-      checkId: `supplement:${supplement.id}`,
+      checkId: checkIdFor("supplement", supplement.id),
       kind: "supplement" as const,
       supplement,
     })),
     ...Array.from({ length: water }, (_, i) => ({
-      checkId: `water:${i + 1}`,
+      checkId: checkIdFor("water", i + 1),
       kind: "water" as const,
       index: i + 1,
       total: water,
@@ -275,5 +333,116 @@ export function buildDayChecklist(
     items: withDone,
     doneCount: withDone.filter((i) => i.done).length,
     totalCount: withDone.length,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Recordatorio determinista — "qué toca AHORA y qué sigue"
+// ---------------------------------------------------------------------------
+
+/** Minutos desde medianoche de una hora "HH:MM". */
+function minutesOf(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
+}
+
+/** Minutos desde medianoche de un instante local (la hora real del dispositivo). */
+function minutesNow(at: Date): number {
+  return at.getHours() * 60 + at.getMinutes();
+}
+
+/**
+ * La franja de comida respecto a un instante. 100% determinista desde los
+ * horarios `start`/`end` del menú (sin `Date.now()`): la hora entra por parámetro.
+ * Cubre los cuatro casos, incluidos los HUECOS entre franjas.
+ */
+export type MealSlot =
+  | { kind: "before-first"; next: Meal }
+  | { kind: "during"; meal: Meal; next: Meal | null }
+  | { kind: "between"; prev: Meal; next: Meal }
+  | { kind: "after-last"; prev: Meal };
+
+export function currentMealSlot(diet: DietPlan, at: Date): MealSlot | null {
+  const meals = [...diet.dailyMenu].sort(
+    (a, b) => minutesOf(a.start) - minutesOf(b.start),
+  );
+  if (meals.length === 0) return null;
+  const now = minutesNow(at);
+
+  const during = meals.find(
+    (m) => now >= minutesOf(m.start) && now <= minutesOf(m.end),
+  );
+  if (during) {
+    // "Sigue" = la próxima comida EN EL ORDEN por `start`, no la primera que
+    // empieza tras el `end` de la actual — así una comida contigua o solapada
+    // (start === end previa) no se salta.
+    const next = meals[meals.indexOf(during) + 1] ?? null;
+    return { kind: "during", meal: during, next };
+  }
+
+  const first = meals[0];
+  if (now < minutesOf(first.start))
+    return { kind: "before-first", next: first };
+
+  const last = meals[meals.length - 1];
+  if (now > minutesOf(last.end)) return { kind: "after-last", prev: last };
+
+  // Hueco entre dos franjas: prev = última terminada, next = próxima por empezar.
+  // Con datos bien formados ambas existen (los guards previos lo garantizan);
+  // ante datos corruptos degradamos a null en vez de asertar (typing honesto).
+  const prev = [...meals].reverse().find((m) => minutesOf(m.end) < now);
+  const next = meals.find((m) => minutesOf(m.start) > now);
+  if (!prev || !next) return null;
+  return { kind: "between", prev, next };
+}
+
+/**
+ * Estado de los suplementos del día como UNIÓN DISCRIMINADA — el motor CLASIFICA
+ * el estado del dominio; la UI solo elige la cadena por rama (un `switch`
+ * exhaustivo). Antes la UI lo infería de dos conteos y el orden de los ternarios
+ * mintió (BUG-S3-1: afirmó "ya está" un día sin suplemento). Ahora es imposible.
+ */
+export type SupplementStatus =
+  | { kind: "none-today" } // hoy NO toca ninguno (≠ "ya los tomó todos")
+  | { kind: "pending"; pending: Supplement[] } // tocan hoy y faltan
+  | { kind: "all-done" }; // tocaban hoy y ya están todos
+
+export type Reminder = {
+  slot: MealSlot | null;
+  supplements: SupplementStatus;
+  water: { target: number; done: number };
+};
+
+/**
+ * El recordatorio del momento: franja vigente/siguiente + estado de los
+ * suplementos del día + hidratación. Puro y con hora inyectada. La UI redacta el
+ * copy (sin culpa); el motor resuelve QUÉ mostrar y en qué estado.
+ */
+export function buildReminder(
+  diet: DietPlan,
+  at: Date,
+  doneIds: string[],
+): Reminder {
+  const done = new Set(doneIds);
+  const todays = supplementsForDate(diet, at);
+  const pending = todays.filter(
+    (s) => !done.has(checkIdFor("supplement", s.id)),
+  );
+  const supplements: SupplementStatus =
+    todays.length === 0
+      ? { kind: "none-today" }
+      : pending.length > 0
+        ? { kind: "pending", pending }
+        : { kind: "all-done" };
+
+  const target = waterGlassesTarget(diet);
+  const waterDone = Array.from({ length: target }, (_, i) =>
+    checkIdFor("water", i + 1),
+  ).filter((id) => done.has(id)).length;
+
+  return {
+    slot: currentMealSlot(diet, at),
+    supplements,
+    water: { target, done: waterDone },
   };
 }

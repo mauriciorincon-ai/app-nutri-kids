@@ -55,15 +55,34 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
 - **Limitaciones conocidas:** si un alimento no está en el plan, la app te dice que le preguntes
   al profesional (no inventa respuestas).
 
-### "Hoy" — el checklist del día · desde Sprint 001
+### "Hoy" — el checklist del día · desde Sprint 001 (registro y recordatorio · Sprint 003)
 
 - **Qué hace:** muestra qué toca hoy (comidas con su horario, el suplemento del día y los vasos
   de agua) y deja marcar cada cosa cuando pasa. Arriba se ve cuánto va ("Ya hiciste 3 de 10") y
   qué falta.
 - **Cómo se usa:** es la pantalla de inicio (**Hoy**). Toca la casilla de cada cosa cuando ya
   pasó. Al día siguiente el checklist amanece limpio solo.
-- **Limitaciones conocidas:** las marcas viven en ese teléfono; todavía no se comparten entre
-  cuidadores (eso viene en una versión futura).
+- **Guarda la hora real (Sprint 003):** cuando marcas una comida, la app anota **a qué hora** fue
+  y la muestra ("Hecho · 7:35 a. m."). Es solo para tu memoria — nadie te califica por la hora.
+- **Nota corta por comida (Sprint 003):** debajo de cada comida hay **"Agregar nota"**. Ahí puedes
+  tocar una etiqueta rápida (**Lo rechazó · Le dolió · Tuvo antojo · Otra cosa**) y, si quieres,
+  escribir algo corto ("solo comió dos cucharadas"). Sirve para contarle al pediatra cómo va la
+  semana sin fiarte de la memoria. Puedes editarla o quitarla cuando quieras.
+- **Recordatorio "Ahora mismo" (Sprint 003):** arriba de todo, la app te dice **qué toca en este
+  momento** y **qué sigue** (la comida de la franja, el suplemento del día si falta, y los vasos de
+  agua). No manda notificaciones ni pide permisos: es simplemente la información correcta cuando
+  abres la app. Nunca te reprocha nada — solo informa.
+- **Limitaciones conocidas:** las marcas, las horas y las notas viven en ese teléfono; todavía no
+  se comparten entre cuidadores (eso viene en una versión futura).
+
+### Días anteriores · desde Sprint 003
+
+- **Qué hace:** guarda un historial de lo que registraste otros días — con las horas y las notas —
+  para que puedas repasarlo (por ejemplo, antes de una cita con el pediatra).
+- **Cómo se usa:** en **Hoy**, abajo del todo, toca **"Ver días anteriores"**. Verás la lista por
+  fecha, del más reciente al más antiguo. Es **solo para consultar**: no se edita desde ahí.
+- **Limitaciones conocidas:** vive solo en ese teléfono; **"Borrar mis datos"** en Ajustes lo borra
+  todo (incluidas horas y notas).
 
 ### Pregúntale a la dieta (Chat) · desde Sprint 002
 
@@ -97,12 +116,15 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
 - **Qué hace:** cambia la app entre español e inglés, muestra qué dieta está cargada, y permite
   **borrar todos los datos** del teléfono.
 - **Cómo se usa:** **Ajustes** (abajo). Para borrar: **"Borrar mis datos"** → confirma. Se borra
-  la dieta cargada y las marcas; la app vuelve a la demo. Esto no se puede deshacer.
+  la dieta cargada y **todo tu registro del día (marcas, horas y notas)**; la app vuelve a la demo.
+  Esto no se puede deshacer.
 
 ## Preguntas frecuentes
 
-- **¿Mis datos van a internet?** No. La dieta y las marcas viven solo en tu teléfono. Por eso
-  mismo, si cambias de teléfono, vuelve a cargar el archivo de la dieta.
+- **¿Mis datos van a internet?** No. La dieta, las marcas, las horas y las notas viven solo en tu
+  teléfono. Por eso mismo, si cambias de teléfono, vuelve a cargar el archivo de la dieta. Las notas
+  del día (lo que escribes en "Agregar nota") **nunca** salen del teléfono: ni siquiera se le pasan
+  al chat de IA.
 - **¿Por qué veo "Dieta demo"?** Aún no has cargado la dieta real (o la borraste). Ve a
   **Cargar**.
 - **¿La app cuenta calorías o pesa al niño?** No, y no lo hará: el enfoque es qué alimentos sí y
@@ -115,7 +137,8 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
 
 ## Historial
 
-| Sprint | Features añadidas a este manual                                                                                                                                   |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 001    | Cargar dieta (archivo + pegar) · semáforo con reemplazos · checklist "Hoy" · suplementos de la semana · idioma ES/EN · borrar datos · instalación como app        |
-| 002    | Chat "Pregúntale a la dieta": consultas "¿se puede?" al instante sin internet + preguntas abiertas con asistente de IA anclado al plan · nota de transparencia IA |
+| Sprint | Features añadidas a este manual                                                                                                                                                                                                                              |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 001    | Cargar dieta (archivo + pegar) · semáforo con reemplazos · checklist "Hoy" · suplementos de la semana · idioma ES/EN · borrar datos · instalación como app                                                                                                   |
+| 002    | Chat "Pregúntale a la dieta": consultas "¿se puede?" al instante sin internet + preguntas abiertas con asistente de IA anclado al plan · nota de transparencia IA                                                                                            |
+| 003    | Registro del día: hora real al marcar + nota corta por comida (etiquetas + texto) · recordatorio "Ahora mismo" (qué toca y qué sigue, sin notificaciones) · "Ver días anteriores" (historial local de solo lectura) · borrar datos ahora cubre horas y notas |

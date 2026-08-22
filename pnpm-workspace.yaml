@@ -12,3 +12,9 @@ onlyBuiltDependencies:
   - esbuild
   - '@tailwindcss/oxide'
   - '@sentry/cli'
+# Parche de seguridad: brace-expansion <1.1.16 tiene un ReDoS (GHSA-3jxr-9vmj-r5cp).
+# Solo entra transitivamente por la cadena de eslint (devDependency); ningún dep
+# NUEVO — se fija el patch parcheado para que el gate `pnpm audit --high` quede
+# limpio. Aviso surgido tras el S3 (advisory posterior al audit verde del sprint).
+overrides:
+  brace-expansion@<1.1.16: '^1.1.16'

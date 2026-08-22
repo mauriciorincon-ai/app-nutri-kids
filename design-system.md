@@ -57,6 +57,10 @@ horas y conteos. Fuentes con `display: swap` (regla del kit: el budget LCP ya lo
 **Presupuesto de fuentes (gate LCP):** máximo 2 familias webfont, variables SIN ejes extra — el
 eje SOFT de Fraunces disparaba el LCP a ~5.4s en móvil throttled (medido en CI, sprint 1).
 
+**Eyebrow heading (extensión S3):** rótulo de sección corto en `--font-sans`, 14/peso 600,
+`uppercase tracking-wide` y color `--primary` (p. ej. "Ahora mismo" del recordatorio). Es el
+ÚNICO heading en mayúsculas; los títulos normales (30/24/20) nunca van en `uppercase`.
+
 ### Spacing, radios, sombras, motion
 
 - Spacing: escala Tailwind (múltiplos de 4). Densidad: aireada en Hoy/detalle, compacta en listas.
@@ -65,6 +69,10 @@ eje SOFT de Fraunces disparaba el LCP a ~5.4s en móvil throttled (medido en CI,
 - Motion: 150–250ms, `ease-out`, solo explica causalidad (check que se marca, panel que entra).
   `prefers-reduced-motion` lo apaga todo. **Cero motion JS above-the-fold** (patrón LCP).
 - Táctil: todo control ≥44×44px (uso móvil primario).
+- **Altura de reserva (anti-CLS):** un bloque que se hidrata de esqueleto → contenido de altura
+  variable reserva su altura del estado lleno con `min-h-[…]` para no empujar lo de abajo (gate
+  CLS = 0). Caso vivo: `ReminderCard` (`min-h-[8.75rem]`, hasta 5 líneas). Es la única excepción
+  aceptada al "prohibido el valor mágico suelto": va justificada en comentario y ligada al gate.
 
 ## Componentes canon (shadcn personalizados)
 

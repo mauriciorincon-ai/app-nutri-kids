@@ -1,9 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ChecklistRow } from "@/components/day-checklist/checklist-row";
 import { DaySummary } from "@/components/day-checklist/day-summary";
+import { ReminderCard } from "@/components/day-checklist/reminder-card";
 import { StatusChip } from "@/components/traffic-light/status-chip";
 import { I18nProvider } from "@/i18n";
 import { buildDayChecklist } from "@/lib/diet/logic";
@@ -82,5 +83,42 @@ describe("DaySummary (sin carga moral)", () => {
     const checklist = buildDayChecklist(diet, monday, doneIds);
     withProviders(<DaySummary checklist={checklist} labelFor={() => ""} />);
     expect(screen.getByText(/Listo el día/)).toBeInTheDocument();
+  });
+});
+
+describe("ReminderCard (tri-estado del suplemento — nunca miente)", () => {
+  const diet = getDemoDiet();
+
+  // Reloj fijo: `useNow` se resuelve al montar → `now` determinista (sin este
+  // control, la franja/suplemento dependerían de la hora real del runner).
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-06T07:30:00")); // lunes: con suplemento
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it("día con suplemento pendiente lo nombra (no dice 'ya está')", () => {
+    withProviders(<ReminderCard diet={diet} doneIds={[]} />);
+    expect(
+      screen.getByText("Suplemento de hoy: Multivitamínico demo"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/ya está/)).toBeNull();
+  });
+
+  it("día con el suplemento ya marcado dice 'ya está'", () => {
+    withProviders(
+      <ReminderCard
+        diet={diet}
+        doneIds={["supplement:multivitaminico-demo"]}
+      />,
+    );
+    expect(screen.getByText("Suplemento de hoy: ya está")).toBeInTheDocument();
+  });
+
+  it("día SIN suplemento programado dice 'no toca', jamás 'ya está'", () => {
+    vi.setSystemTime(new Date("2026-07-09T07:30:00")); // jueves: ninguno
+    withProviders(<ReminderCard diet={diet} doneIds={[]} />);
+    expect(screen.getByText("Hoy no toca suplemento")).toBeInTheDocument();
+    expect(screen.queryByText(/ya está/)).toBeNull();
   });
 });

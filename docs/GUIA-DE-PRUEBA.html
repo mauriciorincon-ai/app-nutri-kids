@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía de prueba — Nutri-Kids</title>
+<!--
+  GUÍA DE PRUEBA VIVA Y ACUMULATIVA de Nutri-Kids. PRIMERA guía de la app (v1), pero ACUMULATIVA:
+  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat) y S3 (día completo). Autocontenida
+  (cero CDNs). Origen por línea (S1/S2 heredadas ⇒ regresión · Nuevo/Mejorado · S3). Gate mínimo ⭐
+  = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s3.
+-->
+<style>
+  :root {
+    --fondo: #fbf9f5; --superficie: #f3efe7; --borde: #e7ded0;
+    --tinta: #33291f; --tinta-suave: #6d6255;
+    --acento: #b0552f; --acento-suave: #f3e2d6;
+    --alerta: #a4432f; --alerta-suave: #f8e2da;
+    --ok: #4f7a4a; --pendiente: #8a6413; --pendiente-suave: #f6ead0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fondo: #17130f; --superficie: #211a14; --borde: #382c22;
+      --tinta: #f1eae0; --tinta-suave: #a89a8b;
+      --acento: #e0a17e; --acento-suave: #33231a;
+      --alerta: #f0b3a2; --alerta-suave: #3a2117;
+      --ok: #8dbd86; --pendiente: #e9c470; --pendiente-suave: #33280f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fondo); color: var(--tinta);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 16px; line-height: 1.55; }
+  .pagina { max-width: 680px; margin: 0 auto; padding: 24px 18px 80px; }
+  h1 { font-family: Georgia, "Times New Roman", serif; font-weight: 400; font-size: 2rem;
+    line-height: 1.15; margin: 8px 0 4px; text-wrap: balance; }
+  h2 { font-family: Georgia, serif; font-weight: 400; font-size: 1.35rem; margin: 0; text-wrap: balance; }
+  .eyebrow { font-family: ui-monospace, Menlo, monospace; font-size: 0.68rem;
+    letter-spacing: 0.09em; text-transform: uppercase; color: var(--tinta-suave); }
+  p { margin: 0.5em 0; }
+  .suave { color: var(--tinta-suave); }
+  .chica { font-size: 0.875rem; }
+  code { font-family: ui-monospace, Menlo, monospace; font-size: 0.85em;
+    background: var(--superficie); padding: 1px 5px; border-radius: 4px; }
+
+  .url-caja { background: var(--superficie); border: 1px solid var(--borde);
+    border-radius: 10px; padding: 12px 14px; margin: 16px 0; overflow-wrap: anywhere; }
+
+  .progreso { position: sticky; top: 0; z-index: 5; background: var(--fondo);
+    padding: 10px 0 8px; border-bottom: 1px solid var(--borde); margin-bottom: 18px; }
+  .progreso-fila { display: flex; align-items: center; gap: 12px; }
+  .barra { flex: 1; height: 8px; background: var(--superficie); border-radius: 99px; overflow: hidden; }
+  .barra > div { height: 100%; width: 0%; background: var(--ok); transition: width 0.2s ease; }
+  .num { font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; color: var(--tinta-suave); }
+
+  .filtros { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .filtros button { font: inherit; font-size: 0.82rem; padding: 5px 12px; border-radius: 99px;
+    border: 1px solid var(--borde); background: var(--superficie); color: var(--tinta); cursor: pointer; }
+  .filtros button.activo { background: var(--acento); border-color: var(--acento); color: var(--fondo); }
+
+  .bloque { background: var(--superficie); border: 1px solid var(--borde);
+    border-radius: 14px; padding: 18px; margin: 0 0 18px; }
+  .bloque-cabeza { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .letra { display: grid; place-items: center; width: 28px; height: 28px; flex: none;
+    background: var(--acento); color: var(--fondo); border-radius: 8px;
+    font-family: ui-monospace, Menlo, monospace; font-size: 0.85rem; }
+  .meta-bloque { margin: 2px 0 12px; }
+
+  ul.pasos { list-style: none; margin: 0; padding: 0; }
+  ul.pasos li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0;
+    border-top: 1px solid var(--borde); }
+  ul.pasos li:first-child { border-top: 0; }
+  ul.pasos li[hidden] { display: none; }
+  ul.pasos input[type="checkbox"] { margin: 4px 0 0; width: 20px; height: 20px; flex: none;
+    accent-color: var(--ok); cursor: pointer; }
+  ul.pasos label { cursor: pointer; }
+
+  .origen { display: inline-block; font-family: ui-monospace, Menlo, monospace; font-size: 0.65rem;
+    letter-spacing: 0.04em; text-transform: uppercase; padding: 1px 8px; border-radius: 99px;
+    border: 1px solid; white-space: nowrap; vertical-align: 2px; margin-left: 6px; }
+  .origen-nuevo { color: var(--acento); border-color: var(--acento); background: var(--acento-suave); }
+  .origen-mejorado { color: var(--pendiente); border-color: var(--pendiente); background: var(--pendiente-suave); }
+  .origen-heredada { color: var(--tinta-suave); border-color: var(--borde); }
+  .minimo { font-size: 0.75rem; white-space: nowrap; margin-left: 4px; }
+
+  .tabla-scroll { overflow-x: auto; margin: 14px 0 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.875rem; }
+  th, td { text-align: left; padding: 7px 10px; border: 1px solid var(--borde); vertical-align: top; }
+  th { background: var(--acento-suave); font-weight: 600; }
+  td.valor { color: var(--ok); }
+
+  .reportame { margin-top: 14px; background: var(--alerta-suave); border-left: 3px solid var(--alerta);
+    border-radius: 0 8px 8px 0; padding: 10px 12px; font-size: 0.9rem; }
+  .diferido { background: var(--pendiente-suave); border-left: 3px solid var(--pendiente);
+    border-radius: 0 8px 8px 0; padding: 10px 12px; font-size: 0.9rem; margin-top: 14px; }
+  .kit { background: var(--acento-suave); border-left: 3px solid var(--acento);
+    border-radius: 0 8px 8px 0; padding: 10px 12px; font-size: 0.9rem; margin-top: 14px; }
+  footer { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--borde); }
+  footer details { margin-top: 10px; }
+  footer summary { cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="pagina">
+  <header>
+    <p class="eyebrow">Nutri-Kids · Guía de prueba viva y acumulativa · Sprint 3 · 2026-07-20</p>
+    <h1>Guía de prueba</h1>
+    <p class="suave">Todas las pruebas vigentes de la app: las nuevas del S3 (registro del día,
+      recordatorio, historial), las que este sprint mejoró, y las heredadas de S1 (dieta viva) y S2
+      (chat) — que corren como <strong>regresión</strong>. Filtra por origen para correr todo o solo
+      lo que cambió. Las casillas se guardan solas en este navegador.</p>
+    <p class="chica"><strong>Gate mínimo ⭐: 6 pruebas · ~30 min.</strong> Es lo que ninguna
+      automatización puede verificar: la respuesta del chat con IA real, la migración en TU teléfono,
+      instalar la app, el recorrido de la mamá con la dieta real y la aprobación visual. Todo lo demás
+      (unit, e2e, axe, budgets) lo respalda la CI y se corre en pases completos.</p>
+    <div class="url-caja">
+      <p class="eyebrow" style="margin:0 0 6px">URL de prueba</p>
+      <code>Preview de la rama <strong>sprint-003/el-dia-completo</strong> — se pega aquí al abrir el PR (Vercel la genera).</code>
+      <p class="chica suave" style="margin:8px 0 0">Dirección estable de la rama: no cambia aunque se
+        suban correcciones. Si pide login de Vercel: Settings → Deployment Protection → Vercel
+        Authentication → Disabled.</p>
+    </div>
+  </header>
+
+  <div class="progreso">
+    <div class="progreso-fila">
+      <div class="barra"><div id="barra-avance"></div></div>
+      <span class="num" id="contador">0/0</span>
+    </div>
+    <div class="filtros" role="group" aria-label="Filtrar pruebas por origen">
+      <button type="button" data-filtro="todo" class="activo">Todo</button>
+      <button type="button" data-filtro="cambios">Lo que cambió en S3</button>
+      <button type="button" data-filtro="minimo">Gate mínimo ⭐</button>
+    </div>
+  </div>
+
+  <!-- ============================ A · CARGAR ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">A</span><h2>Cargar tu dieta</h2></div>
+    <p class="meta-bloque chica suave">~3 min · pantalla <strong>Cargar</strong> · que la dieta entre y viva solo en el dispositivo.</p>
+    <ul class="pasos">
+      <li data-origen="heredada"><input type="checkbox" id="a1"><label for="a1">Con la demo activa,
+        el letrero de arriba dice <strong>«Dieta demo»</strong>. La app funciona completa sin cargar nada.
+        <span class="origen origen-heredada">S1</span></label></li>
+      <li data-origen="heredada"><input type="checkbox" id="a2"><label for="a2">En <strong>Cargar</strong>,
+        pega el contenido de una dieta válida (kit de prueba) → <strong>«Cargar lo pegado»</strong> → sale
+        el resumen «¡Dieta cargada!» y el letrero cambia a <strong>«Tu dieta»</strong>.
+        <span class="origen origen-heredada">S1</span></label></li>
+      <li data-origen="heredada"><input type="checkbox" id="a3"><label for="a3">Pegar basura
+        («esto no es una dieta») da un error legible que dice qué hacer, <strong>sin</strong> romper la
+        dieta que ya estaba. <span class="origen origen-heredada">S1</span></label></li>
+    </ul>
+    <div class="tabla-scroll"><table>
+      <tr><th>Qué mirar</th><th>Valor / comportamiento correcto</th></tr>
+      <tr><td>Resumen al cargar la demo</td><td class="valor">4 grupos · 2 suplementos · 5 comidas</td></tr>
+      <tr><td>Archivo inválido</td><td class="valor">«…no se pudo leer…» y la dieta previa intacta</td></tr>
+    </table></div>
+    <div class="kit"><p><strong>Kit de prueba:</strong> la dieta demo vive en
+      <code>data/demo-diet.json</code>; para «cargar una dieta» sin datos reales, usa una copia de ese
+      archivo con otro <code>id</code> (ver <code>docs/kit-de-prueba/README.md</code>).</p></div>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> si un archivo inválido «entra» igual,
+      o si al cargar algo se pierde la dieta previa sin avisar.</p></div>
+  </section>
+
+  <!-- ============================ B · SEMÁFORO ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">B</span><h2>El semáforo de la dieta</h2></div>
+    <p class="meta-bloque chica suave">~3 min · pantalla <strong>Dieta</strong> · «¿esto se puede?» en segundos, símbolo + texto + color.</p>
+    <ul class="pasos">
+      <li data-origen="heredada"><input type="checkbox" id="b1"><label for="b1">Busca
+        <strong>«manzana»</strong> → 🔴 <strong>Evitar</strong>, «hasta el 28 sep 2026», y reemplazos
+        <strong>pera / kiwi / uvas / fresas</strong>. <span class="origen origen-heredada">S1</span></label></li>
+      <li data-origen="heredada"><input type="checkbox" id="b2"><label for="b2">Busca
+        <strong>«banano»</strong> → 🟡 <strong>Con límite</strong> («máx. 1 al día»); un alimento verde
+        (p. ej. «pollo») → 🟢 <strong>Se puede</strong>. <span class="origen origen-heredada">S1</span></label></li>
+      <li data-origen="heredada"><input type="checkbox" id="b3"><label for="b3">El color <strong>nunca
+        va solo</strong>: siempre hay símbolo (✓ / ⚠ / ✕) y palabra. En la pestaña Rojo aparecen los
+        <strong>aditivos</strong> (códigos E-) a revisar en etiquetas. <span class="origen origen-heredada">S1</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> un estado que se distinga SOLO por
+      color (sin símbolo ni texto), o un alimento fuera del plan al que la app «le invente» un veredicto.</p></div>
+  </section>
+
+  <!-- ============================ C · HOY + REGISTRO ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">C</span><h2>«Hoy» — checklist, hora y nota</h2></div>
+    <p class="meta-bloque chica suave">~6 min · pantalla <strong>Hoy</strong> · marcar el día, con hora real y nota, sin culpa.</p>
+    <ul class="pasos">
+      <li data-origen="heredada"><input type="checkbox" id="c1"><label for="c1">Marca un vaso de agua y
+        el suplemento → el contador sube («Ya hiciste 2 de 10») y abajo dice «Te falta: …», sin
+        porcentajes ni notas. <span class="origen origen-heredada">S1</span></label></li>
+      <li data-origen="mejorado"><input type="checkbox" id="c2"><label for="c2">Marca una comida → junto
+        a ella aparece <strong>«Hecho ·» con la hora real</strong> de cuando la marcaste (no una inventada).
+        <span class="origen origen-mejorado">Mejorado en S3</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="c3"><label for="c3">Debajo de una comida toca
+        <strong>«Agregar nota»</strong> → elige la etiqueta <strong>«Lo rechazó»</strong> y escribe algo
+        corto → <strong>«Guardar»</strong>. Queda visible «Lo rechazó · …» y se puede editar o quitar.
+        <span class="origen origen-nuevo">Nuevo · S3</span></label></li>
+      <li data-origen="nuevo" data-minimo><input type="checkbox" id="c4"><label for="c4">Lee el bloque
+        <strong>«Ahora mismo»</strong> arriba: ¿lo que dice que toca (comida/suplemento/agua) coincide con
+        la hora real y el tono <strong>informa sin reprochar</strong>? (juicio humano sobre la experiencia)
+        <span class="origen origen-nuevo">Nuevo · S3</span><span class="minimo">⭐ mínimo</span></label></li>
+      <li data-origen="heredada"><input type="checkbox" id="c5"><label for="c5">Recarga la página: las
+        marcas, la hora y la nota <strong>siguen ahí</strong>. Al día siguiente el checklist amanece
+        limpio sin borrar el historial. <span class="origen origen-heredada">S1</span></label></li>
+    </ul>
+    <div class="tabla-scroll"><table>
+      <tr><th>Qué mirar</th><th>Valor / comportamiento correcto</th></tr>
+      <tr><td>Total del checklist (lunes, demo)</td><td class="valor">10 (5 comidas + 1 suplemento + 4 vasos)</td></tr>
+      <tr><td>Comida marcada</td><td class="valor">«Hecho · H:MM» con la hora del teléfono</td></tr>
+      <tr><td>Comida NO marcada</td><td class="valor">nunca se reprocha — solo dice qué falta</td></tr>
+    </table></div>
+    <div class="kit"><p><strong>Kit de prueba:</strong> recorrido guiado en
+      <code>docs/kit-de-prueba/dia-de-registro-ejemplo.md</code>.</p></div>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> una hora de marca equivocada, una nota
+      que no se guarda, o CUALQUIER frase que suene a reproche por una comida no marcada.</p></div>
+  </section>
+
+  <!-- ============================ D · DÍAS ANTERIORES ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">D</span><h2>Días anteriores</h2></div>
+    <p class="meta-bloque chica suave">~2 min · <strong>Hoy → «Ver días anteriores»</strong> · repasar lo registrado, solo lectura.</p>
+    <ul class="pasos">
+      <li data-origen="nuevo"><input type="checkbox" id="d1"><label for="d1">Tras registrar el día, abre
+        <strong>«Ver días anteriores»</strong> → el día de hoy aparece con la etiqueta <strong>HOY</strong>,
+        las horas y las notas. <span class="origen origen-nuevo">Nuevo · S3</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="d2"><label for="d2">Es <strong>solo de
+        lectura</strong>: no hay forma de editar desde ahí; «Volver a Hoy» regresa.
+        <span class="origen origen-nuevo">Nuevo · S3</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> un día que aparezca vacío teniendo
+      marcas, o notas que se muestren cambiadas respecto a lo que escribiste.</p></div>
+  </section>
+
+  <!-- ============================ E · SUPLEMENTOS ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">E</span><h2>Suplementos de la semana</h2></div>
+    <p class="meta-bloque chica suave">~2 min · pantalla <strong>Suplementos</strong> · el calendario Lun–Dom y la marca compartida con «Hoy».</p>
+    <ul class="pasos">
+      <li data-origen="heredada"><input type="checkbox" id="e1"><label for="e1">El día de hoy sale
+        resaltado con «hoy»; cada día muestra su suplemento con dosis y momento.
+        <span class="origen origen-heredada">S1</span></label></li>
+      <li data-origen="heredada"><input type="checkbox" id="e2"><label for="e2">Marca el de hoy aquí →
+        vuelve a <strong>Hoy</strong> y el contador ya lo refleja (es el <strong>mismo</strong> registro).
+        <span class="origen origen-heredada">S1</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> que la marca de Suplementos y la de Hoy
+      no coincidan.</p></div>
+  </section>
+
+  <!-- ============================ F · CHAT ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">F</span><h2>Chat «Pregúntale a la dieta»</h2></div>
+    <p class="meta-bloque chica suave">~7 min · pantalla <strong>Chat</strong> · consulta local instantánea + pregunta abierta con IA + límites.</p>
+    <ul class="pasos">
+      <li data-origen="heredada"><input type="checkbox" id="f1"><label for="f1">Escribe
+        <strong>«¿la manzana se puede?»</strong> → tarjeta 🔴 con reemplazos e insignia
+        <strong>«Desde tu plan · sin IA»</strong>, <strong>al instante</strong> (funciona sin internet).
+        <span class="origen origen-heredada">S2</span></label></li>
+      <li data-origen="heredada" data-minimo><input type="checkbox" id="f2"><label for="f2">Con el
+        <strong>asistente de IA real activo (Groq)</strong>, pregunta <strong>«no tengo pollo, ¿qué le
+        doy al almuerzo?»</strong> → respuesta redactada que propone <strong>SOLO cosas del plan</strong>,
+        con la nota «Respuesta de IA». <em>(Juicio humano: ¿alguna vez recomienda algo rojo? No debe.)</em>
+        <span class="origen origen-heredada">S2</span><span class="minimo">⭐ mínimo · Groq real</span></label></li>
+      <li data-origen="heredada"><input type="checkbox" id="f3"><label for="f3">Pregunta médica
+        <strong>«¿le subo la dosis de la B12?»</strong> → redirección amable al profesional, <strong>sin</strong>
+        insignia de IA. Una pregunta fuera de tema («¿quién ganó el partido?») también se redirige.
+        <span class="origen origen-heredada">S2</span></label></li>
+      <li data-origen="heredada"><input type="checkbox" id="f4"><label for="f4">Sin señal o con el
+        asistente en pausa → aviso honesto; las preguntas de «¿se puede?» siguen respondiendo igual.
+        <span class="origen origen-heredada">S2</span></label></li>
+      <li data-origen="heredada"><input type="checkbox" id="f5"><label for="f5">Recarga el chat → el hilo
+        <strong>amanece vacío</strong> (la conversación no se guarda — privacidad del peque).
+        <span class="origen origen-heredada">S2</span></label></li>
+    </ul>
+    <div class="kit"><p><strong>Kit de prueba:</strong> batería lista para copiar en
+      <code>docs/kit-de-prueba/preguntas-calibracion-chat.md</code> (locales, de IA y de redirección, con
+      lo que se espera en cada una).</p></div>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> que el asistente recomiende un alimento
+      rojo o restringido, que dé consejo médico/dosis, o que la conversación reaparezca tras recargar.</p></div>
+    <div class="diferido"><p><strong>Diferido pagado aquí:</strong> la validación con <strong>Groq REAL</strong>
+      quedó pendiente del S2 (la key no estaba configurada; el chat degradaba a local, honesto). Este gate
+      la salda: configura <code>GROQ_API_KEY</code> + <code>CHAT_PROVIDER=groq</code> +
+      <code>CHAT_ENABLED=true</code> y corre la prueba <strong>f2</strong> con la IA real.</p></div>
+  </section>
+
+  <!-- ============================ G · IDIOMA Y BORRAR ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">G</span><h2>Idioma y borrar datos</h2></div>
+    <p class="meta-bloque chica suave">~3 min · pantalla <strong>Ajustes</strong> · ES/EN completo y el borrado que cubre TODO.</p>
+    <ul class="pasos">
+      <li data-origen="heredada"><input type="checkbox" id="g1"><label for="g1">Cambia a
+        <strong>English</strong> → toda la UI y el contenido bilingüe cambian; recargar mantiene el idioma.
+        Tu <strong>nota escrita a mano NO se traduce</strong> (es tuya). <span class="origen origen-heredada">S1</span></label></li>
+      <li data-origen="mejorado"><input type="checkbox" id="g2"><label for="g2"><strong>«Borrar mis
+        datos»</strong> → confirma → se borra la dieta cargada <strong>y todo el registro (marcas, horas
+        y notas)</strong>; la app vuelve a la demo. El copy ahora nombra horas y notas.
+        <span class="origen origen-mejorado">Mejorado en S3</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> que tras «Borrar mis datos» quede alguna
+      nota, hora o marca de días anteriores.</p></div>
+  </section>
+
+  <!-- ============================ H · MIGRACIÓN + PWA (⭐ real device) ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">H</span><h2>Tu teléfono real: migración e instalación</h2></div>
+    <p class="meta-bloque chica suave">~5 min · en el teléfono de la mamá · lo que solo el dispositivo real prueba.</p>
+    <ul class="pasos">
+      <li data-origen="nuevo" data-minimo><input type="checkbox" id="h1"><label for="h1">Si ya usabas la
+        app antes del S3: al abrir esta versión, <strong>tus marcas anteriores siguen ahí</strong> (la
+        migración no pierde nada; las marcas viejas salen como «Hecho» sin hora, honesto). <em>Solo tu
+        teléfono tiene tu estado real.</em> <span class="origen origen-nuevo">Nuevo · S3</span><span class="minimo">⭐ mínimo · dispositivo real</span></label></li>
+      <li data-origen="heredada" data-minimo><input type="checkbox" id="h2"><label for="h2">Instala la app:
+        Chrome → menú (⋮) → <strong>«Agregar a pantalla de inicio»</strong> → se abre con su ícono, a
+        pantalla completa, como cualquier app. <span class="origen origen-heredada">S1</span><span class="minimo">⭐ mínimo · dispositivo real</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> que al actualizar se pierda alguna marca
+      previa, o que «Agregar a pantalla de inicio» no aparezca / no instale.</p></div>
+  </section>
+
+  <!-- ============================ I · EL RECORRIDO DE LA MAMÁ (⭐ gate del usuario) ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">I</span><h2>El recorrido de la mamá ⭐</h2></div>
+    <p class="meta-bloque chica suave">~10 min · con la <strong>dieta REAL</strong>, en su teléfono · el gate que ninguna automatización sustituye.</p>
+    <ul class="pasos">
+      <li data-origen="nuevo" data-minimo><input type="checkbox" id="i1"><label for="i1">Carga la
+        <strong>dieta oficial real</strong> (entregada aparte, fuera del repo) desde <strong>Cargar</strong>.
+        El semáforo, los suplementos y el chat responden con SU dieta. <span class="origen origen-nuevo">Nuevo · S3</span><span class="minimo">⭐ mínimo · dieta real</span></label></li>
+      <li data-origen="nuevo" data-minimo><input type="checkbox" id="i2"><label for="i2">Haz un día real:
+        marca comidas a su hora, pon una nota verdadera, mira el recordatorio, revisa «Días anteriores».
+        ¿Se siente <strong>cálido, claro y sin culpa</strong> en su teléfono? (aprobación visual + de tono)
+        <span class="origen origen-nuevo">Nuevo · S3</span><span class="minimo">⭐ mínimo · aprobación visual</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> cualquier cosa que se sienta clínica,
+      culpígena o confusa; cualquier dato del niño que parezca salir del teléfono; cualquier pantalla que
+      se vea rota en su modelo de teléfono.</p></div>
+  </section>
+
+  <footer>
+    <p class="chica suave">Guía <strong>viva y acumulativa</strong>: contiene TODAS las pruebas vigentes
+      de Nutri-Kids (S1 + S2 + S3) con su origen visible; una prueba solo se elimina cuando su feature
+      dejó de existir. Archivo autocontenido — se abre sin internet, se versiona con el repo y se comparte
+      tal cual.</p>
+    <details class="chica">
+      <summary>Historial de la guía</summary>
+      <ul>
+        <li><strong>S3 · 2026-07-20 (v1, primera guía):</strong> nace la guía acumulativa cubriendo S1–S3.
+          Nuevo: bloques C (registro: hora + nota + recordatorio), D (días anteriores), H (migración v1→v2
+          + PWA en dispositivo real), I (recorrido de la mamá con dieta real). Mejorado: C (hora/nota sobre
+          el checklist S1), G (borrar cubre el registro). Se salda el diferido del S2: validación con Groq
+          real (F·f2). Ninguna prueba eliminada.</li>
+        <li><strong>S1 y S2:</strong> la app no tenía guía (el delta v1.6.0 la exige desde el primer sprint
+          con UI posterior); sus pruebas se incorporan ENTERAS aquí como regresión, no comprimidas.</li>
+      </ul>
+    </details>
+  </footer>
+</div>
+
+<script>
+  (function () {
+    // NS VERSIONADO POR SPRINT (regla dura): s3. Una regresión sin correr no aparece marcada por
+    // una versión anterior de la guía.
+    var NS = "guia-nutri-kids:s3:";
+    var casillas = Array.prototype.slice.call(document.querySelectorAll('input[type="checkbox"]'));
+    var barra = document.getElementById("barra-avance");
+    var contador = document.getElementById("contador");
+    var botones = Array.prototype.slice.call(document.querySelectorAll(".filtros button"));
+    var secciones = Array.prototype.slice.call(document.querySelectorAll("section.bloque"));
+
+    function visible(li, filtro) {
+      if (filtro === "todo") return true;
+      if (filtro === "minimo") return li.hasAttribute("data-minimo");
+      var o = li.getAttribute("data-origen");
+      return o === "nuevo" || o === "mejorado"; // filtro "cambios"
+    }
+    function aplicarFiltro(filtro) {
+      secciones.forEach(function (sec) {
+        var conVisibles = 0;
+        Array.prototype.slice.call(sec.querySelectorAll("ul.pasos li")).forEach(function (li) {
+          var v = visible(li, filtro);
+          if (v) { li.removeAttribute("hidden"); conVisibles++; } else { li.setAttribute("hidden", ""); }
+        });
+        if (conVisibles) { sec.removeAttribute("hidden"); } else { sec.setAttribute("hidden", ""); }
+      });
+      botones.forEach(function (b) { b.classList.toggle("activo", b.getAttribute("data-filtro") === filtro); });
+      actualizar();
+    }
+    function actualizar() {
+      var vis = casillas.filter(function (c) {
+        var li = c.closest("li"), sec = c.closest("section");
+        return !(li && li.hasAttribute("hidden")) && !(sec && sec.hasAttribute("hidden"));
+      });
+      var hechas = vis.filter(function (c) { return c.checked; }).length;
+      barra.style.width = (vis.length ? (hechas / vis.length) * 100 : 0) + "%";
+      contador.textContent = hechas + "/" + vis.length;
+    }
+    botones.forEach(function (b) {
+      var f = b.getAttribute("data-filtro"), n = 0;
+      document.querySelectorAll("ul.pasos li").forEach(function (li) { if (visible(li, f)) n++; });
+      b.textContent = b.textContent + " (" + n + ")";
+      b.addEventListener("click", function () { aplicarFiltro(f); });
+    });
+    casillas.forEach(function (c) {
+      try { c.checked = localStorage.getItem(NS + c.id) === "1"; } catch (e) {}
+      c.addEventListener("change", function () {
+        try { localStorage.setItem(NS + c.id, c.checked ? "1" : "0"); } catch (e) {}
+        actualizar();
+      });
+    });
+    actualizar();
+  })();
+</script>
+</body>
+</html>

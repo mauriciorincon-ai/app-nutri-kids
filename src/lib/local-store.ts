@@ -19,6 +19,13 @@ export function notifyLocalStore(): void {
   for (const listener of listeners) listener();
 }
 
+// Sincroniza instancias ABIERTAS del mismo origen (PWA instalada + pestaña del
+// navegador): el evento `storage` dispara en los OTROS documentos cuando uno
+// escribe. Un solo listener global re-lee a todos los consumidores locales.
+if (typeof window !== "undefined") {
+  window.addEventListener("storage", () => notifyLocalStore());
+}
+
 function subscribe(listener: () => void): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
