@@ -314,6 +314,10 @@ un repo público. Dibujadas: ~17 KB, escalan sin pixelarse, usan los tokens del 
 no por revisión. Fidelidad verificada contra capturas reales de las 7 pantallas de la app corriendo
 con la dieta demo (las capturas se quedaron fuera del repo).
 
+**Tamaño natural, jamás estirada:** el recorte está dibujado a 320 px de ancho y se topa ahí
+(`max-width: 300px`). Dejarlo crecer al ancho de la tarjeta lo escalaba ×2 en escritorio (646 px):
+se veía tosco y le robaba la jerarquía al título. Es una muestra, no una portada.
+
 **A11y:** el `<svg>` es ilustración (`aria-hidden`); el sentido lo carga el `<figcaption>` en
 palabras — «Así se ve **Dieta**: …». Quien no ve el dibujo no pierde nada.
 
@@ -324,6 +328,16 @@ desordenado en silencio — el mismo modo de fallo que el `calc()` del semáforo
 
 ## El riesgo de este delta
 
-**Que abrir con el scroll dispare el CLS** y tumbe el gate de Lighthouse sobre `/conoce`. Mitigado
-por diseño (ancla superior + disparo tardío) y **medido, no supuesto**: 0.0000 al cargar y 0.0118
-en un recorrido completo. Si algún día sube, la palanca es el disparo, no la idea.
+**Que abrir con el scroll dispare el CLS** y tumbe el gate de Lighthouse sobre `/conoce`. El gate
+mide el CLS **de carga**, que sigue en **0.0000** porque nada se abre sin que tú bajes. En el
+recorrido el número sube (0.13 escritorio · 0.32 móvil) y eso es **el efecto, no un defecto**:
+abrir una tarjeta a media pantalla desplaza lo que va debajo — es exactamente lo que se pidió ver.
+La palanca, si alguna vez estorba, es el disparo, no la idea.
+
+## Corrección tras el gate visual (misma tarde)
+
+La v1 de este delta falló donde importaba: disparaba al 79% de pantalla (la apertura ocurría a
+punto de salir por abajo) y dejaba la muestra estirarse al ancho de la tarjeta (×2 en escritorio).
+El veredicto del usuario fue «no veo que se desplieguen… y las imágenes gigantes, cero estética».
+Corregido: disparo al 38% de margen (abre al 46–56%) y muestra topada a su tamaño natural.
+**Lección: una animación que ocurre fuera del campo visual no existe, por más que el test la vea.**

@@ -176,9 +176,13 @@
      de la app y el texto real de la dieta demo — no una captura: así el archivo sigue
      autocontenido (pesa bytes, no imágenes), escala sin pixelarse y no puede filtrar nada.
      El SVG es ilustración (aria-hidden); quien no lo ve recibe la frase del figcaption. */
-  .muestra { margin: 14px 0 4px; }
-  .muestra svg { display: block; width: 100%; height: auto; background: var(--background); border: 1px solid var(--border); border-radius: 12px; }
-  .muestra figcaption { margin: 8px 2px 0; font-size: 0.86rem; color: var(--muted-foreground); }
+  /* TAMAÑO NATURAL, jamás estirada: el recorte está dibujado a 320 px de ancho; dejarlo
+     crecer al ancho de la tarjeta lo escalaba ×2 en escritorio (646 px), y una muestra al
+     doble de su tamaño se ve tosca y le roba la jerarquía al título de la tarjeta. Es una
+     muestra, no una portada. */
+  .muestra { margin: 12px 0 2px; }
+  .muestra svg { display: block; width: 100%; max-width: 300px; height: auto; background: var(--background); border: 1px solid var(--border); border-radius: 10px; }
+  .muestra figcaption { margin: 7px 2px 0; max-width: 46em; font-size: 0.82rem; line-height: 1.45; color: var(--muted-foreground); }
   .muestra + .feature { border-top: 1px solid var(--border); }
   .mz-caja { fill: var(--card); stroke: var(--border); }
   .mz-hueco { fill: var(--background); stroke: var(--border); }
@@ -376,9 +380,9 @@
     .baja .flecha { animation: none; opacity: 0.7; }
     .icono svg .trazable, .telefono .trazable { stroke-dasharray: none; stroke-dashoffset: 0; animation: none; }
     .detalle-cuerpo .feature, .detalle-cuerpo .muestra { opacity: 1; transform: none; transition: none; }
-    /* M1 · con movimiento reducido el automático NO corre: el script abre las cinco tarjetas
-       al cargar y no vuelve a tocarlas. Todo el contenido está, quieto, desde el primer
-       momento — y tu toque las sigue cerrando y abriendo si quieres. */
+    /* M1 · con movimiento reducido la tarjeta sigue abriéndose al llegar, pero SIN
+       transición: cambia de estado, no se anima. El contenido llega igual; lo que no hay
+       es movimiento. */
     .chip .simbolo, .chip .texto, .chip .que { opacity: 1; transform: none; transition: none; }
     .chip .tinte { opacity: 1; transition: none; }
     .telefono .fila, .telefono .fila-nota, .telefono .etiqueta, .telefono .etiqueta-fuerte, .telefono .flecha { opacity: 1; animation: none; }
@@ -1023,13 +1027,11 @@
      · CIERRA solo cuando ya la dejaste atrás y salió COMPLETA por abajo de la pantalla.
        Jamás se cierra algo que estés mirando.
      · TU DEDO GANA: tocar una tarjeta la saca del automático para siempre.
-     · Con movimiento reducido nada de esto corre (ver abajo).                            */
-  if (reduce) {
-    /* Corte editorial de movimiento reducido: el automático no existe. Las cinco llegan
-       abiertas y quietas — todo el contenido presente desde el primer momento — y el toque
-       las sigue gobernando. */
-    tarjetas.forEach(function (t) { abrir(t, true); });
-  } else if ("IntersectionObserver" in window) {
+     · Con movimiento reducido el mecanismo es EL MISMO; lo que desaparece es la transición
+       (el CSS la apaga): la tarjeta pasa de cerrada a abierta sin animación. Se probó la
+       alternativa de entregarlas todas abiertas y era peor: se llega a un muro de texto y
+       nadie ve nunca una tarjeta abrirse.                                                */
+  if ("IntersectionObserver" in window) {
     var ultimoY = window.pageYOffset;
     var bajando = true;
     var huboScroll = window.pageYOffset > 0;
@@ -1052,10 +1054,14 @@
         window.pageYOffset + window.innerHeight + 8;
     };
 
-    /* LLEGADA. El tercio se mide contra la zona de lectura y no contra el borde crudo de la
-       pantalla a propósito: una tarjeta cerrada mide ~95 px, así que cumpliría el tercio
-       asomando 32 px y se abriría fuera de cuadro — la animación existiría sin que nadie
-       la viera. Con el 15% de margen, cuando se abre ya la estás mirando. */
+    /* LLEGADA. El tercio se mide contra la ZONA DE LECTURA —la pantalla menos su 38%
+       inferior— y no contra el borde crudo: una tarjeta cerrada mide ~95 px, así que contra
+       el borde cumpliría el tercio asomando 32 px y se abriría con su cabecera al 79% de la
+       pantalla, es decir a punto de salir por abajo. La primera versión hacía justo eso y el
+       usuario reportó lo previsible: «no veo que se desplieguen, se ven ya desplegadas».
+       Con el 38%, la tarjeta se abre con su cabecera hacia la mitad de la pantalla: la
+       apertura ocurre delante de los ojos. Se paga con algo de desplazamiento visible
+       (CLS del recorrido), que se mide y se declara. */
     var llegada = new IntersectionObserver(function (entradas) {
       entradas.forEach(function (e) {
         var t = e.target;
@@ -1063,7 +1069,7 @@
         if (t.hasAttribute("data-manual") || t.hasAttribute("data-abierta")) return;
         if (e.isIntersecting && e.intersectionRatio >= 1 / 3) abrir(t, true);
       });
-    }, { threshold: [1 / 3], rootMargin: "0px 0px -15% 0px" });
+    }, { threshold: [1 / 3], rootMargin: "0px 0px -38% 0px" });
 
     /* DESPEDIDA. Solo cierra la que salió por ABAJO (subiste y la dejaste debajo de la
        pantalla). La que sale por arriba se queda abierta: si te devuelves un poco, la

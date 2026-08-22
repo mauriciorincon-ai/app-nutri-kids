@@ -93,12 +93,15 @@ test.describe("brochure /conoce", () => {
       page.getByRole("heading", { name: "El semáforo de alimentos" }),
     ).toBeVisible();
 
-    // Se abre DENTRO de cuadro: si el borde superior estuviera pegado al filo inferior,
-    // la animación existiría sin que nadie la viera (por eso el tercio se mide contra
-    // la zona de lectura y no contra el borde crudo de la pantalla).
+    // Se abre DELANTE DE LOS OJOS, no a punto de salir por abajo. La primera versión
+    // disparaba con la cabecera al 79% y el usuario reportó lo previsible: «no veo que se
+    // desplieguen, se ven ya desplegadas». Este umbral es la regresión guardada.
     const caja = await page.locator(".tarjeta").first().boundingBox();
     const alto = page.viewportSize()!.height;
-    expect(caja!.y).toBeLessThan(alto * 0.85);
+    expect(
+      caja!.y,
+      "la tarjeta se abre demasiado abajo: la apertura ocurre fuera de la vista",
+    ).toBeLessThan(alto * 0.65);
     expect(caja!.y).toBeGreaterThan(0);
   });
 
@@ -328,34 +331,32 @@ test.describe("brochure con prefers-reduced-motion", () => {
     expect(fantasma).toBe(0);
   });
 
-  test("M1 · el automático NO existe: las 5 llegan abiertas, quietas, y el toque sigue mandando", async ({
+  test("M1 · la tarjeta sigue abriéndose al llegar, pero SIN transición", async ({
     page,
   }) => {
     await page.goto("/conoce");
 
-    // Corte editorial: todo el contenido presente desde el primer momento, sin que
-    // nada se abra ni se cierre por bajar.
-    expect(await estados(page)).toEqual(Array(5).fill("true"));
-    const feature = page.getByRole("heading", {
-      name: "Respuesta al instante, sin internet",
-    });
-    await expect(feature).toBeVisible();
-    expect((await feature.boundingBox())?.height).toBeGreaterThan(0);
+    // Mismo mecanismo, misma información: lo que desaparece es la animación. Se probó
+    // entregarlas todas abiertas y era peor — un muro de texto donde nadie ve nunca una
+    // tarjeta abrirse.
+    expect(await estados(page)).toEqual(Array(5).fill("false"));
+
+    const duracion = await page
+      .locator(".detalle")
+      .first()
+      .evaluate((n) => getComputedStyle(n as Element).transitionDuration);
+    expect(duracion, "la apertura sigue animándose con reduced-motion").toBe(
+      "0s",
+    );
+
+    const boton = await bajarHastaQueAbra(page, 0);
+    await expect(
+      page.getByRole("heading", { name: "El semáforo de alimentos" }),
+    ).toBeVisible();
     await expect(page.locator("figure.muestra").first()).toBeVisible();
 
-    // Bajar no toca ninguna: el scroll no gobierna nada en esta rama.
-    for (let paso = 0; paso < 12; paso++) {
-      await page.mouse.wheel(0, PASO);
-      await page.waitForTimeout(40);
-    }
-    expect(await estados(page)).toEqual(Array(5).fill("true"));
-
-    // Y tu toque las sigue gobernando.
-    const boton = page.getByRole("button", {
-      name: /Pregúntale con tus palabras/,
-    });
+    // Y tu toque la sigue gobernando.
     await boton.click();
     await expect(boton).toHaveAttribute("aria-expanded", "false");
-    await expect(feature).toBeHidden();
   });
 });

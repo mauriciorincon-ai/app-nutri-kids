@@ -191,15 +191,34 @@ pidió llevarlo a la planeadora como estándar (bloque listo más abajo).
 
 | Regla                  | Implementación (medida, no supuesta)                                                                                                  |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| ⅓ visible para abrir   | `threshold 1/3` contra la **zona de lectura** (viewport −15% inferior). Medido: abre con el borde superior al **72–79%** de pantalla. |
+| ⅓ visible para abrir   | `threshold 1/3` contra la **zona de lectura** (viewport −38% inferior). Medido: abre con el borde superior al **46–56%** de pantalla — de frente. |
 | Se ve abrirse          | La misma transición del toque (0.45 s) + muestra y features alzando detrás (0.08 → 0.33 s).                                           |
 | Solo hacia abajo       | Ancla superior fija: lo que se desplaza queda bajo el pliegue.                                                                        |
 | Al devolverme, cerrada | Cierra **solo** la que salió completa por abajo (gracia 8%). Verificado subiendo la pieza entera: las 5 quedan cerradas.              |
 | Subiendo no abre       | e2e que recorre hacia arriba afirmando que **ninguna** pasó de cerrada a abierta.                                                     |
 | Muestras               | 5 recortes **dibujados en SVG** con el texto real de la dieta demo, uno por tarjeta.                                                  |
 
-**CLS: 0.0000 al cargar · 0.0118 en un recorrido completo** (bajar → subir → bajar), muy por
-debajo del 0.1 de «bueno». Era el riesgo declarado del delta y se midió antes de proponerlo.
+**CLS de carga: 0.0000** — es lo que mide el gate, y nada se abre sin que bajes. En el recorrido
+sube a 0.13 (escritorio) y 0.32 (móvil): abrir una tarjeta a media pantalla **desplaza a propósito**
+lo que va debajo. Es el efecto pedido, medido y declarado, no un descuido.
+
+## La corrección tras el gate visual (misma tarde)
+
+La primera versión del delta pasó todos los gates y **falló el único que importa**. Veredicto del
+usuario: _«no veo que se desplieguen… se ven ya desplegadas, y las imágenes gigantes, cero
+estética»_. Las dos causas, medidas:
+
+| Síntoma                        | Causa medida                                                                                                              | Corrección                                                              |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| «Se ven ya desplegadas»        | Abría con la cabecera al **72–79%** de la pantalla: a punto de salir por abajo. La animación ocurría fuera del campo visual. | Zona de lectura al **38%** → abre al **46–56%**, delante de los ojos.  |
+| «Imágenes gigantes»            | La muestra crecía al ancho de la tarjeta: **646×457 px** en escritorio para un dibujo hecho a 320 px (escala ×2).          | Topada a su tamaño natural (`max-width: 300px`), pie a ancho de lectura. |
+
+También cambió el corte de `prefers-reduced-motion`: entregar las cinco abiertas producía el mismo
+efecto que el usuario rechazó (un muro ya desplegado). Ahora es **el mismo mecanismo sin
+transición** — la tarjeta se abre al llegar, pero cambia de estado en vez de animarse.
+
+**La lección, para el estándar: una animación que ocurre fuera del campo visual no existe, por más
+que el test la vea.** Ningún gate automático puede cazar esto; lo caza una persona mirando.
 
 ## Decisiones
 

@@ -265,7 +265,7 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 73421,
+      "valor": 74046,
       "unidad": "bytes",
       "fuente": "medido",
       "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."

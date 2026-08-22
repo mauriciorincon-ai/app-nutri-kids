@@ -82,21 +82,26 @@ tarjeta se abre **al llegar a ella**, con estas reglas (implementación de refer
 `docs/BROCHURE.html`, bloque «M1 · Apertura por lectura»):
 
 1. **Abre bajando**, cuando ⅓ de la tarjeta entra en la **zona de lectura** = viewport menos su
-   15% inferior. Medir contra el borde crudo la abriría fuera de cuadro: una tarjeta cerrada de
-   ~95 px cumple el tercio asomando 32 px. Con el margen, cuando se abre ya la estás mirando.
-2. **Ancla arriba**: crece hacia abajo. El borde superior no se mueve, lo que se desplaza queda
-   bajo el pliegue — así el CLS no se dispara (0.0000 al cargar; 0.0118 en un recorrido completo).
+   **38%** inferior, de modo que la cabecera queda hacia la mitad de la pantalla al abrirse. Medir
+   contra el borde crudo la abre fuera de cuadro: una tarjeta cerrada de ~95 px cumple el tercio
+   asomando 32 px, y la animación ocurre donde nadie la ve (pasó, y el usuario lo reportó).
+2. **Ancla arriba**: crece hacia abajo, así nada de lo que se está leyendo salta. El CLS **de
+   carga** queda en 0.0000 (nada se abre sin bajar); en el recorrido sube a 0.13–0.32 y eso es el
+   efecto pedido, no un descuido — se mide y se declara.
 3. **Subiendo no abre nada, nunca.**
 4. **Cierra solo lo que ya saliste por abajo** (banda de gracia ~8%): jamás se cierra algo que la
    persona esté mirando. Y no cierra si al encoger la página el documento quedara más corto que la
    posición actual (Chrome/Firefox lo compensan con scroll anchoring; **Safari no**).
 5. **El toque gana**: tocar una tarjeta la saca del automático para el resto de la visita.
-6. **`prefers-reduced-motion`**: el automático no existe — todas llegan abiertas y quietas.
+6. **`prefers-reduced-motion`**: el mismo mecanismo **sin transición** (cambia de estado, no se
+   anima). Entregarlas todas abiertas es peor: se llega a un muro de texto ya desplegado.
 
 Acompaña siempre a la regla del semáforo: donde hay mucha información, la palabra va con **una
 muestra de la pantalla de la que habla**, dibujada en SVG con estos tokens (nunca una captura
 incrustada: engorda el archivo, envejece en silencio y mete píxeles no revisados en un repo
-público). El SVG es ilustración (`aria-hidden`) y el `<figcaption>` carga el sentido en palabras.
+público). **Se topa a su tamaño natural** (dibujada a 320 px → `max-width: 300px`): estirada al
+ancho del contenedor se escala ×2 en escritorio, se ve tosca y le roba la jerarquía al título. El
+SVG es ilustración (`aria-hidden`) y el `<figcaption>` carga el sentido en palabras.
 
 ## Componentes canon (shadcn personalizados)
 
