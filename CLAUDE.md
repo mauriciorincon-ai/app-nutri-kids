@@ -102,6 +102,24 @@ decisions/NNN-titulo.md   (ADRs de implementación)
     familiar, calmado — NO clínico, NO gamificado infantil. Cada sprint con UI cierra con el
     checklist de revisión de diseño + aprobación visual del usuario sobre la preview (ideal: la
     mamá completa el flujo en su teléfono).
+11. **Brochure vivo con estados + export** _(regla 13 del kit v1.9.0→v2)_. `docs/BROCHURE.html` (autocontenido) +
+    la ruta `/conoce` que sirve esos MISMOS bytes + `docs/brochure-export.json` (contrato v1.0.0 del
+    portafolio: `_schema` copiado tal cual · toda métrica con su `fuente` MEDIDA · el total cuadrado
+    contra `docs/MANUAL-DE-USO.md`). Dos estados: **INICIAL** (la construcción está cerrada; la
+    cabecera lo declara) y **SELLADO** (cuando el gate de pruebas del usuario terminó — `sellado_en`
+    deja de ser null). El sello NO congela: **todo sprint que cambie una feature actualiza brochure y
+    export EN SU MISMO PR**, y el `_schema` no se reinventa. El brochure documenta la app, jamás a sí
+    mismo (no entra al manual ni al conteo). Regla cero: **storyboard aprobado por el usuario ANTES de
+    una línea de HTML**.
+12. **CERO ENLACES de producción en el repo** _(regla 17 del portafolio)_. Ninguna URL de despliegue
+    vive versionada aquí — ni en código, ni en docs, ni en JSON, ni en el campo `homepage` del repo.
+    La producción se MUESTRA, jamás se ENTREGA: en el export `enlaces.produccion` es `null` con su
+    `razon`, y `repositorio` también `null`. Gate (debe salir vacío):
+    `grep -rn "vercel\.app\|workers\.dev" --include="*.md" --include="*.html" --include="*.json" .`
+    más `gh repo view --json homepageUrl` → `""`. **La GitHub App de Vercel REESCRIBE `homepage` en
+    cada deploy de producción**: la limpieza es RECURRENTE y se re-verifica después de cada merge a
+    `main` (no hay automatización posible sin un PAT de administración como secret — descartado en un
+    repo público).
 
 ## Estándares (los 6+1, gates en CI)
 
