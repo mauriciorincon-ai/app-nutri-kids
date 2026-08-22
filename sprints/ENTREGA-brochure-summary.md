@@ -151,7 +151,7 @@ que esta entrega usa para servir `/conoce`. No era diferible:
 | Funcionalidades               | 19             | medido (contra el manual, verificado por test) |
 | Pantallas del producto        | 8              | medido (`page.tsx`; `/conoce` no cuenta)       |
 | Pruebas unitarias             | 214            | medido (`pnpm test`)                           |
-| Pruebas e2e                   | 86             | medido (2 proyectos)                           |
+| Pruebas e2e                   | 94             | medido (2 proyectos)                           |
 | Cobertura de líneas del motor | 99.52 %        | medido (v8)                                    |
 | Peso del brochure             | 73 421 bytes   | medido (`wc -c`, con las 5 muestras SVG)       |
 | CLS / LCP de `/conoce`        | 0.0000 / 68 ms | medido (Playwright, móvil)                     |
@@ -277,18 +277,48 @@ _«Pega saltos la pantalla, como que es cuando repliega arriba, y es muy molesto
 
 Re-verificado con un rastreador **por frame**: bajada lenta completa, 5 cierres, **0 saltos**.
 
-**Cinco lecciones para el estándar:**
+### Sexta ronda: se adopta el modelo de Velo, entero
+
+Tras cinco rondas propias el veredicto siguió siendo «las tarjetas no quedaron bien», y la orden
+fue usar el aprendizaje de **Velo (app-anonimizador)**. Nuestro modelo por reposo se retira entero
+y entra el suyo: **una tarjeta está abierta exactamente mientras está a la vista** — abre bajando
+al cruzar su cabecera la línea de los dos tercios de la pantalla; cierra al salir entera, por el
+borde que sea (por arriba, reponiendo el alto con `scrollBy({behavior: "instant"})`); rectángulos
+en vez de IntersectionObserver; corre también con reduced-motion; el toque manda.
+
+Resultado medido: las cinco abren al **60–63%** de pantalla — determinista, siempre justo bajo la
+línea — y el ciclo completo en bajada continua sin pausas queda: abren 5 → fondo recogido →
+subiendo nada abre → arriba cerrado → segunda bajada abren 5. **0 saltos de frame.** De paso cayó
+un bug nuestro idéntico al de Velo: el observer de revelado (umbral 0.15) medía tarjetas
+desplazadas 18 px por su coreografía de entrada; ahora revelan con umbral 0.
+
+Los tests se calcaron de Velo y se probaron EN ROJO contra el archivo del commit anterior
+(`git show HEAD:docs/BROCHURE.html` servido en `public/`): el que distingue los modelos —
+**«abre en cuanto cruza la línea, aún sin detenerte»** — falló con «T1 abrió demasiado arriba»,
+el reclamo del usuario vuelto assert. Los de la línea y de «la que quedó atrás ya está recogida»
+pasan también sobre la versión vieja (ese contrato ya se cumplía): se declara, porque un test que
+nunca estuvo en rojo contra el defecto no se ha probado a sí mismo.
+
+**Las lecciones para el estándar (las cinco nuestras + lo que Velo ya sabía):**
 
 1. **Una animación fuera del campo visual no existe**, por más que el test la vea.
 2. **El momento importa más que la posición**: con la página quieta, la apertura se lee sola.
 3. **Disparar por altura encadena**; abrir una a la vez al reposo lo elimina por construcción.
 4. **Todo cambio de layout fuera de cuadro se compensa y se verifica POR FRAME**, no en métricas
    agregadas ni en instantáneas tardías — medir dos frames después esconde el resbalón.
-5. **`scroll-behavior: smooth` contamina toda corrección programática de scroll**: cualquier
-   compensación debe forzar `auto` en su frame, o se anima y se ve.
+5. **`scroll-behavior: smooth` contamina toda corrección programática de scroll**: la reposición
+   va con `scrollBy({behavior: "instant"})`, que ignora el smooth POR CONTRATO — más simple y más
+   portable que alternar el estilo del `<html>`.
+6. **El umbral es de PANTALLA, no de la tarjeta, y el disparo es continuo** (la cabecera cruza una
+   línea), no por reposo ni por tick: el reposo hacía la apertura errática y el tick la hacía
+   aleatoria. La regla entera cabe en una frase: *abierta exactamente mientras está a la vista.*
+7. **Los tests se prueban en rojo contra el commit anterior** (`git show <sha>:ruta`): un test que
+   nunca falló contra el defecto real no se ha probado a sí mismo.
+8. **Cuando otra app del portafolio ya pagó el camino, se adopta su solución entera** — no se
+   re-deriva por rondas: nuestras cinco rondas re-descubrieron lo que Velo ya tenía escrito.
 
-Ningún gate automático caza esto: lo caza una persona mirando. Cinco rondas de gate visual, cinco
-correcciones, cada una con su medición.
+Ningún gate automático caza esto: lo caza una persona mirando. Seis rondas de gate visual aquí —
+cinco de ellas re-derivando lo que otra app ya había pagado.
 
 ## Decisiones
 

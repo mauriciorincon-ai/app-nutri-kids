@@ -391,3 +391,41 @@ arriba, y es muy molesto.»_ Dos causas, ambas en el código y no en la idea:
 
 Re-verificado con un rastreador **por frame** (no por instantánea): bajada lenta completa, 5
 cierres, **0 saltos de frame** en lo que está en pantalla.
+
+## Sexta ronda — se adopta el modelo de Velo, entero
+
+El veredicto tras cinco rondas propias fue «la verdad las tarjetas no quedaron bien», y la orden:
+usar el aprendizaje de **Velo (app-anonimizador)**, que pagó este mismo camino completo en cinco
+rondas de su gate. Nuestro modelo por reposo (140 ms + tick de 700 ms + banda + cierres en lote)
+se retira entero y entra el suyo, que cabe en una frase demostrable:
+
+**Una tarjeta está abierta exactamente mientras está a la vista.**
+
+- **Abre solo bajando**, cuando su cabecera cruza la línea de los **dos tercios de la pantalla**
+  (`0 <= top <= vh·⅔`): queda un tercio de pantalla por debajo — el hueco donde se la ve crecer.
+  El umbral es de PANTALLA, jamás de la tarjeta (⅓ de una tarjeta cerrada son ~30 px: abría
+  asomando por el borde, fuera de la vista — el síntoma original).
+- **Cierra al salir entera**, por el borde que sea: por abajo con su transición (encoge fuera de
+  cuadro); por arriba de golpe, reponiendo el alto exacto con `scrollBy({behavior: "instant"})` —
+  la línea que a Velo le costó una ronda entera y a nosotros la quinta: un `scrollBy(x, y)` a
+  secas SE ANIMA con `scroll-behavior: smooth`.
+- **Rectángulos, no IntersectionObserver**: gobierna dónde está la cabecera, no cuánto se ve.
+  Y las tarjetas revelan su entrada con **umbral 0**: su coreografía las desplaza 18 px y una
+  caja desplazada miente sobre su posición (bug idéntico al de Velo, corregido igual).
+- **Corre también con reduced-motion** (desplegar es contenido, no decoración; el CSS ya quita
+  la transición) y **el toque manual siempre manda**.
+
+Qué gana la mamá respecto al modelo por reposo: la apertura es **determinista** — medido, las
+cinco abren al **60–63%** de pantalla, siempre justo bajo la línea, en vez de «cuando pare o
+cuando caiga el tick». Verificado el ciclo completo en bajada continua sin una sola pausa:
+abren las 5 → al fondo todo recogido → subiendo nada abre → arriba todo cerrado → segunda
+bajada abren las 5 otra vez. **0 saltos de frame** en las tres fases.
+
+**Los tests que lo fijan (calcados de Velo), con su prueba en rojo:** el de la línea (95%/80%
+no abren, 60% sí), el de «la que quedó atrás ya está recogida» (`bottom <= 0` ⇒ cerrada), el de
+deriva («bajar/subir no mueve ni un renglón de lo visible», conducido con `behavior: "instant"`
+y medido sobre una cabecera visible, jamás sobre `scrollY`), y el que distingue los modelos:
+**«abre en cuanto cruza la línea, AÚN SIN DETENERTE»** — corrido contra el archivo del commit
+anterior falló con «T1 abrió demasiado arriba», que es el reclamo del usuario vuelto assert.
+Los otros dos también pasan sobre la versión vieja (ese contrato ya se cumplía): se declara,
+porque un test que nunca estuvo en rojo contra el defecto no prueba nada.

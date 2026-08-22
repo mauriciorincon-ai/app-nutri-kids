@@ -1017,6 +1017,7 @@
   var tarjetas = Array.prototype.slice.call(document.querySelectorAll(".tarjeta"));
 
   function abrir(tarjeta, si) {
+    if (tarjeta.hasAttribute("data-abierta") === si) return; // idempotente: repasar corre por cuadro
     var btn = tarjeta.querySelector(".tarjeta-boton");
     if (si) tarjeta.setAttribute("data-abierta", "");
     else tarjeta.removeAttribute("data-abierta");
@@ -1034,190 +1035,98 @@
     });
   });
 
-  /* ——— M1 · APERTURA POR LECTURA (delta 1, aprobado 2026-08-22) ————————————————
-     Aquí está la mayor parte de la información de la pieza, y pedirle un toque por tarjeta
-     a quien lee en el teléfono es cobrarle cinco peajes. Se abren al llegar:
+  /* ——— M1 · APERTURA POR LECTURA — modelo adoptado de Velo (app-anonimizador), que ya
+     pagó entero este mismo camino en cinco rondas de su gate visual. Nuestra historia previa
+     (aperturas al reposo, bandas, ticks, cierres en lote) queda en el storyboard; el modelo
+     que sobrevivió es este, y la regla es UNA y demostrable:
 
-     · ABRE cuando TE DETIENES bajando, si su cabecera quedó en la banda de lectura (10–62%
-       de la pantalla): con la página quieta, la apertura se ve. Subiendo, nunca.
-     · CRECE HACIA ABAJO: el borde superior está anclado, así que lo que estás leyendo no
-       se mueve. El CLS de carga sigue en 0 (nada se abre sin que bajes); lo que se desplaza
-       al abrirse es el efecto pedido, y se mide.
-     · CIERRA cuando sale COMPLETA de la pantalla, por arriba o por abajo — jamás mientras
-       la estés viendo. Al devolverte lo encuentras todo cerrado, y al volver a bajar se
-       despliega otra vez. Cerrar por arriba se compensa en el scroll: no salta nada.
-     · TU DEDO GANA: tocar una tarjeta la saca del automático para siempre.
-     · Con movimiento reducido el mecanismo es EL MISMO; lo que desaparece es la transición
-       (el CSS la apaga): la tarjeta pasa de cerrada a abierta sin animación. Se probó la
-       alternativa de entregarlas todas abiertas y era peor: se llega a un muro de texto y
-       nadie ve nunca una tarjeta abrirse.                                                */
-  if ("IntersectionObserver" in window) {
-    var ultimoY = window.pageYOffset;
-    var bajando = true;
-    var huboScroll = window.pageYOffset > 0;
-    window.addEventListener("scroll", function () {
-      var y = window.pageYOffset;
-      if (y === ultimoY) return;
-      bajando = y > ultimoY;
-      ultimoY = y;
-      huboScroll = true;
-    }, { passive: true });
+     **Una tarjeta está abierta exactamente mientras está a la vista.**
 
-    /* Cerrar acorta la página. Si al acortarla el documento quedara más corto que el punto
-       donde estás parado, el navegador te empujaría el contenido de un tirón (Chrome y
-       Firefox lo compensan con scroll anchoring; Safari — el teléfono de la mamá — no).
-       Si no cabe, la tarjeta se queda abierta: tu comodidad manda sobre la pulcritud. */
-    var cabeElEncogimiento = function (t) {
-      var interior = t.querySelector(".detalle-interior");
-      var alto = interior ? interior.getBoundingClientRect().height : 0;
-      return document.documentElement.scrollHeight - alto >=
-        window.pageYOffset + window.innerHeight + 8;
-    };
+     · ABRE solo bajando, cuando su cabecera cruza la línea de los DOS TERCIOS de la
+       pantalla (0 <= top <= vh·2/3): queda un tercio de pantalla por debajo, que es donde
+       se la ve crecer — y crece hacia abajo desde su cabecera, así que nada de lo ya leído
+       se mueve. El umbral es de PANTALLA, no de tarjeta: un tercio de una tarjeta cerrada
+       son ~30 px y abría asomando por el borde inferior, fuera de la vista.
+     · CIERRA al salir ENTERA de pantalla, por el borde que sea. Por ABAJO (subiendo, la
+       pasaste de largo): con su transición — encoge fuera de cuadro, no puede mover nada.
+       Por ARRIBA (bajando, la dejaste atrás): DE GOLPE, reponiendo el scroll con el alto
+       exacto perdido, en el mismo cuadro y en modo INSTANTÁNEO. Esta página usa
+       scroll-behavior: smooth, y un scrollBy(x, y) a secas SE ANIMA: el encogido era
+       instantáneo, la reposición llegaba despacio y la página «pegaba saltos» (nuestra
+       quinta ronda y la ronda 2 de Velo son el mismo bug). behavior: "instant" ignora el
+       smooth POR CONTRATO; overflow-anchor: none en <html> apaga el anclaje nativo para
+       que el navegador no compense TAMBIÉN y lo mueva dos veces.
+     · Va con RECTÁNGULOS, no IntersectionObserver: lo que gobierna es dónde está la
+       cabecera respecto a la pantalla, no cuánto de la tarjeta se ve — esa medida engaña
+       (la coreografía de entrada desplaza la caja 18 px y miente sobre su posición).
+     · Corre TAMBIÉN con movimiento reducido: desplegar es contenido, no decoración; el
+       cinturón CSS de prefers-reduced-motion ya lo abre sin transición.
+     · TU TOQUE MANDA: lo tocado a mano queda en manual y el recorrido no lo toca más. */
+  var TERCIO = 1 / 3;
+  var yPrevia = window.scrollY;
+  var bajando = true;
 
-    /* LLEGADA — LA TARJETA SE ABRE CUANDO TE DETIENES EN ELLA.
-       Dos rondas de gate visual enseñaron que el problema no era la altura del disparo sino
-       el MOMENTO: bajando, la página entera se mueve, y una apertura que compite con el
-       scroll no se percibe (15% de margen abría al 79% → «no veo que se desplieguen»; 38%
-       abría al 51% → «todavía no se percibe»; subirlo más encadenaba aperturas, porque al
-       abrirse una empuja a la siguiente y esa se abría ya fuera de cuadro).
-       La versión que sí se ve: se abre con la página QUIETA. Cuando dejas de bajar, la
-       tarjeta cuya cabecera quedó en la banda de lectura (10–62% de la pantalla) se abre
-       delante de tus ojos, sin nada más moviéndose. Una a la vez, jamás en cascada. */
-    /* La banda va desde un poco POR ENCIMA del filo superior (una tarjeta cerrada mide ~95 px:
-       si su cabecera se asomó apenas por arriba, la apertura se sigue viendo entera) hasta el
-       72% de la pantalla. Ancha a propósito: con una banda estrecha, un pulgar que baja 700 px
-       de un tirón la salta limpiamente y esa tarjeta no se abre nunca (medido: T2 y T3 se
-       quedaron cerradas en la primera versión de esto). */
-    var BANDA_ALTA = -0.12, BANDA_BAJA = 0.72;
+  function repasar() {
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    var linea = vh * (1 - TERCIO);
+    tarjetas.forEach(function (t) {
+      if (t.hasAttribute("data-manual")) return;
+      var caja = t.getBoundingClientRect();
+      var abierta = t.hasAttribute("data-abierta");
 
-    var candidata = function () {
-      var vh = window.innerHeight;
-      var elegida = null;
-      for (var i = 0; i < tarjetas.length; i++) {
-        var t = tarjetas[i];
-        var arriba = t.getBoundingClientRect().top;
-        /* La que acaba de cerrarse al salir por arriba queda, tras compensar el scroll,
-           justo pegada al filo superior — es decir, DENTRO de la banda. Sin esta espera se
-           reabriría de inmediato y la página entraría en un bucle de abrir/cerrar (pasó:
-           el scroll rebotaba entre y=1800 e y=262 sin avanzar nunca). Vuelve a ser
-           candidata cuando entre entera otra vez, que es justo lo que pediste: si te
-           devuelves y vuelves a bajar, se despliega de nuevo. */
-        if (t.hasAttribute("data-espera")) {
-          if (arriba >= 0) t.removeAttribute("data-espera");
-          else continue;
+      if (!abierta) {
+        if (bajando && caja.top >= 0 && caja.top <= linea) abrir(t, true);
+        return;
+      }
+      if (caja.top >= vh) {
+        /* Salió por abajo: se recoge con su transición, fuera de la vista. */
+        abrir(t, false);
+      } else if (caja.bottom <= 0) {
+        /* Salió por arriba: se recoge de golpe y se repone el alto en el mismo cuadro. */
+        t.classList.add("sin-transicion");
+        abrir(t, false);
+        var perdido = caja.height - t.getBoundingClientRect().height;
+        if (perdido) {
+          window.scrollBy({ top: -perdido, left: 0, behavior: "instant" });
+          /* La reposición dispara su propio evento de scroll con la Y más chica; sin
+             esto, el detector de dirección lo leería como «subiendo» un cuadro. */
+          yPrevia = window.scrollY;
         }
-        if (t.hasAttribute("data-manual") || t.hasAttribute("data-abierta")) continue;
-        if (!elegida && arriba >= vh * BANDA_ALTA && arriba <= vh * BANDA_BAJA) elegida = t;
+        window.requestAnimationFrame(function () { t.classList.remove("sin-transicion"); });
       }
-      return elegida;
-    };
-
-    /* CERRAR LO QUE YA NO ESTÁ EN PANTALLA — en lote y también al detenerte.
-       Se cierran solo las que salieron ENTERAS de cuadro, nunca lo que estás mirando; así,
-       al devolverte lo encuentras todo cerrado y al volver a bajar se despliega otra vez.
-
-       Va en UN SOLO paso con UNA SOLA compensación de scroll a propósito. La versión por
-       observador cerraba de a una y cada cierre movía el scroll: con dos tarjetas cerrándose
-       casi a la vez, las compensaciones se pisaban, el recorrido se desplazaba de más y las
-       dos últimas tarjetas se quedaban sin abrir nunca (medido). Sumar primero y compensar
-       una vez es exacto.
-
-       Por qué hay que compensar: lo que desaparece por ARRIBA está por encima de lo que
-       miras, así que sin descontarlo del scroll la página daría un tirón. Chrome y Firefox
-       harían algo parecido solos (scroll anchoring, aquí apagado para no corregir dos
-       veces); Safari —el teléfono de la mamá— no lo hace. */
-    var cerrarLoQueSalio = function () {
-      var vh = window.innerHeight, perdidoArriba = 0;
-
-      /* PRIMERO se mide TODO, después se cierra. Medir y cerrar en el mismo bucle era un
-         error sutil y caro: al cerrar una tarjeta, las de abajo suben, la siguiente parece
-         haber salido por arriba y se cierra también — una cascada que iba cerrando la
-         pieza entera y luego reabriéndola (medido: T3 se cerró 5 veces en una sola bajada).
-         Las posiciones que deciden son las de ANTES de tocar nada. */
-      var fuera = [];
-      tarjetas.forEach(function (t) {
-        if (!t.hasAttribute("data-abierta") || t.hasAttribute("data-manual")) return;
-        var r = t.getBoundingClientRect();
-        /* Cada salida se cierra SOLO en la dirección que la explica: por arriba, bajando;
-           por abajo, subiendo. Sin esa condición, una tarjeta que abre empuja a la siguiente
-           fuera del pliegue y esta se cierra sin que tú hayas pasado por ella — luego vuelve
-           a subir a cuadro y reabre. Churn puro, invisible pero real (medido). */
-        if (bajando && r.bottom <= 0) fuera.push({ t: t, alto: r.height, arriba: true });
-        else if (!bajando && r.top >= vh && cabeElEncogimiento(t))
-          fuera.push({ t: t, arriba: false });
-      });
-
-      fuera.forEach(function (f) {
-        if (!f.arriba) { abrir(f.t, false); return; }  // bajo el pliegue: encoger no se ve
-        f.t.classList.add("sin-transicion");
-        abrir(f.t, false);
-        perdidoArriba += f.alto - f.t.getBoundingClientRect().height;
-        f.t.setAttribute("data-espera", "");
-        window.requestAnimationFrame(function () { f.t.classList.remove("sin-transicion"); });
-      });
-
-      if (perdidoArriba > 0) {
-        /* La página tiene scroll-behavior: smooth (para los enlaces del mapa). Si la
-           compensación lo hereda, se ANIMA: el contenido de arriba se encoge en un frame
-           pero el scroll lo corrige deslizándose — y eso se ve como un salto y un resbalón
-           (reportado en el gate visual: «pega saltos, es muy molesto»). La corrección debe
-           ser instantánea y atómica con el cierre: se fuerza auto solo durante este frame. */
-        var raiz = document.documentElement;
-        var suavidad = raiz.style.scrollBehavior;
-        raiz.style.scrollBehavior = "auto";
-        window.scrollBy(0, -perdidoArriba);
-        raiz.style.scrollBehavior = suavidad;
-        ultimoY = window.pageYOffset; // el evento que viene es nuestro: no cuenta como gesto
-      }
-    };
-
-    var alDetenerse = function () {
-      cerrarLoQueSalio();
-      if (!huboScroll || !bajando) return;
-      var t = candidata();
-      if (t) abrir(t, true);
-    };
-
-    /* Abrir sin cerrar: lo que corre MIENTRAS te mueves. Abrir empuja contenido que está
-       por debajo de donde lees — no incomoda. Cerrar por arriba mueve el scroll, y hacerlo
-       en plena inercia del dedo pelea contra el gesto: por eso los cierres viven SOLO en el
-       reposo (reportado en el gate visual: la pantalla pegaba saltos bajando lento — era el
-       tick periódico cerrando con la página aún en movimiento). */
-    var soloAbrir = function () {
-      if (!huboScroll || !bajando) return;
-      var t = candidata();
-      if (t) abrir(t, true);
-    };
-
-    var alReposar = null, mientrasBaja = null;
-    window.addEventListener("scroll", function () {
-      /* Al detenerte: 140 ms sin un solo evento de scroll es «me quedé mirando esto».
-         Solo aquí, con la página quieta, se cierra lo que ya salió — y ahí la compensación
-         es invisible de verdad. */
-      window.clearTimeout(alReposar);
-      alReposar = window.setTimeout(alDetenerse, 140);
-      /* Y si bajas lento y sin parar (rueda de trackpad), el reposo no llega nunca: cada
-         700 ms se mira si hay una tarjeta que ABRIR. Jamás se cierra en movimiento. */
-      if (!mientrasBaja) {
-        mientrasBaja = window.setTimeout(function () {
-          mientrasBaja = null;
-          soloAbrir();
-        }, 700);
-      }
-    }, { passive: true });
-
+    });
   }
+
+  var revisando = false;
+  window.addEventListener("scroll", function () {
+    var y = window.scrollY;
+    if (y !== yPrevia) bajando = y > yPrevia;
+    yPrevia = y;
+    if (!revisando) {
+      revisando = true;
+      window.requestAnimationFrame(function () { revisando = false; repasar(); });
+    }
+  }, { passive: true });
 
   /* ——— G3 · coreografía de entrada. Con reduced-motion el CSS ya lo muestra todo:
      añadir la clase es inofensivo. Sin IntersectionObserver, todo visible (fallback). ——— */
   var revelables = document.querySelectorAll(".revela, .chips");
   if ("IntersectionObserver" in window) {
-    var obs = new IntersectionObserver(function (entradas) {
-      entradas.forEach(function (e) {
-        if (e.isIntersecting) { e.target.classList.add("visto"); obs.unobserve(e.target); }
-      });
-    }, { threshold: 0.15 });
-    Array.prototype.forEach.call(revelables, function (el) { obs.observe(el); });
+    var revelarCon = function (umbral, lista) {
+      var obs = new IntersectionObserver(function (entradas) {
+        entradas.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add("visto"); obs.unobserve(e.target); }
+        });
+      }, { threshold: umbral });
+      Array.prototype.forEach.call(lista, function (el) { obs.observe(el); });
+    };
+    revelarCon(0.15, document.querySelectorAll(".revela:not(.tarjeta), .chips"));
+    /* Las tarjetas entran en cuanto ASOMAN (umbral 0), y el motivo no es de ritmo: su
+       entrada las desplaza 18 px hacia abajo, y una caja desplazada miente sobre su
+       posición — el tercio que gobierna el despliegue se calcularía sobre una medida
+       falsa (lección de Velo, calcada porque el bug es idéntico). Arrancando en cuanto
+       asoma, para cuando llega a la línea ya se asentó y la medida es la de verdad. */
+    revelarCon(0, document.querySelectorAll(".tarjeta.revela"));
   } else {
     Array.prototype.forEach.call(revelables, function (el) { el.classList.add("visto"); });
   }

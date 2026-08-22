@@ -217,7 +217,7 @@
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 86,
+      "valor": 94,
       "unidad": "pruebas",
       "fuente": "medido",
       "detalle": "Salida de `pnpm test:e2e` el 2026-08-22: 39 pruebas corridas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe."
@@ -265,7 +265,7 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 80824,
+      "valor": 75459,
       "unidad": "bytes",
       "fuente": "medido",
       "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."

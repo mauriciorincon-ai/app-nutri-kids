@@ -74,47 +74,42 @@ eje SOFT de Fraunces disparaba el LCP a ~5.4s en móvil throttled (medido en CI,
   CLS = 0). Caso vivo: `ReminderCard` (`min-h-[8.75rem]`, hasta 5 líneas). Es la única excepción
   aceptada al "prohibido el valor mágico suelto": va justificada en comentario y ligada al gate.
 
-### Apertura por lectura (patrón de piezas largas — brochure, entrega 2026-08-22)
+### Apertura por lectura (patrón de piezas largas — brochure; modelo de Velo, adoptado 2026-08-22)
 
 Cuando la mayor parte de la información vive dentro de **tarjetas desplegables**, pedir un toque
-por tarjeta es cobrar un peaje por cada una: en el teléfono, mucha gente nunca abre ninguna. La
-tarjeta se abre **al llegar a ella**, con estas reglas (implementación de referencia:
-`docs/BROCHURE.html`, bloque «M1 · Apertura por lectura»):
+por tarjeta es cobrar un peaje por cada una. La regla que quedó tras seis rondas de gate visual
+(cinco nuestras + la solución completa de Velo/app-anonimizador, que ya había pagado el camino):
 
-1. **Abre cuando la persona SE DETIENE** bajando (140 ms sin scroll), si la cabecera quedó en la
-   banda de lectura (−12% a 72% del viewport); respaldo cada 700 ms para el scroll lento que nunca
-   reposa. El momento pesa más que la posición: **mientras se baja, la página entera se mueve y
-   una apertura que compite con el scroll no se percibe a ninguna altura** (se probó al 79%, al
-   51% y al 40% — las tres se reportaron como «no se ve»). Con la página quieta, se ve. Además,
-   disparar por altura **encadena**: al abrirse una tarjeta empuja a la siguiente, que abre ya
-   fuera de cuadro. Una a la vez, al reposo.
-2. **Ancla arriba**: crece hacia abajo, así nada de lo que se está leyendo salta. El CLS **de
-   carga** queda en 0.0000 (nada se abre sin bajar); en el recorrido sube (0.15 leyendo con pausas)
-   y eso es el efecto pedido, no un descuido — se mide y se declara.
-3. **La apertura dura 0.62 s** y va acompañada de un pulso de acento en el borde (0.9 s, una vez).
-   Con 0.45 s y sin pulso se confunde con el propio scroll.
-4. **Subiendo no abre nada, nunca.**
-5. **Cierra lo que salió ENTERO de la pantalla**, por el borde que sea, y solo en la dirección que
-   lo explica (por arriba bajando, por abajo subiendo): jamás algo que la persona esté mirando, ni
-   por haber sido empujado fuera de cuadro por otra apertura. Al cerrar por arriba hay que
-   **descontar del scroll la altura que desaparece** —a mano, en un frame, con `overflow-anchor:
-   none` para que el navegador no corrija dos veces, y forzando `scroll-behavior: auto` en ese
-   frame: si la página usa smooth para sus anclas, la corrección se ANIMA y se ve como un salto—;
-   si no, la página da un tirón (Chrome y Firefox lo compensarían solos; **Safari no**). **Cerrar
-   vive solo en el reposo**: una compensación en pleno gesto pelea contra el dedo. Y **se mide
-   todo antes de cerrar nada**: cerrar dentro del bucle que mide provoca cascadas. Una tarjeta
-   recién cerrada no vuelve a ser candidata hasta entrar entera otra vez (si no, rebota). La
-   verificación va **por frame**, no por instantánea: medir dos frames después esconde el resbalón.
-6. **El toque gana**: tocar una tarjeta la saca del automático para el resto de la visita.
-7. **`prefers-reduced-motion`**: el mismo mecanismo **sin transición** (cambia de estado, no se
-   anima). Entregarlas todas abiertas es peor: se llega a un muro de texto ya desplegado.
+**Una tarjeta está abierta exactamente mientras está a la vista.**
 
-Acompaña siempre a la regla del semáforo: donde hay mucha información, la palabra va con **una
-muestra de la pantalla de la que habla**, dibujada en SVG con estos tokens (nunca una captura
-incrustada: engorda el archivo, envejece en silencio y mete píxeles no revisados en un repo
-público). **Se topa a su tamaño natural** (dibujada a 320 px → `max-width: 300px`): estirada al
-ancho del contenedor se escala ×2 en escritorio, se ve tosca y le roba la jerarquía al título. El
-SVG es ilustración (`aria-hidden`) y el `<figcaption>` carga el sentido en palabras.
+1. **Abre solo bajando**, cuando su cabecera cruza la línea de los **dos tercios de la pantalla**
+   (`0 <= top <= vh·⅔`): queda un tercio de pantalla por debajo, donde se la ve crecer — hacia
+   abajo desde su cabecera, así que nada de lo ya leído se mueve. El umbral es de PANTALLA, jamás
+   de la tarjeta (⅓ de una tarjeta cerrada son ~30 px: abre asomando por el borde, fuera de vista).
+   El disparo es **continuo** (rectángulos por cuadro de scroll), no por reposo ni por tick: el
+   reposo hace la apertura errática y el tick la hace aleatoria.
+2. **Cierra al salir ENTERA de pantalla**, por el borde que sea. Por abajo: con su transición
+   (encoge fuera de cuadro). Por arriba: de golpe, sin transición, **reponiendo el scroll con el
+   alto exacto perdido** vía `scrollBy({top: -perdido, behavior: "instant"})` — un `scrollBy(x, y)`
+   a secas SE ANIMA con `scroll-behavior: smooth` y la página «pega saltos». `overflow-anchor:
+   none` en `<html>` para que el navegador no compense también (Safari no ancla nunca).
+3. **Rectángulos, no IntersectionObserver**: gobierna dónde está la cabecera respecto a la
+   pantalla, no cuánto de la tarjeta se ve. Y si hay coreografía de entrada con `translateY`, las
+   tarjetas revelan con **umbral 0**: una caja desplazada 18 px miente sobre su posición.
+4. **Corre también con `prefers-reduced-motion`**: desplegar es contenido, no decoración; el
+   cinturón CSS ya lo abre sin transición.
+5. **El toque manual siempre manda**: lo tocado queda en manual y el recorrido no lo toca más.
+6. La apertura dura **≥0.6 s** con un cue que no mueve nada (pulso de color en el borde).
+7. **Verificación**: el test de la línea (95%/80% no abren, 60% sí, posicionando en dos tiempos),
+   «abre al cruzar aún sin detenerte» (bajada continua), «la que quedó atrás ya está recogida»
+   (`bottom <= 0` ⇒ cerrada), y deriva cero midiendo **una cabecera visible por frame** — jamás
+   `scrollY` — conduciendo con `behavior: "instant"`. Cada test **probado en rojo** contra el
+   archivo del commit anterior. Y el gate visual humano, en rondas: nada de esto lo caza la CI.
+
+Donde hay mucha información, la palabra va con **una muestra de la pantalla de la que habla**,
+dibujada en SVG con estos tokens (nunca una captura incrustada), topada a su tamaño natural
+(dibujada a 320 px → `max-width: 300px`). El SVG es ilustración (`aria-hidden`) y el
+`<figcaption>` carga el sentido en palabras.
 
 ## Componentes canon (shadcn personalizados)
 

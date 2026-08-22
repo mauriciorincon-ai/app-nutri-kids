@@ -109,21 +109,206 @@ test.describe("brochure /conoce", () => {
       page.getByRole("heading", { name: "El semáforo de alimentos" }),
     ).toBeVisible();
 
-    // Se abre DELANTE DE LOS OJOS. Dos rondas de gate visual afinaron esto: primero abría
-    // con la cabecera al 79% («no veo que se desplieguen»), luego al 51% («todavía no se
-    // percibe»). Lo que lo resolvió no fue la altura sino el momento — abre con la página
-    // quieta —, pero la banda sigue siendo la regresión guardada: si alguien la vuelve a
-    // correr hacia el filo inferior, la apertura deja de verse y esto se pone rojo.
+    // Se abre DELANTE DE LOS OJOS: la cabecera cruzó la línea de los dos tercios, así que
+    // queda un tercio de pantalla por debajo — el hueco donde se la ve crecer.
     const caja = await page.locator(".tarjeta").first().boundingBox();
     const alto = page.viewportSize()!.height;
     expect(
       caja!.y,
       "la tarjeta se abre demasiado abajo: la apertura ocurre fuera de la vista",
-    ).toBeLessThan(alto * 0.75);
+    ).toBeLessThanOrEqual(alto * 0.7);
     expect(
       caja!.y,
       "la tarjeta se abre por encima del filo superior: nadie la ve abrirse",
-    ).toBeGreaterThan(-alto * 0.15);
+    ).toBeGreaterThanOrEqual(0);
+  });
+
+  test("M1 · la línea de los dos tercios: al 95% y al 80% NO abre; al 60% sí (Velo)", async ({
+    page,
+  }) => {
+    await page.goto("/conoce");
+    await page.waitForTimeout(900);
+
+    // Posiciona la cabecera de la primera tarjeta a un % exacto de la altura de pantalla.
+    // En dos tiempos (lección de Velo): primero acercarse y dejar que la coreografía de
+    // entrada se asiente (su translateY de 18px hace mentir a la caja), luego re-medir y
+    // colocar EXACTO — llegando siempre desde arriba, porque abrir exige ir bajando.
+    const cabeceraAl = async (pct: number) => {
+      for (const ajuste of [60, 0]) {
+        await page.evaluate(
+          ([p, extra]) => {
+            const t = document.querySelector(".tarjeta")!;
+            const objetivo =
+              t.getBoundingClientRect().top +
+              window.scrollY -
+              window.innerHeight * p;
+            window.scrollTo({
+              top: Math.max(0, Math.round(objetivo - extra)),
+              left: 0,
+              behavior: "instant",
+            });
+          },
+          [pct, ajuste] as const,
+        );
+        await page.waitForTimeout(ajuste ? 700 : 300);
+      }
+    };
+
+    const boton = page.locator(".tarjeta-boton").first();
+    await cabeceraAl(0.95);
+    await expect(boton, "abrió asomando por el borde inferior").toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+    await cabeceraAl(0.8);
+    await expect(boton, "abrió antes de cruzar la línea").toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+    await cabeceraAl(0.6);
+    await expect(boton, "no abrió tras cruzar la línea").toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+  });
+
+  test("M1 · abre en cuanto cruza la línea, AÚN SIN DETENERTE (bajada continua)", async ({
+    page,
+  }) => {
+    await page.goto("/conoce");
+    await page.waitForTimeout(900);
+    const alto = page.viewportSize()!.height;
+
+    // Bajada continua, sin una sola pausa de lectura: el despliegue no puede depender del
+    // reposo (el modelo anterior abría solo al detenerse o en un tick periódico, y las
+    // aperturas caían en posiciones arbitrarias — el usuario: «no se percibe»).
+    const aperturas = new Map<number, number>();
+    let previos = Array(5).fill("false");
+    for (let i = 0; i < 170 && aperturas.size < 5; i++) {
+      await page.mouse.wheel(0, 60);
+      await page.waitForTimeout(40);
+      const ahora = await estados(page);
+      for (let k = 0; k < 5; k++) {
+        if (previos[k] === "false" && ahora[k] === "true") {
+          const caja = await page.locator(".tarjeta").nth(k).boundingBox();
+          aperturas.set(k, caja!.y / alto);
+        }
+      }
+      previos = ahora;
+    }
+    expect([...aperturas.keys()].sort(), "no abrieron las cinco").toEqual([
+      0, 1, 2, 3, 4,
+    ]);
+    for (const [k, pos] of aperturas) {
+      expect(
+        pos,
+        `T${k + 1} abrió al ${Math.round(pos * 100)}% — lejos de la línea de los dos tercios`,
+      ).toBeLessThanOrEqual(0.68);
+      expect(pos, `T${k + 1} abrió demasiado arriba`).toBeGreaterThanOrEqual(
+        0.45,
+      );
+    }
+  });
+
+  test("M1 · la que quedó atrás bajando ya está recogida (bottom <= 0 ⇒ cerrada)", async ({
+    page,
+  }) => {
+    await page.goto("/conoce");
+    await page.waitForTimeout(900);
+
+    const violaciones: string[] = [];
+    for (let i = 0; i < 30; i++) {
+      await page.evaluate(() =>
+        window.scrollBy({
+          top: Math.round(window.innerHeight * 0.55),
+          left: 0,
+          behavior: "instant",
+        }),
+      );
+      await page.waitForTimeout(150);
+      const malas = await page.evaluate(() =>
+        Array.from(document.querySelectorAll(".tarjeta"))
+          .map((t, k) => ({
+            k,
+            fuera: t.getBoundingClientRect().bottom <= 0,
+            abierta: t.hasAttribute("data-abierta"),
+          }))
+          .filter((x) => x.fuera && x.abierta)
+          .map((x) => `T${x.k + 1}`),
+      );
+      violaciones.push(...malas);
+      const alFinal = await page.evaluate(
+        () =>
+          window.pageYOffset + window.innerHeight >=
+          document.documentElement.scrollHeight - 4,
+      );
+      if (alFinal) break;
+    }
+    expect(
+      violaciones,
+      "tarjetas que saliste de largo y siguen abiertas",
+    ).toEqual([]);
+  });
+
+  test("M1 · bajar y subir no mueven ni un renglón de lo visible (sin deriva)", async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    await page.goto("/conoce");
+    await page.waitForTimeout(900);
+
+    // Conduce con scrollBy({behavior:"instant"}) — un test que conduce con scrollBy a
+    // secas se ANIMA por el scroll-behavior:smooth de la página y mide defectos que ningún
+    // dedo puede producir (lección de Velo). Se mide una cabecera VISIBLE, jamás scrollY:
+    // el guion ajusta scrollY a propósito al reponer un cierre. Guarda de quietud: se mide
+    // tras asentarse las transiciones (una tarjeta a medio desplegarse se mueve por diseño).
+    const derivaTrasAsentarse = async () =>
+      page.evaluate(async () => {
+        let ancla: Element | null = null;
+        for (const e of document.querySelectorAll("h2, h3, .feature h4, p")) {
+          const r = e.getBoundingClientRect();
+          if (r.top > 60 && r.bottom < innerHeight - 60) {
+            ancla = e;
+            break;
+          }
+        }
+        if (!ancla) return 0;
+        const antes = ancla.getBoundingClientRect().top;
+        await new Promise((res) => setTimeout(res, 400));
+        return ancla.getBoundingClientRect().top - antes;
+      });
+
+    const pasoInstant = (px: number) =>
+      page.evaluate(
+        (d) => window.scrollBy({ top: d, left: 0, behavior: "instant" }),
+        px,
+      );
+
+    for (let i = 0; i < 12; i++) {
+      await pasoInstant(900);
+      await page.waitForTimeout(800); // aperturas (0.62s) asentadas
+      const deriva = await derivaTrasAsentarse();
+      expect(
+        Math.abs(deriva),
+        `bajando, la página se movió sola ${deriva.toFixed(1)}px`,
+      ).toBeLessThanOrEqual(1);
+      const alFinal = await page.evaluate(
+        () =>
+          window.pageYOffset + window.innerHeight >=
+          document.documentElement.scrollHeight - 4,
+      );
+      if (alFinal) break;
+    }
+    for (let i = 0; i < 14; i++) {
+      await pasoInstant(-900);
+      await page.waitForTimeout(800);
+      const deriva = await derivaTrasAsentarse();
+      expect(
+        Math.abs(deriva),
+        `subiendo, la página se movió sola ${deriva.toFixed(1)}px`,
+      ).toBeLessThanOrEqual(1);
+      if ((await page.evaluate(() => window.pageYOffset)) === 0) break;
+    }
   });
 
   test("M1 · el ciclo completo: se abre al llegar, se cierra al salir de pantalla, subiendo no abre nada, y al bajar otra vez se despliega", async ({
