@@ -25,8 +25,17 @@
     grid-template-rows (apertura de tarjeta) · stroke-dashoffset (dibujar trazo) · filter:blur
     (solo en la apertura, jamás en scroll).
   · prefers-reduced-motion = experiencia alterna COMPLETA (un e2e lo verifica activamente).
+  · DELTA 1 (2026-08-22, aprobado): las tarjetas se abren SOLAS al llegar a ellas bajando, y
+    llevan dentro un recorte de la pantalla real de la que hablan. Detalle del mecanismo en
+    el bloque «M1 · Apertura por lectura» del script, al final del archivo.
 -->
 <style>
+  /* La compensación de scroll al cerrar una tarjeta por arriba se hace a mano y en un solo
+     frame (ver «cerrarLoQueSalio»). Si además el navegador aplicara SU scroll anchoring, la
+     corrección se haría dos veces y la página daría un tirón: aquí se apaga para que el
+     comportamiento sea el mismo en Chrome, Firefox y Safari. */
+  html { overflow-anchor: none; }
+
   :root {
     color-scheme: light; /* light-only: el DS de la app lo es por decisión del S1 (no se finge un modo oscuro) */
 
@@ -156,9 +165,15 @@
      `visibility` en la transición: con un extremo en visible la animación no se corta, y
      cerrado saca el contenido del árbol de accesibilidad (sin esto un lector de pantalla
      recita el detalle de TODAS las tarjetas cerradas; axe no lo ve — lo mira un e2e por CDP). */
-  .detalle { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.45s var(--ease-suave); }
+  /* 0.62 s, no 0.45: mientras bajas, TODO se mueve, y una apertura corta se confunde con el
+     propio scroll. Alargarla es lo que la vuelve legible como apertura. */
+  .detalle { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.62s var(--ease-asentar); }
   .tarjeta[data-abierta] .detalle { grid-template-rows: 1fr; }
-  .detalle-interior { overflow: hidden; visibility: hidden; transition: visibility 0.45s; }
+  .detalle-interior { overflow: hidden; visibility: hidden; transition: visibility 0.62s; }
+  /* Cerrar fuera de cuadro es instantáneo: animar lo que nadie ve solo sirve para que la
+     compensación de scroll no cuadre (ver «cerrarLoQueSalio» en el script). */
+  .tarjeta.sin-transicion .detalle,
+  .tarjeta.sin-transicion .detalle-interior { transition: none; }
   .tarjeta[data-abierta] .detalle-interior { visibility: visible; }
   .detalle-cuerpo { padding: 2px 16px 18px; border-top: 1px solid var(--border); }
   .feature { padding: 13px 0; border-top: 1px solid var(--border); }
@@ -167,6 +182,43 @@
   .feature .como { margin: 5px 0 0; font-size: 0.92rem; color: var(--muted-foreground); }
   .tip { margin-top: 8px; padding: 8px 12px; background: var(--accent); border-radius: 10px; font-size: 0.88rem; }
   .tip strong { color: var(--primary-tinta); }
+
+  /* ===================== M2 · Muestras de interfaz =====================
+     Un recorte de la pantalla de la que habla cada tarjeta, DIBUJADO en SVG con los tokens
+     de la app y el texto real de la dieta demo — no una captura: así el archivo sigue
+     autocontenido (pesa bytes, no imágenes), escala sin pixelarse y no puede filtrar nada.
+     El SVG es ilustración (aria-hidden); quien no lo ve recibe la frase del figcaption. */
+  /* TAMAÑO NATURAL, jamás estirada: el recorte está dibujado a 320 px de ancho; dejarlo
+     crecer al ancho de la tarjeta lo escalaba ×2 en escritorio (646 px), y una muestra al
+     doble de su tamaño se ve tosca y le roba la jerarquía al título de la tarjeta. Es una
+     muestra, no una portada. */
+  .muestra { margin: 12px 0 2px; }
+  .muestra svg { display: block; width: 100%; max-width: 300px; height: auto; background: var(--background); border: 1px solid var(--border); border-radius: 10px; }
+  .muestra figcaption { margin: 7px 2px 0; max-width: 46em; font-size: 0.82rem; line-height: 1.45; color: var(--muted-foreground); }
+  .muestra + .feature { border-top: 1px solid var(--border); }
+  .mz-caja { fill: var(--card); stroke: var(--border); }
+  .mz-hueco { fill: var(--background); stroke: var(--border); }
+  .mz-acento { fill: var(--accent); }
+  .mz-solido { fill: var(--primary); }
+  .mz-linea { fill: none; stroke: var(--muted-foreground); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+  .mz-h { fill: var(--foreground); font-family: Georgia, serif; font-weight: 600; font-size: 15px; }
+  .mz-t { fill: var(--foreground); font-family: system-ui, sans-serif; font-size: 11.5px; }
+  .mz-s { fill: var(--muted-foreground); font-family: system-ui, sans-serif; font-size: 10px; }
+  .mz-p { fill: var(--primary); font-family: system-ui, sans-serif; font-size: 10.5px; }
+  .mz-inv { fill: var(--primary-foreground); font-family: system-ui, sans-serif; font-size: 11px; }
+  .mz-verde { fill: var(--tl-green); font-family: system-ui, sans-serif; font-size: 10.5px; }
+  .mz-verde-fondo { fill: var(--tl-green-surface); }
+  .mz-rojo { fill: var(--tl-red); font-family: system-ui, sans-serif; font-size: 10.5px; }
+  .mz-rojo-fondo { fill: var(--tl-red-surface); }
+  .mz-amarillo { fill: var(--tl-yellow); font-family: system-ui, sans-serif; font-size: 10.5px; }
+  .mz-amarillo-fondo { fill: var(--tl-yellow-surface); }
+  .mz-g { fill: var(--foreground); font-family: Georgia, serif; font-weight: 600; font-size: 12.5px; }
+  .mz-st { fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .mz-st-verde { stroke: var(--tl-green); }
+  .mz-st-rojo { stroke: var(--tl-red); }
+  .mz-st-amarillo { stroke: var(--tl-yellow); }
+  .mz-st-p { stroke: var(--primary); }
+  .mz-st-inv { stroke: var(--primary-foreground); }
 
   /* ===================== E05 · El semáforo en dos segundos ===================== */
   .escena { margin-top: 56px; padding: 26px 20px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
@@ -267,14 +319,26 @@
     .tarjeta.visto .icono svg .trazable { animation: dibujar 0.85s var(--ease-suave) 0.15s forwards; }
     @keyframes dibujar { to { stroke-dashoffset: 0; } }
 
-    /* E04 · coreografía interior: las features alzan en fila al abrir la tarjeta */
+    /* E04 · el borde AVISA. La apertura es un cambio de altura y, bajando, compite con el
+       movimiento del scroll. Un pulso de terracota en el borde —0.9 s, una sola vez, sin
+       mover nada— dice «esto acaba de abrirse» sin romper la cocina serena. */
+    .tarjeta[data-abierta] { animation: asomar 0.9s var(--ease-suave); }
+    @keyframes asomar { from { border-color: var(--primary); } to { border-color: var(--border); } }
+
+    /* E04 · coreografía interior: primero llega la muestra (la imagen ancla las palabras) y
+       detrás alzan las features en fila. Los retrasos van por `nth-of-type` a propósito:
+       cuentan solo los bloques .feature (que son div), así insertar la figura de la muestra no
+       corre la secuencia (con nth-child se habría desordenado en silencio). */
+    .detalle-cuerpo .muestra,
     .detalle-cuerpo .feature { opacity: 0; transform: translateY(8px); transition: opacity 0.4s var(--ease-suave), transform 0.4s var(--ease-asentar); }
+    .tarjeta[data-abierta] .detalle-cuerpo .muestra,
     .tarjeta[data-abierta] .detalle-cuerpo .feature { opacity: 1; transform: none; }
-    .tarjeta[data-abierta] .feature:nth-child(2) { transition-delay: 0.05s; }
-    .tarjeta[data-abierta] .feature:nth-child(3) { transition-delay: 0.10s; }
-    .tarjeta[data-abierta] .feature:nth-child(4) { transition-delay: 0.15s; }
-    .tarjeta[data-abierta] .feature:nth-child(5) { transition-delay: 0.20s; }
-    .tarjeta[data-abierta] .feature:nth-child(6) { transition-delay: 0.25s; }
+    .tarjeta[data-abierta] .feature:nth-of-type(1) { transition-delay: 0.08s; }
+    .tarjeta[data-abierta] .feature:nth-of-type(2) { transition-delay: 0.13s; }
+    .tarjeta[data-abierta] .feature:nth-of-type(3) { transition-delay: 0.18s; }
+    .tarjeta[data-abierta] .feature:nth-of-type(4) { transition-delay: 0.23s; }
+    .tarjeta[data-abierta] .feature:nth-of-type(5) { transition-delay: 0.28s; }
+    .tarjeta[data-abierta] .feature:nth-of-type(6) { transition-delay: 0.33s; }
 
     /* E05 · el semáforo se arma: símbolo → palabra → color (el color, de ÚLTIMO) */
     .chip .simbolo, .chip .texto { opacity: 0; transform: translateX(-6px); transition: opacity 0.4s var(--ease-suave), transform 0.4s var(--ease-asentar); }
@@ -329,11 +393,15 @@
     html { scroll-behavior: auto; }
     .revela { opacity: 1; transform: none; transition: none; }
     .detalle, .detalle-interior, .chevron, .tarjeta-boton { transition: none; }
+    .tarjeta[data-abierta] { animation: none; } /* sin pulso de borde: nada se anima aquí */
     /* Cada escena en su corte editorial: todo en pose final, cero movimiento. */
     .portada h1 .palabra, .portada .sello, .portada .promesa, .portada .nota-inicial { animation: none; filter: none; opacity: 1; transform: none; }
     .baja .flecha { animation: none; opacity: 0.7; }
     .icono svg .trazable, .telefono .trazable { stroke-dasharray: none; stroke-dashoffset: 0; animation: none; }
-    .detalle-cuerpo .feature { opacity: 1; transform: none; transition: none; }
+    .detalle-cuerpo .feature, .detalle-cuerpo .muestra { opacity: 1; transform: none; transition: none; }
+    /* M1 · con movimiento reducido la tarjeta sigue abriéndose al llegar, pero SIN
+       transición: cambia de estado, no se anima. El contenido llega igual; lo que no hay
+       es movimiento. */
     .chip .simbolo, .chip .texto, .chip .que { opacity: 1; transform: none; transition: none; }
     .chip .tinte { opacity: 1; transition: none; }
     .telefono .fila, .telefono .fila-nota, .telefono .etiqueta, .telefono .etiqueta-fuerte, .telefono .flecha { opacity: 1; animation: none; }
@@ -382,14 +450,15 @@
       como está construida hoy: nada de lo que ves aquí es una promesa a futuro. Se sella
       cuando terminen las pruebas de uso real, y hasta entonces sigue creciendo con la app.</p>
 
-    <p class="baja">Tócala capa por capa — cada tarjeta se abre solo si tú quieres
+    <p class="baja">Baja sin prisa — cada tarjeta se abre cuando llegas a ella
       <span class="flecha" aria-hidden="true">↓</span></p>
   </header>
 
   <!-- ═══ Capa 1 · E03/E04 · Qué hace (5 puertas, 19 funcionalidades) ═══ -->
   <section class="seccion" aria-labelledby="t-quehace">
     <h2 id="t-quehace" class="revela">Qué hace</h2>
-    <p class="suave revela">Diecinueve cosas, cada una explicada al abrirla. Ninguna se abre sola.</p>
+    <p class="suave revela">Diecinueve cosas, con una muestra de la pantalla de la que hablan.
+      Se abren solas cuando bajas hasta ellas; si tocas una, mandas tú.</p>
     <div class="tarjetas">
 
       <!-- ——— T1 · el semáforo (la pregunta de todos los días: va primera) ——— -->
@@ -413,6 +482,39 @@
         </h3>
         <div class="detalle" id="d1" role="region" aria-label="¿Esto se puede? — detalle">
           <div class="detalle-interior"><div class="detalle-cuerpo">
+            <figure class="muestra">
+              <svg viewBox="0 0 320 200" aria-hidden="true" focusable="false">
+                <text class="mz-h" x="16" y="28">La dieta</text>
+                <rect class="mz-acento" x="228" y="12" width="78" height="20" rx="10"/>
+                <text class="mz-s" x="267" y="26" text-anchor="middle">Dieta demo</text>
+                <rect class="mz-hueco" x="14" y="40" width="292" height="30" rx="15"/>
+                <circle class="mz-linea" cx="32" cy="53" r="5"/>
+                <path class="mz-linea" d="M36 57l4 4"/>
+                <text class="mz-s" x="48" y="59">¿Se puede…? Busca un alimento</text>
+                <rect class="mz-verde-fondo" x="14" y="80" width="86" height="22" rx="11"/>
+                <path class="mz-st mz-st-verde" d="M24 91l3 3 5-6"/>
+                <text class="mz-verde" x="40" y="95">Verde</text>
+                <rect class="mz-amarillo-fondo" x="106" y="80" width="100" height="22" rx="11"/>
+                <path class="mz-st mz-st-amarillo" d="M121 86l5 9h-10z"/>
+                <text class="mz-amarillo" x="132" y="95">Amarillo</text>
+                <rect class="mz-rojo-fondo" x="212" y="80" width="94" height="22" rx="11"/>
+                <path class="mz-st mz-st-rojo" d="M224 88l6 6m0-6l-6 6"/>
+                <text class="mz-rojo" x="238" y="95">Rojo</text>
+                <text class="mz-g" x="16" y="122">Proteínas</text>
+                <rect class="mz-caja" x="14" y="130" width="292" height="28" rx="10"/>
+                <text class="mz-t" x="26" y="148">Pollo</text>
+                <rect class="mz-verde-fondo" x="200" y="135" width="96" height="18" rx="9"/>
+                <path class="mz-st mz-st-verde" d="M210 144l3 3 5-6"/>
+                <text class="mz-verde" x="224" y="148">Se puede</text>
+                <rect class="mz-caja" x="14" y="164" width="292" height="28" rx="10"/>
+                <text class="mz-t" x="26" y="182">Galleta rellena</text>
+                <rect class="mz-rojo-fondo" x="222" y="169" width="74" height="18" rx="9"/>
+                <path class="mz-st mz-st-rojo" d="M231 175l6 6m0-6l-6 6"/>
+                <text class="mz-rojo" x="244" y="182">Evitar</text>
+              </svg>
+              <figcaption>Así se ve <strong>Dieta</strong>: escribes el alimento y la respuesta
+                llega con su símbolo, su palabra y su color — nunca el color solo.</figcaption>
+            </figure>
             <div class="feature">
               <h4>El semáforo de alimentos</h4>
               <p class="como">Entra a <strong>Dieta</strong>, escribe el alimento en el buscador
@@ -461,6 +563,29 @@
         </h3>
         <div class="detalle" id="d2" role="region" aria-label="El día de hoy — detalle">
           <div class="detalle-interior"><div class="detalle-cuerpo">
+            <figure class="muestra">
+              <svg viewBox="0 0 320 214" aria-hidden="true" focusable="false">
+                <text class="mz-h" x="16" y="28">Hoy</text>
+                <rect class="mz-acento" x="228" y="12" width="78" height="20" rx="10"/>
+                <text class="mz-s" x="267" y="26" text-anchor="middle">Dieta demo</text>
+                <rect class="mz-acento" x="14" y="40" width="292" height="46" rx="12"/>
+                <text class="mz-g" x="26" y="60">Ya hiciste 2 de 10</text>
+                <text class="mz-s" x="26" y="76">Te falta: Almuerzo · Merienda · Cena · Vaso 1</text>
+                <rect class="mz-caja" x="14" y="96" width="292" height="48" rx="10"/>
+                <circle class="mz-solido" cx="34" cy="114" r="9"/>
+                <path class="mz-st mz-st-inv" d="M30 114l3 3 5-6"/>
+                <text class="mz-t" x="52" y="118">Desayuno</text>
+                <text class="mz-s" x="296" y="118" text-anchor="end">Hecho · 7:12 a. m.</text>
+                <text class="mz-s" x="52" y="134">Huevos revueltos con arepa pequeña; avena.</text>
+                <rect class="mz-caja" x="14" y="152" width="292" height="48" rx="10"/>
+                <circle class="mz-hueco" cx="34" cy="170" r="9"/>
+                <text class="mz-t" x="52" y="174">Almuerzo</text>
+                <text class="mz-s" x="296" y="174" text-anchor="end">12:30 p. m.</text>
+                <text class="mz-s" x="52" y="190">Pollo a la plancha; 2 verduras firmes.</text>
+              </svg>
+              <figcaption>Así se ve <strong>Hoy</strong>: marcas lo que ya pasó y la app guarda
+                la hora real por ti. Nadie te califica por la hora que sea.</figcaption>
+            </figure>
             <div class="feature">
               <h4>El checklist del día</h4>
               <p class="como">Es la pantalla de inicio. Muestra las comidas con su horario, el
@@ -527,6 +652,28 @@
         </h3>
         <div class="detalle" id="d3" role="region" aria-label="Pregúntale con tus palabras — detalle">
           <div class="detalle-interior"><div class="detalle-cuerpo">
+            <figure class="muestra">
+              <svg viewBox="0 0 320 232" aria-hidden="true" focusable="false">
+                <text class="mz-h" x="16" y="28">Pregúntale a la dieta</text>
+                <text class="mz-s" x="16" y="46">Escribe como le hablas a alguien. Dos formas de responder:</text>
+                <circle cx="20" cy="60" r="3.5" style="fill: var(--muted-foreground)"/>
+                <text class="mz-s" x="30" y="64">Asistente IA: en pausa</text>
+                <text class="mz-t" x="16" y="86">Prueba con una de estas:</text>
+                <rect class="mz-caja" x="14" y="94" width="292" height="26" rx="13"/>
+                <text class="mz-t" x="30" y="111">¿La manzana se puede?</text>
+                <rect class="mz-caja" x="14" y="126" width="292" height="26" rx="13"/>
+                <text class="mz-t" x="30" y="143">¿Qué merienda le doy?</text>
+                <rect class="mz-caja" x="14" y="158" width="292" height="26" rx="13"/>
+                <text class="mz-t" x="30" y="175">No tengo pollo, ¿qué le doy?</text>
+                <rect class="mz-hueco" x="14" y="190" width="240" height="30" rx="15" style="stroke: var(--primary)"/>
+                <text class="mz-s" x="30" y="209">¿Puede comer arroz?</text>
+                <rect class="mz-solido" x="262" y="190" width="44" height="30" rx="12"/>
+                <path class="mz-st mz-st-inv" d="M275 205l18-6-6 12-3-5z"/>
+              </svg>
+              <figcaption>Así se ve <strong>Chat</strong>: las preguntas de «¿se puede?» se
+                responden en el teléfono, sin salir; las abiertas las redacta la IA leyendo tu
+                plan con el nombre del peque oculto.</figcaption>
+            </figure>
             <div class="feature">
               <h4>Respuesta al instante, sin internet</h4>
               <p class="como">Las preguntas de «¿esto se puede?» —«¿la manzana se puede?», «¿le doy
@@ -579,6 +726,23 @@
         </h3>
         <div class="detalle" id="d4" role="region" aria-label="Tu dieta, adentro — detalle">
           <div class="detalle-interior"><div class="detalle-cuerpo">
+            <figure class="muestra">
+              <svg viewBox="0 0 320 216" aria-hidden="true" focusable="false">
+                <text class="mz-h" x="16" y="28">Cargar tu dieta</text>
+                <rect class="mz-caja" x="14" y="42" width="292" height="104" rx="12" stroke-dasharray="6 5"/>
+                <text class="mz-g" x="160" y="66" text-anchor="middle">Aún no has cargado una dieta</text>
+                <text class="mz-s" x="160" y="84" text-anchor="middle">Pide el archivo (termina en .json) a quien lo tenga</text>
+                <text class="mz-s" x="160" y="98" text-anchor="middle">y ábrelo aquí. Mientras tanto, explora con la demo.</text>
+                <rect class="mz-solido" x="46" y="110" width="228" height="26" rx="13"/>
+                <path class="mz-st mz-st-inv" d="M112 127v-9m-3.5 3.5l3.5-3.5 3.5 3.5m-10.5 12h14"/>
+                <text class="mz-inv" x="168" y="127" text-anchor="middle">Elegir archivo</text>
+                <text class="mz-g" x="16" y="170">…o pega el contenido</text>
+                <rect class="mz-hueco" x="14" y="180" width="292" height="28" rx="8"/>
+                <text class="mz-s" x="28" y="198">Pega aquí el contenido del archivo de la dieta</text>
+              </svg>
+              <figcaption>Así se ve <strong>Cargar</strong>: abres el archivo de la dieta, o pegas
+                su contenido si el teléfono no lo deja abrir. Si algo no cuadra, no entra.</figcaption>
+            </figure>
             <div class="feature">
               <h4>Cargar el archivo de la dieta</h4>
               <p class="como">Pide el archivo a quien lo tenga (termina en <code>.json</code>;
@@ -625,6 +789,25 @@
         </h3>
         <div class="detalle" id="d5" role="region" aria-label="Tuya, en tu teléfono — detalle">
           <div class="detalle-interior"><div class="detalle-cuerpo">
+            <figure class="muestra">
+              <svg viewBox="0 0 320 224" aria-hidden="true" focusable="false">
+                <text class="mz-h" x="16" y="28">Ajustes</text>
+                <text class="mz-g" x="16" y="56">Idioma</text>
+                <rect class="mz-solido" x="14" y="64" width="140" height="28" rx="14"/>
+                <text class="mz-inv" x="84" y="82" text-anchor="middle">Español</text>
+                <rect class="mz-caja" x="166" y="64" width="140" height="28" rx="14"/>
+                <text class="mz-t" x="236" y="82" text-anchor="middle">English</text>
+                <text class="mz-g" x="16" y="118">Dieta cargada</text>
+                <rect class="mz-caja" x="14" y="126" width="292" height="28" rx="10"/>
+                <text class="mz-t" x="28" y="144">Demo de ejemplo (ninguna dieta cargada)</text>
+                <text class="mz-g" x="16" y="180">Borrar datos</text>
+                <rect class="mz-rojo-fondo" x="14" y="188" width="292" height="28" rx="10"/>
+                <path class="mz-st mz-st-rojo" d="M112 199h10m-9 0v7a1 1 0 001 1h6a1 1 0 001-1v-7m-6-2h4"/>
+                <text class="mz-rojo" x="130" y="206">Borrar mis datos</text>
+              </svg>
+              <figcaption>Así se ve <strong>Ajustes</strong>: cambias el idioma, ves cuál dieta
+                está activa y borras todo del teléfono cuando tú lo decidas.</figcaption>
+            </figure>
             <div class="feature">
               <h4>Instalarla como app</h4>
               <p class="como">En Chrome, toca el menú (⋮) → <strong>«Agregar a pantalla de
@@ -830,27 +1013,120 @@
   "use strict";
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ——— G2 · abrir/cerrar tarjetas. Nunca se abren solas: el toque manda. ——— */
-  Array.prototype.forEach.call(document.querySelectorAll(".tarjeta-boton"), function (btn) {
+  /* ——— G2 · abrir/cerrar tarjetas: tu toque manda SIEMPRE. ——— */
+  var tarjetas = Array.prototype.slice.call(document.querySelectorAll(".tarjeta"));
+
+  function abrir(tarjeta, si) {
+    if (tarjeta.hasAttribute("data-abierta") === si) return; // idempotente: repasar corre por cuadro
+    var btn = tarjeta.querySelector(".tarjeta-boton");
+    if (si) tarjeta.setAttribute("data-abierta", "");
+    else tarjeta.removeAttribute("data-abierta");
+    if (btn) btn.setAttribute("aria-expanded", String(si));
+  }
+
+  tarjetas.forEach(function (tarjeta) {
+    var btn = tarjeta.querySelector(".tarjeta-boton");
+    if (!btn) return;
     btn.addEventListener("click", function () {
-      var tarjeta = btn.closest(".tarjeta");
-      var abierta = tarjeta.hasAttribute("data-abierta");
-      if (abierta) tarjeta.removeAttribute("data-abierta");
-      else tarjeta.setAttribute("data-abierta", "");
-      btn.setAttribute("aria-expanded", String(!abierta));
+      /* Tocarla la saca del automático para el resto de la visita: la página no vuelve a
+         abrir ni a cerrar lo que tú decidiste con el dedo. */
+      tarjeta.setAttribute("data-manual", "");
+      abrir(tarjeta, !tarjeta.hasAttribute("data-abierta"));
     });
   });
+
+  /* ——— M1 · APERTURA POR LECTURA — modelo adoptado de Velo (app-anonimizador), que ya
+     pagó entero este mismo camino en cinco rondas de su gate visual. Nuestra historia previa
+     (aperturas al reposo, bandas, ticks, cierres en lote) queda en el storyboard; el modelo
+     que sobrevivió es este, y la regla es UNA y demostrable:
+
+     **Una tarjeta está abierta exactamente mientras está a la vista.**
+
+     · ABRE solo bajando, cuando su cabecera cruza la línea de los DOS TERCIOS de la
+       pantalla (0 <= top <= vh·2/3): queda un tercio de pantalla por debajo, que es donde
+       se la ve crecer — y crece hacia abajo desde su cabecera, así que nada de lo ya leído
+       se mueve. El umbral es de PANTALLA, no de tarjeta: un tercio de una tarjeta cerrada
+       son ~30 px y abría asomando por el borde inferior, fuera de la vista.
+     · CIERRA al salir ENTERA de pantalla, por el borde que sea. Por ABAJO (subiendo, la
+       pasaste de largo): con su transición — encoge fuera de cuadro, no puede mover nada.
+       Por ARRIBA (bajando, la dejaste atrás): DE GOLPE, reponiendo el scroll con el alto
+       exacto perdido, en el mismo cuadro y en modo INSTANTÁNEO. Esta página usa
+       scroll-behavior: smooth, y un scrollBy(x, y) a secas SE ANIMA: el encogido era
+       instantáneo, la reposición llegaba despacio y la página «pegaba saltos» (nuestra
+       quinta ronda y la ronda 2 de Velo son el mismo bug). behavior: "instant" ignora el
+       smooth POR CONTRATO; overflow-anchor: none en <html> apaga el anclaje nativo para
+       que el navegador no compense TAMBIÉN y lo mueva dos veces.
+     · Va con RECTÁNGULOS, no IntersectionObserver: lo que gobierna es dónde está la
+       cabecera respecto a la pantalla, no cuánto de la tarjeta se ve — esa medida engaña
+       (la coreografía de entrada desplaza la caja 18 px y miente sobre su posición).
+     · Corre TAMBIÉN con movimiento reducido: desplegar es contenido, no decoración; el
+       cinturón CSS de prefers-reduced-motion ya lo abre sin transición.
+     · TU TOQUE MANDA: lo tocado a mano queda en manual y el recorrido no lo toca más. */
+  var TERCIO = 1 / 3;
+  var yPrevia = window.scrollY;
+  var bajando = true;
+
+  function repasar() {
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    var linea = vh * (1 - TERCIO);
+    tarjetas.forEach(function (t) {
+      if (t.hasAttribute("data-manual")) return;
+      var caja = t.getBoundingClientRect();
+      var abierta = t.hasAttribute("data-abierta");
+
+      if (!abierta) {
+        if (bajando && caja.top >= 0 && caja.top <= linea) abrir(t, true);
+        return;
+      }
+      if (caja.top >= vh) {
+        /* Salió por abajo: se recoge con su transición, fuera de la vista. */
+        abrir(t, false);
+      } else if (caja.bottom <= 0) {
+        /* Salió por arriba: se recoge de golpe y se repone el alto en el mismo cuadro. */
+        t.classList.add("sin-transicion");
+        abrir(t, false);
+        var perdido = caja.height - t.getBoundingClientRect().height;
+        if (perdido) {
+          window.scrollBy({ top: -perdido, left: 0, behavior: "instant" });
+          /* La reposición dispara su propio evento de scroll con la Y más chica; sin
+             esto, el detector de dirección lo leería como «subiendo» un cuadro. */
+          yPrevia = window.scrollY;
+        }
+        window.requestAnimationFrame(function () { t.classList.remove("sin-transicion"); });
+      }
+    });
+  }
+
+  var revisando = false;
+  window.addEventListener("scroll", function () {
+    var y = window.scrollY;
+    if (y !== yPrevia) bajando = y > yPrevia;
+    yPrevia = y;
+    if (!revisando) {
+      revisando = true;
+      window.requestAnimationFrame(function () { revisando = false; repasar(); });
+    }
+  }, { passive: true });
 
   /* ——— G3 · coreografía de entrada. Con reduced-motion el CSS ya lo muestra todo:
      añadir la clase es inofensivo. Sin IntersectionObserver, todo visible (fallback). ——— */
   var revelables = document.querySelectorAll(".revela, .chips");
   if ("IntersectionObserver" in window) {
-    var obs = new IntersectionObserver(function (entradas) {
-      entradas.forEach(function (e) {
-        if (e.isIntersecting) { e.target.classList.add("visto"); obs.unobserve(e.target); }
-      });
-    }, { threshold: 0.15 });
-    Array.prototype.forEach.call(revelables, function (el) { obs.observe(el); });
+    var revelarCon = function (umbral, lista) {
+      var obs = new IntersectionObserver(function (entradas) {
+        entradas.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add("visto"); obs.unobserve(e.target); }
+        });
+      }, { threshold: umbral });
+      Array.prototype.forEach.call(lista, function (el) { obs.observe(el); });
+    };
+    revelarCon(0.15, document.querySelectorAll(".revela:not(.tarjeta), .chips"));
+    /* Las tarjetas entran en cuanto ASOMAN (umbral 0), y el motivo no es de ritmo: su
+       entrada las desplaza 18 px hacia abajo, y una caja desplazada miente sobre su
+       posición — el tercio que gobierna el despliegue se calcularía sobre una medida
+       falsa (lección de Velo, calcada porque el bug es idéntico). Arrancando en cuanto
+       asoma, para cuando llega a la línea ya se asentó y la medida es la de verdad. */
+    revelarCon(0, document.querySelectorAll(".tarjeta.revela"));
   } else {
     Array.prototype.forEach.call(revelables, function (el) { el.classList.add("visto"); });
   }

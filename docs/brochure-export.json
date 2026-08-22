@@ -209,7 +209,7 @@
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 212,
+      "valor": 214,
       "unidad": "pruebas",
       "fuente": "medido",
       "detalle": "Salida de `pnpm test` el 2026-08-22: 15 archivos, 212 pruebas."
@@ -217,7 +217,7 @@
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 78,
+      "valor": 94,
       "unidad": "pruebas",
       "fuente": "medido",
       "detalle": "Salida de `pnpm test:e2e` el 2026-08-22: 39 pruebas corridas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe."
@@ -265,10 +265,10 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 56502,
+      "valor": 75459,
       "unidad": "bytes",
       "fuente": "medido",
-      "detalle": "Archivo autocontenido, sin webfonts ni recursos externos. `wc -c docs/BROCHURE.html`."
+      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."
     }
   ],
   "stack": [

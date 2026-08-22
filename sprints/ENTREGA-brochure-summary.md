@@ -3,11 +3,11 @@ entrega: brochure-conoce
 tipo: entrega-puntual # no es un sprint (método v1.18.0)
 app: nutri-kids
 modo: INICIAL
-status: en-gate-visual
+status: closed
 opened: 2026-08-22
-closed:
-branch: entrega/brochure-conoce
-pr:
+closed: 2026-08-22
+branch: entrega/brochure-conoce # + entrega/brochure-tarjetas-scroll (delta 1, 6 rondas de gate)
+pr: "#4 + #5"
 ---
 
 # Entrega puntual — El brochure vivo de Nutri-Kids (`/conoce`)
@@ -24,7 +24,7 @@ preview y la **última milla sin sesión**.
 
 | Pieza                                    | Qué es                                                                                                                                              |
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `docs/BROCHURE.html`                     | El anti-manual: 9 escenas, 5 tarjetas, 19 funcionalidades. 56 KB, cero CDNs, abre con doble clic sin internet.                                      |
+| `docs/BROCHURE.html`                     | El anti-manual: 9 escenas, 5 tarjetas, 19 funcionalidades y 5 muestras de interfaz. 73 KB, cero CDNs, abre con doble clic sin internet.             |
 | `/conoce`                                | La misma pieza servida por la app (rewrite en `next.config.ts` → `public/conoce.html`, copiado en `prebuild` y verificado byte a byte por un test). |
 | `docs/brochure-export.json`              | Contrato v1.0.0 adoptado (no calcado): `_schema` tal cual, 10 métricas con `fuente` medida, `estado: "inicial"`.                                    |
 | `sprints/ENTREGA-brochure-storyboard.md` | El guion aprobado ANTES de una línea de HTML (regla cero).                                                                                          |
@@ -38,7 +38,7 @@ El inventario de la planeadora declaraba **1 fuga**; el comando encontró **2 fr
 | #   | Dónde                            | Hallazgo                                      | Acción                             |
 | --- | -------------------------------- | --------------------------------------------- | ---------------------------------- |
 | 1   | Campo `homepage` del repo        | La URL de producción, tal cual                | `gh repo edit --homepage ""`       |
-| 2   | `docs/BLUEPRINT.html` (3 líneas) | Literal `*.vercel.app` como patrón de dominio | Reescrito a «subdominio de Vercel» |
+| 2   | `docs/BLUEPRINT.html` (3 líneas) | El dominio del proveedor escrito como literal | Reescrito a «subdominio de Vercel» |
 
 **Gate verificado (dos veces: al abrir y al cerrar la entrega):**
 `grep -rn "vercel\.app\|workers\.dev" --include="*.md" --include="*.html" --include="*.json" .` → **vacío** ·
@@ -150,10 +150,10 @@ que esta entrega usa para servir `/conoce`. No era diferible:
 | ----------------------------- | -------------- | ---------------------------------------------- |
 | Funcionalidades               | 19             | medido (contra el manual, verificado por test) |
 | Pantallas del producto        | 8              | medido (`page.tsx`; `/conoce` no cuenta)       |
-| Pruebas unitarias             | 212            | medido (`pnpm test`)                           |
-| Pruebas e2e                   | 78             | medido (2 proyectos)                           |
+| Pruebas unitarias             | 214            | medido (`pnpm test`)                           |
+| Pruebas e2e                   | 94             | medido (2 proyectos)                           |
 | Cobertura de líneas del motor | 99.52 %        | medido (v8)                                    |
-| Peso del brochure             | 56 502 bytes   | medido (`wc -c`)                               |
+| Peso del brochure             | 73 421 bytes   | medido (`wc -c`, con las 5 muestras SVG)       |
 | CLS / LCP de `/conoce`        | 0.0000 / 68 ms | medido (Playwright, móvil)                     |
 | Costo de operación            | US$0/mes       | calculada                                      |
 
@@ -170,3 +170,247 @@ que esta entrega usa para servir `/conoce`. No era diferible:
 2. **Última milla:** `/conoce` desde afuera, **sin sesión** (incógnito), sin publicar la URL.
 3. Tras el merge: **re-limpiar el campo `homepage`** (Vercel lo reescribe en el deploy de prod).
 4. El **sello** (INICIAL → SELLADO) queda a tu ritmo, sin fecha: no se espera aquí.
+
+---
+
+# Delta 1 (2026-08-22) — La apertura por lectura + las muestras de interfaz
+
+> Entra **después** del merge del PR #4, tras el gate visual del usuario sobre la preview.
+> Regla 11: toda feature que cambia actualiza brochure **y** export en su mismo PR.
+
+## Qué pidió el usuario, literal
+
+Las tarjetas desplegables concentran la mayor parte de la información y **cobran un peaje por
+cada una**. Que se abran al bajar (nunca antes de que haya salido **⅓** de la tarjeta), con una
+animación que se vea; que al devolverse estén cerradas y solo se desplieguen hacia abajo; y que
+ahí —donde más información hay— haya **muestras de las interfaces** de las que hablan.
+No es un capricho de esta app: **se repite en varias apps del portafolio**, y por eso el usuario
+pidió llevarlo a la planeadora como estándar (bloque listo más abajo).
+
+## Cómo quedó
+
+| Regla                  | Implementación (medida, no supuesta)                                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Se ve abrirse          | Abre **cuando te detienes** (140 ms sin scroll) con la cabecera en la banda de lectura (−12% a 72%). Apertura de **0.62 s** + pulso de borde. Respaldo cada 700 ms para el scroll lento. |
+| Se ve abrirse          | La misma transición del toque (0.45 s) + muestra y features alzando detrás (0.08 → 0.33 s).                                           |
+| Solo hacia abajo       | Ancla superior fija: lo que se desplaza queda bajo el pliegue.                                                                        |
+| Al devolverme, cerrada | Cierra la que salió **entera de la pantalla**, por el borde que sea y solo en la dirección que lo explica. Cerrar por arriba se compensa en el scroll: **0 px de movimiento visible, medido en los cinco cierres**. |
+| Subiendo no abre       | e2e que recorre hacia arriba afirmando que **ninguna** pasó de cerrada a abierta.                                                     |
+| Muestras               | 5 recortes **dibujados en SVG** con el texto real de la dieta demo, uno por tarjeta.                                                  |
+
+**CLS de carga: 0.0000** — es lo que mide el gate, y nada se abre sin que bajes. En el recorrido
+sube (0.15 leyendo con pausas · 0.29 escritorio · 0.68 a puros tirones): abrir delante de los ojos
+**desplaza a propósito** lo que va debajo. Es el efecto pedido, medido y declarado.
+
+## La corrección tras el gate visual (misma tarde)
+
+La primera versión del delta pasó todos los gates y **falló el único que importa**. Veredicto del
+usuario: _«no veo que se desplieguen… se ven ya desplegadas, y las imágenes gigantes, cero
+estética»_. Las dos causas, medidas:
+
+| Síntoma                        | Causa medida                                                                                                              | Corrección                                                              |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| «Se ven ya desplegadas»        | Abría con la cabecera al **72–79%** de la pantalla: a punto de salir por abajo. La animación ocurría fuera del campo visual. | Zona de lectura al **38%** → abre al **46–56%**, delante de los ojos.  |
+| «Imágenes gigantes»            | La muestra crecía al ancho de la tarjeta: **646×457 px** en escritorio para un dibujo hecho a 320 px (escala ×2).          | Topada a su tamaño natural (`max-width: 300px`), pie a ancho de lectura. |
+
+También cambió el corte de `prefers-reduced-motion`: entregar las cinco abiertas producía el mismo
+efecto que el usuario rechazó (un muro ya desplegado). Ahora es **el mismo mecanismo sin
+transición** — la tarjeta se abre al llegar, pero cambia de estado en vez de animarse.
+
+### Tercera ronda: el momento, no la altura
+
+Con la muestra ya resuelta, el veredicto siguió siendo _«no se percibe que se está desplegando;
+debe darse más arriba o ser más evidente»_. Subir el disparo al 55% **empeoró** las cosas y lo
+dejó medido: al abrirse una tarjeta empuja a la siguiente, que dispara ya fuera de cuadro
+(aperturas al 104% y al 198% de la pantalla) y el CLS del recorrido llegó a **1.08**.
+
+El diagnóstico real: **bajando, la página entera se mueve, así que la apertura compite con el
+scroll y no se percibe a ninguna altura.** La versión que sí se ve:
+
+- **abre cuando te detienes** (140 ms sin un solo evento de scroll), con la cabecera en la banda
+  de lectura; una a la vez, jamás en cascada;
+- **respaldo cada 700 ms** para el scroll lento y continuo, que nunca llega a reposar;
+- **0.62 s** de apertura (0.45 s se leía como scroll) y un **pulso de terracota en el borde**
+  (0.9 s, una vez, sin mover nada);
+- **banda ancha** (−12% a 72%): con una banda estrecha, un pulgar que baja 700 px de un tirón la
+  salta limpiamente y esa tarjeta no se abre nunca (medido: dos tarjetas se quedaron cerradas).
+
+**Lo que se paga, dicho claro:** si vuelas de un tirón sobre todo el bloque, solo se abre la que
+quedó en la banda; las que sobrevolaste se quedan cerradas y abren con un toque.
+
+### Cuarta ronda: el ciclo se cierra
+
+_«Cuando regreso deberían cerrarse; no si están en mi pantalla, sino cuando hayan salido; y
+mantenerse cerradas mientras subo; y si está cerrada y vuelvo a bajar, que se despliegue otra vez.»_
+
+Hasta aquí la tarjeta que dejabas atrás **bajando** se quedaba abierta, y al subir te la volvías a
+encontrar desplegada. Ahora se cierra cuando sale **entera** de la pantalla, por el borde que sea,
+y cada cierre va atado a la dirección que lo explica. Tres precisiones, cada una con su medición:
+
+1. **Compensar el scroll al cerrar por arriba.** Lo que desaparece está encima de lo que miras: sin
+   descontarlo, la página pega un tirón. Se hace a mano en un frame, con el scroll anchoring del
+   navegador apagado para no corregir dos veces (Safari no lo tiene). **Verificado midiendo el
+   movimiento real de lo que está en pantalla: 0 px en los cinco cierres.**
+2. **Medir todo primero y cerrar después.** Cerrar dentro del mismo bucle que mide hacía que cada
+   cierre empujara a la siguiente tarjeta y esta pareciera haber salido: cascada que cerraba la
+   pieza entera y la reabría (T3 se cerró cinco veces en una sola bajada).
+3. **Una espera antes de reabrir.** Tras compensar, la recién cerrada queda pegada al filo superior
+   —dentro de la banda— y se reabría en bucle: el scroll rebotaba entre y=1800 e y=262 **sin
+   avanzar nunca**. Vuelve a ser candidata solo cuando entra entera otra vez.
+
+También hubo un falso positivo instructivo: mi propio medidor atribuía 3.48 de CLS a los cierres.
+Medir el **movimiento real de un elemento en pantalla** lo desmintió (0 px): el desplazamiento era
+de las aperturas, que siguen animándose 0.62 s cuando el cierre ocurre. **Una métrica agregada no
+prueba una causa.**
+
+### Quinta ronda: los saltos bajando lento
+
+_«Pega saltos la pantalla, como que es cuando repliega arriba, y es muy molesto.»_ Dos causas:
+
+1. **La compensación heredaba `scroll-behavior: smooth`** (puesto para los enlaces del mapa): el
+   contenido se encogía en un frame pero el `scrollBy` que lo descuenta **se animaba** — salto y
+   resbalón. Y mi verificación de «0 px» había medido **dos frames después**, cuando el
+   deslizamiento ya había terminado: medir tarde escondió el defecto. La compensación ahora fuerza
+   `auto` durante ese único frame.
+2. **El tick periódico cerraba en pleno movimiento**, peleando contra la inercia del dedo. Ahora en
+   movimiento solo se ABRE; cerrar vive únicamente en el reposo, donde la compensación es atómica.
+
+Re-verificado con un rastreador **por frame**: bajada lenta completa, 5 cierres, **0 saltos**.
+
+### Sexta ronda: se adopta el modelo de Velo, entero
+
+Tras cinco rondas propias el veredicto siguió siendo «las tarjetas no quedaron bien», y la orden
+fue usar el aprendizaje de **Velo (app-anonimizador)**. Nuestro modelo por reposo se retira entero
+y entra el suyo: **una tarjeta está abierta exactamente mientras está a la vista** — abre bajando
+al cruzar su cabecera la línea de los dos tercios de la pantalla; cierra al salir entera, por el
+borde que sea (por arriba, reponiendo el alto con `scrollBy({behavior: "instant"})`); rectángulos
+en vez de IntersectionObserver; corre también con reduced-motion; el toque manda.
+
+Resultado medido: las cinco abren al **60–63%** de pantalla — determinista, siempre justo bajo la
+línea — y el ciclo completo en bajada continua sin pausas queda: abren 5 → fondo recogido →
+subiendo nada abre → arriba cerrado → segunda bajada abren 5. **0 saltos de frame.** De paso cayó
+un bug nuestro idéntico al de Velo: el observer de revelado (umbral 0.15) medía tarjetas
+desplazadas 18 px por su coreografía de entrada; ahora revelan con umbral 0.
+
+Los tests se calcaron de Velo y se probaron EN ROJO contra el archivo del commit anterior
+(`git show HEAD:docs/BROCHURE.html` servido en `public/`): el que distingue los modelos —
+**«abre en cuanto cruza la línea, aún sin detenerte»** — falló con «T1 abrió demasiado arriba»,
+el reclamo del usuario vuelto assert. Los de la línea y de «la que quedó atrás ya está recogida»
+pasan también sobre la versión vieja (ese contrato ya se cumplía): se declara, porque un test que
+nunca estuvo en rojo contra el defecto no se ha probado a sí mismo.
+
+**Las lecciones para el estándar (las cinco nuestras + lo que Velo ya sabía):**
+
+1. **Una animación fuera del campo visual no existe**, por más que el test la vea.
+2. **El momento importa más que la posición**: con la página quieta, la apertura se lee sola.
+3. **Disparar por altura encadena**; abrir una a la vez al reposo lo elimina por construcción.
+4. **Todo cambio de layout fuera de cuadro se compensa y se verifica POR FRAME**, no en métricas
+   agregadas ni en instantáneas tardías — medir dos frames después esconde el resbalón.
+5. **`scroll-behavior: smooth` contamina toda corrección programática de scroll**: la reposición
+   va con `scrollBy({behavior: "instant"})`, que ignora el smooth POR CONTRATO — más simple y más
+   portable que alternar el estilo del `<html>`.
+6. **El umbral es de PANTALLA, no de la tarjeta, y el disparo es continuo** (la cabecera cruza una
+   línea), no por reposo ni por tick: el reposo hacía la apertura errática y el tick la hacía
+   aleatoria. La regla entera cabe en una frase: *abierta exactamente mientras está a la vista.*
+7. **Los tests se prueban en rojo contra el commit anterior** (`git show <sha>:ruta`): un test que
+   nunca falló contra el defecto real no se ha probado a sí mismo.
+8. **Cuando otra app del portafolio ya pagó el camino, se adopta su solución entera** — no se
+   re-deriva por rondas: nuestras cinco rondas re-descubrieron lo que Velo ya tenía escrito.
+
+Ningún gate automático caza esto: lo caza una persona mirando. Seis rondas de gate visual aquí —
+cinco de ellas re-derivando lo que otra app ya había pagado.
+
+## Decisiones
+
+- **Dibujar las muestras, no incrustar capturas** (elección del usuario sobre 3 opciones): +17 KB
+  en vez de ~200 KB, escalan sin pixelarse, usan los tokens del design system y **no pueden
+  arrastrar un píxel que no esté escrito en el archivo** — la regla mayor se cumple por
+  construcción, no por revisión. Fidelidad verificada contra capturas reales de las 7 pantallas
+  corriendo con la dieta demo; esas capturas **no entran al repo**.
+- **Cerrar al salir por abajo**, no al primer gesto hacia arriba: cerrar lo que la persona está
+  mirando es peor que dejarlo abierto.
+- **El toque siempre gana.** Una página que corrige lo que hiciste con el dedo se siente rota.
+- **Copy reescrito**: la portada y la capa 1 prometían «ninguna se abre sola». Habría quedado
+  mintiendo — el texto es parte de la feature, no decoración.
+
+## Lo que cazó esta ronda
+
+1. **El gate de cero enlaces me delató a mí.** Al documentar la Fase 0 escribí el literal del
+   dominio dentro de la tabla del summary, así que el `grep` del gate **dejó de salir vacío**.
+   Corregido aquí. Lección: el gate no distingue entre una fuga y su acta — y hace bien.
+2. **La limpieza del `homepage` es recurrente, confirmada en vivo:** tras el merge del PR #4,
+   Vercel volvió a escribir la URL de producción. Limpiada y re-verificada (`""`).
+3. **Una banda de gracia de 25% dejaba la primera tarjeta abierta** al volver arriba del todo:
+   estaba fuera de la pantalla pero «dentro» del margen. Ajustada a 8%.
+4. **El helper de los e2e corría contra el propio automático**: leía «cerrada» y, entre la lectura
+   y el toque, la tarjeta se abría sola — el toque la cerraba y 7 tests fallaban. Ahora reintenta
+   (el primer toque la pasa a manual, así que converge siempre).
+5. **Los retrasos del stagger iban por `nth-child`**: insertar la `<figure>` habría corrido toda
+   la secuencia en silencio. Pasados a `nth-of-type`, que cuenta solo los `.feature`.
+
+6. **El gate e2e podía estar midiendo OTRA app.** La suite completa cayó en masa (8 de 86) sin
+   una sola pista: otro proyecto del portafolio tenía tomado el puerto 3000 y, con
+   `reuseExistingServer`, Playwright **lo reutilizó**. Pasó dos veces el mismo día (dos apps
+   distintas). El falso rojo se ve; **el peligro real es el falso verde**. Reparado: puerto
+   configurable (`E2E_PORT`) y `tests/e2e/global-setup.ts`, un **gate de identidad** que exige
+   que quien conteste sea Nutri-Kids antes de correr el primer test, con la salida en el
+   mensaje de error. De paso apareció un literal `localhost:3000` quemado dentro del test de
+   privacidad «CERO red»: ahora el origen propio sale de la config.
+
+## Propuesta de estándar para la planeadora
+
+> **Esta casa no escribe en la planeadora.** El bloque va listo para copiarse tal cual a
+> `estandares/` (o donde el método lo disponga). Es la versión FINAL tras seis rondas de gate
+> visual en Nutri-Kids — las cinco primeras re-derivaron lo que Velo (app-anonimizador) ya había
+> pagado; la sexta adoptó su modelo entero. Sustituye cualquier versión anterior de este bloque.
+
+---
+
+**Estándar — «Apertura por lectura» en piezas con tarjetas desplegables** (brochures y cualquier
+documento largo del portafolio). Confirmado en DOS apps: Velo (5 rondas) y Nutri-Kids (6 rondas).
+
+**La regla, en una frase: una tarjeta está abierta exactamente mientras está a la vista.**
+
+1. Si las tarjetas desplegables concentran la mayor parte de la información, **se abren al llegar
+   a ellas**, no al toque. El toque es el control, no el peaje.
+2. **Abre solo bajando, cuando su cabecera cruza la línea de los dos tercios de la pantalla**
+   (`0 <= top <= vh·⅔`): queda un tercio de pantalla por debajo — el hueco donde se la ve crecer.
+   El umbral es de PANTALLA, jamás de la tarjeta (⅓ de una tarjeta cerrada son ~30 px: abre
+   asomando por el borde inferior, fuera de la vista). El disparo es **continuo** (rectángulos por
+   cuadro de scroll) — ni al reposo ni por tick: el reposo hace la apertura errática y el tick la
+   vuelve aleatoria.
+3. **Ancla superior**: crece hacia abajo desde su cabecera; nada de lo ya leído se mueve.
+4. **Cierra al salir ENTERA de pantalla, por el borde que sea.** Por abajo: con su transición
+   (encoge fuera de cuadro). Por arriba: de golpe, sin transición, **reponiendo el scroll con el
+   alto exacto perdido** vía `scrollBy({top: -perdido, behavior: "instant"})` — un `scrollBy(x, y)`
+   a secas SE ANIMA bajo `scroll-behavior: smooth` y la página pega saltos. `overflow-anchor: none`
+   en `<html>` para que el navegador no compense también. Al devolverse, todo está recogido; al
+   volver a bajar, se despliega otra vez. Subiendo no se abre nada, nunca.
+5. **Rectángulos, no IntersectionObserver**: gobierna dónde está la cabecera respecto a la
+   pantalla, no cuánto de la tarjeta se ve. Si hay coreografía de entrada con `translateY`, las
+   tarjetas revelan con **umbral 0**: una caja desplazada 18 px miente sobre su posición.
+6. **El toque saca la tarjeta del automático** para el resto de la visita.
+7. **Corre también con `prefers-reduced-motion`**: desplegar es contenido, no decoración; el
+   cinturón CSS ya lo abre sin transición.
+8. La apertura dura **≥0.6 s** y lleva un cue que no mueve nada (pulso de color en el borde):
+   más corta se confunde con el propio scroll.
+9. **Donde más información hay, va una muestra de la interfaz** de la que se habla, **dibujada en
+   SVG** con los tokens del design system, topada a su tamaño natural — no una captura incrustada
+   (peso, envejecimiento silencioso, píxeles no revisados en un repo público). El SVG es
+   ilustración (`aria-hidden`); el `figcaption` carga el sentido en palabras.
+10. **Verificación**: el test de la línea (cabecera al 95% y 80% no abre, al 60% sí — posicionando
+    en dos tiempos para que la coreografía de entrada se asiente) · «abre al cruzar la línea AÚN
+    SIN DETENERTE» (bajada continua; es el test que distingue los modelos) · «la que quedó atrás
+    bajando ya está recogida» (`bottom <= 0` ⇒ cerrada) · deriva cero midiendo **una cabecera
+    visible**, jamás `scrollY`, conduciendo con `behavior: "instant"` · lo cerrado fuera del árbol
+    de accesibilidad por CDP (axe no lo ve). **Cada test probado EN ROJO contra el archivo del
+    commit anterior** (`git show <sha>:ruta`): un test que nunca falló contra el defecto real no
+    se ha probado a sí mismo. Y el **gate visual humano, en rondas**: nada de esto lo caza la CI.
+11. **Regla de método**: cuando otra app del portafolio ya pagó el camino, **se adopta su solución
+    entera** — no se re-deriva por rondas. Nutri-Kids gastó cinco rondas re-descubriendo lo que
+    Velo tenía escrito.
+
+Implementaciones de referencia, comentadas: `app-anonimizador/docs/BROCHURE.html` (la original) y
+`app-nutri-kids/docs/BROCHURE.html` (bloque «M1 · Apertura por lectura») + sus
+`tests/e2e/{conoce,brochure}.spec.ts`. Historia completa de las rondas: los
+`ENTREGA-brochure-summary.md` de ambas apps.

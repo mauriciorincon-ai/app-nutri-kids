@@ -5,7 +5,7 @@ arquetipo: app # molde v2 del kit (BROCHURE.plantilla.html) + banco de técnicas
 elemento_tipo: entregable
 rigor: completo
 capa: producto
-version: 1.0.0
+version: 1.1.0 # delta 1 (apertura por lectura + muestras de interfaz), aprobado 2026-08-22
 fecha: 2026-08-22
 estado: aprobado # «guion aprobado» del usuario, 2026-08-22 — antes de una línea de HTML
 objetivo: "El recorrido de la mamá por Nutri-Kids, contado con el sosiego de una cocina en calma: el día pasa mientras ella lee, y al final el número se niega a volverse nota."
@@ -37,9 +37,10 @@ marcas diminutas, las cinco comidas del plan, y un punto terracota que va cayend
 cena mientras ella avanza. Nadie se lo explica. Su lectura **es** el día pasando.
 
 Las cinco puertas la esperan. Entran asentándose una tras otra y cada icono **se termina de
-dibujar** al llegar — los mismos iconos que ya viven en su app. Ninguna se abre sola: cuando
-ELLA toca una, se abre como un cajón sereno y las features se acomodan en fila, una por
-instante, en orden de lectura.
+dibujar** al llegar — los mismos iconos que ya viven en su app. Y al llegar a cada una, **se abre
+sola** como un cajón sereno _(delta 1)_: primero asoma **la pantalla de la que habla**, dibujada
+con los colores de su app, y detrás se acomodan las features en fila, una por instante, en orden
+de lectura. Si se devuelve, las encuentra cerradas otra vez; si toca una, manda ella.
 
 Entre "qué hace" y lo fino, un respiro de dos segundos: **el semáforo se arma solo**. Primero
 llega el símbolo, después la palabra, y solo al final el color. Es la regla de accesibilidad de
@@ -257,3 +258,174 @@ completa en `ENTREGA-brochure-summary.md`).
   contrato de qué vas a ver.
 - **La cinta del día (E02) no tiene precedente en esta app**: es el riesgo registrado. Si en la
   sala de proyección no suma, se retira sin tocar ninguna otra escena (está aislada por diseño).
+
+---
+
+# Delta 1 — La apertura por lectura + las muestras de interfaz
+
+> **Aprobado por el usuario el 2026-08-22**, tras su gate visual sobre la preview del PR #4.
+> Nace de una observación que se repite en varias apps del portafolio: las tarjetas
+> desplegables concentran la mayor parte de la información y cobran un peaje por cada una.
+> Se corrige aquí y se propone como **estándar del método** (bloque listo para la planeadora
+> en `ENTREGA-brochure-summary.md`; esta casa no escribe en la otra).
+
+## M1 · Apertura por lectura (capa 1, escenas E03/E04)
+
+**La regla, en una frase:** _la tarjeta se abre cuando llegas a ella, y vuelve a estar cerrada
+cuando te devuelves._
+
+| Aspecto             | Especificación                                                                                                                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Disparo**         | ⅓ de la tarjeta dentro de la **zona de lectura** = la pantalla menos su 15% inferior (`rootMargin: 0 0 -15% 0`, `threshold: 1/3`).                                                                               |
+| **Por qué la zona** | Una tarjeta cerrada mide ~95 px: contra el borde crudo cumpliría el tercio asomando 32 px y **se abriría fuera de cuadro** — la animación existiría sin que nadie la viera. Medido: abre con su borde al 72–79%. |
+| **Dirección**       | Solo bajando. Subiendo **jamás** se abre nada (un e2e lo afirma recorriendo la pieza entera hacia arriba).                                                                                                       |
+| **Ancla**           | Crece **hacia abajo**: el borde superior no se mueve. Lo que se desplaza queda bajo el pliegue — y por eso el CLS se sostiene (medido: 0.0118 en un recorrido completo bajar → subir → bajar).                   |
+| **Animación**       | La misma del toque (`grid-template-rows 0fr→1fr`, 0.45 s) + la muestra y las features alzando en fila. Se ve abrirse; no aparece de golpe.                                                                       |
+| **Cierre**          | Solo cuando la tarjeta salió **completa por abajo** (banda de gracia 8%). La que sale por arriba **se queda abierta**: si te devuelves un poco, la encuentras como la dejaste.                                   |
+| **Nunca**           | Cerrar algo que estés mirando. Cerrar si al encoger la página el documento quedara más corto que tu posición (Safari no compensa: te empujaría el contenido de un tirón).                                        |
+| **Tu dedo gana**    | Tocar una tarjeta la saca del automático **para el resto de la visita**, abra o cierre. La página no pelea con tu dedo.                                                                                          |
+| **Reduced-motion**  | El automático **no existe**: las cinco llegan abiertas y quietas, todo el contenido presente desde el primer momento, y el toque las sigue gobernando.                                                           |
+| **Sin JS / sin IO** | Se quedan cerradas y el toque las abre — el comportamiento anterior, intacto.                                                                                                                                    |
+
+**Copy que cambia** (el de la v1.0.0 prometía justo lo contrario y habría quedado mintiendo):
+
+- Portada: «Tócala capa por capa — cada tarjeta se abre solo si tú quieres» → **«Baja sin prisa —
+  cada tarjeta se abre cuando llegas a ella»**.
+- Capa 1: «…Ninguna se abre sola.» → **«…Se abren solas cuando bajas hasta ellas; si tocas una,
+  mandas tú.»**
+
+## M2 · Las muestras de interfaz (dentro de cada tarjeta)
+
+Donde más información hay, la palabra sola no basta: cada tarjeta abre con **un recorte de la
+pantalla de la que habla**, y detrás llegan sus features.
+
+| Tarjeta                   | Qué retrata (texto REAL de la dieta demo)                                                                   |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| T1 · ¿Esto se puede?      | Buscador «¿Se puede…?», los filtros Verde/Amarillo/Rojo, «Pollo · ✓ Se puede», «Galleta rellena · ✕ Evitar» |
+| T2 · El día de hoy        | «Ya hiciste 2 de 10», «Desayuno · Hecho · 7:12 a. m.», «Almuerzo · 12:30 p. m.»                             |
+| T3 · Pregúntale           | «Asistente IA: en pausa», las 3 preguntas sugeridas, la caja de escribir y el botón de enviar               |
+| T4 · Tu dieta, adentro    | «Aún no has cargado una dieta», «Elegir archivo», «…o pega el contenido»                                    |
+| T5 · Tuya, en tu teléfono | Español/English, «Demo de ejemplo (ninguna dieta cargada)», «Borrar mis datos»                              |
+
+**Dibujadas en SVG, no capturadas** (decisión del usuario): una captura incrustada engordaría el
+archivo ~200 KB, envejecería en silencio con cada cambio de UI y metería píxeles no revisados en
+un repo público. Dibujadas: ~17 KB, escalan sin pixelarse, usan los tokens del design system y
+**no pueden contener nada que no esté escrito aquí** — la regla mayor se cumple por construcción,
+no por revisión. Fidelidad verificada contra capturas reales de las 7 pantallas de la app corriendo
+con la dieta demo (las capturas se quedaron fuera del repo).
+
+**Tamaño natural, jamás estirada:** el recorte está dibujado a 320 px de ancho y se topa ahí
+(`max-width: 300px`). Dejarlo crecer al ancho de la tarjeta lo escalaba ×2 en escritorio (646 px):
+se veía tosco y le robaba la jerarquía al título. Es una muestra, no una portada.
+
+**A11y:** el `<svg>` es ilustración (`aria-hidden`); el sentido lo carga el `<figcaption>` en
+palabras — «Así se ve **Dieta**: …». Quien no ve el dibujo no pierde nada.
+
+**Técnica del banco:** _asentar_ con stagger jerárquico — la muestra ancla primero (0 s) y las
+features alzan detrás (0.08 s → 0.33 s). Los retrasos pasan a `nth-of-type` a propósito: cuentan
+solo los `.feature`, así insertar la `<figure>` no corre la secuencia (con `nth-child` se habría
+desordenado en silencio — el mismo modo de fallo que el `calc()` del semáforo).
+
+## El riesgo de este delta
+
+**Que abrir con el scroll dispare el CLS** y tumbe el gate de Lighthouse sobre `/conoce`. El gate
+mide el CLS **de carga**, que sigue en **0.0000** porque nada se abre sin que tú bajes. En el
+recorrido el número sube (0.13 escritorio · 0.32 móvil) y eso es **el efecto, no un defecto**:
+abrir una tarjeta a media pantalla desplaza lo que va debajo — es exactamente lo que se pidió ver.
+La palanca, si alguna vez estorba, es el disparo, no la idea.
+
+## Corrección tras el gate visual (misma tarde)
+
+La v1 de este delta falló donde importaba: disparaba al 79% de pantalla (la apertura ocurría a
+punto de salir por abajo) y dejaba la muestra estirarse al ancho de la tarjeta (×2 en escritorio).
+El veredicto del usuario fue «no veo que se desplieguen… y las imágenes gigantes, cero estética».
+Corregido en dos rondas más: la muestra se topó a su tamaño natural (esa quedó resuelta de una),
+y el disparo pasó de «a tal altura» a **«cuando te detienes»**, con la apertura alargada a 0.62 s y
+un pulso de borde. Subir la altura no bastaba: al 55% las aperturas se encadenaban y el CLS llegó a
+1.08.
+
+**Tres lecciones, en orden de valor:**
+
+1. **Una animación fuera del campo visual no existe**, por más que el test la vea.
+2. **El momento importa más que la posición.** Mientras bajas, todo se mueve: una apertura que
+   compite con el scroll no se percibe a ninguna altura. Con la página quieta, sí.
+3. **Un umbral alto encadena**: al abrirse una tarjeta empuja a la siguiente, que dispara ya fuera
+   de cuadro. Abrir **una a la vez, al reposo**, lo elimina por construcción.
+
+**Lo que se paga, dicho claro:** si vuelas de un tirón sobre todo el bloque de tarjetas, solo se
+abre la que quedó en la banda; las que sobrevolaste se quedan cerradas y se abren con un toque.
+Es el precio de no abrir nada a ciegas, y es reversible.
+
+## Cuarta ronda — el ciclo se cierra
+
+_«Cuando regreso deberían cerrarse; no si están en mi pantalla, sino cuando hayan salido; y
+mantenerse cerradas mientras subo; y si está cerrada y vuelvo a bajar, que se despliegue otra vez.»_
+
+La tarjeta ahora se cierra **cuando sale ENTERA de la pantalla**, por el borde que sea, y cada
+cierre va atado a la dirección que lo explica (por arriba solo bajando, por abajo solo subiendo).
+Tres precisiones que costaron su medición:
+
+1. **Compensar el scroll al cerrar por arriba.** Lo que desaparece está encima de lo que miras: sin
+   descontarlo, la página da un tirón. Se hace a mano y en un frame, con el scroll anchoring del
+   navegador apagado para no corregir dos veces. **Verificado: 0 px de movimiento** en lo visible.
+2. **Medir todo primero, cerrar después.** Cerrar dentro del mismo bucle que mide hacía que cada
+   cierre empujara a la siguiente tarjeta y esta pareciera haber salido: una cascada que cerraba la
+   pieza entera y la reabría (T3 se cerró cinco veces en una sola bajada).
+3. **Una espera antes de reabrir.** Tras compensar, la recién cerrada queda pegada al filo superior
+   —dentro de la banda— y se reabría en bucle: el scroll rebotaba entre y=1800 e y=262 sin avanzar.
+   Vuelve a ser candidata solo cuando entra entera otra vez, que es exactamente lo pedido.
+
+## Quinta ronda — los saltos bajando lento
+
+_«En la medida que voy bajando lentamente, pega saltos la pantalla, como que es cuando repliega
+arriba, y es muy molesto.»_ Dos causas, ambas en el código y no en la idea:
+
+1. **`scroll-behavior: smooth`** (puesto para los enlaces del mapa de rutas) se aplicaba también a
+   la compensación del cierre: el contenido de arriba se encogía en un frame, pero el `scrollBy`
+   que lo descuenta **se animaba** — salto y resbalón. La verificación anterior de «0 px» midió dos
+   frames después, cuando el deslizamiento ya había terminado: **medir tarde escondió el defecto.**
+   Ahora la compensación fuerza `auto` durante ese único frame.
+2. **El tick de 700 ms cerraba en pleno movimiento.** Una compensación de scroll durante la inercia
+   del dedo pelea contra el gesto. Ahora, en movimiento SOLO se abre; **cerrar vive únicamente en
+   el reposo** (140 ms sin scroll), donde la compensación es atómica de verdad.
+
+Re-verificado con un rastreador **por frame** (no por instantánea): bajada lenta completa, 5
+cierres, **0 saltos de frame** en lo que está en pantalla.
+
+## Sexta ronda — se adopta el modelo de Velo, entero
+
+El veredicto tras cinco rondas propias fue «la verdad las tarjetas no quedaron bien», y la orden:
+usar el aprendizaje de **Velo (app-anonimizador)**, que pagó este mismo camino completo en cinco
+rondas de su gate. Nuestro modelo por reposo (140 ms + tick de 700 ms + banda + cierres en lote)
+se retira entero y entra el suyo, que cabe en una frase demostrable:
+
+**Una tarjeta está abierta exactamente mientras está a la vista.**
+
+- **Abre solo bajando**, cuando su cabecera cruza la línea de los **dos tercios de la pantalla**
+  (`0 <= top <= vh·⅔`): queda un tercio de pantalla por debajo — el hueco donde se la ve crecer.
+  El umbral es de PANTALLA, jamás de la tarjeta (⅓ de una tarjeta cerrada son ~30 px: abría
+  asomando por el borde, fuera de la vista — el síntoma original).
+- **Cierra al salir entera**, por el borde que sea: por abajo con su transición (encoge fuera de
+  cuadro); por arriba de golpe, reponiendo el alto exacto con `scrollBy({behavior: "instant"})` —
+  la línea que a Velo le costó una ronda entera y a nosotros la quinta: un `scrollBy(x, y)` a
+  secas SE ANIMA con `scroll-behavior: smooth`.
+- **Rectángulos, no IntersectionObserver**: gobierna dónde está la cabecera, no cuánto se ve.
+  Y las tarjetas revelan su entrada con **umbral 0**: su coreografía las desplaza 18 px y una
+  caja desplazada miente sobre su posición (bug idéntico al de Velo, corregido igual).
+- **Corre también con reduced-motion** (desplegar es contenido, no decoración; el CSS ya quita
+  la transición) y **el toque manual siempre manda**.
+
+Qué gana la mamá respecto al modelo por reposo: la apertura es **determinista** — medido, las
+cinco abren al **60–63%** de pantalla, siempre justo bajo la línea, en vez de «cuando pare o
+cuando caiga el tick». Verificado el ciclo completo en bajada continua sin una sola pausa:
+abren las 5 → al fondo todo recogido → subiendo nada abre → arriba todo cerrado → segunda
+bajada abren las 5 otra vez. **0 saltos de frame** en las tres fases.
+
+**Los tests que lo fijan (calcados de Velo), con su prueba en rojo:** el de la línea (95%/80%
+no abren, 60% sí), el de «la que quedó atrás ya está recogida» (`bottom <= 0` ⇒ cerrada), el de
+deriva («bajar/subir no mueve ni un renglón de lo visible», conducido con `behavior: "instant"`
+y medido sobre una cabecera visible, jamás sobre `scrollY`), y el que distingue los modelos:
+**«abre en cuanto cruza la línea, AÚN SIN DETENERTE»** — corrido contra el archivo del commit
+anterior falló con «T1 abrió demasiado arriba», que es el reclamo del usuario vuelto assert.
+Los otros dos también pasan sobre la versión vieja (ese contrato ya se cumplía): se declara,
+porque un test que nunca estuvo en rojo contra el defecto no prueba nada.

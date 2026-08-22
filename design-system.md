@@ -74,6 +74,43 @@ eje SOFT de Fraunces disparaba el LCP a ~5.4s en móvil throttled (medido en CI,
   CLS = 0). Caso vivo: `ReminderCard` (`min-h-[8.75rem]`, hasta 5 líneas). Es la única excepción
   aceptada al "prohibido el valor mágico suelto": va justificada en comentario y ligada al gate.
 
+### Apertura por lectura (patrón de piezas largas — brochure; modelo de Velo, adoptado 2026-08-22)
+
+Cuando la mayor parte de la información vive dentro de **tarjetas desplegables**, pedir un toque
+por tarjeta es cobrar un peaje por cada una. La regla que quedó tras seis rondas de gate visual
+(cinco nuestras + la solución completa de Velo/app-anonimizador, que ya había pagado el camino):
+
+**Una tarjeta está abierta exactamente mientras está a la vista.**
+
+1. **Abre solo bajando**, cuando su cabecera cruza la línea de los **dos tercios de la pantalla**
+   (`0 <= top <= vh·⅔`): queda un tercio de pantalla por debajo, donde se la ve crecer — hacia
+   abajo desde su cabecera, así que nada de lo ya leído se mueve. El umbral es de PANTALLA, jamás
+   de la tarjeta (⅓ de una tarjeta cerrada son ~30 px: abre asomando por el borde, fuera de vista).
+   El disparo es **continuo** (rectángulos por cuadro de scroll), no por reposo ni por tick: el
+   reposo hace la apertura errática y el tick la hace aleatoria.
+2. **Cierra al salir ENTERA de pantalla**, por el borde que sea. Por abajo: con su transición
+   (encoge fuera de cuadro). Por arriba: de golpe, sin transición, **reponiendo el scroll con el
+   alto exacto perdido** vía `scrollBy({top: -perdido, behavior: "instant"})` — un `scrollBy(x, y)`
+   a secas SE ANIMA con `scroll-behavior: smooth` y la página «pega saltos». `overflow-anchor:
+   none` en `<html>` para que el navegador no compense también (Safari no ancla nunca).
+3. **Rectángulos, no IntersectionObserver**: gobierna dónde está la cabecera respecto a la
+   pantalla, no cuánto de la tarjeta se ve. Y si hay coreografía de entrada con `translateY`, las
+   tarjetas revelan con **umbral 0**: una caja desplazada 18 px miente sobre su posición.
+4. **Corre también con `prefers-reduced-motion`**: desplegar es contenido, no decoración; el
+   cinturón CSS ya lo abre sin transición.
+5. **El toque manual siempre manda**: lo tocado queda en manual y el recorrido no lo toca más.
+6. La apertura dura **≥0.6 s** con un cue que no mueve nada (pulso de color en el borde).
+7. **Verificación**: el test de la línea (95%/80% no abren, 60% sí, posicionando en dos tiempos),
+   «abre al cruzar aún sin detenerte» (bajada continua), «la que quedó atrás ya está recogida»
+   (`bottom <= 0` ⇒ cerrada), y deriva cero midiendo **una cabecera visible por frame** — jamás
+   `scrollY` — conduciendo con `behavior: "instant"`. Cada test **probado en rojo** contra el
+   archivo del commit anterior. Y el gate visual humano, en rondas: nada de esto lo caza la CI.
+
+Donde hay mucha información, la palabra va con **una muestra de la pantalla de la que habla**,
+dibujada en SVG con estos tokens (nunca una captura incrustada), topada a su tamaño natural
+(dibujada a 320 px → `max-width: 300px`). El SVG es ilustración (`aria-hidden`) y el
+`<figcaption>` carga el sentido en palabras.
+
 ## Componentes canon (shadcn personalizados)
 
 - **StatusChip** (`components/traffic-light/`): pastilla estado = ícono + texto + tinta semáforo
