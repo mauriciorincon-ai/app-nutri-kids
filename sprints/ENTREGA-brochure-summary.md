@@ -3,11 +3,11 @@ entrega: brochure-conoce
 tipo: entrega-puntual # no es un sprint (método v1.18.0)
 app: nutri-kids
 modo: INICIAL
-status: en-gate-visual
+status: closed
 opened: 2026-08-22
-closed:
-branch: entrega/brochure-conoce
-pr:
+closed: 2026-08-22
+branch: entrega/brochure-conoce # + entrega/brochure-tarjetas-scroll (delta 1, 6 rondas de gate)
+pr: "#4 + #5"
 ---
 
 # Entrega puntual — El brochure vivo de Nutri-Kids (`/conoce`)
@@ -359,37 +359,58 @@ cinco de ellas re-derivando lo que otra app ya había pagado.
 
 ## Propuesta de estándar para la planeadora
 
-> **Esta casa no escribe en la planeadora.** El bloque va listo para que el usuario lo lleve a
-> `metodo/` o `estandares/` como corresponda. Aquí queda como registro de lo acordado.
+> **Esta casa no escribe en la planeadora.** El bloque va listo para copiarse tal cual a
+> `estandares/` (o donde el método lo disponga). Es la versión FINAL tras seis rondas de gate
+> visual en Nutri-Kids — las cinco primeras re-derivaron lo que Velo (app-anonimizador) ya había
+> pagado; la sexta adoptó su modelo entero. Sustituye cualquier versión anterior de este bloque.
 
-**Estándar propuesto — «Apertura por lectura» en piezas con tarjetas desplegables** (brochures y
-cualquier documento largo del portafolio):
+---
+
+**Estándar — «Apertura por lectura» en piezas con tarjetas desplegables** (brochures y cualquier
+documento largo del portafolio). Confirmado en DOS apps: Velo (5 rondas) y Nutri-Kids (6 rondas).
+
+**La regla, en una frase: una tarjeta está abierta exactamente mientras está a la vista.**
 
 1. Si las tarjetas desplegables concentran la mayor parte de la información, **se abren al llegar
    a ellas**, no al toque. El toque es el control, no el peaje.
-2. Disparo: **al detenerse**, no a una altura fija. Mientras se baja, la página entera se mueve y
-   la apertura compite con el scroll: no se percibe a ninguna altura. Con la página quieta, sí.
-   Banda de lectura ancha (−12% a 72%) para que un tirón largo no salte tarjetas, y respaldo
-   periódico para el scroll lento que nunca reposa. Una a la vez: disparar por altura encadena.
-3. **Ancla superior**: la tarjeta crece hacia abajo. Lo que se desplaza queda bajo el pliegue.
-   Consecuencia medible: el CLS no se dispara — y se **mide**, no se supone.
-4. **Subiendo no se abre nada.** Cierra lo que salió **entero** de la pantalla, por el borde que
-   sea y solo en la dirección que lo explica; jamás lo que la persona esté mirando, ni por haber
-   sido empujado fuera de cuadro por otra apertura. **Cerrar vive solo en el reposo** — jamás con
-   la página en movimiento. Cerrar por arriba **exige compensar el scroll** (a mano, con
-   `overflow-anchor: none` y forzando `scroll-behavior: auto` en ese frame — smooth anima la
-   corrección y se ve como un salto) y verificar **por frame** que nada visible se movió.
-5. **El toque saca la tarjeta del automático** para el resto de la visita.
-6. **`prefers-reduced-motion`**: el automático no existe; todo llega abierto y quieto.
-7. **Donde más información hay, va una muestra de la interfaz** de la que se habla, **dibujada en
-   SVG** con los tokens del design system — no una captura incrustada (peso, envejecimiento
-   silencioso y píxeles no revisados en un repo público). El SVG es ilustración; el `figcaption`
-   carga el sentido en palabras.
-8. La apertura dura **≥0.6 s** y lleva un cue que no mueve nada (un pulso de color en el borde):
+2. **Abre solo bajando, cuando su cabecera cruza la línea de los dos tercios de la pantalla**
+   (`0 <= top <= vh·⅔`): queda un tercio de pantalla por debajo — el hueco donde se la ve crecer.
+   El umbral es de PANTALLA, jamás de la tarjeta (⅓ de una tarjeta cerrada son ~30 px: abre
+   asomando por el borde inferior, fuera de la vista). El disparo es **continuo** (rectángulos por
+   cuadro de scroll) — ni al reposo ni por tick: el reposo hace la apertura errática y el tick la
+   vuelve aleatoria.
+3. **Ancla superior**: crece hacia abajo desde su cabecera; nada de lo ya leído se mueve.
+4. **Cierra al salir ENTERA de pantalla, por el borde que sea.** Por abajo: con su transición
+   (encoge fuera de cuadro). Por arriba: de golpe, sin transición, **reponiendo el scroll con el
+   alto exacto perdido** vía `scrollBy({top: -perdido, behavior: "instant"})` — un `scrollBy(x, y)`
+   a secas SE ANIMA bajo `scroll-behavior: smooth` y la página pega saltos. `overflow-anchor: none`
+   en `<html>` para que el navegador no compense también. Al devolverse, todo está recogido; al
+   volver a bajar, se despliega otra vez. Subiendo no se abre nada, nunca.
+5. **Rectángulos, no IntersectionObserver**: gobierna dónde está la cabecera respecto a la
+   pantalla, no cuánto de la tarjeta se ve. Si hay coreografía de entrada con `translateY`, las
+   tarjetas revelan con **umbral 0**: una caja desplazada 18 px miente sobre su posición.
+6. **El toque saca la tarjeta del automático** para el resto de la visita.
+7. **Corre también con `prefers-reduced-motion`**: desplegar es contenido, no decoración; el
+   cinturón CSS ya lo abre sin transición.
+8. La apertura dura **≥0.6 s** y lleva un cue que no mueve nada (pulso de color en el borde):
    más corta se confunde con el propio scroll.
-9. Se verifica con **e2e reales de scroll** (abre al llegar · no abre subiendo · queda cerrada al
-   volver · el toque gana · la rama reduced-motion) y con **CLS medido en un recorrido completo**.
-   Y con **gate visual humano**: esto se afina mirando, en rondas — aquí hicieron falta tres.
+9. **Donde más información hay, va una muestra de la interfaz** de la que se habla, **dibujada en
+   SVG** con los tokens del design system, topada a su tamaño natural — no una captura incrustada
+   (peso, envejecimiento silencioso, píxeles no revisados en un repo público). El SVG es
+   ilustración (`aria-hidden`); el `figcaption` carga el sentido en palabras.
+10. **Verificación**: el test de la línea (cabecera al 95% y 80% no abre, al 60% sí — posicionando
+    en dos tiempos para que la coreografía de entrada se asiente) · «abre al cruzar la línea AÚN
+    SIN DETENERTE» (bajada continua; es el test que distingue los modelos) · «la que quedó atrás
+    bajando ya está recogida» (`bottom <= 0` ⇒ cerrada) · deriva cero midiendo **una cabecera
+    visible**, jamás `scrollY`, conduciendo con `behavior: "instant"` · lo cerrado fuera del árbol
+    de accesibilidad por CDP (axe no lo ve). **Cada test probado EN ROJO contra el archivo del
+    commit anterior** (`git show <sha>:ruta`): un test que nunca falló contra el defecto real no
+    se ha probado a sí mismo. Y el **gate visual humano, en rondas**: nada de esto lo caza la CI.
+11. **Regla de método**: cuando otra app del portafolio ya pagó el camino, **se adopta su solución
+    entera** — no se re-deriva por rondas. Nutri-Kids gastó cinco rondas re-descubriendo lo que
+    Velo tenía escrito.
 
-Implementación de referencia y su porqué: `docs/BROCHURE.html` (bloque «M1 · Apertura por
-lectura») y `design-system.md` de esta app.
+Implementaciones de referencia, comentadas: `app-anonimizador/docs/BROCHURE.html` (la original) y
+`app-nutri-kids/docs/BROCHURE.html` (bloque «M1 · Apertura por lectura») + sus
+`tests/e2e/{conoce,brochure}.spec.ts`. Historia completa de las rondas: los
+`ENTREGA-brochure-summary.md` de ambas apps.
