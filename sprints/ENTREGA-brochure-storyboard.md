@@ -374,3 +374,20 @@ Tres precisiones que costaron su medición:
 3. **Una espera antes de reabrir.** Tras compensar, la recién cerrada queda pegada al filo superior
    —dentro de la banda— y se reabría en bucle: el scroll rebotaba entre y=1800 e y=262 sin avanzar.
    Vuelve a ser candidata solo cuando entra entera otra vez, que es exactamente lo pedido.
+
+## Quinta ronda — los saltos bajando lento
+
+_«En la medida que voy bajando lentamente, pega saltos la pantalla, como que es cuando repliega
+arriba, y es muy molesto.»_ Dos causas, ambas en el código y no en la idea:
+
+1. **`scroll-behavior: smooth`** (puesto para los enlaces del mapa de rutas) se aplicaba también a
+   la compensación del cierre: el contenido de arriba se encogía en un frame, pero el `scrollBy`
+   que lo descuenta **se animaba** — salto y resbalón. La verificación anterior de «0 px» midió dos
+   frames después, cuando el deslizamiento ya había terminado: **medir tarde escondió el defecto.**
+   Ahora la compensación fuerza `auto` durante ese único frame.
+2. **El tick de 700 ms cerraba en pleno movimiento.** Una compensación de scroll durante la inercia
+   del dedo pelea contra el gesto. Ahora, en movimiento SOLO se abre; **cerrar vive únicamente en
+   el reposo** (140 ms sin scroll), donde la compensación es atómica de verdad.
+
+Re-verificado con un rastreador **por frame** (no por instantánea): bajada lenta completa, 5
+cierres, **0 saltos de frame** en lo que está en pantalla.

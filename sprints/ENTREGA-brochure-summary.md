@@ -263,15 +263,31 @@ Medir el **movimiento real de un elemento en pantalla** lo desmintió (0 px): el
 de las aperturas, que siguen animándose 0.62 s cuando el cierre ocurre. **Una métrica agregada no
 prueba una causa.**
 
-**Cuatro lecciones para el estándar:**
+### Quinta ronda: los saltos bajando lento
+
+_«Pega saltos la pantalla, como que es cuando repliega arriba, y es muy molesto.»_ Dos causas:
+
+1. **La compensación heredaba `scroll-behavior: smooth`** (puesto para los enlaces del mapa): el
+   contenido se encogía en un frame pero el `scrollBy` que lo descuenta **se animaba** — salto y
+   resbalón. Y mi verificación de «0 px» había medido **dos frames después**, cuando el
+   deslizamiento ya había terminado: medir tarde escondió el defecto. La compensación ahora fuerza
+   `auto` durante ese único frame.
+2. **El tick periódico cerraba en pleno movimiento**, peleando contra la inercia del dedo. Ahora en
+   movimiento solo se ABRE; cerrar vive únicamente en el reposo, donde la compensación es atómica.
+
+Re-verificado con un rastreador **por frame**: bajada lenta completa, 5 cierres, **0 saltos**.
+
+**Cinco lecciones para el estándar:**
 
 1. **Una animación fuera del campo visual no existe**, por más que el test la vea.
 2. **El momento importa más que la posición**: con la página quieta, la apertura se lee sola.
 3. **Disparar por altura encadena**; abrir una a la vez al reposo lo elimina por construcción.
-4. **Todo cambio de layout fuera de cuadro se compensa y se verifica en píxeles**, no en métricas
-   agregadas.
+4. **Todo cambio de layout fuera de cuadro se compensa y se verifica POR FRAME**, no en métricas
+   agregadas ni en instantáneas tardías — medir dos frames después esconde el resbalón.
+5. **`scroll-behavior: smooth` contamina toda corrección programática de scroll**: cualquier
+   compensación debe forzar `auto` en su frame, o se anima y se ve.
 
-Ningún gate automático caza esto: lo caza una persona mirando. Cuatro rondas de gate visual, cuatro
+Ningún gate automático caza esto: lo caza una persona mirando. Cinco rondas de gate visual, cinco
 correcciones, cada una con su medición.
 
 ## Decisiones
@@ -329,8 +345,10 @@ cualquier documento largo del portafolio):
    Consecuencia medible: el CLS no se dispara — y se **mide**, no se supone.
 4. **Subiendo no se abre nada.** Cierra lo que salió **entero** de la pantalla, por el borde que
    sea y solo en la dirección que lo explica; jamás lo que la persona esté mirando, ni por haber
-   sido empujado fuera de cuadro por otra apertura. Cerrar por arriba **exige compensar el scroll**
-   (a mano, con `overflow-anchor: none`) y verificar en píxeles que nada visible se movió.
+   sido empujado fuera de cuadro por otra apertura. **Cerrar vive solo en el reposo** — jamás con
+   la página en movimiento. Cerrar por arriba **exige compensar el scroll** (a mano, con
+   `overflow-anchor: none` y forzando `scroll-behavior: auto` en ese frame — smooth anima la
+   corrección y se ve como un salto) y verificar **por frame** que nada visible se movió.
 5. **El toque saca la tarjeta del automático** para el resto de la visita.
 6. **`prefers-reduced-motion`**: el automático no existe; todo llega abierto y quieto.
 7. **Donde más información hay, va una muestra de la interfaz** de la que se habla, **dibujada en

@@ -98,10 +98,13 @@ tarjeta se abre **al llegar a ella**, con estas reglas (implementación de refer
    lo explica (por arriba bajando, por abajo subiendo): jamás algo que la persona esté mirando, ni
    por haber sido empujado fuera de cuadro por otra apertura. Al cerrar por arriba hay que
    **descontar del scroll la altura que desaparece** —a mano, en un frame, con `overflow-anchor:
-   none` para que el navegador no corrija dos veces—; si no, la página da un tirón (Chrome y
-   Firefox lo compensarían solos; **Safari no**). Y **se mide todo antes de cerrar nada**: cerrar
-   dentro del bucle que mide provoca cascadas. Una tarjeta recién cerrada no vuelve a ser
-   candidata hasta entrar entera otra vez (si no, rebota).
+   none` para que el navegador no corrija dos veces, y forzando `scroll-behavior: auto` en ese
+   frame: si la página usa smooth para sus anclas, la corrección se ANIMA y se ve como un salto—;
+   si no, la página da un tirón (Chrome y Firefox lo compensarían solos; **Safari no**). **Cerrar
+   vive solo en el reposo**: una compensación en pleno gesto pelea contra el dedo. Y **se mide
+   todo antes de cerrar nada**: cerrar dentro del bucle que mide provoca cascadas. Una tarjeta
+   recién cerrada no vuelve a ser candidata hasta entrar entera otra vez (si no, rebota). La
+   verificación va **por frame**, no por instantánea: medir dos frames después esconde el resbalón.
 6. **El toque gana**: tocar una tarjeta la saca del automático para el resto de la visita.
 7. **`prefers-reduced-motion`**: el mismo mecanismo **sin transición** (cambia de estado, no se
    anima). Entregarlas todas abiertas es peor: se llega a un muro de texto ya desplegado.
