@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nutri-Kids — Conócela</title>
+<meta name="description" content="La dieta de tu peque, viva en tu bolsillo. Recorrido por las 19 funcionalidades de Nutri-Kids.">
+<!--
+  BROCHURE VIVO de Nutri-Kids — molde v2 del kit (autocontenido, cero CDNs, cero fetch).
+  Doble vida: este archivo abre con doble clic sin internet, Y se sirve como la ruta
+  pública /conoce de la app (mismos bytes — un test unitario lo verifica).
+
+  Guion aprobado: sprints/ENTREGA-brochure-storyboard.md (9 escenas E01–E09).
+  Dial MOTION_INTENSITY = «cocina serena». Clímax = E07 («aquí nadie califica a tu hijo»).
+  Identidad: «La página se mueve como una cocina en calma: todo llega a su tiempo,
+  nada apura — y nada califica.»
+
+  REGLAS QUE ESTE ARCHIVO OBEDECE:
+  · Cero datos del menor o de la familia: TODO lo que se ve es la dieta demo inventada.
+  · Cero URLs de producción (regla 17 del portafolio): la producción se muestra, no se entrega.
+  · Tokens de color COPIADOS del design-system.md de la app (oklch, light-only por decisión S1).
+  · Tipografía: trade-off declarado — Fraunces/Nunito Sans son webfonts de marca y no viajan
+    en un archivo autocontenido; se usa Georgia (display) + system-ui (cuerpo).
+  · Solo se anima transform/opacity. Tres excepciones DECLARADAS y comentadas en el sitio:
+    grid-template-rows (apertura de tarjeta) · stroke-dashoffset (dibujar trazo) · filter:blur
+    (solo en la apertura, jamás en scroll).
+  · prefers-reduced-motion = experiencia alterna COMPLETA (un e2e lo verifica activamente).
+-->
+<style>
+  :root {
+    color-scheme: light; /* light-only: el DS de la app lo es por decisión del S1 (no se finge un modo oscuro) */
+
+    /* ——— Tokens COPIADOS del design-system.md de Nutri-Kids ——— */
+    --background: oklch(0.977 0.008 84);
+    --foreground: oklch(0.28 0.02 50);
+    --card: oklch(0.995 0.005 84);
+    /* AJUSTE DECLARADO: el token de la app es oklch(0.47 0.02 55) y sobre este fondo
+       crema da 4.24:1 — por debajo del 4.5:1 que exige AA para texto normal (medido con
+       axe en esta pieza). El brochure debe pasar AA, así que oscurece la tinta secundaria
+       lo mínimo necesario y lo declara. Hallazgo reportado para el design system. */
+    --muted-foreground: oklch(0.42 0.02 55);
+    --primary: oklch(0.55 0.11 45);
+    --primary-foreground: oklch(0.985 0.005 84);
+    /* Terracota para TEXTO SOBRE ACENTO: el --primary de la app sobre --accent da
+       4.13:1 (medido con axe), por debajo de AA. Misma familia, solo más honda. */
+    --primary-tinta: oklch(0.45 0.11 45);
+    --accent: oklch(0.93 0.03 60);
+    --border: oklch(0.89 0.015 75);
+    --tl-green: oklch(0.45 0.11 150);
+    --tl-green-surface: oklch(0.95 0.035 150);
+    --tl-yellow: oklch(0.5 0.11 70);
+    --tl-yellow-surface: oklch(0.96 0.05 85);
+    --tl-red: oklch(0.5 0.17 25);
+    --tl-red-surface: oklch(0.95 0.025 25);
+    --radius: 0.75rem;
+
+    /* ——— Motion-system de la pieza (derivado del DS + escala de escena) ——— */
+    --ease-suave: cubic-bezier(0.33, 1, 0.68, 1);      /* el ease-out del DS */
+    --ease-asentar: cubic-bezier(0.22, 1, 0.36, 1);     /* decelera largo, sin rebote */
+    --dur-corta: 220ms;
+    --dur-escena: 600ms;
+    --dur-apertura: 900ms;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .display { font-family: Georgia, "Times New Roman", serif; font-weight: 600; text-wrap: balance; margin: 0; }
+  p { margin: 0.55em 0; }
+  .lienzo { max-width: 720px; margin: 0 auto; padding: 0 20px 90px; }
+  .suave { color: var(--muted-foreground); }
+  .chica { font-size: 0.88rem; }
+  [data-tabular] { font-variant-numeric: tabular-nums; }
+  /* Eyebrow: extensión S3 del design system — el ÚNICO heading en mayúsculas */
+  .eyebrow {
+    font-family: system-ui, sans-serif; font-size: 0.82rem; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--primary-tinta); margin: 0;
+  }
+  .visualmente-oculto {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  a { color: var(--primary); }
+
+  /* ===================== E02 · La cinta del día (G1 serena) =====================
+     El riesgo registrado de la pieza. Las 5 marcas son las 5 comidas de la dieta
+     DEMO, colocadas por su hora real dentro de la franja 07:00→19:00. Solo anima
+     transform: translateY; las medidas se cachean en resize (cero layout en el tick). */
+  .cinta {
+    position: fixed; left: max(8px, env(safe-area-inset-left)); top: 18vh; bottom: 18vh;
+    width: 12px; z-index: 5; pointer-events: none;
+  }
+  .cinta-linea { position: absolute; left: 5px; top: 0; bottom: 0; width: 2px; background: var(--border); border-radius: 2px; }
+  .cinta-marca { position: absolute; left: 2px; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: var(--border); }
+  .cinta-punto {
+    position: absolute; left: 0; top: 0; width: 12px; height: 12px; margin-top: -6px;
+    border-radius: 50%; background: var(--primary);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 18%, transparent);
+    transform: translateY(0);
+  }
+  @media (max-width: 400px) { .cinta { display: none; } } /* presupuesto móvil: en pantallas muy angostas el margen no existe */
+
+  /* ===================== E01 · Portada ===================== */
+  .portada { min-height: 86svh; display: flex; flex-direction: column; justify-content: center; padding: 44px 0 24px; }
+  .sello {
+    display: inline-flex; align-items: center; gap: 8px; align-self: flex-start;
+    padding: 5px 12px; border-radius: 999px;
+    background: var(--accent); color: var(--foreground);
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.02em;
+  }
+  .sello .punto { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); }
+  .portada h1 { font-size: clamp(2.1rem, 7.5vw, 3.3rem); line-height: 1.1; margin: 18px 0 16px; }
+  .portada .promesa { font-size: clamp(1.02rem, 3.2vw, 1.22rem); color: var(--muted-foreground); max-width: 34ch; }
+  .baja { margin-top: auto; padding-top: 40px; color: var(--muted-foreground); font-size: 0.85rem; }
+  .baja .flecha { display: block; font-size: 1.3rem; margin-top: 4px; }
+  .nota-inicial {
+    margin-top: 22px; padding: 12px 14px; border-left: 3px solid var(--primary);
+    background: var(--card); border-radius: 0 var(--radius) var(--radius) 0;
+    font-size: 0.9rem; color: var(--muted-foreground);
+  }
+
+  /* ===================== Secciones ===================== */
+  .seccion { padding-top: 54px; }
+  .seccion > h2 { font-size: 1.6rem; margin-bottom: 6px; }
+
+  /* ===================== E03/E04 · Tarjetas ===================== */
+  .tarjetas { display: grid; gap: 14px; margin-top: 22px; }
+  .tarjeta { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  /* Patrón canónico de a11y: el <h3> ENVUELVE al <button> (jamás al revés) */
+  .tarjeta-cabeza { margin: 0; font-size: inherit; font-weight: inherit; font-family: inherit; }
+  .tarjeta-boton {
+    display: flex; align-items: center; gap: 14px; width: 100%;
+    padding: 16px; min-height: 44px; font: inherit; text-align: left; color: inherit;
+    background: none; border: 0; cursor: pointer;
+    transition: transform var(--dur-corta) var(--ease-suave);
+  }
+  .tarjeta-boton:active { transform: scale(0.99); } /* presión táctil */
+  .tarjeta-boton:focus-visible { outline: 3px solid var(--primary); outline-offset: -3px; }
+  .icono { flex: none; width: 48px; height: 48px; display: grid; place-items: center; background: var(--accent); border-radius: 12px; }
+  .icono svg { width: 26px; height: 26px; }
+  .tarjeta-titulos { flex: 1; min-width: 0; }
+  .tarjeta-titulos .titulo { display: block; font-family: Georgia, serif; font-weight: 600; font-size: 1.12rem; line-height: 1.3; }
+  .tarjeta-titulos .linea { display: block; margin-top: 2px; font-size: 0.88rem; color: var(--muted-foreground); }
+  .chevron { flex: none; color: var(--muted-foreground); transition: transform 0.35s var(--ease-suave); }
+  .tarjeta[data-abierta] .chevron { transform: rotate(180deg); }
+
+  /* Capa 2 · Detalle. EXCEPCIÓN DECLARADA: grid-template-rows (un disparo por clic).
+     `visibility` en la transición: con un extremo en visible la animación no se corta, y
+     cerrado saca el contenido del árbol de accesibilidad (sin esto un lector de pantalla
+     recita el detalle de TODAS las tarjetas cerradas; axe no lo ve — lo mira un e2e por CDP). */
+  .detalle { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.45s var(--ease-suave); }
+  .tarjeta[data-abierta] .detalle { grid-template-rows: 1fr; }
+  .detalle-interior { overflow: hidden; visibility: hidden; transition: visibility 0.45s; }
+  .tarjeta[data-abierta] .detalle-interior { visibility: visible; }
+  .detalle-cuerpo { padding: 2px 16px 18px; border-top: 1px solid var(--border); }
+  .feature { padding: 13px 0; border-top: 1px solid var(--border); }
+  .feature:first-of-type { border-top: 0; }
+  .feature h4 { margin: 0; font-size: 1rem; font-weight: 600; }
+  .feature .como { margin: 5px 0 0; font-size: 0.92rem; color: var(--muted-foreground); }
+  .tip { margin-top: 8px; padding: 8px 12px; background: var(--accent); border-radius: 10px; font-size: 0.88rem; }
+  .tip strong { color: var(--primary-tinta); }
+
+  /* ===================== E05 · El semáforo en dos segundos ===================== */
+  .escena { margin-top: 56px; padding: 26px 20px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
+  .escena h2 { font-size: 1.35rem; margin-bottom: 4px; }
+  .chips { display: flex; flex-direction: column; gap: 10px; margin: 20px 0 4px; }
+  .chip {
+    position: relative; display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px; border-radius: 999px; border: 1px solid var(--border);
+    font-weight: 600; overflow: hidden;
+  }
+  /* El COLOR es una capa aparte que entra de última: el chip ya se entendía sin ella. */
+  .chip .tinte { position: absolute; inset: 0; opacity: 0; z-index: 0; }
+  .chip > * { position: relative; z-index: 1; }
+  .chip svg { width: 22px; height: 22px; flex: none; }
+  .chip .simbolo { display: flex; flex: none; }
+  .chip .texto { white-space: nowrap; } /* el estado nunca se parte en dos líneas */
+  .chip[data-estado="verde"] .tinte { background: var(--tl-green-surface); }
+  .chip[data-estado="amarillo"] .tinte { background: var(--tl-yellow-surface); }
+  .chip[data-estado="rojo"] .tinte { background: var(--tl-red-surface); }
+  .chip[data-estado="verde"] { color: var(--tl-green); }
+  .chip[data-estado="amarillo"] { color: var(--tl-yellow); }
+  .chip[data-estado="rojo"] { color: var(--tl-red); }
+  .chip .que { color: var(--foreground); font-weight: 400; font-size: 0.92rem; }
+
+  /* ===================== E06 · La garantía ===================== */
+  .garantia-lienzo { display: flex; justify-content: center; margin: 22px 0 6px; }
+  .telefono { width: 100%; max-width: 320px; height: auto; }
+  .telefono .trazo { fill: none; stroke: var(--foreground); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .telefono .fila { fill: var(--muted-foreground); }
+  .telefono .fila-nota { fill: var(--primary); }
+  .telefono .flecha { fill: none; stroke: var(--primary); stroke-width: 1.5; stroke-linecap: round; stroke-dasharray: 4 3; }
+  .telefono .etiqueta { font-family: system-ui, sans-serif; font-size: 7px; fill: var(--muted-foreground); }
+  .telefono .etiqueta-fuerte { font-family: system-ui, sans-serif; font-size: 7.5px; font-weight: 600; fill: var(--primary); }
+
+  /* ===================== E07 · CLÍMAX ===================== */
+  .climax { margin-top: 60px; padding: 34px 20px 30px; background: var(--accent); border-radius: var(--radius); text-align: center; }
+  .climax h2 { font-size: clamp(1.5rem, 5.5vw, 2.1rem); line-height: 1.15; margin: 10px 0 6px; }
+  .marcador { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin: 6px 0 4px; }
+  .marcador .cifra { font-family: Georgia, serif; font-weight: 600; font-size: clamp(2.6rem, 12vw, 4rem); line-height: 1; color: var(--primary); min-width: 2ch; text-align: right; }
+  .marcador .de { font-size: 1.15rem; color: var(--foreground); }
+  /* El «%» que nunca llega: se forma a medias y se deshace. Solo transform/opacity. */
+  /* Se alinea a la LÍNEA BASE del marcador (no como superíndice): el «%» ocupa
+     exactamente el lugar donde otra app pondría «70 %». width:0 para no reservar hueco. */
+  .fantasma { position: relative; width: 0; align-self: baseline; }
+  .fantasma span {
+    position: absolute; left: 2px; bottom: 0; font-family: Georgia, serif;
+    font-size: clamp(1.7rem, 8vw, 2.6rem); line-height: 1; color: var(--primary);
+    opacity: 0; transform: scale(0.6); transform-origin: left bottom;
+  }
+  .climax .lista-no {
+    display: inline-flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    margin-top: 16px; padding: 0; list-style: none;
+  }
+  .climax .lista-no li {
+    padding: 5px 12px; border-radius: 999px; border: 1px dashed var(--border);
+    font-size: 0.85rem; color: var(--muted-foreground); background: var(--background);
+  }
+
+  /* ===================== E08 · Lo fino ===================== */
+  details.fino { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 0 16px; margin-top: 12px; }
+  details.fino summary { padding: 15px 0; cursor: pointer; font-weight: 600; list-style-position: inside; min-height: 44px; display: flex; align-items: center; }
+  details.fino summary:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; border-radius: 6px; }
+  details.fino[open] summary { border-bottom: 1px solid var(--border); }
+  details.fino .cuerpo { padding: 12px 0 16px; }
+  .rutas { list-style: none; padding: 0; margin: 0; }
+  .rutas li { padding: 7px 0; border-top: 1px solid var(--border); font-size: 0.9rem; }
+  .rutas li:first-child { border-top: 0; }
+  .rutas code { font-family: ui-monospace, Menlo, monospace; font-size: 0.85em; color: var(--primary); }
+
+  /* ===================== E09 · Cierre ===================== */
+  footer { margin-top: 58px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .conteo { font-family: Georgia, serif; font-weight: 600; color: var(--primary); }
+
+  /* ===================== G3 · Coreografía de entrada =====================
+     Piso común: alzar y asentar. El stagger es JERÁRQUICO, jamás uniforme. */
+  @media (prefers-reduced-motion: no-preference) {
+    .revela { opacity: 0; transform: translateY(18px); transition: opacity var(--dur-escena) var(--ease-suave), transform var(--dur-escena) var(--ease-asentar); }
+    .revela.visto { opacity: 1; transform: none; }
+    .tarjetas .revela:nth-child(2) { transition-delay: 0.10s; }
+    .tarjetas .revela:nth-child(3) { transition-delay: 0.17s; }
+    .tarjetas .revela:nth-child(4) { transition-delay: 0.24s; }
+    .tarjetas .revela:nth-child(5) { transition-delay: 0.31s; }
+
+    /* E01 · LCP HONESTO: el h1 SUBE y se ENFOCA con opacidad SIEMPRE 1 (un LCP que nace
+       invisible se mide como pintado al final del fundido). EXCEPCIÓN DECLARADA: filter:blur,
+       solo aquí (apertura) y jamás en scroll. El fundido se lo queda la línea de apoyo. */
+    .portada h1 .palabra { display: inline-block; animation: enfocar var(--dur-apertura) var(--ease-asentar) both; }
+    @keyframes enfocar { from { filter: blur(3px); transform: translateY(14px); } to { filter: blur(0); transform: none; } }
+    .portada .sello { animation: alzar 0.7s var(--ease-asentar) both; }
+    .portada .promesa { animation: alzar 0.8s var(--ease-asentar) 0.35s both; }
+    .portada .nota-inicial { animation: alzar 0.8s var(--ease-asentar) 0.5s both; }
+    @keyframes alzar { from { opacity: 0; transform: translateY(18px); } }
+    .baja .flecha { animation: latir 2.6s ease-in-out infinite; }
+    @keyframes latir { 0%, 100% { transform: translateY(0); opacity: 0.55; } 50% { transform: translateY(5px); opacity: 1; } }
+
+    /* E03 · dibujar el trazo. EXCEPCIÓN DECLARADA: stroke-dashoffset, UN disparo, SVG decorativo. */
+    .icono svg .trazable { stroke-dasharray: 1; stroke-dashoffset: 1; }
+    .tarjeta.visto .icono svg .trazable { animation: dibujar 0.85s var(--ease-suave) 0.15s forwards; }
+    @keyframes dibujar { to { stroke-dashoffset: 0; } }
+
+    /* E04 · coreografía interior: las features alzan en fila al abrir la tarjeta */
+    .detalle-cuerpo .feature { opacity: 0; transform: translateY(8px); transition: opacity 0.4s var(--ease-suave), transform 0.4s var(--ease-asentar); }
+    .tarjeta[data-abierta] .detalle-cuerpo .feature { opacity: 1; transform: none; }
+    .tarjeta[data-abierta] .feature:nth-child(2) { transition-delay: 0.05s; }
+    .tarjeta[data-abierta] .feature:nth-child(3) { transition-delay: 0.10s; }
+    .tarjeta[data-abierta] .feature:nth-child(4) { transition-delay: 0.15s; }
+    .tarjeta[data-abierta] .feature:nth-child(5) { transition-delay: 0.20s; }
+    .tarjeta[data-abierta] .feature:nth-child(6) { transition-delay: 0.25s; }
+
+    /* E05 · el semáforo se arma: símbolo → palabra → color (el color, de ÚLTIMO) */
+    .chip .simbolo, .chip .texto { opacity: 0; transform: translateX(-6px); transition: opacity 0.4s var(--ease-suave), transform 0.4s var(--ease-asentar); }
+    .chip .que { opacity: 0; transition: opacity 0.4s var(--ease-suave); }
+    /* Orden dentro de cada chip: símbolo → palabra → aclaración → COLOR (siempre el
+       último). Cada chip arranca 0.18s después del anterior, y sus cuatro retrasos se
+       escriben explícitos: un `calc()` con una variable sin definir invalida la
+       declaración entera y desordena la secuencia (defecto cazado en capturas). */
+    .chips.visto .chip .tinte { transition: opacity 0.5s var(--ease-suave); }
+    .chips.visto .chip:nth-child(1) .simbolo { transition-delay: 0s; }
+    .chips.visto .chip:nth-child(1) .texto  { transition-delay: 0.20s; }
+    .chips.visto .chip:nth-child(1) .que    { transition-delay: 0.30s; }
+    .chips.visto .chip:nth-child(1) .tinte  { transition-delay: 0.62s; }
+    .chips.visto .chip:nth-child(2) .simbolo { transition-delay: 0.18s; }
+    .chips.visto .chip:nth-child(2) .texto  { transition-delay: 0.38s; }
+    .chips.visto .chip:nth-child(2) .que    { transition-delay: 0.48s; }
+    .chips.visto .chip:nth-child(2) .tinte  { transition-delay: 0.74s; }
+    .chips.visto .chip:nth-child(3) .simbolo { transition-delay: 0.36s; }
+    .chips.visto .chip:nth-child(3) .texto  { transition-delay: 0.56s; }
+    .chips.visto .chip:nth-child(3) .que    { transition-delay: 0.66s; }
+    .chips.visto .chip:nth-child(3) .tinte  { transition-delay: 0.86s; }
+    .chips.visto .chip .simbolo, .chips.visto .chip .texto { opacity: 1; transform: none; }
+    .chips.visto .chip .que, .chips.visto .chip .tinte { opacity: 1; }
+
+    /* E06 · dibujar el teléfono y la flecha que sale (excepción ya declarada) */
+    .telefono .trazable { stroke-dasharray: 1; stroke-dashoffset: 1; }
+    .garantia.visto .telefono .trazable { animation: dibujar 1.1s var(--ease-suave) forwards; }
+    .telefono .fila, .telefono .fila-nota, .telefono .etiqueta { opacity: 0; }
+    .garantia.visto .telefono .fila, .garantia.visto .telefono .fila-nota, .garantia.visto .telefono .etiqueta { animation: aparecer 0.5s var(--ease-suave) 0.9s both; }
+    .telefono .flecha { stroke-dasharray: 4 3; opacity: 0; }
+    .garantia.visto .telefono .flecha { animation: aparecer 0.6s var(--ease-suave) 1.5s both; }
+    .telefono .etiqueta-fuerte { opacity: 0; }
+    .garantia.visto .telefono .etiqueta-fuerte { animation: aparecer 0.5s var(--ease-suave) 1.9s both; }
+    @keyframes aparecer { to { opacity: 1; } }
+
+    /* E07 · el «%» que se forma a medias y se deshace. Nunca completa. */
+    .climax.visto .fantasma span { animation: casi-porcentaje 3.4s var(--ease-suave) 1.1s infinite; }
+    @keyframes casi-porcentaje {
+      0%   { opacity: 0; transform: scale(0.6); }
+      18%  { opacity: 0.42; transform: scale(0.86); }
+      34%  { opacity: 0.30; transform: scale(0.92); }
+      50%  { opacity: 0; transform: scale(0.7); }
+      100% { opacity: 0; transform: scale(0.6); }
+    }
+    .climax[data-pausa] .fantasma span { animation-play-state: paused; }
+  }
+
+  /* ===================== Reduced motion: experiencia alterna COMPLETA =====================
+     No es una promesa: un e2e obligatorio carga la pieza con reducedMotion "reduce" y
+     AFIRMA visibilidad real (opacidad y tamaño) de los elementos clave de cada escena. */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .revela { opacity: 1; transform: none; transition: none; }
+    .detalle, .detalle-interior, .chevron, .tarjeta-boton { transition: none; }
+    /* Cada escena en su corte editorial: todo en pose final, cero movimiento. */
+    .portada h1 .palabra, .portada .sello, .portada .promesa, .portada .nota-inicial { animation: none; filter: none; opacity: 1; transform: none; }
+    .baja .flecha { animation: none; opacity: 0.7; }
+    .icono svg .trazable, .telefono .trazable { stroke-dasharray: none; stroke-dashoffset: 0; animation: none; }
+    .detalle-cuerpo .feature { opacity: 1; transform: none; transition: none; }
+    .chip .simbolo, .chip .texto, .chip .que { opacity: 1; transform: none; transition: none; }
+    .chip .tinte { opacity: 1; transition: none; }
+    .telefono .fila, .telefono .fila-nota, .telefono .etiqueta, .telefono .etiqueta-fuerte, .telefono .flecha { opacity: 1; animation: none; }
+    .fantasma span { animation: none; opacity: 0; } /* el «%» sencillamente no existe */
+    .cinta-punto { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ E02 · La cinta del día (el riesgo registrado) ═══
+     Decorativa: ningún mensaje depende de ella (aria-hidden). Las 5 marcas son las 5
+     comidas de la dieta DEMO, ubicadas por su hora real dentro de la franja 07:00→19:00. -->
+<div class="cinta" aria-hidden="true">
+  <div class="cinta-linea"></div>
+  <div class="cinta-marca" style="top: 0%"></div>
+  <div class="cinta-marca" style="top: 25%"></div>
+  <div class="cinta-marca" style="top: 45.8%"></div>
+  <div class="cinta-marca" style="top: 75%"></div>
+  <div class="cinta-marca" style="top: 95.8%"></div>
+  <div class="cinta-punto" id="cinta-punto"></div>
+</div>
+
+<main class="lienzo">
+
+  <!-- ═══ Capa 0 · E01 · Portada ═══ -->
+  <header class="portada">
+    <p class="sello"><span class="punto" aria-hidden="true"></span>Brochure inicial</p>
+    <!-- LCP honesto: el h1 nace PINTADO (opacidad 1) y solo se enfoca. El texto íntegro
+         viaja en aria-label; los spans por palabra son decorativos para el lector. -->
+    <h1 aria-label="La dieta de tu peque, viva en tu bolsillo.">
+      <span aria-hidden="true"><span class="palabra" style="animation-delay:0s">La</span>
+      <span class="palabra" style="animation-delay:.07s">dieta</span>
+      <span class="palabra" style="animation-delay:.14s">de</span>
+      <span class="palabra" style="animation-delay:.21s">tu</span>
+      <span class="palabra" style="animation-delay:.28s">peque,</span>
+      <span class="palabra" style="animation-delay:.35s">viva</span>
+      <span class="palabra" style="animation-delay:.42s">en</span>
+      <span class="palabra" style="animation-delay:.49s">tu</span>
+      <span class="palabra" style="animation-delay:.56s">bolsillo.</span></span>
+    </h1>
+    <p class="promesa">Ese plan de 36 páginas que nadie relee a la hora de la merienda,
+      vuelto una guía que responde en segundos — y que nunca te califica.</p>
+
+    <p class="nota-inicial"><strong>Esto es un brochure inicial.</strong> Describe la app tal
+      como está construida hoy: nada de lo que ves aquí es una promesa a futuro. Se sella
+      cuando terminen las pruebas de uso real, y hasta entonces sigue creciendo con la app.</p>
+
+    <p class="baja">Tócala capa por capa — cada tarjeta se abre solo si tú quieres
+      <span class="flecha" aria-hidden="true">↓</span></p>
+  </header>
+
+  <!-- ═══ Capa 1 · E03/E04 · Qué hace (5 puertas, 19 funcionalidades) ═══ -->
+  <section class="seccion" aria-labelledby="t-quehace">
+    <h2 id="t-quehace" class="revela">Qué hace</h2>
+    <p class="suave revela">Diecinueve cosas, cada una explicada al abrirla. Ninguna se abre sola.</p>
+    <div class="tarjetas">
+
+      <!-- ——— T1 · el semáforo (la pregunta de todos los días: va primera) ——— -->
+      <article class="tarjeta revela">
+        <h3 class="tarjeta-cabeza">
+          <button class="tarjeta-boton" aria-expanded="false" aria-controls="d1">
+            <span class="icono" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary)">
+                <circle pathLength="1" class="trazable" cx="11" cy="11" r="8"/>
+                <path pathLength="1" class="trazable" d="m21 21-4.34-4.34"/>
+              </svg>
+            </span>
+            <span class="tarjeta-titulos">
+              <span class="titulo">¿Esto se puede?</span>
+              <span class="linea">La pregunta de todos los días, respondida en segundos</span>
+            </span>
+            <svg class="chevron" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </h3>
+        <div class="detalle" id="d1" role="region" aria-label="¿Esto se puede? — detalle">
+          <div class="detalle-interior"><div class="detalle-cuerpo">
+            <div class="feature">
+              <h4>El semáforo de alimentos</h4>
+              <p class="como">Entra a <strong>Dieta</strong>, escribe el alimento en el buscador
+                y sale con su color <em>y</em> su palabra: <strong>Se puede</strong>,
+                <strong>Con límite</strong> (dice cuánto) o <strong>Evitar</strong> (dice por qué,
+                y hasta cuándo si es temporal). También puedes navegar por las pestañas
+                Verde / Amarillo / Rojo.</p>
+              <p class="tip"><strong>Tip:</strong> el color nunca va solo. Si estás en la calle con
+                mala luz, la palabra y el símbolo te bastan.</p>
+            </div>
+            <div class="feature">
+              <h4>Equivalencias y reemplazos</h4>
+              <p class="como">Toca cualquier alimento y verás el porqué en palabras simples y con
+                qué reemplazarlo: «si no hay pollo → atún, huevo o queso». Pensado para respetar
+                las texturas que tu peque sí acepta.</p>
+            </div>
+            <div class="feature">
+              <h4>Aditivos para revisar en etiquetas</h4>
+              <p class="como">En la pestaña Rojo están los códigos E- que conviene mirar en lo
+                empacado, con dónde suelen aparecer.</p>
+              <p class="tip"><strong>Tip:</strong> ábrela en el supermercado antes de echar algo
+                al carrito — es más rápido que leer la etiqueta entera.</p>
+            </div>
+          </div></div>
+        </div>
+      </article>
+
+      <!-- ——— T2 · el día ——— -->
+      <article class="tarjeta revela">
+        <h3 class="tarjeta-cabeza">
+          <button class="tarjeta-boton" aria-expanded="false" aria-controls="d2">
+            <span class="icono" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary)">
+                <circle pathLength="1" class="trazable" cx="12" cy="12" r="10"/>
+                <path pathLength="1" class="trazable" d="M12 6v6l4 2"/>
+              </svg>
+            </span>
+            <span class="tarjeta-titulos">
+              <span class="titulo">El día de hoy</span>
+              <span class="linea">Qué toca ahora, qué sigue, y qué ya pasó</span>
+            </span>
+            <svg class="chevron" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </h3>
+        <div class="detalle" id="d2" role="region" aria-label="El día de hoy — detalle">
+          <div class="detalle-interior"><div class="detalle-cuerpo">
+            <div class="feature">
+              <h4>El checklist del día</h4>
+              <p class="como">Es la pantalla de inicio. Muestra las comidas con su horario, el
+                suplemento que toca hoy y los vasos de agua. Tocas la casilla de cada cosa cuando
+                ya pasó. Al día siguiente amanece limpio solo, sin que borres nada.</p>
+            </div>
+            <div class="feature">
+              <h4>El recordatorio «Ahora mismo»</h4>
+              <p class="como">Arriba de todo te dice qué toca en este momento y qué sigue: la
+                comida de la franja, el suplemento del día si falta, y cómo va el agua.
+                <strong>No manda notificaciones ni pide permisos</strong> — es simplemente la
+                información correcta cuando abres la app.</p>
+              <p class="tip"><strong>Tip:</strong> si hoy no hay suplemento en el calendario, te lo
+                dice tal cual. Nunca te felicita por algo que no tocaba.</p>
+            </div>
+            <div class="feature">
+              <h4>La hora real de cada comida</h4>
+              <p class="como">Cuando marcas una comida, la app anota a qué hora fue y la muestra
+                («Hecho · 7:35 a. m.»). Es para tu memoria, no para calificarte.</p>
+            </div>
+            <div class="feature">
+              <h4>Una nota corta por comida</h4>
+              <p class="como">Debajo de cada comida hay <strong>«Agregar nota»</strong>: tocas una
+                etiqueta rápida (Lo rechazó · Le dolió · Tuvo antojo · Otra cosa) y, si quieres,
+                escribes algo corto. Puedes editarla o quitarla cuando quieras.</p>
+              <p class="tip"><strong>Tip:</strong> es lo que le vas a querer contar al pediatra en
+                la próxima cita, sin fiarte de la memoria.</p>
+            </div>
+            <div class="feature">
+              <h4>Días anteriores</h4>
+              <p class="como">En «Hoy», abajo del todo, toca <strong>«Ver días anteriores»</strong>:
+                la lista por fecha, del más reciente al más antiguo, con las horas y las notas. Es
+                solo para consultar — no se edita desde ahí.</p>
+            </div>
+            <div class="feature">
+              <h4>Suplementos de la semana</h4>
+              <p class="como">El calendario de lunes a domingo con la dosis y el momento («con el
+                desayuno»). El día de hoy sale resaltado y ahí mismo marcas «ya lo tomó» — es la
+                misma marca del checklist.</p>
+            </div>
+          </div></div>
+        </div>
+      </article>
+
+      <!-- ——— T3 · el chat ——— -->
+      <article class="tarjeta revela">
+        <h3 class="tarjeta-cabeza">
+          <button class="tarjeta-boton" aria-expanded="false" aria-controls="d3">
+            <span class="icono" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary)">
+                <path pathLength="1" class="trazable" d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/>
+                <path pathLength="1" class="trazable" d="M20 2v4"/>
+                <path pathLength="1" class="trazable" d="M22 4h-4"/>
+              </svg>
+            </span>
+            <span class="tarjeta-titulos">
+              <span class="titulo">Pregúntale con tus palabras</span>
+              <span class="linea">Como le hablarías a alguien que se sabe el plan de memoria</span>
+            </span>
+            <svg class="chevron" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </h3>
+        <div class="detalle" id="d3" role="region" aria-label="Pregúntale con tus palabras — detalle">
+          <div class="detalle-interior"><div class="detalle-cuerpo">
+            <div class="feature">
+              <h4>Respuesta al instante, sin internet</h4>
+              <p class="como">Las preguntas de «¿esto se puede?» —«¿la manzana se puede?», «¿le doy
+                mandarina?»— se responden en el teléfono, al instante y sin señal. Te muestra la
+                tarjeta del semáforo con sus reemplazos, y abajo dice
+                <strong>«Desde tu plan · sin IA»</strong>.</p>
+            </div>
+            <div class="feature">
+              <h4>Preguntas abiertas, con un asistente anclado a tu plan</h4>
+              <p class="como">Para lo más abierto —«no tengo pollo, ¿qué le doy?», «¿qué merienda le
+                preparo?»— un asistente de IA lee tu plan y responde <strong>solo con lo que la
+                dieta permite</strong>. Llevan la nota «Respuesta de IA» y necesitan internet.</p>
+              <p class="tip"><strong>Tip:</strong> si el asistente no está disponible, las preguntas
+                de «¿se puede?» siguen funcionando igual.</p>
+            </div>
+            <div class="feature">
+              <h4>La frontera no-médica</h4>
+              <p class="como">Si preguntas por dosis, medicinas o síntomas («¿le subo la B12?»), el
+                chat no responde eso: te devuelve amablemente a tu pediatra o nutricionista.</p>
+            </div>
+            <div class="feature">
+              <h4>La conversación no se guarda</h4>
+              <p class="como">Al cerrar o recargar, el chat queda en blanco. Es a propósito: es
+                privacidad de los datos de tu peque, no un olvido.</p>
+            </div>
+          </div></div>
+        </div>
+      </article>
+
+      <!-- ——— T4 · cargar la dieta ——— -->
+      <article class="tarjeta revela">
+        <h3 class="tarjeta-cabeza">
+          <button class="tarjeta-boton" aria-expanded="false" aria-controls="d4">
+            <span class="icono" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary)">
+                <path pathLength="1" class="trazable" d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/>
+                <path pathLength="1" class="trazable" d="M14 2v5a1 1 0 0 0 1 1h5"/>
+                <path pathLength="1" class="trazable" d="M12 12v6"/>
+                <path pathLength="1" class="trazable" d="m15 15-3-3-3 3"/>
+              </svg>
+            </span>
+            <span class="tarjeta-titulos">
+              <span class="titulo">Tu dieta, adentro</span>
+              <span class="linea">El archivo del profesional, vuelto la app entera</span>
+            </span>
+            <svg class="chevron" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </h3>
+        <div class="detalle" id="d4" role="region" aria-label="Tu dieta, adentro — detalle">
+          <div class="detalle-interior"><div class="detalle-cuerpo">
+            <div class="feature">
+              <h4>Cargar el archivo de la dieta</h4>
+              <p class="como">Pide el archivo a quien lo tenga (termina en <code>.json</code>;
+                te lo pueden mandar por WhatsApp o correo) y descárgalo. Ve a
+                <strong>Cargar</strong> → <strong>«Elegir archivo»</strong> → búscalo. Verás un
+                resumen de lo que se cargó y el letrero de arriba pasa a decir «Tu dieta».</p>
+            </div>
+            <div class="feature">
+              <h4>…o pegar el contenido, si el archivo no abre</h4>
+              <p class="como">Ábrelo donde te lo mandaron, copia todo su contenido y pégalo en la
+                caja de texto de <strong>Cargar</strong> → <strong>«Cargar lo pegado»</strong>.
+                Mismo resultado.</p>
+              <p class="tip"><strong>Tip:</strong> si sale un error, el archivo llegó incompleto o
+                editado — pide que te lo reenvíen tal cual.</p>
+            </div>
+            <div class="feature">
+              <h4>Una dieta demo para explorar sin riesgo</h4>
+              <p class="como">La app arranca con una dieta de ejemplo inventada, así puedes recorrer
+                todo antes de cargar la de verdad. Un letrero siempre visible te dice cuál está
+                activa: «Dieta demo» o «Tu dieta». Nadie se confunde.</p>
+            </div>
+          </div></div>
+        </div>
+      </article>
+
+      <!-- ——— T5 · el teléfono ——— -->
+      <article class="tarjeta revela">
+        <h3 class="tarjeta-cabeza">
+          <button class="tarjeta-boton" aria-expanded="false" aria-controls="d5">
+            <span class="icono" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary)">
+                <path pathLength="1" class="trazable" d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/>
+                <circle pathLength="1" class="trazable" cx="12" cy="12" r="3"/>
+              </svg>
+            </span>
+            <span class="tarjeta-titulos">
+              <span class="titulo">Tuya, en tu teléfono</span>
+              <span class="linea">Instalarla, cambiarle el idioma, y borrarlo todo cuando quieras</span>
+            </span>
+            <svg class="chevron" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </h3>
+        <div class="detalle" id="d5" role="region" aria-label="Tuya, en tu teléfono — detalle">
+          <div class="detalle-interior"><div class="detalle-cuerpo">
+            <div class="feature">
+              <h4>Instalarla como app</h4>
+              <p class="como">En Chrome, toca el menú (⋮) → <strong>«Agregar a pantalla de
+                inicio»</strong>. Queda con su ícono, como cualquier otra app, y abre sin pasar por
+                el navegador.</p>
+            </div>
+            <div class="feature">
+              <h4>Español o English</h4>
+              <p class="como">En <strong>Ajustes</strong> cambias el idioma de toda la app. El
+                contenido de tu dieta también está en los dos, y lo que tú escribiste en una nota
+                se queda tal como lo escribiste.</p>
+            </div>
+            <div class="feature">
+              <h4>Borrar mis datos</h4>
+              <p class="como"><strong>Ajustes</strong> → <strong>«Borrar mis datos»</strong> →
+                confirmas. Se borra la dieta cargada y todo tu registro —marcas, horas y notas— de
+                este teléfono, y la app vuelve a la demo. Esto no se puede deshacer.</p>
+            </div>
+          </div></div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ═══ E05 · El respiro — el semáforo en dos segundos ═══
+       El color entra de ÚLTIMO a propósito: cuando llega, el chip ya se entendía. -->
+  <section class="escena revela" aria-labelledby="t-semaforo">
+    <p class="eyebrow">El lenguaje de la app</p>
+    <h2 id="t-semaforo">El color nunca habla solo</h2>
+    <p class="suave">Cada respuesta llega con su símbolo y su palabra. El color solo refuerza —
+      para que funcione con mala luz, con prisa, o si no distingues bien los colores.</p>
+
+    <div class="chips" id="chips">
+      <p class="chip" data-estado="verde">
+        <span class="tinte" aria-hidden="true"></span>
+        <span class="simbolo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>
+          </svg>
+        </span>
+        <span class="texto">Se puede</span>
+        <span class="que">— manzana, pera…</span>
+      </p>
+      <p class="chip" data-estado="amarillo">
+        <span class="tinte" aria-hidden="true"></span>
+        <span class="simbolo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>
+          </svg>
+        </span>
+        <span class="texto">Con límite</span>
+        <span class="que">— y dice cuánto</span>
+      </p>
+      <p class="chip" data-estado="rojo">
+        <span class="tinte" aria-hidden="true"></span>
+        <span class="simbolo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2.586 16.726A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2h6.624a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586z"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>
+          </svg>
+        </span>
+        <span class="texto">Evitar</span>
+        <span class="que">— y dice por qué</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══ E06 · La garantía ═══
+       TODO lo que se ve aquí es inventado (regla mayor: cero datos de la familia). -->
+  <section class="escena garantia revela" id="garantia" aria-labelledby="t-garantia">
+    <p class="eyebrow">La garantía</p>
+    <h2 id="t-garantia">Lo que escribes sobre tu peque se queda aquí</h2>
+    <p class="suave">La dieta, las marcas, las horas y las notas viven <strong>solo en tu
+      teléfono</strong>. Cuando le haces una pregunta abierta al chat, lo único que sale es tu
+      plan con el nombre del peque oculto. Las horas y las notas del día
+      <strong>nunca salen — ni siquiera se le pasan al asistente de IA</strong>.</p>
+
+    <div class="garantia-lienzo">
+      <svg class="telefono" viewBox="0 0 320 200" role="img"
+           aria-label="Ilustración: dentro del teléfono quedan las horas y las notas del día; hacia afuera solo sale el plan sin el nombre del peque.">
+        <!-- marco del teléfono (trazo dibujado — excepción declarada) -->
+        <rect pathLength="1" class="trazo trazable" x="8" y="10" width="150" height="180" rx="16"/>
+        <line pathLength="1" class="trazo trazable" x1="68" y1="22" x2="98" y2="22"/>
+        <!-- contenido del registro: sintético, jamás real -->
+        <rect class="fila" x="26" y="48" width="72" height="7" rx="3.5"/>
+        <rect class="fila" x="106" y="48" width="30" height="7" rx="3.5"/>
+        <rect class="fila-nota" x="26" y="66" width="96" height="7" rx="3.5"/>
+        <rect class="fila" x="26" y="92" width="64" height="7" rx="3.5"/>
+        <rect class="fila" x="106" y="92" width="30" height="7" rx="3.5"/>
+        <rect class="fila-nota" x="26" y="110" width="84" height="7" rx="3.5"/>
+        <rect class="fila" x="26" y="136" width="78" height="7" rx="3.5"/>
+        <rect class="fila" x="106" y="136" width="30" height="7" rx="3.5"/>
+        <text class="etiqueta" x="26" y="172">horas y notas del día</text>
+        <text class="etiqueta-fuerte" x="26" y="184">no se mueven de aquí</text>
+        <!-- lo único que sale: el plan sin nombre -->
+        <path class="flecha" d="M166 78 H244"/>
+        <path class="flecha" d="m236 71 8 7-8 7" stroke-dasharray="0"/>
+        <text class="etiqueta" x="252" y="70">al preguntar</text>
+        <text class="etiqueta" x="252" y="81">al chat sale</text>
+        <text class="etiqueta-fuerte" x="252" y="95">tu plan,</text>
+        <text class="etiqueta-fuerte" x="252" y="106">sin el nombre</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ═══ E07 · CLÍMAX — la promesa mayor, con texto VISIBLE (jamás en un acordeón) ═══ -->
+  <section class="climax revela" id="climax" aria-labelledby="t-climax">
+    <p class="eyebrow">La promesa</p>
+    <h2 id="t-climax">Aquí nadie califica a tu hijo</h2>
+
+    <p class="marcador" aria-hidden="true">
+      <span class="cifra" data-tabular id="marcador-cifra">7</span>
+      <span class="de">de 10</span>
+      <span class="fantasma" aria-hidden="true"><span>%</span></span>
+    </p>
+    <p class="visualmente-oculto">Ejemplo del resumen del día: ya hiciste 7 de 10. La app nunca lo
+      convierte en un porcentaje ni en una nota.</p>
+
+    <p style="max-width: 40ch; margin: 8px auto 0;">Así se ve el día en la app: <strong>lo que ya
+      pasó y lo que falta</strong>, en palabras. Nunca un porcentaje, nunca un puntaje, nunca una
+      nota. Marcar el día no es un examen.</p>
+
+    <p class="suave chica" style="margin-top: 18px;">Palabras que esta app no dice — y que una
+      prueba automática vigila en cada cambio:</p>
+    <ul class="lista-no">
+      <li>calorías</li><li>peso</li><li>IMC</li><li>percentil</li><li>cumplimiento</li>
+    </ul>
+  </section>
+
+  <!-- ═══ E08 · Lo fino — aquí la página baja la voz ═══ -->
+  <section class="seccion" aria-labelledby="t-fino">
+    <h2 id="t-fino" class="revela">Los detalles finos</h2>
+
+    <details class="fino revela">
+      <summary>Qué mide — y qué no finge medir</summary>
+      <div class="cuerpo chica">
+        <p>Mide lo que tú marcas: qué comidas pasaron, a qué hora, qué suplemento tocaba y cuántos
+          vasos de agua. Nada más.</p>
+        <p><strong>No mide ni pretende medir</strong> peso, talla, calorías, nutrientes, percentiles
+          ni «adherencia». No hay gráficas de progreso ni rachas: un día con muchas casillas sin
+          marcar no significa nada malo y la app no lo interpreta.</p>
+        <p>Tampoco diagnostica. El semáforo repite lo que dice tu plan; si preguntas por algo que no
+          está en él, te lo dice en vez de inventar.</p>
+      </div>
+    </details>
+
+    <details class="fino revela">
+      <summary>Requisitos, límites y qué no es</summary>
+      <div class="cuerpo chica">
+        <p><strong>Qué necesitas:</strong> un teléfono con navegador moderno (Chrome funciona muy
+          bien) y el archivo <code>.json</code> de la dieta. Se instala como app desde el menú del
+          navegador. Sin cuenta, sin registro, sin contraseña.</p>
+        <p><strong>Internet:</strong> el semáforo, el checklist, el registro y las preguntas de
+          «¿se puede?» funcionan sin señal una vez cargada la app. Solo las preguntas abiertas del
+          chat necesitan conexión.</p>
+        <p><strong>Los límites de hoy, sin adornos:</strong> todo vive en <em>ese</em> teléfono —
+          si cambias de aparato hay que volver a cargar la dieta, y todavía
+          <strong>no se comparte entre cuidadores</strong> (mamá, papá y abuelos cargan cada uno la
+          suya). Una sola dieta a la vez. Sin modo oscuro. Sin notificaciones.</p>
+        <p><strong>Lo que no es:</strong> esta app no reemplaza a tu pediatra ni a tu nutricionista.
+          Organiza el plan que ellos definieron y te recuerda consultarlos. Cuando abres la app por
+          primera vez te lo dice, y el recordatorio queda visible en toda la app — no es letra
+          pequeña.</p>
+      </div>
+    </details>
+
+    <details class="fino revela">
+      <summary>El mapa de la app — a dónde lleva cada pantalla</summary>
+      <div class="cuerpo chica">
+        <ul class="rutas">
+          <li><a href="/"><code>Hoy</code></a> — el checklist del día, el recordatorio «Ahora mismo», las horas y las notas.</li>
+          <li><a href="/dieta"><code>Dieta</code></a> — el buscador y el semáforo por pestañas Verde / Amarillo / Rojo.</li>
+          <li><a href="/chat"><code>Chat</code></a> — «pregúntale a la dieta», con y sin IA.</li>
+          <li><a href="/suplementos"><code>Suplementos</code></a> — el calendario de lunes a domingo.</li>
+          <li><a href="/historial"><code>Días anteriores</code></a> — el historial de solo lectura.</li>
+          <li><a href="/cargar"><code>Cargar</code></a> — traer tu dieta al teléfono (archivo o pegado).</li>
+          <li><a href="/ajustes"><code>Ajustes</code></a> — idioma, qué dieta está activa y borrar datos.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═══ E09 · Cierre ═══ -->
+  <footer class="revela">
+    <p class="chica suave">Este recorrido cubre las
+      <span class="conteo"><span data-tabular id="conteo-cifra">19</span> funcionalidades</span>
+      de Nutri-Kids — todas, agrupadas para que las descubras a tu ritmo. El conteo cuadra con el
+      manual de uso del repositorio; la tabla de mapeo vive en el resumen de esta entrega.</p>
+    <p class="chica suave">Nutri-Kids no reemplaza a tu pediatra ni a tu nutricionista.</p>
+    <details class="chica">
+      <summary>Historial del brochure</summary>
+      <ul>
+        <li><strong>Inicial · 2026-08-22:</strong> primera edición, con el ciclo fase 1 cerrado
+          (S1 la dieta viva · S2 el chat · S3 el día completo). 19 funcionalidades en 5 grupos.
+          Se sella cuando terminen las pruebas de uso real.</li>
+      </ul>
+    </details>
+  </footer>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ——— G2 · abrir/cerrar tarjetas. Nunca se abren solas: el toque manda. ——— */
+  Array.prototype.forEach.call(document.querySelectorAll(".tarjeta-boton"), function (btn) {
+    btn.addEventListener("click", function () {
+      var tarjeta = btn.closest(".tarjeta");
+      var abierta = tarjeta.hasAttribute("data-abierta");
+      if (abierta) tarjeta.removeAttribute("data-abierta");
+      else tarjeta.setAttribute("data-abierta", "");
+      btn.setAttribute("aria-expanded", String(!abierta));
+    });
+  });
+
+  /* ——— G3 · coreografía de entrada. Con reduced-motion el CSS ya lo muestra todo:
+     añadir la clase es inofensivo. Sin IntersectionObserver, todo visible (fallback). ——— */
+  var revelables = document.querySelectorAll(".revela, .chips");
+  if ("IntersectionObserver" in window) {
+    var obs = new IntersectionObserver(function (entradas) {
+      entradas.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add("visto"); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.15 });
+    Array.prototype.forEach.call(revelables, function (el) { obs.observe(el); });
+  } else {
+    Array.prototype.forEach.call(revelables, function (el) { el.classList.add("visto"); });
+  }
+
+  /* ——— El contador que se cuenta solo (E07 y E09).
+     El texto accesible ya dice el número completo desde el primer byte: los tests y los
+     lectores de pantalla ven el valor final, la animación es puramente visual. ——— */
+  function contarHasta(el, destino) {
+    if (reduce || !("requestAnimationFrame" in window)) { el.textContent = String(destino); return; }
+    var inicio = null, DUR = 700;
+    function paso(t) {
+      if (inicio === null) inicio = t;
+      var p = Math.min((t - inicio) / DUR, 1);
+      var suave = 1 - Math.pow(1 - p, 3);
+      el.textContent = String(Math.round(destino * suave));
+      if (p < 1) requestAnimationFrame(paso);
+      else el.textContent = String(destino);
+    }
+    requestAnimationFrame(paso);
+  }
+  function alEntrar(el, fn) {
+    if (!el) return;
+    if (!("IntersectionObserver" in window)) { fn(); return; }
+    var o = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { fn(); o.unobserve(e.target); } });
+    }, { threshold: 0.4 });
+    o.observe(el);
+  }
+  var cifraClimax = document.getElementById("marcador-cifra");
+  alEntrar(cifraClimax, function () { contarHasta(cifraClimax, 7); });
+  var cifraConteo = document.getElementById("conteo-cifra");
+  alEntrar(cifraConteo, function () { contarHasta(cifraConteo, 19); });
+
+  /* ——— El «%» del clímax: el único loop de la pieza. Se pausa fuera de viewport y
+     cuando la pestaña no está visible (no gastar batería por una promesa). ——— */
+  var climax = document.getElementById("climax");
+  if (climax && !reduce && "IntersectionObserver" in window) {
+    var visible = false;
+    // Definida ANTES de usarse: una declaración de función dentro de un bloque
+    // depende del hoisting y en modo estricto queda acotada al bloque.
+    var sincronizarPausa = function () {
+      if (visible && !document.hidden) climax.removeAttribute("data-pausa");
+      else climax.setAttribute("data-pausa", "");
+    };
+    var oc = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { visible = e.isIntersecting; sincronizarPausa(); });
+    }, { threshold: 0.2 });
+    oc.observe(climax);
+    document.addEventListener("visibilitychange", sincronizarPausa);
+    sincronizarPausa();
+  }
+
+  /* ——— E02 · La cinta del día (G1 serena) ———
+     Mapeo puro scroll→progreso con inercia. Solo escribe transform: translateY.
+     Las medidas se cachean en resize: cero lectura de layout dentro del tick. El rAF
+     se apaga solo cuando la inercia llegó (no se piden cuadros de más). */
+  var punto = document.getElementById("cinta-punto");
+  if (punto && !reduce && "requestAnimationFrame" in window) {
+    var alturaCinta = 0, recorridoDoc = 1, actual = 0, meta = 0, corriendo = false;
+
+    function medir() {
+      var cinta = punto.parentElement;
+      alturaCinta = cinta.clientHeight - punto.offsetHeight;
+      recorridoDoc = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+    }
+    function objetivo() {
+      meta = Math.min(Math.max(window.scrollY / recorridoDoc, 0), 1) * alturaCinta;
+    }
+    function tick() {
+      actual += (meta - actual) * 0.14;              // lerp: el punto nunca salta
+      punto.style.transform = "translateY(" + actual.toFixed(2) + "px)";
+      if (Math.abs(meta - actual) > 0.3) requestAnimationFrame(tick);
+      else { punto.style.transform = "translateY(" + meta.toFixed(2) + "px)"; corriendo = false; }
+    }
+    function pedirCuadro() {
+      objetivo();
+      if (!corriendo) { corriendo = true; requestAnimationFrame(tick); }
+    }
+    medir(); objetivo(); actual = meta;
+    punto.style.transform = "translateY(" + meta.toFixed(2) + "px)";
+    window.addEventListener("scroll", pedirCuadro, { passive: true });
+    window.addEventListener("resize", function () { medir(); pedirCuadro(); });
+  } else if (punto) {
+    // Reduced-motion (o sin rAF): la cinta existe completa y quieta, con el punto en su meta.
+    punto.style.top = "100%";
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+{
+  "_schema": {
+    "_lee_esto_primero": "Este bloque documenta el formato y no es dato de la app. Se conserva en cada export para que el esquema viaje con el archivo: quien lo consuma no necesita buscar otro documento. Las apps que adopten este formato copian este bloque tal cual y rellenan el resto.",
+    "_origen": "Definido por app-dash-agent-ai en su entrega de brochure (2026-08-19). Es el PRIMER export del portafolio; las demás apps lo adoptan.",
+    "_consumidor": "La vitrina de hoja-de-vida. Renderiza la ficha de cada app sin abrir su repositorio.",
+    "_regla_madre": "Toda cifra de `metricas[]` lleva su etiqueta de `fuente`. Es la regla dura 3 de Dash Agent AI aplicada a su propia ficha: una app que exige procedencia a cada número de su pantalla no puede publicar cifras sueltas sobre sí misma. Se recomienda al resto del portafolio.",
+    "schema_version": "semver del FORMATO, no de la app. Cambio mayor = campo eliminado o con significado distinto; menor = campo nuevo opcional; parche = documentación.",
+    "app.estado": "\"inicial\" mientras el brochure describe la construcción cerrada; \"sellado\" cuando el gate de pruebas del usuario terminó. `sellado_en` es null hasta entonces.",
+    "funcionalidades.total": "El número que el brochure declara en su pie. `fuente_del_conteo` dice contra qué documento se cuadró — sin eso, el total es una afirmación.",
+    "funcionalidades.descartadas": "Las que se construyeron o se planearon y NO existen. Van aquí con su razón y su fecha para que nadie las cuente como pendientes ni como entregadas.",
+    "metricas[].fuente": "Una de cuatro: \"medido\" (salió de un contador o un comando), \"calculada\" (medido operado con una tarifa o una regla, y se dice cuál), \"declarado\" (lo fijó una persona), \"estimacion\" (deducido). Una cifra sin fuente no entra.",
+    "enlaces.produccion": "null cuando la app no tiene URL pública. `razon` explica por qué, y es lo que la vitrina muestra en lugar del enlace. Nunca se rellena con un enlace de repositorio ni con una promesa."
+  },
+  "schema_version": "1.0.0",
+  "actualizado": "2026-08-22",
+  "app": {
+    "slug": "nutri-kids",
+    "nombre": "Nutri-Kids",
+    "ciclo": "fase-1",
+    "estado": "inicial",
+    "sellado_en": null,
+    "sprints_cerrados": 3,
+    "version_repo": "0.1.0"
+  },
+  "promesa": {
+    "tagline": "La dieta de tu peque, viva en tu bolsillo.",
+    "intro": "Convierte el plan de alimentación que un profesional le hizo a tu hijo —ese PDF largo que nadie relee a la hora de la merienda— en una guía que responde en segundos: qué se puede, con qué se reemplaza, qué toca ahora y qué ya pasó.",
+    "para_quien": "Para la familia que cuida a un niño con una dieta médica estricta y hoy sufre que el plan viva encerrado en un documento, mientras cada cuidador improvisa por su lado.",
+    "diferencial": "Ninguna otra app de nutrición infantil promete lo que esta: no calificar al niño. Sin calorías, sin peso, sin IMC, sin percentiles y sin 'cumplimiento' como nota moral — y el registro del día (las horas y las notas sobre su hijo) jamás sale del teléfono, ni siquiera al asistente de IA."
+  },
+  "funcionalidades": {
+    "total": 19,
+    "fuente_del_conteo": "docs/MANUAL-DE-USO.md",
+    "descartadas": [],
+    "grupos": [
+      {
+        "orden": 1,
+        "estrella": true,
+        "nombre": "¿Esto se puede?",
+        "linea": "La pregunta de todos los días, respondida en segundos",
+        "features": [
+          {
+            "id": "F1",
+            "nombre": "El semáforo de alimentos",
+            "que_hace": "Buscas el alimento y sale con su color Y su palabra: Se puede, Con límite (dice cuánto) o Evitar (dice por qué y hasta cuándo si es temporal). El color solo refuerza: el símbolo y el texto comunican solos.",
+            "seccion_manual": "El semáforo de la dieta"
+          },
+          {
+            "id": "F2",
+            "nombre": "Equivalencias y reemplazos",
+            "que_hace": "El porqué en palabras simples y con qué reemplazar lo que falta: «si no hay pollo → atún, huevo o queso», respetando las texturas que el niño sí acepta.",
+            "seccion_manual": "El semáforo de la dieta"
+          },
+          {
+            "id": "F3",
+            "nombre": "Aditivos para revisar en etiquetas",
+            "que_hace": "Los códigos E- que conviene mirar en lo empacado, con dónde suelen aparecer.",
+            "seccion_manual": "El semáforo de la dieta"
+          }
+        ]
+      },
+      {
+        "orden": 2,
+        "estrella": false,
+        "nombre": "El día de hoy",
+        "linea": "Qué toca ahora, qué sigue, y qué ya pasó",
+        "features": [
+          {
+            "id": "F4",
+            "nombre": "El checklist del día",
+            "que_hace": "Las comidas con su horario, el suplemento del día y los vasos de agua, para ir marcando. Al día siguiente amanece limpio solo, sin borrar el historial.",
+            "seccion_manual": "«Hoy» — el checklist del día"
+          },
+          {
+            "id": "F5",
+            "nombre": "El recordatorio «Ahora mismo»",
+            "que_hace": "Qué toca en este momento y qué sigue: la comida de la franja, el suplemento del día si falta, y cómo va el agua. Sin notificaciones ni permisos, y sin reprochar nunca.",
+            "seccion_manual": "«Hoy» · Recordatorio «Ahora mismo» (Sprint 003)"
+          },
+          {
+            "id": "F6",
+            "nombre": "La hora real de cada comida",
+            "que_hace": "Al marcar una comida queda anotada la hora a la que pasó («Hecho · 7:35 a. m.»). Es memoria, no calificación.",
+            "seccion_manual": "«Hoy» · Guarda la hora real (Sprint 003)"
+          },
+          {
+            "id": "F7",
+            "nombre": "Una nota corta por comida",
+            "que_hace": "Etiquetas rápidas (Lo rechazó · Le dolió · Tuvo antojo · Otra cosa) y un texto breve opcional, para contarle al pediatra cómo fue la semana sin fiarse de la memoria. Editable y borrable.",
+            "seccion_manual": "«Hoy» · Nota corta por comida (Sprint 003)"
+          },
+          {
+            "id": "F8",
+            "nombre": "Días anteriores",
+            "que_hace": "El historial local por fecha, del más reciente al más antiguo, con las horas y las notas. Solo para consultar: no se edita.",
+            "seccion_manual": "Días anteriores"
+          },
+          {
+            "id": "F9",
+            "nombre": "Suplementos de la semana",
+            "que_hace": "El calendario de lunes a domingo con dosis y momento. El día de hoy sale resaltado y su marca es la misma del checklist.",
+            "seccion_manual": "Suplementos de la semana"
+          }
+        ]
+      },
+      {
+        "orden": 3,
+        "estrella": false,
+        "nombre": "Pregúntale con tus palabras",
+        "linea": "Como le hablarías a alguien que se sabe el plan de memoria",
+        "features": [
+          {
+            "id": "F10",
+            "nombre": "Respuesta al instante, sin internet",
+            "que_hace": "Las preguntas de «¿esto se puede?» se resuelven en el teléfono, sin señal, mostrando la tarjeta del semáforo con sus reemplazos. Lleva la nota «Desde tu plan · sin IA».",
+            "seccion_manual": "Pregúntale a la dieta (Chat) · forma 1"
+          },
+          {
+            "id": "F11",
+            "nombre": "Preguntas abiertas con un asistente anclado al plan",
+            "que_hace": "Para lo abierto («no tengo pollo, ¿qué le doy?»), un asistente de IA lee el plan y responde solo con lo que la dieta permite. Marcadas como «Respuesta de IA»; necesitan internet.",
+            "seccion_manual": "Pregúntale a la dieta (Chat) · forma 2"
+          },
+          {
+            "id": "F12",
+            "nombre": "La frontera no-médica del chat",
+            "que_hace": "Ante dosis, medicinas o síntomas, el chat no responde: devuelve amablemente al pediatra o al nutricionista.",
+            "seccion_manual": "Pregúntale a la dieta (Chat) · Cosas importantes"
+          },
+          {
+            "id": "F13",
+            "nombre": "La conversación no se guarda",
+            "que_hace": "Al cerrar o recargar, el chat queda en blanco. Es una decisión de privacidad de los datos del menor, no un olvido.",
+            "seccion_manual": "Pregúntale a la dieta (Chat) · Cosas importantes"
+          }
+        ]
+      },
+      {
+        "orden": 4,
+        "estrella": false,
+        "nombre": "Tu dieta, adentro",
+        "linea": "El archivo del profesional, vuelto la app entera",
+        "features": [
+          {
+            "id": "F14",
+            "nombre": "Cargar el archivo de la dieta",
+            "que_hace": "Se elige el archivo .json que entregó el profesional y la app entera pasa a responder con esa dieta. Muestra un resumen de lo cargado.",
+            "seccion_manual": "Cargar tu dieta"
+          },
+          {
+            "id": "F15",
+            "nombre": "Cargar pegando el contenido",
+            "que_hace": "Camino alterno cuando el archivo no abre desde el teléfono: se pega su contenido en una caja de texto y se carga igual.",
+            "seccion_manual": "Cargar tu dieta · «Si el archivo no abre»"
+          },
+          {
+            "id": "F16",
+            "nombre": "Dieta demo y letrero de cuál está activa",
+            "que_hace": "La app arranca con una dieta de ejemplo inventada para explorar sin riesgo, y un letrero siempre visible dice si estás viendo «Dieta demo» o «Tu dieta».",
+            "seccion_manual": "Primeros pasos · Preguntas frecuentes"
+          }
+        ]
+      },
+      {
+        "orden": 5,
+        "estrella": false,
+        "nombre": "Tuya, en tu teléfono",
+        "linea": "Instalarla, cambiarle el idioma, y borrarlo todo cuando quieras",
+        "features": [
+          {
+            "id": "F17",
+            "nombre": "Instalarla como app",
+            "que_hace": "Se agrega a la pantalla de inicio desde el menú del navegador y queda con su ícono, abriendo sin pasar por el navegador.",
+            "seccion_manual": "Primeros pasos · paso 3"
+          },
+          {
+            "id": "F18",
+            "nombre": "Español o English",
+            "que_hace": "Cambia toda la interfaz y el contenido de la dieta entre los dos idiomas. Lo que el cuidador escribió en una nota se conserva tal cual.",
+            "seccion_manual": "Idioma y borrar datos"
+          },
+          {
+            "id": "F19",
+            "nombre": "Borrar mis datos",
+            "que_hace": "Borra la dieta cargada y todo el registro —marcas, horas y notas— del dispositivo, y devuelve la app a la demo. No se puede deshacer.",
+            "seccion_manual": "Idioma y borrar datos"
+          }
+        ]
+      }
+    ]
+  },
+  "metricas": [
+    {
+      "clave": "funcionalidades",
+      "etiqueta": "Funcionalidades del MVP",
+      "valor": 19,
+      "unidad": "funcionalidades",
+      "fuente": "medido",
+      "detalle": "Contadas contra docs/MANUAL-DE-USO.md y verificadas por un test que compara el total con los bloques .feature del brochure. El marco no-médico (nota de primer uso y disclaimer permanente) no cuenta: es el encuadre de la app, no una funcionalidad."
+    },
+    {
+      "clave": "pantallas",
+      "etiqueta": "Pantallas de la app",
+      "valor": 8,
+      "unidad": "pantallas",
+      "fuente": "medido",
+      "detalle": "Archivos page.tsx bajo src/app/. La ruta /conoce sirve este brochure y no es una pantalla del producto."
+    },
+    {
+      "clave": "pruebas_unitarias",
+      "etiqueta": "Pruebas unitarias y de integración",
+      "valor": 212,
+      "unidad": "pruebas",
+      "fuente": "medido",
+      "detalle": "Salida de `pnpm test` el 2026-08-22: 15 archivos, 212 pruebas."
+    },
+    {
+      "clave": "pruebas_e2e",
+      "etiqueta": "Pruebas end-to-end",
+      "valor": 78,
+      "unidad": "pruebas",
+      "fuente": "medido",
+      "detalle": "Salida de `pnpm test:e2e` el 2026-08-22: 39 pruebas corridas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe."
+    },
+    {
+      "clave": "cobertura_lineas",
+      "etiqueta": "Cobertura de líneas del motor",
+      "valor": 99.52,
+      "unidad": "%",
+      "fuente": "medido",
+      "detalle": "v8 sobre src/lib/diet, src/lib/ia y src/lib/rate-limit (422 de 424 líneas), con umbrales del 80 % en vitest.config.ts."
+    },
+    {
+      "clave": "decisiones_registradas",
+      "etiqueta": "Decisiones de arquitectura registradas",
+      "valor": 7,
+      "unidad": "ADR",
+      "fuente": "medido",
+      "detalle": "Archivos de decisions/."
+    },
+    {
+      "clave": "dependencias_runtime",
+      "etiqueta": "Dependencias en tiempo de ejecución",
+      "valor": 20,
+      "unidad": "paquetes",
+      "fuente": "medido",
+      "detalle": "Campo `dependencies` de package.json. Incluye los adaptadores de proveedores de IA que el chat conmuta por variable de entorno."
+    },
+    {
+      "clave": "requests_del_registro",
+      "etiqueta": "Llamadas de red del registro del día",
+      "valor": 0,
+      "unidad": "llamadas",
+      "fuente": "medido",
+      "detalle": "Un e2e recorre marcar, anotar, recargar, cambiar idioma y consultar el historial con un contador que intercepta TODAS las peticiones y bloquea el service worker: cero llamadas a un backend y cero a orígenes externos."
+    },
+    {
+      "clave": "costo_operacion_mensual",
+      "etiqueta": "Costo de operación mensual",
+      "valor": 0,
+      "unidad": "USD",
+      "fuente": "calculada",
+      "detalle": "Suma de los servicios contratados: Vercel Hobby (free) + GitHub Free + Sentry free + Groq free tier. Sin base de datos ni servidor propio que facturar. Techo declarado del proyecto: 10 USD/mes."
+    },
+    {
+      "clave": "peso_brochure",
+      "etiqueta": "Peso de este brochure",
+      "valor": 56502,
+      "unidad": "bytes",
+      "fuente": "medido",
+      "detalle": "Archivo autocontenido, sin webfonts ni recursos externos. `wc -c docs/BROCHURE.html`."
+    }
+  ],
+  "stack": [
+    {
+      "nombre": "Next.js",
+      "papel": "la PWA móvil-primero y su única ruta de servidor, la del chat"
+    },
+    {
+      "nombre": "TypeScript",
+      "papel": "modo estricto en todo el repositorio"
+    },
+    {
+      "nombre": "Tailwind + shadcn/ui",
+      "papel": "la interfaz, sobre los tokens del design system propio"
+    },
+    {
+      "nombre": "localStorage",
+      "papel": "toda la persistencia: la dieta y el registro del día, versionados y migrables. No hay base de datos"
+    },
+    {
+      "nombre": "Zod",
+      "papel": "el esquema de la dieta: un archivo malformado se rechaza antes de entrar"
+    },
+    {
+      "nombre": "Vercel AI SDK + Groq",
+      "papel": "el asistente del chat, conmutable por variable de entorno y con apagado manual"
+    },
+    {
+      "nombre": "Vitest y Playwright",
+      "papel": "las pruebas, incluidas las de privacidad y las de accesibilidad"
+    },
+    {
+      "nombre": "Pino y Sentry",
+      "papel": "registro y errores, siempre solo con metadatos"
+    }
+  ],
+  "privacidad": {
+    "datos_del_menor_solo_en_dispositivo": true,
+    "registro_del_dia_sale_del_dispositivo": false,
+    "conversacion_persistida": false,
+    "red_saliente": true,
+    "usa_ia": true,
+    "detalle": "La dieta, las marcas, las horas y las notas viven solo en el dispositivo (ADR-001, ratificada por ADR-007): no hay servidor de datos, ni cuenta, ni nube. La app sí hace red, pero solo para una cosa: las preguntas abiertas del chat, donde viaja únicamente el plan con el nombre del menor oculto (ADR-005/006) — el registro del día no puede llegar ahí ni por accidente, porque el módulo que lo guarda no es alcanzable desde la capa de IA, y dos pruebas negativas (una unitaria y una e2e con centinela) fallan si alguien lo intentara. La conversación no se persiste. Los registros técnicos llevan solo metadatos, nunca contenido. «Borrar mis datos» elimina la dieta y el registro completo, incluidas las claves de versiones anteriores."
+  },
+  "enlaces": {
+    "produccion": null,
+    "razon": "La producción no se entrega desde la vitrina: el acceso a Nutri-Kids se gestiona por lista de espera.",
+    "repositorio": null,
+    "razon_repositorio": "El repositorio no se enlaza desde la vitrina (regla de cero enlaces del portafolio).",
+    "brochure_archivo": "docs/BROCHURE.html",
+    "brochure_ruta_local": "/conoce"
+  }
+}
