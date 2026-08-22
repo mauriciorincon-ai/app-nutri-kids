@@ -94,7 +94,7 @@
     <text class="detalle-caja" x="437" y="187" text-anchor="middle">Next.js PWA · TS strict</text>
     <text class="detalle-caja" x="437" y="204" text-anchor="middle">rutas estáticas + /api/chat</text>
     <text class="detalle-caja" x="437" y="221" text-anchor="middle">preview por PR · prod desde main</text>
-    <text class="detalle-caja" x="437" y="240" text-anchor="middle">*.vercel.app</text>
+    <text class="detalle-caja" x="437" y="240" text-anchor="middle">subdominio de Vercel</text>
 
     <!-- Groq (IA, opcional) -->
     <rect class="caja" x="665" y="60" width="275" height="100" rx="10"/>
@@ -150,16 +150,17 @@
     <tbody>
       <tr><td>Código / versionamiento</td><td>GitHub <code>mauriciorincon-ai/app-nutri-kids</code> (público)</td><td>ruleset <code>main-protegida</code>; checks requeridos <code>quality</code>/<code>e2e</code>/<code>lighthouse</code>; jamás datos del niño en el repo</td></tr>
       <tr><td>CI/CD</td><td>GitHub Actions</td><td>install + typecheck + lint + unit + build (quality) · Playwright móvil+desktop (e2e) · Lighthouse vs <code>perf-budget.json</code> (lighthouse) — los tres gatean el merge</td></tr>
-      <tr><td>Hosting / publicación</td><td>Vercel Hobby (free)</td><td>Next.js PWA; preview por PR, prod desde <code>main</code>; <code>*.vercel.app</code>; uso personal/familiar (no comercial)</td></tr>
+      <tr><td>Hosting / publicación</td><td>Vercel Hobby (free)</td><td>Next.js PWA; preview por PR, prod desde <code>main</code>; subdominio de Vercel; uso personal/familiar (no comercial)</td></tr>
       <tr><td>Base de datos</td><td><strong>SIN BD — local-first</strong></td><td>Toda la data (dieta importada + registro del día) vive en <code>localStorage</code> del dispositivo, claves versionadas (<code>nutrikids.diet.v1</code>, <code>nutrikids.daylog.v2</code>, <code>nutrikids.prefs.v1</code>). Decisión: ADR-001, ratificada por ADR-007 (privacidad de menor). Sin región, sin RLS: no hay servidor de datos</td></tr>
       <tr><td>Auth</td><td>No aplica</td><td>Un dispositivo, un cuidador; sin cuentas ni login. La multi-cuidadoría con auth es fase 2</td></tr>
+      <tr><td>Protección de deployment</td><td>Vercel — producción <strong>pública</strong>, sin Deployment Protection</td><td>Verificado desde afuera y SIN sesión (incógnito/<code>curl</code>): la app y la ruta <code>/conoce</code> responden <code>200</code> a cualquier visitante. Es la "última milla" del método: una preview tras el login de Vercel se ve igual de verde en CI y nadie de afuera puede abrirla</td></tr>
       <tr><td>Almacenamiento de archivos</td><td>No aplica</td><td>La dieta se importa como texto JSON (file picker o pegado) y se guarda en <code>localStorage</code>; no hay bucket</td></tr>
       <tr><td>Email / notificaciones</td><td>No aplica</td><td>Los recordatorios son deterministas y locales (información visible al abrir la app); sin push ni permisos del sistema — push queda fase 2 si el uso lo pide</td></tr>
       <tr><td>IA embebida</td><td>Groq (free tier) — <strong>opcional</strong></td><td>Chat "habla con tu dieta": adapter multi-proveedor conmutable por env (ADR-004); grounding de la dieta <strong>anonimizada</strong> (ADR-005); Camino A (lookups) resuelve local sin IA; kill-switch <code>CHAT_ENABLED</code> + circuit breaker → fallback local. ADR "código primero" cumplido: la IA es acento, no columna. El registro del día JAMÁS entra al grounding (ADR-006/007)</td></tr>
       <tr><td>Observabilidad</td><td>Pino + Sentry (free)</td><td>Pino: logs estructurados <strong>solo-metadatos</strong> (versión de schema, conteos, outcome — jamás contenido de dieta ni registro). Sentry client-only, inerte sin <code>NEXT_PUBLIC_SENTRY_DSN</code></td></tr>
       <tr><td>Crons / keep-alives</td><td>NINGUNO</td><td>Sin backend que mantener despierto; la app estática no los necesita</td></tr>
       <tr><td>Secretos</td><td>Vercel env vars + <code>.env.local</code> (gitignored)</td><td>Único secreto: <code>GROQ_API_KEY</code> (para el chat con IA real). Doble gate gitleaks (hook pre-commit + PreToolUse). Hoy sin configurar → el chat degrada a local, honesto</td></tr>
-      <tr><td>Dominio</td><td>Subdominio de Vercel (<code>*.vercel.app</code>)</td><td>Administrado en Vercel; sin dominio propio en fase 1</td></tr>
+      <tr><td>Dominio</td><td>Subdominio de Vercel (asignado por la plataforma)</td><td>Administrado en Vercel; sin dominio propio en fase 1. La URL NO se versiona en el repo (regla 17 — cero enlaces); el campo <code>homepage</code> del repo se mantiene vacío y se re-limpia tras cada deploy de producción</td></tr>
       <tr class="critica"><td>Costo real / mes</td><td><strong>US$0</strong></td><td>Vercel Hobby (100 GB-h, uso mínimo) · GitHub Free (2000 min CI/mes) · Sentry free · Groq free tier (~30 preguntas/día bajo 100K TPD, medido en ADR-005). Presupuesto techo declarado: ≤US$10/mes</td></tr>
       <tr class="critica"><td>Punto único de falla</td><td><strong>El dispositivo del usuario</strong></td><td>Los datos del niño viven SOLO en el teléfono, sin respaldo en la nube (decisión de privacidad, no descuido). Mitigación: la dieta se re-importa desde su archivo original; el registro del día es local y aceptado como fase-1 (sync multi-dispositivo = fase 2). "Borrar datos" es intencional y confirmado. Secundario: Vercel como host — pero la PWA sirve el Camino A (semáforo + checklist) aun sin señal una vez cargada</td></tr>
     </tbody>

@@ -16,5 +16,26 @@ onlyBuiltDependencies:
 # Solo entra transitivamente por la cadena de eslint (devDependency); ningún dep
 # NUEVO — se fija el patch parcheado para que el gate `pnpm audit --high` quede
 # limpio. Aviso surgido tras el S3 (advisory posterior al audit verde del sprint).
+# Parches de seguridad de dependencias TRANSITIVAS. Ninguno entra por una dependencia
+# directa nuestra; todos son advisories publicados después del cierre del sprint 003 y
+# el gate `pnpm audit --audit-level high` gatea el merge. Se fija en cada caso la
+# versión parcheada DENTRO de la misma línea mayor, para no arrastrar cambios de API.
+# Se revisan al abrir cada PR: cuando el upstream publique la versión buena, el
+# override sobra y se retira.
 overrides:
-  brace-expansion@<1.1.16: '^1.1.16'
+  # DoS por expansión sin límite + ReDoS (GHSA-3jxr-9vmj-r5cp y sucesores). Llega por
+  # la cadena de eslint (minimatch) y por globby.
+  brace-expansion@<1.1.18: '^1.1.18'
+  brace-expansion@>=4.0.0 <5.0.9: '^5.0.9'
+  # Divulgación de información entre usuarios (cliente HTTP de Node, vía el SDK de IA).
+  undici@<7.29.0: '^7.29.0'
+  # Confusión de host en URIs (llega por ajv, desde shadcn y webpack).
+  fast-uri@<3.1.4: '^3.1.4'
+  # Vulnerabilidades heredadas de libvips; la devDependency directa ya es ^0.35.3.
+  sharp@<0.35.0: '^0.35.3'
+  # Lectura arbitraria de archivos: era la deuda «moderate» declarada en el S3, el
+  # advisory subió a high y deja de ser diferible.
+  postcss@<8.5.18: '^8.5.18'
+  ip-address@<10.3.1: '^10.3.1'
+  js-yaml@>=4.0.0 <4.3.1: '^4.3.1'
+  nanoid@<3.3.18: '^3.3.18'
