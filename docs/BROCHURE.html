@@ -159,9 +159,11 @@
      `visibility` en la transición: con un extremo en visible la animación no se corta, y
      cerrado saca el contenido del árbol de accesibilidad (sin esto un lector de pantalla
      recita el detalle de TODAS las tarjetas cerradas; axe no lo ve — lo mira un e2e por CDP). */
-  .detalle { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.45s var(--ease-suave); }
+  /* 0.62 s, no 0.45: mientras bajas, TODO se mueve, y una apertura corta se confunde con el
+     propio scroll. Alargarla es lo que la vuelve legible como apertura. */
+  .detalle { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.62s var(--ease-asentar); }
   .tarjeta[data-abierta] .detalle { grid-template-rows: 1fr; }
-  .detalle-interior { overflow: hidden; visibility: hidden; transition: visibility 0.45s; }
+  .detalle-interior { overflow: hidden; visibility: hidden; transition: visibility 0.62s; }
   .tarjeta[data-abierta] .detalle-interior { visibility: visible; }
   .detalle-cuerpo { padding: 2px 16px 18px; border-top: 1px solid var(--border); }
   .feature { padding: 13px 0; border-top: 1px solid var(--border); }
@@ -307,6 +309,12 @@
     .tarjeta.visto .icono svg .trazable { animation: dibujar 0.85s var(--ease-suave) 0.15s forwards; }
     @keyframes dibujar { to { stroke-dashoffset: 0; } }
 
+    /* E04 · el borde AVISA. La apertura es un cambio de altura y, bajando, compite con el
+       movimiento del scroll. Un pulso de terracota en el borde —0.9 s, una sola vez, sin
+       mover nada— dice «esto acaba de abrirse» sin romper la cocina serena. */
+    .tarjeta[data-abierta] { animation: asomar 0.9s var(--ease-suave); }
+    @keyframes asomar { from { border-color: var(--primary); } to { border-color: var(--border); } }
+
     /* E04 · coreografía interior: primero llega la muestra (la imagen ancla las palabras) y
        detrás alzan las features en fila. Los retrasos van por `nth-of-type` a propósito:
        cuentan solo los bloques .feature (que son div), así insertar la figura de la muestra no
@@ -375,6 +383,7 @@
     html { scroll-behavior: auto; }
     .revela { opacity: 1; transform: none; transition: none; }
     .detalle, .detalle-interior, .chevron, .tarjeta-boton { transition: none; }
+    .tarjeta[data-abierta] { animation: none; } /* sin pulso de borde: nada se anima aquí */
     /* Cada escena en su corte editorial: todo en pose final, cero movimiento. */
     .portada h1 .palabra, .portada .sello, .portada .promesa, .portada .nota-inicial { animation: none; filter: none; opacity: 1; transform: none; }
     .baja .flecha { animation: none; opacity: 0.7; }
@@ -1019,11 +1028,11 @@
      Aquí está la mayor parte de la información de la pieza, y pedirle un toque por tarjeta
      a quien lee en el teléfono es cobrarle cinco peajes. Se abren al llegar:
 
-     · ABRE bajando, con 1/3 de la tarjeta dentro de la ZONA DE LECTURA (la pantalla menos
-       su 15% inferior). Subiendo no se abre nada, nunca.
+     · ABRE cuando TE DETIENES bajando, si su cabecera quedó en la banda de lectura (10–62%
+       de la pantalla): con la página quieta, la apertura se ve. Subiendo, nunca.
      · CRECE HACIA ABAJO: el borde superior está anclado, así que lo que estás leyendo no
-       se mueve — y lo que se desplaza queda por debajo del pliegue (esto es también lo que
-       mantiene el CLS en cero: se mide, no se supone).
+       se mueve. El CLS de carga sigue en 0 (nada se abre sin que bajes); lo que se desplaza
+       al abrirse es el efecto pedido, y se mide.
      · CIERRA solo cuando ya la dejaste atrás y salió COMPLETA por abajo de la pantalla.
        Jamás se cierra algo que estés mirando.
      · TU DEDO GANA: tocar una tarjeta la saca del automático para siempre.
@@ -1054,22 +1063,53 @@
         window.pageYOffset + window.innerHeight + 8;
     };
 
-    /* LLEGADA. El tercio se mide contra la ZONA DE LECTURA —la pantalla menos su 38%
-       inferior— y no contra el borde crudo: una tarjeta cerrada mide ~95 px, así que contra
-       el borde cumpliría el tercio asomando 32 px y se abriría con su cabecera al 79% de la
-       pantalla, es decir a punto de salir por abajo. La primera versión hacía justo eso y el
-       usuario reportó lo previsible: «no veo que se desplieguen, se ven ya desplegadas».
-       Con el 38%, la tarjeta se abre con su cabecera hacia la mitad de la pantalla: la
-       apertura ocurre delante de los ojos. Se paga con algo de desplazamiento visible
-       (CLS del recorrido), que se mide y se declara. */
-    var llegada = new IntersectionObserver(function (entradas) {
-      entradas.forEach(function (e) {
-        var t = e.target;
-        if (!huboScroll || !bajando) return;
-        if (t.hasAttribute("data-manual") || t.hasAttribute("data-abierta")) return;
-        if (e.isIntersecting && e.intersectionRatio >= 1 / 3) abrir(t, true);
-      });
-    }, { threshold: [1 / 3], rootMargin: "0px 0px -38% 0px" });
+    /* LLEGADA — LA TARJETA SE ABRE CUANDO TE DETIENES EN ELLA.
+       Dos rondas de gate visual enseñaron que el problema no era la altura del disparo sino
+       el MOMENTO: bajando, la página entera se mueve, y una apertura que compite con el
+       scroll no se percibe (15% de margen abría al 79% → «no veo que se desplieguen»; 38%
+       abría al 51% → «todavía no se percibe»; subirlo más encadenaba aperturas, porque al
+       abrirse una empuja a la siguiente y esa se abría ya fuera de cuadro).
+       La versión que sí se ve: se abre con la página QUIETA. Cuando dejas de bajar, la
+       tarjeta cuya cabecera quedó en la banda de lectura (10–62% de la pantalla) se abre
+       delante de tus ojos, sin nada más moviéndose. Una a la vez, jamás en cascada. */
+    /* La banda va desde un poco POR ENCIMA del filo superior (una tarjeta cerrada mide ~95 px:
+       si su cabecera se asomó apenas por arriba, la apertura se sigue viendo entera) hasta el
+       72% de la pantalla. Ancha a propósito: con una banda estrecha, un pulgar que baja 700 px
+       de un tirón la salta limpiamente y esa tarjeta no se abre nunca (medido: T2 y T3 se
+       quedaron cerradas en la primera versión de esto). */
+    var BANDA_ALTA = -0.12, BANDA_BAJA = 0.72;
+
+    var candidata = function () {
+      var vh = window.innerHeight;
+      for (var i = 0; i < tarjetas.length; i++) {
+        var t = tarjetas[i];
+        if (t.hasAttribute("data-manual") || t.hasAttribute("data-abierta")) continue;
+        var arriba = t.getBoundingClientRect().top;
+        if (arriba >= vh * BANDA_ALTA && arriba <= vh * BANDA_BAJA) return t;
+      }
+      return null;
+    };
+
+    var abrirCandidata = function () {
+      if (!huboScroll || !bajando) return;
+      var t = candidata();
+      if (t) abrir(t, true);
+    };
+
+    var alReposar = null, mientrasBaja = null;
+    window.addEventListener("scroll", function () {
+      /* Al detenerte: 140 ms sin un solo evento de scroll es «me quedé mirando esto». */
+      window.clearTimeout(alReposar);
+      alReposar = window.setTimeout(abrirCandidata, 140);
+      /* Y si bajas lento y sin parar (rueda de trackpad), el reposo no llega nunca: cada
+         700 ms se mira si hay una tarjeta plantada en la banda. Ahí sí está a la vista. */
+      if (!mientrasBaja) {
+        mientrasBaja = window.setTimeout(function () {
+          mientrasBaja = null;
+          abrirCandidata();
+        }, 700);
+      }
+    }, { passive: true });
 
     /* DESPEDIDA. Solo cierra la que salió por ABAJO (subiste y la dejaste debajo de la
        pantalla). La que sale por arriba se queda abierta: si te devuelves un poco, la
@@ -1090,7 +1130,7 @@
        entre una y otra hay casi un cuarto de pantalla de histéresis). */
     }, { threshold: 0, rootMargin: "0px 0px 8% 0px" });
 
-    tarjetas.forEach(function (t) { llegada.observe(t); despedida.observe(t); });
+    tarjetas.forEach(function (t) { despedida.observe(t); });
   }
 
   /* ——— G3 · coreografía de entrada. Con reduced-motion el CSS ya lo muestra todo:

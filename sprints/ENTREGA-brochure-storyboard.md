@@ -339,5 +339,19 @@ La palanca, si alguna vez estorba, es el disparo, no la idea.
 La v1 de este delta falló donde importaba: disparaba al 79% de pantalla (la apertura ocurría a
 punto de salir por abajo) y dejaba la muestra estirarse al ancho de la tarjeta (×2 en escritorio).
 El veredicto del usuario fue «no veo que se desplieguen… y las imágenes gigantes, cero estética».
-Corregido: disparo al 38% de margen (abre al 46–56%) y muestra topada a su tamaño natural.
-**Lección: una animación que ocurre fuera del campo visual no existe, por más que el test la vea.**
+Corregido en dos rondas más: la muestra se topó a su tamaño natural (esa quedó resuelta de una),
+y el disparo pasó de «a tal altura» a **«cuando te detienes»**, con la apertura alargada a 0.62 s y
+un pulso de borde. Subir la altura no bastaba: al 55% las aperturas se encadenaban y el CLS llegó a
+1.08.
+
+**Tres lecciones, en orden de valor:**
+
+1. **Una animación fuera del campo visual no existe**, por más que el test la vea.
+2. **El momento importa más que la posición.** Mientras bajas, todo se mueve: una apertura que
+   compite con el scroll no se percibe a ninguna altura. Con la página quieta, sí.
+3. **Un umbral alto encadena**: al abrirse una tarjeta empuja a la siguiente, que dispara ya fuera
+   de cuadro. Abrir **una a la vez, al reposo**, lo elimina por construcción.
+
+**Lo que se paga, dicho claro:** si vuelas de un tirón sobre todo el bloque de tarjetas, solo se
+abre la que quedó en la banda; las que sobrevolaste se quedan cerradas y se abren con un toque.
+Es el precio de no abrir nada a ciegas, y es reversible.

@@ -191,7 +191,7 @@ pidió llevarlo a la planeadora como estándar (bloque listo más abajo).
 
 | Regla                  | Implementación (medida, no supuesta)                                                                                                  |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| ⅓ visible para abrir   | `threshold 1/3` contra la **zona de lectura** (viewport −38% inferior). Medido: abre con el borde superior al **46–56%** de pantalla — de frente. |
+| Se ve abrirse          | Abre **cuando te detienes** (140 ms sin scroll) con la cabecera en la banda de lectura (−12% a 72%). Apertura de **0.62 s** + pulso de borde. Respaldo cada 700 ms para el scroll lento. |
 | Se ve abrirse          | La misma transición del toque (0.45 s) + muestra y features alzando detrás (0.08 → 0.33 s).                                           |
 | Solo hacia abajo       | Ancla superior fija: lo que se desplaza queda bajo el pliegue.                                                                        |
 | Al devolverme, cerrada | Cierra **solo** la que salió completa por abajo (gracia 8%). Verificado subiendo la pieza entera: las 5 quedan cerradas.              |
@@ -199,8 +199,8 @@ pidió llevarlo a la planeadora como estándar (bloque listo más abajo).
 | Muestras               | 5 recortes **dibujados en SVG** con el texto real de la dieta demo, uno por tarjeta.                                                  |
 
 **CLS de carga: 0.0000** — es lo que mide el gate, y nada se abre sin que bajes. En el recorrido
-sube a 0.13 (escritorio) y 0.32 (móvil): abrir una tarjeta a media pantalla **desplaza a propósito**
-lo que va debajo. Es el efecto pedido, medido y declarado, no un descuido.
+sube (0.15 leyendo con pausas · 0.29 escritorio · 0.68 a puros tirones): abrir delante de los ojos
+**desplaza a propósito** lo que va debajo. Es el efecto pedido, medido y declarado.
 
 ## La corrección tras el gate visual (misma tarde)
 
@@ -217,8 +217,35 @@ También cambió el corte de `prefers-reduced-motion`: entregar las cinco abiert
 efecto que el usuario rechazó (un muro ya desplegado). Ahora es **el mismo mecanismo sin
 transición** — la tarjeta se abre al llegar, pero cambia de estado en vez de animarse.
 
-**La lección, para el estándar: una animación que ocurre fuera del campo visual no existe, por más
-que el test la vea.** Ningún gate automático puede cazar esto; lo caza una persona mirando.
+### Tercera ronda: el momento, no la altura
+
+Con la muestra ya resuelta, el veredicto siguió siendo _«no se percibe que se está desplegando;
+debe darse más arriba o ser más evidente»_. Subir el disparo al 55% **empeoró** las cosas y lo
+dejó medido: al abrirse una tarjeta empuja a la siguiente, que dispara ya fuera de cuadro
+(aperturas al 104% y al 198% de la pantalla) y el CLS del recorrido llegó a **1.08**.
+
+El diagnóstico real: **bajando, la página entera se mueve, así que la apertura compite con el
+scroll y no se percibe a ninguna altura.** La versión que sí se ve:
+
+- **abre cuando te detienes** (140 ms sin un solo evento de scroll), con la cabecera en la banda
+  de lectura; una a la vez, jamás en cascada;
+- **respaldo cada 700 ms** para el scroll lento y continuo, que nunca llega a reposar;
+- **0.62 s** de apertura (0.45 s se leía como scroll) y un **pulso de terracota en el borde**
+  (0.9 s, una vez, sin mover nada);
+- **banda ancha** (−12% a 72%): con una banda estrecha, un pulgar que baja 700 px de un tirón la
+  salta limpiamente y esa tarjeta no se abre nunca (medido: dos tarjetas se quedaron cerradas).
+
+**Lo que se paga, dicho claro:** si vuelas de un tirón sobre todo el bloque, solo se abre la que
+quedó en la banda; las que sobrevolaste se quedan cerradas y abren con un toque.
+
+**Tres lecciones para el estándar:**
+
+1. **Una animación fuera del campo visual no existe**, por más que el test la vea.
+2. **El momento importa más que la posición**: con la página quieta, la apertura se lee sola.
+3. **Disparar por altura encadena**; abrir una a la vez al reposo lo elimina por construcción.
+
+Ningún gate automático caza esto: lo caza una persona mirando. Tres rondas de gate visual, tres
+correcciones, cada una con su medición.
 
 ## Decisiones
 
@@ -267,8 +294,10 @@ cualquier documento largo del portafolio):
 
 1. Si las tarjetas desplegables concentran la mayor parte de la información, **se abren al llegar
    a ellas**, no al toque. El toque es el control, no el peaje.
-2. Disparo: **⅓ de la tarjeta dentro de la zona de lectura** (viewport menos su 15% inferior).
-   Nunca contra el borde crudo: la apertura ocurriría fuera de cuadro.
+2. Disparo: **al detenerse**, no a una altura fija. Mientras se baja, la página entera se mueve y
+   la apertura compite con el scroll: no se percibe a ninguna altura. Con la página quieta, sí.
+   Banda de lectura ancha (−12% a 72%) para que un tirón largo no salte tarjetas, y respaldo
+   periódico para el scroll lento que nunca reposa. Una a la vez: disparar por altura encadena.
 3. **Ancla superior**: la tarjeta crece hacia abajo. Lo que se desplaza queda bajo el pliegue.
    Consecuencia medible: el CLS no se dispara — y se **mide**, no se supone.
 4. **Subiendo no se abre nada.** Cierra solo lo que ya salió completo por abajo, con una banda de
@@ -280,8 +309,11 @@ cualquier documento largo del portafolio):
    SVG** con los tokens del design system — no una captura incrustada (peso, envejecimiento
    silencioso y píxeles no revisados en un repo público). El SVG es ilustración; el `figcaption`
    carga el sentido en palabras.
-8. Se verifica con **e2e reales de scroll** (abre al llegar · no abre subiendo · queda cerrada al
+8. La apertura dura **≥0.6 s** y lleva un cue que no mueve nada (un pulso de color en el borde):
+   más corta se confunde con el propio scroll.
+9. Se verifica con **e2e reales de scroll** (abre al llegar · no abre subiendo · queda cerrada al
    volver · el toque gana · la rama reduced-motion) y con **CLS medido en un recorrido completo**.
+   Y con **gate visual humano**: esto se afina mirando, en rondas — aquí hicieron falta tres.
 
 Implementación de referencia y su porqué: `docs/BROCHURE.html` (bloque «M1 · Apertura por
 lectura») y `design-system.md` de esta app.

@@ -81,19 +81,24 @@ por tarjeta es cobrar un peaje por cada una: en el teléfono, mucha gente nunca 
 tarjeta se abre **al llegar a ella**, con estas reglas (implementación de referencia:
 `docs/BROCHURE.html`, bloque «M1 · Apertura por lectura»):
 
-1. **Abre bajando**, cuando ⅓ de la tarjeta entra en la **zona de lectura** = viewport menos su
-   **38%** inferior, de modo que la cabecera queda hacia la mitad de la pantalla al abrirse. Medir
-   contra el borde crudo la abre fuera de cuadro: una tarjeta cerrada de ~95 px cumple el tercio
-   asomando 32 px, y la animación ocurre donde nadie la ve (pasó, y el usuario lo reportó).
+1. **Abre cuando la persona SE DETIENE** bajando (140 ms sin scroll), si la cabecera quedó en la
+   banda de lectura (−12% a 72% del viewport); respaldo cada 700 ms para el scroll lento que nunca
+   reposa. El momento pesa más que la posición: **mientras se baja, la página entera se mueve y
+   una apertura que compite con el scroll no se percibe a ninguna altura** (se probó al 79%, al
+   51% y al 40% — las tres se reportaron como «no se ve»). Con la página quieta, se ve. Además,
+   disparar por altura **encadena**: al abrirse una tarjeta empuja a la siguiente, que abre ya
+   fuera de cuadro. Una a la vez, al reposo.
 2. **Ancla arriba**: crece hacia abajo, así nada de lo que se está leyendo salta. El CLS **de
-   carga** queda en 0.0000 (nada se abre sin bajar); en el recorrido sube a 0.13–0.32 y eso es el
-   efecto pedido, no un descuido — se mide y se declara.
-3. **Subiendo no abre nada, nunca.**
-4. **Cierra solo lo que ya saliste por abajo** (banda de gracia ~8%): jamás se cierra algo que la
+   carga** queda en 0.0000 (nada se abre sin bajar); en el recorrido sube (0.15 leyendo con pausas)
+   y eso es el efecto pedido, no un descuido — se mide y se declara.
+3. **La apertura dura 0.62 s** y va acompañada de un pulso de acento en el borde (0.9 s, una vez).
+   Con 0.45 s y sin pulso se confunde con el propio scroll.
+4. **Subiendo no abre nada, nunca.**
+5. **Cierra solo lo que ya saliste por abajo** (banda de gracia ~8%): jamás se cierra algo que la
    persona esté mirando. Y no cierra si al encoger la página el documento quedara más corto que la
    posición actual (Chrome/Firefox lo compensan con scroll anchoring; **Safari no**).
-5. **El toque gana**: tocar una tarjeta la saca del automático para el resto de la visita.
-6. **`prefers-reduced-motion`**: el mismo mecanismo **sin transición** (cambia de estado, no se
+6. **El toque gana**: tocar una tarjeta la saca del automático para el resto de la visita.
+7. **`prefers-reduced-motion`**: el mismo mecanismo **sin transición** (cambia de estado, no se
    anima). Entregarlas todas abiertas es peor: se llega a un muro de texto ya desplegado.
 
 Acompaña siempre a la regla del semáforo: donde hay mucha información, la palabra va con **una

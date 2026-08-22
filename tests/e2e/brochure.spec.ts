@@ -17,13 +17,20 @@ const estados = (page: Page) =>
 
 const alturaY = (page: Page) => page.evaluate(() => window.pageYOffset);
 
-/** Baja con la rueda hasta que la tarjeta `i` (0-based) se abra SOLA. */
+/**
+ * Baja como baja una persona —ráfaga y pausa— hasta que la tarjeta `i` (0-based) se abra
+ * SOLA. La pausa no es decorativa: la tarjeta se abre al detenerte, que es lo único que
+ * hace la apertura perceptible (bajando, compite con el movimiento de la página).
+ */
 async function bajarHastaQueAbra(page: Page, i: number) {
   const boton = page.locator(".tarjeta-boton").nth(i);
-  for (let paso = 0; paso < 120; paso++) {
+  for (let ronda = 0; ronda < 40; ronda++) {
     if ((await boton.getAttribute("aria-expanded")) === "true") return boton;
-    await page.mouse.wheel(0, PASO);
-    await page.waitForTimeout(50);
+    for (let paso = 0; paso < 4; paso++) {
+      await page.mouse.wheel(0, PASO);
+      await page.waitForTimeout(30);
+    }
+    await page.waitForTimeout(320); // te detienes a mirar
   }
   throw new Error(`la tarjeta ${i + 1} nunca se abrió sola al bajar`);
 }
@@ -87,22 +94,36 @@ test.describe("brochure /conoce", () => {
     page,
   }) => {
     await page.goto("/conoce");
+
+    // La apertura dura lo suficiente para leerse como apertura: con 0.45s se confundía
+    // con el propio scroll. Es parte del contrato, no un detalle de estilo.
+    const duracion = await page
+      .locator(".detalle")
+      .first()
+      .evaluate((n) => getComputedStyle(n as Element).transitionDuration);
+    expect(parseFloat(duracion)).toBeGreaterThanOrEqual(0.6);
+
     const boton = await bajarHastaQueAbra(page, 0);
     await expect(boton).toHaveAttribute("aria-expanded", "true");
     await expect(
       page.getByRole("heading", { name: "El semáforo de alimentos" }),
     ).toBeVisible();
 
-    // Se abre DELANTE DE LOS OJOS, no a punto de salir por abajo. La primera versión
-    // disparaba con la cabecera al 79% y el usuario reportó lo previsible: «no veo que se
-    // desplieguen, se ven ya desplegadas». Este umbral es la regresión guardada.
+    // Se abre DELANTE DE LOS OJOS. Dos rondas de gate visual afinaron esto: primero abría
+    // con la cabecera al 79% («no veo que se desplieguen»), luego al 51% («todavía no se
+    // percibe»). Lo que lo resolvió no fue la altura sino el momento — abre con la página
+    // quieta —, pero la banda sigue siendo la regresión guardada: si alguien la vuelve a
+    // correr hacia el filo inferior, la apertura deja de verse y esto se pone rojo.
     const caja = await page.locator(".tarjeta").first().boundingBox();
     const alto = page.viewportSize()!.height;
     expect(
       caja!.y,
       "la tarjeta se abre demasiado abajo: la apertura ocurre fuera de la vista",
-    ).toBeLessThan(alto * 0.65);
-    expect(caja!.y).toBeGreaterThan(0);
+    ).toBeLessThan(alto * 0.75);
+    expect(
+      caja!.y,
+      "la tarjeta se abre por encima del filo superior: nadie la ve abrirse",
+    ).toBeGreaterThan(-alto * 0.15);
   });
 
   test("M1 · subiendo no se abre nada, y al volver arriba quedan cerradas otra vez", async ({
