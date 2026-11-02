@@ -7,9 +7,9 @@ allowBuilds:
   '@sentry/cli': true
 # Parche de seguridad de next (decisión «1a» del 2026-11-01): 16.4.4 se publicó el
 # 2026-11-02, el mismo día en que se aplicó, y pnpm 11 rechaza versiones más nuevas que
-# su `minimumReleaseAge`. Se exime SOLO la
-# versión exacta, tras verificar su provenance SLSA (workflow build_and_deploy.yml de
-# vercel/next.js en el tag v16.4.4). Pasada la ventana, la exención sobra y se retira.
+# su `minimumReleaseAge`. Se exime SOLO la versión exacta, tras verificar su provenance
+# SLSA (workflow build_and_deploy.yml de vercel/next.js en el tag v16.4.4). Pasada la
+# ventana, la exención sobra y se retira.
 minimumReleaseAgeExclude:
   - '@next/env@16.4.4'
   - '@next/swc-darwin-arm64@16.4.4'
