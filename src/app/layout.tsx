@@ -32,7 +32,7 @@ const nunitoSans = Nunito_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Nutri-Kids",
+  title: "Nutrikids",
   description:
     "La dieta de tu peque, viva y a la mano: semáforo de alimentos, equivalencias y el checklist de hoy.",
   manifest: "/manifest.webmanifest",

@@ -57,7 +57,7 @@
 }
 
 :root {
-  /* Nutri-Kids v1 — paleta "cocina familiar" (design-system.md). Light-only en S1. */
+  /* Nutrikids v1 — paleta "cocina familiar" (design-system.md). Light-only en S1. */
   --background: oklch(0.977 0.008 84);
   --foreground: oklch(0.28 0.02 50);
   --card: oklch(0.995 0.005 84);

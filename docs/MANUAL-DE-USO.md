@@ -1,4 +1,4 @@
-# Nutri-Kids — Manual de uso
+# Nutrikids — Manual de uso
 
 > **Documento obligatorio y vivo.** Toda feature que llega a `main` se documenta aquí en el mismo
 > sprint (regla 9 del CLAUDE.md). Escrito para el **usuario final** en español llano — sin jerga
@@ -7,7 +7,7 @@
 
 ## Qué es esta app
 
-Nutri-Kids convierte el plan de alimentación de tu peque (ese PDF largo que nadie relee a la hora
+Nutrikids convierte el plan de alimentación de tu peque (ese PDF largo que nadie relee a la hora
 de la merienda) en una guía viva en tu teléfono: qué se puede y qué no (con un semáforo), con qué
 reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcando el día.
 **Importante:** es una ayuda para el día a día — no reemplaza a tu pediatra ni a tu nutricionista.

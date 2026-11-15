@@ -6,7 +6,7 @@ import type { Dictionary } from "./es";
  */
 export const en: Dictionary = {
   app: {
-    name: "Nutri-Kids",
+    name: "Nutrikids",
     tagline: "Your kid's diet, alive and at hand",
   },
   nav: {
@@ -19,7 +19,7 @@ export const en: Dictionary = {
   },
   disclaimer: {
     short: "This guide does not replace your pediatrician.",
-    full: "Nutri-Kids organizes the eating plan the family chose to follow. It is not a diagnosis or medical treatment: whenever in doubt, always check with your pediatrician or nutritionist.",
+    full: "Nutrikids organizes the eating plan the family chose to follow. It is not a diagnosis or medical treatment: whenever in doubt, always check with your pediatrician or nutritionist.",
     firstUseTitle: "Before you start",
     firstUseBody:
       "This app turns your kid's nutrition plan into an easy-to-check guide. It is a daily helper, not medical advice: your pediatrician and nutritionist always have the last word.",
@@ -199,7 +199,7 @@ export const en: Dictionary = {
     errorInvalidJson:
       "That file could not be read as a diet. Check it is the right .json file and try again.",
     errorInvalidSchema:
-      "The file opens, but it doesn't have the Nutri-Kids diet format. Ask again for the original .json file from whoever shared it.",
+      "The file opens, but it doesn't have the Nutrikids diet format. Ask again for the original .json file from whoever shared it.",
     errorNoStorage:
       "Your browser didn't allow saving the diet on the device. Try another browser (for example Chrome).",
     activeSource: "Active diet:",

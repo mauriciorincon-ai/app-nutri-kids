@@ -6,7 +6,7 @@
  */
 export const es = {
   app: {
-    name: "Nutri-Kids",
+    name: "Nutrikids",
     tagline: "La dieta de tu peque, viva y a la mano",
   },
   nav: {
@@ -19,7 +19,7 @@ export const es = {
   },
   disclaimer: {
     short: "Esta guía no reemplaza a tu pediatra.",
-    full: "Nutri-Kids organiza el plan de alimentación que la familia decidió seguir. No es diagnóstico ni tratamiento médico: ante cualquier duda, consulta siempre al pediatra o a tu nutricionista.",
+    full: "Nutrikids organiza el plan de alimentación que la familia decidió seguir. No es diagnóstico ni tratamiento médico: ante cualquier duda, consulta siempre al pediatra o a tu nutricionista.",
     firstUseTitle: "Antes de empezar",
     firstUseBody:
       "Esta app convierte el plan nutricional de tu peque en una guía fácil de consultar. Es una ayuda para el día a día, no un consejo médico: tu pediatra y tu nutricionista siempre tienen la última palabra.",
@@ -201,7 +201,7 @@ export const es = {
     errorInvalidJson:
       "Ese archivo no se pudo leer como una dieta. Revisa que sea el archivo .json correcto y vuelve a intentar.",
     errorInvalidSchema:
-      "El archivo se abre, pero no tiene el formato de una dieta de Nutri-Kids. Pide de nuevo el archivo original (.json) a quien te lo compartió.",
+      "El archivo se abre, pero no tiene el formato de una dieta de Nutrikids. Pide de nuevo el archivo original (.json) a quien te lo compartió.",
     errorNoStorage:
       "Tu navegador no dejó guardar la dieta en el dispositivo. Intenta desde otro navegador (por ejemplo Chrome).",
     activeSource: "Dieta activa:",

@@ -1,4 +1,4 @@
-# Kit de prueba — Nutri-Kids
+# Kit de prueba — Nutrikids
 
 Materiales para recorrer la **guía de prueba** (`docs/GUIA-DE-PRUEBA.html`) sin tener que
 inventar datos. Todo lo de aquí es de mentira y seguro de compartir.
