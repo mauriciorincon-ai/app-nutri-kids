@@ -97,9 +97,9 @@ describe("un plan v1 guardado se migra al leer, sin perderse", () => {
 
 describe("el perfil no sale del teléfono: ni logs ni Sentry", () => {
   const SENSITIVE = [
-    "Maní",
-    "Peanut",
-    "Lactosa",
+    "Mariscos",
+    "Shellfish",
+    "Sorbitol",
     "Medicamento demo",
     "Condición de ejemplo",
   ];
@@ -130,9 +130,9 @@ describe("el perfil no sale del teléfono: ni logs ni Sentry", () => {
       ],
     });
     for (const t of [
-      "Maní",
-      "Peanut",
-      "Lactosa",
+      "Mariscos",
+      "Shellfish",
+      "Sorbitol",
       "Medicamento demo",
       "Nota privada",
     ])
@@ -144,17 +144,17 @@ describe("el perfil no sale del teléfono: ni logs ni Sentry", () => {
     const event = {
       type: undefined,
       message: "falló al leer Medicamento demo",
-      extra: { profile: "Maní" },
+      extra: { profile: "Mariscos" },
       user: { id: "x" },
-      request: { url: "/perfil", data: "Lactosa" },
+      request: { url: "/perfil", data: "Sorbitol" },
       breadcrumbs: [
-        { category: "console", message: "Maní" },
+        { category: "console", message: "Mariscos" },
         { category: "ui.input", message: "algo" },
-        { category: "navigation", message: "/perfil", data: { to: "Lactosa" } },
+        { category: "navigation", message: "/perfil", data: { to: "Sorbitol" } },
       ],
       exception: {
         values: [
-          { type: "Error", value: "no hay Peanut aquí" },
+          { type: "Error", value: "no hay Shellfish aquí" },
           { type: "Error", value: "TypeError genérico" },
         ],
       },

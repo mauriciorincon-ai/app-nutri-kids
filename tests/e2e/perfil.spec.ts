@@ -60,7 +60,7 @@ test("el perfil muestra el origen de cada dato y dice lo que el plan no dice", a
     "anotado por ti",
   );
   await expect(page.getByText("Dormir entre 10 y 11 horas")).toBeVisible();
-  await expect(page.getByText("Maní", { exact: true })).toBeVisible();
+  await expect(page.getByText("Mariscos", { exact: true })).toBeVisible();
   await expect(page.getByText("Medicamento demo").first()).toBeVisible();
 });
 
@@ -173,9 +173,9 @@ test("el chat contesta sueño, actividad, alergia y medicamentos desde el plan, 
   await expect(page.locator('[data-answer="activity"]')).toContainText(
     "Juego activo",
   );
-  await ask(page, "¿Es alérgico al maní?");
+  await ask(page, "¿Es alérgico a los mariscos?");
   await expect(page.locator('[data-answer="allergy"]').last()).toContainText(
-    "maní",
+    "mariscos",
   );
   await ask(page, "¿Es alérgico al kiwi?");
   await expect(page.locator('[data-answer="allergy"]').last()).toContainText(
@@ -229,7 +229,7 @@ for (const colorScheme of ["light", "dark"] as const) {
     await ask(page, "No tengo manzana");
     await ask(page, "¿Cuántas horas debe dormir?");
     await ask(page, "¿Qué actividad le toca?");
-    await ask(page, "¿Es alérgico al maní?");
+    await ask(page, "¿Es alérgico a los mariscos?");
     await ask(page, "¿Es alérgico al kiwi?");
     await ask(page, "¿Qué medicamentos toma?");
     await expect(page.locator('[data-answer="medication"]')).toBeVisible();

@@ -33,7 +33,7 @@ export function useChatThread(
   /** Reloj inyectable: «¿qué le doy ahora?» depende de la HORA del envío. */
   now: () => Date = systemNow,
 ) {
-  const { acceptedTextures } = useProfileNotes();
+  const { acceptedTextures, notes } = useProfileNotes();
   const [entries, setEntries] = useState<Entry[]>([]);
   const counter = useRef(0);
   const nextId = () => `e${counter.current++}`;
@@ -48,7 +48,14 @@ export function useChatThread(
     (raw: string) => {
       const text = raw.trim();
       if (!text) return;
-      const result = answerQuestion(text, diet, now(), locale, acceptedTextures);
+      const result = answerQuestion(
+        text,
+        diet,
+        now(),
+        locale,
+        acceptedTextures,
+        notes,
+      );
       const id = nextId();
       const reply: Entry =
         result.kind === "verdict"
@@ -76,7 +83,7 @@ export function useChatThread(
         },
       );
     },
-    [diet, locale, templates, now, acceptedTextures],
+    [diet, locale, templates, now, acceptedTextures, notes],
   );
 
   return { entries, send };

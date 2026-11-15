@@ -63,3 +63,34 @@ describe("MAX_INPUT_CHARS", () => {
     expect(MAX_INPUT_CHARS).toBeLessThanOrEqual(4000);
   });
 });
+
+describe("consulta de perfil vs. cambio de medicación (auditoría S5)", () => {
+  it.each([
+    "¿le cambio el medicamento?",
+    "¿le cambio la medicina?",
+    "¿puedo suspender la medicina?",
+    "¿puedo quitar la pastilla?",
+    "¿puedo dejar de darle el jarabe?",
+    "¿se puede subir la dosis del jarabe?",
+    "¿le doy el doble de medicamento?",
+    "¿puedo darle un medicamento para la alergia?",
+    "¿le doy medicina para la tos?",
+    "¿le puedo dar una pastilla para dormir?",
+    "can I stop the medication?",
+    "can I stop giving the medicine?",
+    "is it ok to skip the pills?",
+  ])("«%s» va al profesional", (q) => {
+    expect(screenInput(q)).toBe("medical");
+  });
+
+  it.each([
+    "¿es alérgico al maní?",
+    "¿qué medicamentos toma?",
+    "¿tiene alguna intolerancia?",
+    "is he allergic to peanuts?",
+    "what medication does he take?",
+    "does he have an allergy?",
+  ])("«%s» es una consulta de lectura", (q) => {
+    expect(screenInput(q)).toBe("ok");
+  });
+});

@@ -28,7 +28,7 @@ function normalize(input: string): string {
 /** Verbos de CAMBIO/acción médica: subir, bajar, cambiar dosis, recetar… */
 const MEDICAL_ACTION_PATTERNS: RegExp[] = [
   // ES — cambios de dosis/medicación
-  /\b(sub[oe]|baj[oe]|aument[oa]|reduc|dobl|cambi|quit[oa]|suspend|empiez[oa]|dej[oa] de dar)\b.*\b(dosis|suplement|vitamin|medic|gotas|b12|hierro|omega|zinc|melatonin)/,
+  /\b(sub\w*|baj\w*|aument\w*|reduc\w*|dobl\w*|cambi\w*|quit\w*|suspend\w*|empiez\w*|dej\w* de dar)\b.*\b(dosis|suplement|vitamin|medic|gotas|b12|hierro|omega|zinc|melatonin)/,
   /\b(dosis|medic|recetar|recetaron|receto|recetado|diagnos|sintoma|enferm|alergi|reaccion|dolor|fiebre|vomit|diarrea)/,
   // ES — pedir diagnóstico/tratamiento
   /\b(que le pasa|es normal que|deberia llevarl|tiene (algo|autismo|tea)|le dio)/,
@@ -48,11 +48,20 @@ const PROFILE_QUERY_PATTERNS: RegExp[] = [
   /\b(allerg|intoleran|medication|medicine)|\b(pill|pills|meds)\b/,
 ];
 
-const CHANGE_OR_DIAGNOSIS_PATTERNS: RegExp[] = [
-  MEDICAL_ACTION_PATTERNS[0],
+/** Una consulta de LECTURA pregunta qué ES o qué TIENE: el verbo lo delata. */
+const READ_SIGNAL =
+  /\b(es|son|ser|tiene|tienen|toma|toman|take|takes|taking|has|have|is|are|does|do)\b/;
+
+/**
+ * Cualquier señal de ACCIÓN (cambiar, subir, quitar, dar, parar…), diagnóstico o
+ * síntoma anula la consulta: va al profesional. Lista blanca por diseño: solo pasa
+ * lo que es lectura Y no trae ninguna de estas señales.
+ */
+const ACTION_OR_DIAGNOSIS_PATTERNS: RegExp[] = [
+  /\b(cambi\w*|sub(ir|o|e|a|amos)|baj\w*|aument\w*|reduc\w*|dobl\w*|quit\w*|suspend\w*|dej\w*|par(ar|o|e)|omit\w*|salt\w*|dar|dar(le|se)|doy|dale|dan|damos|otro|otra|extra|empiez\w*|empez\w*|inici\w*|agreg\w*|sum\w*|para (la|el|que|dormir|bajar|subir))\b/,
+  /\b(stop\w*|skip\w*|increase|decrease|raise|lower|double|change|give|giving|start\w*|add|more|instead|replace)\b/,
+  /\b(dosis|dose|dosage|mg|ml|recet\w*|prescri\w*|diagnos\w*|sintoma\w*|enferm\w*|reaccion\w*|dolor|fiebre|vomit\w*|diarrea|tos|symptom\w*|disease|reaction\w*|fever|cough)\b/,
   MEDICAL_ACTION_PATTERNS[2],
-  MEDICAL_ACTION_PATTERNS[3],
-  /\b(recetar|recetaron|receto|recetado|diagnos|sintoma|enferm|reaccion|dolor|fiebre|vomit|diarrea|prescri|symptom|disease|reaction|fever|diarrhea)/,
 ];
 
 /** Temas claramente ajenos a la dieta. */
@@ -70,10 +79,14 @@ const FOOD_TOPIC_PATTERNS: RegExp[] = [
 export function screenInput(message: string): GuardrailOutcome {
   const norm = normalize(message);
 
-  const profileQuery =
-    PROFILE_QUERY_PATTERNS.some((r) => r.test(norm)) &&
-    !CHANGE_OR_DIAGNOSIS_PATTERNS.some((r) => r.test(norm));
-  if (!profileQuery && MEDICAL_ACTION_PATTERNS.some((r) => r.test(norm)))
+  const mentionsProfile = PROFILE_QUERY_PATTERNS.some((r) => r.test(norm));
+  const readOnly =
+    mentionsProfile &&
+    READ_SIGNAL.test(norm) &&
+    !ACTION_OR_DIAGNOSIS_PATTERNS.some((r) => r.test(norm));
+  // Hablar del perfil sin ser una consulta de lectura = pedir un cambio: profesional.
+  if (mentionsProfile && !readOnly) return "medical";
+  if (!readOnly && MEDICAL_ACTION_PATTERNS.some((r) => r.test(norm)))
     return "medical";
 
   const looksFood = FOOD_TOPIC_PATTERNS.some((r) => r.test(norm));

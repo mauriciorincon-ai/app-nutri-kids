@@ -566,19 +566,19 @@
     },
     "allergies": [
       {
-        "id": "mani",
+        "id": "mariscos",
         "name": {
-          "es": "Maní",
-          "en": "Peanut"
+          "es": "Mariscos",
+          "en": "Shellfish"
         }
       }
     ],
     "intolerances": [
       {
-        "id": "lactosa",
+        "id": "sorbitol",
         "name": {
-          "es": "Lactosa",
-          "en": "Lactose"
+          "es": "Sorbitol",
+          "en": "Sorbitol"
         }
       }
     ],

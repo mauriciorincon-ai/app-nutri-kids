@@ -118,7 +118,15 @@ export const INTENT_PATTERNS: Record<OpenIntent, Record<Locale, string[]>> = {
     en: ["medication*", "medicine*", "pill*", "meds"],
   },
   sleep: {
-    es: ["dormir", "duerm*", "sueno", "acuest*", "acostar*", "hora de dormir", "descans*"],
+    es: [
+      "dormir",
+      "duerm*",
+      "sueno",
+      "acuest*",
+      "acostar*",
+      "hora de dormir",
+      "descans*",
+    ],
     en: ["sleep*", "bedtime", "bed time", "go to bed", "nap*"],
   },
   // «jugo» (bebida) NO es «jugar»: por eso no hay «jug*».
@@ -375,13 +383,27 @@ export type OpenAnswer =
   | {
       kind: "allergy";
       /** Lo que el mensaje nombra y el plan lista (null = nombra algo que no está, o nada). */
-      match: { name: LocalizedText; as: "allergy" | "intolerance" } | null;
+      match: {
+        name: LocalizedText;
+        as: "allergy" | "intolerance";
+        /** true = lo anotó quien cuida en el teléfono, no el plan. */
+        fromNote: boolean;
+      } | null;
       allergies: LocalizedText[];
       intolerances: LocalizedText[];
+      /** Anotado por quien cuida («anotado por ti»), aparte de lo que dice el plan. */
+      notedAllergies: LocalizedText[];
+      notedIntolerances: LocalizedText[];
     }
   | {
       kind: "medication";
-      items: { name: LocalizedText; dose?: LocalizedText; when?: LocalizedText }[];
+      items: {
+        name: LocalizedText;
+        dose?: LocalizedText;
+        when?: LocalizedText;
+      }[];
+      /** Medicamentos que anotó quien cuida. */
+      noted: LocalizedText[];
     }
   | {
       kind: "hydration";
@@ -401,12 +423,22 @@ export type OpenAnswer =
  * Contesta una pregunta abierta con el plan. Devuelve null si el mensaje no
  * trae intención abierta (el llamador prueba el lookup).
  */
+/** Lo mínimo que el chat necesita de una anotación de quien cuida. */
+export type CaregiverNote = { kind: string; text: string };
+
+const notedTexts = (
+  notes: readonly CaregiverNote[],
+  kind: string,
+): LocalizedText[] =>
+  notes.filter((n) => n.kind === kind).map((n) => ({ es: n.text, en: n.text }));
+
 export function answerOpen(
   question: string,
   diet: DietPlan,
   now: Date,
   lang: Locale,
   accepted: readonly Texture[] = [],
+  notes: readonly CaregiverNote[] = [],
 ): OpenAnswer | null {
   const intent = detectIntent(question, lang);
   if (!intent) return null;
@@ -437,25 +469,52 @@ export function answerOpen(
       const intolerances = (diet.profile?.intolerances ?? []).map(
         (a) => a.name,
       );
-      if (allergies.length + intolerances.length === 0)
+      const notedAllergies = notedTexts(notes, "allergy");
+      const notedIntolerances = notedTexts(notes, "intolerance");
+      if (
+        allergies.length +
+          intolerances.length +
+          notedAllergies.length +
+          notedIntolerances.length ===
+        0
+      )
         return { kind: "not-in-plan", reason: "unknown" };
       const msg = toTokens(question, lang);
-      const named = (name: LocalizedText) =>
-        toTokens(name[lang], lang).some(
-          (n) => n.length >= 3 && msg.some((m) => stemEq(m, n)),
+      // TODOS los términos del nombre deben estar en la pregunta: «frutos secos»
+      // no responde por «frutos rojos».
+      const named = (name: LocalizedText) => {
+        const own = toTokens(name[lang], lang).filter((n) => n.length >= 3);
+        return (
+          own.length > 0 && own.every((n) => msg.some((m) => stemEq(m, n)))
         );
+      };
       const a = allergies.find(named);
       const i = intolerances.find(named);
+      const na = notedAllergies.find(named);
+      const ni = notedIntolerances.find(named);
       const match = a
-        ? { name: a, as: "allergy" as const }
+        ? { name: a, as: "allergy" as const, fromNote: false }
         : i
-          ? { name: i, as: "intolerance" as const }
-          : null;
-      return { kind: "allergy", match, allergies, intolerances };
+          ? { name: i, as: "intolerance" as const, fromNote: false }
+          : na
+            ? { name: na, as: "allergy" as const, fromNote: true }
+            : ni
+              ? { name: ni, as: "intolerance" as const, fromNote: true }
+              : null;
+      return {
+        kind: "allergy",
+        match,
+        allergies,
+        intolerances,
+        notedAllergies,
+        notedIntolerances,
+      };
     }
     case "medication": {
       const items = diet.profile?.medications ?? [];
-      if (items.length === 0) return { kind: "not-in-plan", reason: "unknown" };
+      const noted = notedTexts(notes, "medication");
+      if (items.length + noted.length === 0)
+        return { kind: "not-in-plan", reason: "unknown" };
       return {
         kind: "medication",
         items: items.map(({ name, dose, when }) => ({
@@ -463,6 +522,7 @@ export function answerOpen(
           ...(dose ? { dose } : {}),
           ...(when ? { when } : {}),
         })),
+        noted,
       };
     }
     case "sleep":
@@ -528,11 +588,12 @@ export function answerQuestion(
   now: Date,
   lang: Locale,
   accepted: readonly Texture[] = [],
+  notes: readonly CaregiverNote[] = [],
 ): ChatAnswer {
   const screen = screenInput(question);
   if (screen !== "ok") return { kind: "rejection", reason: screen };
 
-  const open = answerOpen(question, diet, now, lang, accepted);
+  const open = answerOpen(question, diet, now, lang, accepted, notes);
   if (open) return { kind: "open", answer: open };
 
   const verdict = matchLookup(diet, question, lang, now);

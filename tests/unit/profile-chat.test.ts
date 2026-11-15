@@ -67,21 +67,21 @@ describe("sueño y actividad salen del plan, en los dos idiomas", () => {
 
 describe("«¿es alérgico a X?» contesta con el perfil del plan", () => {
   it("ES: alergia listada → sí, el plan la anota", () => {
-    const a = open("¿Es alérgico al maní?", "es");
+    const a = open("¿Es alérgico a los mariscos?", "es");
     expect(a.kind === "allergy" && a.match?.as).toBe("allergy");
-    expect(text(a, "es").lead).toContain("tu plan anota maní como alergia");
+    expect(text(a, "es").lead).toContain("tu plan anota mariscos como alergia");
   });
 
   it("EN: allergy listed → yes, the plan lists it", () => {
-    const a = open("Is he allergic to peanut?", "en");
+    const a = open("Is he allergic to shellfish?", "en");
     expect(a.kind === "allergy" && a.match?.as).toBe("allergy");
     expect(text(a, "en").lead).toContain(
-      "your plan lists peanut as an allergy",
+      "your plan lists shellfish as an allergy",
     );
   });
 
   it("intolerancia listada se dice como intolerancia, no como alergia", () => {
-    const a = open("¿Tiene intolerancia a la lactosa?", "es");
+    const a = open("¿Tiene intolerancia al sorbitol?", "es");
     expect(a.kind === "allergy" && a.match?.as).toBe("intolerance");
     expect(text(a, "es").lead).toContain("intolerancia");
   });
@@ -90,14 +90,16 @@ describe("«¿es alérgico a X?» contesta con el perfil del plan", () => {
     const a = open("¿Es alérgico a las nueces?", "es");
     expect(a.kind === "allergy" && a.match).toBeNull();
     const c = text(a, "es");
-    expect(c.lead).toContain("Maní");
+    expect(c.lead).toContain("Mariscos");
     expect(c.lead).toContain("tu plan no lo dice");
     expect(c.lead).not.toMatch(/no es alérgico/i);
   });
 
   it("los nombres del plan sobreviven a una re-redacción del aparato", () => {
     const c = text(open("¿Es alérgico a las nueces?", "es"), "es");
-    expect(c.required).toEqual(expect.arrayContaining(["maní", "lactosa"]));
+    expect(c.required).toEqual(
+      expect.arrayContaining(["mariscos", "sorbitol"]),
+    );
   });
 
   it("el plan sin alergias → «tu plan no lo dice»", () => {
@@ -141,9 +143,9 @@ describe("medicamentos: lo que el plan dice, o «tu plan no lo dice»", () => {
 
   it("consultar el perfil ya no se rechaza", () => {
     for (const q of [
-      "¿Es alérgico al maní?",
+      "¿Es alérgico a los mariscos?",
       "¿Qué medicamentos toma?",
-      "Is he allergic to peanut?",
+      "Is he allergic to shellfish?",
       "What medicine does he take?",
     ])
       expect(screenInput(q), q).toBe("ok");
@@ -183,5 +185,87 @@ describe("el chat ordena por textura y marca lo que hoy no acepta", () => {
     const c = text(a, "es");
     expect(c.items.map((i) => i.text).slice(0, 2)).toEqual(["pera", "uvas"]);
     expect(c.items.slice(2).every((i) => i.marked)).toBe(true);
+  });
+});
+
+describe("auditoría S5: anotaciones de quien cuida y nombres de varias palabras", () => {
+  const withProfile = (allergies: string[]): DietPlan => ({
+    ...diet,
+    profile: {
+      ...diet.profile,
+      allergies: allergies.map((n, i) => ({
+        id: `a${i}`,
+        name: { es: n, en: n },
+      })),
+    },
+  });
+
+  it("una alergia anotada por quien cuida se dice como «anotada por ti», no como del plan", () => {
+    const a = answerQuestion(
+      "¿Es alérgico al kiwi?",
+      diet,
+      NOW,
+      "es",
+      [],
+      [{ kind: "allergy", text: "Kiwi" }],
+    );
+    if (a.kind !== "open" || a.answer.kind !== "allergy") throw new Error();
+    const c = composeAnswer(a.answer, TEXT.es, "es");
+    expect(c.lead).toContain("Anotaste kiwi como alergia");
+    expect(c.lead).toContain("no viene de tu plan");
+  });
+
+  it("sin coincidencia, las notas se listan aparte y el resto sigue sin decirse", () => {
+    const a = answerQuestion(
+      "¿Es alérgico a las nueces?",
+      diet,
+      NOW,
+      "es",
+      [],
+      [{ kind: "allergy", text: "Kiwi" }],
+    );
+    if (a.kind !== "open" || a.answer.kind !== "allergy") throw new Error();
+    const c = composeAnswer(a.answer, TEXT.es, "es");
+    expect(c.lead).toContain("Tú anotaste: Kiwi");
+    expect(c.lead).toContain("tu plan no lo dice");
+    expect(c.required).toContain("kiwi");
+  });
+
+  it("medicamentos anotados por quien cuida se muestran marcados", () => {
+    const a = answerQuestion(
+      "¿Qué medicamentos toma?",
+      diet,
+      NOW,
+      "es",
+      [],
+      [{ kind: "medication", text: "Gotas de ejemplo" }],
+    );
+    if (a.kind !== "open" || a.answer.kind !== "medication") throw new Error();
+    const c = composeAnswer(a.answer, TEXT.es, "es");
+    expect(c.items.map((i) => i.text)).toContain(
+      "Anotado por ti: Gotas de ejemplo",
+    );
+  });
+
+  it("«frutos secos» no responde por «frutos rojos»", () => {
+    const plan = withProfile(["Frutos secos"]);
+    const rojo = answerQuestion(
+      "¿Es alérgico a los frutos rojos?",
+      plan,
+      NOW,
+      "es",
+    );
+    if (rojo.kind !== "open" || rojo.answer.kind !== "allergy")
+      throw new Error();
+    expect(rojo.answer.match).toBeNull();
+    const secos = answerQuestion(
+      "¿Es alérgico a los frutos secos?",
+      plan,
+      NOW,
+      "es",
+    );
+    if (secos.kind !== "open" || secos.answer.kind !== "allergy")
+      throw new Error();
+    expect(secos.answer.match?.as).toBe("allergy");
   });
 });

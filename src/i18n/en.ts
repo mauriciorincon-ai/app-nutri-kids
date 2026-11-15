@@ -167,8 +167,11 @@ export const en: Dictionary = {
     hydration:
       "Your plan asks for {min} to {max} liters of water a day, about {glasses} glasses. {habit}",
     notInPlan: "Your plan doesn't say. Ask your professional.",
-    allergyYes:
-      "Yes: your plan lists {food} as an allergy. It isn't given, not even in small amounts.",
+    allergyYes: "Yes: your plan lists {food} as an allergy. Any doubt, ask your professional.",
+    allergyNotedYes: "You noted {food} as an allergy (not from your plan). Any doubt, ask your professional.",
+    intoleranceNotedYes: "You noted {food} as an intolerance (not from your plan): ask your professional.",
+    notedList: "You noted: {list}.",
+    medicationNoted: "Noted by you: {name}",
     intoleranceYes:
       "Your plan lists {food} as an intolerance: ask your professional how much and when.",
     allergyList: "Your plan lists these allergies: {list}.",

@@ -24,7 +24,10 @@ export type ComposedAnswer = {
   notInPlan: boolean;
 };
 
-function fill(template: string, values: Record<string, string | number>): string {
+function fill(
+  template: string,
+  values: Record<string, string | number>,
+): string {
   return template.replace(/\{(\w+)\}/g, (m, k: string) =>
     k in values ? String(values[k]) : m,
   );
@@ -43,12 +46,20 @@ export function composeAnswer(
   t: AnswerTemplates,
   locale: Locale,
 ): ComposedAnswer {
-  const base = { items: [], itemsTitle: null, next: null, required: [], notInPlan: false };
+  const base = {
+    items: [],
+    itemsTitle: null,
+    next: null,
+    required: [],
+    notInPlan: false,
+  };
   switch (answer.kind) {
     case "replacement": {
       const food = lower(answer.food[locale], locale);
       const lead =
-        answer.options.source === "equivalence" ? t.replacementLead : t.replacementGroupLead;
+        answer.options.source === "equivalence"
+          ? t.replacementLead
+          : t.replacementGroupLead;
       return {
         ...base,
         lead: fill(lead, { food }),
@@ -71,7 +82,10 @@ export function composeAnswer(
         : { title: t.nextTitle, text: t.refusedNoNext };
       return {
         ...base,
-        lead: food && answer.options ? fill(t.refusedFoodLead, { food }) : t.refusedLead,
+        lead:
+          food && answer.options
+            ? fill(t.refusedFoodLead, { food })
+            : t.refusedLead,
         items: answer.options ? toItems(answer.options.items, locale) : [],
         itemsTitle: answer.options ? t.optionsTitle : null,
         next,
@@ -122,10 +136,18 @@ export function composeAnswer(
       return { ...base, lead: answer.text[locale] };
     case "allergy": {
       const { match } = answer;
+      const noted = [...answer.notedAllergies, ...answer.notedIntolerances];
       const lead = match
-        ? fill(match.as === "allergy" ? t.allergyYes : t.intoleranceYes, {
-            food: lower(match.name[locale], locale),
-          })
+        ? fill(
+            match.fromNote
+              ? match.as === "allergy"
+                ? t.allergyNotedYes
+                : t.intoleranceNotedYes
+              : match.as === "allergy"
+                ? t.allergyYes
+                : t.intoleranceYes,
+            { food: lower(match.name[locale], locale) },
+          )
         : [
             answer.allergies.length > 0
               ? fill(t.allergyList, { list: listOf(answer.allergies, locale) })
@@ -135,6 +157,9 @@ export function composeAnswer(
                   list: listOf(answer.intolerances, locale),
                 })
               : "",
+            noted.length > 0
+              ? fill(t.notedList, { list: listOf(noted, locale) })
+              : "",
             t.allergyOther,
           ]
             .filter(Boolean)
@@ -142,8 +167,8 @@ export function composeAnswer(
       return {
         ...base,
         lead,
-        required: [...answer.allergies, ...answer.intolerances].map((n) =>
-          lower(n[locale], locale),
+        required: [...answer.allergies, ...answer.intolerances, ...noted].map(
+          (n) => lower(n[locale], locale),
         ),
       };
     }
@@ -156,14 +181,29 @@ export function composeAnswer(
       }));
       return {
         ...base,
-        lead: t.medicationLead,
-        items,
+        lead:
+          answer.items.length > 0
+            ? t.medicationLead
+            : fill(t.notedList, { list: listOf(answer.noted, locale) }),
+        items:
+          answer.items.length > 0
+            ? [
+                ...items,
+                ...answer.noted.map((n) => ({
+                  text: fill(t.medicationNoted, { name: n[locale] }),
+                  marked: false,
+                })),
+              ]
+            : [],
         itemsTitle: t.medicationTitle,
-        required: answer.items.flatMap((m) =>
-          [m.name[locale], m.dose?.[locale], m.when?.[locale]].filter(
-            (x): x is string => Boolean(x),
+        required: [
+          ...answer.items.flatMap((m) =>
+            [m.name[locale], m.dose?.[locale], m.when?.[locale]].filter(
+              (x): x is string => Boolean(x),
+            ),
           ),
-        ),
+          ...answer.noted.map((n) => n[locale]),
+        ],
       };
     }
     case "not-in-plan":

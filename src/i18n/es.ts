@@ -168,8 +168,11 @@ export const es = {
     hydration:
       "Tu plan pide entre {min} y {max} litros de agua al día, unos {glasses} vasos. {habit}",
     notInPlan: "Tu plan no lo dice. Pregúntale a tu profesional.",
-    allergyYes:
-      "Sí: tu plan anota {food} como alergia. No se le da, ni en pequeñas cantidades.",
+    allergyYes: "Sí: tu plan anota {food} como alergia. Cualquier duda, con tu profesional.",
+    allergyNotedYes: "Anotaste {food} como alergia (no viene de tu plan). Cualquier duda, con tu profesional.",
+    intoleranceNotedYes: "Anotaste {food} como intolerancia (no viene de tu plan): pregúntale a tu profesional.",
+    notedList: "Tú anotaste: {list}.",
+    medicationNoted: "Anotado por ti: {name}",
     intoleranceYes: "Tu plan anota {food} como intolerancia: pregúntale a tu profesional cuánto y cuándo.",
     allergyList: "Tu plan anota estas alergias: {list}.",
     intoleranceList: "Y estas intolerancias: {list}.",
