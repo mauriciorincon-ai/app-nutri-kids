@@ -10,7 +10,8 @@ export const es = {
     tagline: "La dieta de tu peque, viva y a la mano",
   },
   update: {
-    notice: "Hay una versión nueva de Nutrikids. Tu dieta y tu registro no se tocan.",
+    notice:
+      "Hay una versión nueva de Nutrikids. Tu dieta y tu registro no se tocan.",
     action: "Actualizar",
     later: "Ahora no",
   },
@@ -168,16 +169,22 @@ export const es = {
     hydration:
       "Tu plan pide entre {min} y {max} litros de agua al día, unos {glasses} vasos. {habit}",
     notInPlan: "Tu plan no lo dice. Pregúntale a tu profesional.",
-    allergyYes: "Sí: tu plan anota {food} como alergia. Cualquier duda, con tu profesional.",
-    allergyNotedYes: "Anotaste {food} como alergia (no viene de tu plan). Cualquier duda, con tu profesional.",
-    intoleranceNotedYes: "Anotaste {food} como intolerancia (no viene de tu plan): pregúntale a tu profesional.",
+    allergyYes:
+      "Sí: tu plan anota {food} como alergia. Cualquier duda, con tu profesional.",
+    allergyNotedYes:
+      "Anotaste {food} como alergia (no viene de tu plan). Cualquier duda, con tu profesional.",
+    intoleranceNotedYes:
+      "Anotaste {food} como intolerancia (no viene de tu plan): pregúntale a tu profesional.",
     notedList: "Tú anotaste: {list}.",
     medicationNoted: "Anotado por ti: {name}",
-    intoleranceYes: "Tu plan anota {food} como intolerancia: pregúntale a tu profesional cuánto y cuándo.",
+    intoleranceYes:
+      "Tu plan anota {food} como intolerancia: pregúntale a tu profesional cuánto y cuándo.",
     allergyList: "Tu plan anota estas alergias: {list}.",
     intoleranceList: "Y estas intolerancias: {list}.",
-    allergyOther: "Si preguntas por otra cosa, tu plan no lo dice. Pregúntale a tu profesional.",
-    medicationLead: "Esto es lo que dice tu plan de medicamentos. Cualquier cambio, solo con tu profesional.",
+    allergyOther:
+      "Si preguntas por otra cosa, tu plan no lo dice. Pregúntale a tu profesional.",
+    medicationLead:
+      "Esto es lo que dice tu plan de medicamentos. Cualquier cambio, solo con tu profesional.",
     medicationTitle: "Medicamentos de tu plan",
     notInPlanFood:
       "Tu plan no trae reemplazos para {food}. Pregúntale a tu profesional.",
@@ -214,8 +221,97 @@ export const es = {
     title: "Cargar tu dieta",
     emptyTitle: "Aún no has cargado una dieta",
     emptyBody:
-      "Pide el archivo de la dieta (termina en .json) a quien lo tenga y ábrelo aquí. Mientras tanto puedes explorar la app con la dieta demo.",
-    pickFile: "Elegir archivo",
+      "Elige el PDF que te dio tu profesional, o el archivo de la dieta (termina en .json). También puedes explorar la app con la dieta demo.",
+    pickFile: "Elegir JSON",
+    pickPdf: "Elegir PDF",
+    pdfHint:
+      "El PDF de tu profesional se lee aquí, en tu teléfono, sin internet. No se guarda: solo queda tu plan, ya revisado por ti.",
+    reading: "Leyendo el PDF en tu teléfono…",
+    errorNotPdf:
+      "Ese archivo no es un PDF. Elige el PDF que te dio tu profesional, o carga el plan con el archivo .json.",
+    errorNoText:
+      "Este PDF es una foto del plan, sin texto que se pueda leer. Pide a tu profesional el PDF original o carga el plan con el archivo .json.",
+    errorUnreadable:
+      "No pudimos abrir ese PDF. Prueba con el original que te dieron o carga el plan con el archivo .json.",
+    resumeTitle: "Tienes una revisión a medias",
+    resumeBody:
+      "Dejaste tu plan a medio revisar en este teléfono. Puedes seguir donde ibas.",
+    resumeContinue: "Seguir revisando",
+    resumeDiscard: "Descartar esta revisión",
+    reviewTitle: "Revisa tu plan",
+    reviewIntro:
+      "Esto es lo que leímos de tu PDF, parte por parte. Confirma lo que está bien, corrige lo que no y di cuando tu plan no trae algo. Nada se guarda hasta que termines.",
+    reviewProgress: "{done} de {total} partes revisadas",
+    reviewPrivacy: "Leído en tu teléfono. El PDF no se guarda ni sale de aquí.",
+    markPending: "Por revisar",
+    markOk: "Está bien",
+    markCorrected: "Corregida",
+    markAbsent: "Mi plan no lo trae",
+    sectionOpen: "Abrir {name}",
+    back: "Volver a la lista",
+    pageLabel: "Página {n} del PDF",
+    addedByYou: "Añadido por ti",
+    unrecognizedNote:
+      "No encontramos esta parte en tu PDF. Complétala a mano o di que tu plan no la trae.",
+    emptyNote: "Aquí no hay nada todavía.",
+    confirmButton: "Está bien",
+    absentButton: "Mi plan no lo trae",
+    absentRequired:
+      "Tu plan necesita esta parte para funcionar: complétala para poder guardar.",
+    absentHasContent:
+      "Esta parte tiene datos. Si tu plan no la trae, quítalos primero.",
+    confirmEmpty:
+      "Aún no hay nada que confirmar: añade lo que falte, o di que tu plan no lo trae.",
+    edit: "Editar",
+    remove: "Quitar",
+    add: "Añadir",
+    saveRow: "Guardar cambios",
+    cancel: "Cancelar",
+    fieldsError: "Revisa los campos marcados.",
+    removeLabel: "Quitar {name}",
+    editLabel: "Editar {name}",
+    savePlan: "Guardar mi plan",
+    saveBlocked: "Faltan {n} partes por revisar para guardar.",
+    saveBlockedRequired: "Tu plan necesita estas partes: {names}.",
+    saveFailed:
+      "No pudimos armar tu plan con lo que hay. Revisa las partes de abajo y vuelve a intentar.",
+    sec_validity: "Fecha del plan",
+    sec_restricted: "Alimentos en descanso temporal",
+    sec_red: "Rojo fijo: lo que se evita siempre",
+    sec_additives: "Aditivos para vigilar",
+    sec_alsoAvoid: "También evitar",
+    sec_green: "Verde: permitido y recomendado",
+    sec_yellow: "Amarillo: con límite",
+    sec_equivalences: "Equivalencias",
+    sec_supplements: "Suplementos",
+    sec_menu: "Menú del día",
+    sec_hydration: "Hidratación",
+    sec_goals: "Metas de actividad y sueño",
+    hint_red:
+      "El PDF cuenta estos alimentos en texto corrido y no podemos separarlos con seguridad. Añade aquí, uno por uno, los que tu plan pide evitar siempre.",
+    hint_restricted:
+      "Los que tu plan pide dejar un tiempo. La app cuenta 90 días desde la fecha del plan.",
+    f_name: "Nombre",
+    f_code: "Código (por ejemplo E123)",
+    f_foundIn: "Se encuentra en",
+    f_portion: "Porción",
+    f_items: "Alimentos, separados por comas",
+    f_limit: "Límite",
+    f_whenMissing: "Cuando falta",
+    f_title: "Entonces",
+    f_uses: "Opciones, separadas por comas",
+    f_days: "Días",
+    f_dose: "Dosis",
+    f_when: "Cuándo",
+    f_start: "Desde",
+    f_end: "Hasta",
+    f_content: "Qué lleva",
+    f_min: "Litros por día, mínimo",
+    f_max: "Litros por día, máximo",
+    f_habit: "Hábito",
+    f_activity: "Actividad",
+    f_sleep: "Sueño",
+    f_issuedAt: "Fecha del plan (AAAA-MM-DD)",
     orPaste: "…o pega el contenido",
     pasteHint:
       "Si el archivo no abre desde el teléfono, copia todo su contenido y pégalo aquí:",
@@ -244,7 +340,8 @@ export const es = {
   },
   settings: {
     profileTitle: "Perfil de tu peque",
-    profileBody: "Lo que dice tu plan y lo que tú anotas, cada cosa con su origen.",
+    profileBody:
+      "Lo que dice tu plan y lo que tú anotas, cada cosa con su origen.",
     profileLink: "Abrir el perfil",
     title: "Ajustes",
     language: "Idioma",
@@ -299,7 +396,8 @@ export const es = {
     sleepTitle: "Sueño",
     limitsTitle: "Restricciones vigentes y suplementos",
     restrictionsActive: "En descanso hasta el {date}: {foods}.",
-    restrictionsEnded: "El descanso de la dieta ya terminó — consulta al profesional.",
+    restrictionsEnded:
+      "El descanso de la dieta ya terminó — consulta al profesional.",
     restrictionsFuture: "El descanso empieza el {date}: {foods}.",
     supplementsCount: "Suplementos en tu calendario: {n}.",
     supplementsLink: "Ver el calendario de suplementos",
@@ -327,7 +425,8 @@ export const es = {
     noteKinds_intolerance: "Intolerancia",
     noteKinds_medication: "Medicamento",
     noteKinds_other: "Otra nota",
-    medicalReminder: "Para cambios de dosis o dudas médicas, consulta a tu profesional.",
+    medicalReminder:
+      "Para cambios de dosis o dudas médicas, consulta a tu profesional.",
   },
 } as const;
 

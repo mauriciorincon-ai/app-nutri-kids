@@ -10,7 +10,8 @@ export const en: Dictionary = {
     tagline: "Your kid's diet, alive and at hand",
   },
   update: {
-    notice: "There is a new version of Nutrikids. Your diet and log stay as they are.",
+    notice:
+      "There is a new version of Nutrikids. Your diet and log stay as they are.",
     action: "Update",
     later: "Not now",
   },
@@ -167,9 +168,12 @@ export const en: Dictionary = {
     hydration:
       "Your plan asks for {min} to {max} liters of water a day, about {glasses} glasses. {habit}",
     notInPlan: "Your plan doesn't say. Ask your professional.",
-    allergyYes: "Yes: your plan lists {food} as an allergy. Any doubt, ask your professional.",
-    allergyNotedYes: "You noted {food} as an allergy (not from your plan). Any doubt, ask your professional.",
-    intoleranceNotedYes: "You noted {food} as an intolerance (not from your plan): ask your professional.",
+    allergyYes:
+      "Yes: your plan lists {food} as an allergy. Any doubt, ask your professional.",
+    allergyNotedYes:
+      "You noted {food} as an allergy (not from your plan). Any doubt, ask your professional.",
+    intoleranceNotedYes:
+      "You noted {food} as an intolerance (not from your plan): ask your professional.",
     notedList: "You noted: {list}.",
     medicationNoted: "Noted by you: {name}",
     intoleranceYes:
@@ -215,8 +219,98 @@ export const en: Dictionary = {
     title: "Load your diet",
     emptyTitle: "No diet loaded yet",
     emptyBody:
-      "Ask whoever has it for the diet file (it ends in .json) and open it here. Meanwhile you can explore the app with the demo diet.",
-    pickFile: "Choose file",
+      "Pick the PDF your professional gave you, or the diet file (it ends in .json). You can also explore the app with the demo diet.",
+    pickFile: "Choose JSON",
+    pickPdf: "Choose PDF",
+    pdfHint:
+      "Your professional's PDF is read right here on your phone, with no internet. It isn't kept: only your plan stays, after you've reviewed it.",
+    reading: "Reading the PDF on your phone…",
+    errorNotPdf:
+      "That file isn't a PDF. Pick the PDF your professional gave you, or load the plan with the .json file.",
+    errorNoText:
+      "This PDF is a picture of the plan, with no text that can be read. Ask your professional for the original PDF, or load the plan with the .json file.",
+    errorUnreadable:
+      "We couldn't open that PDF. Try the original you were given, or load the plan with the .json file.",
+    resumeTitle: "You have a review in progress",
+    resumeBody:
+      "You left your plan half reviewed on this phone. You can pick up where you stopped.",
+    resumeContinue: "Keep reviewing",
+    resumeDiscard: "Discard this review",
+    reviewTitle: "Review your plan",
+    reviewIntro:
+      "This is what we read from your PDF, part by part. Confirm what's right, fix what isn't, and say when your plan doesn't include something. Nothing is saved until you finish.",
+    reviewProgress: "{done} of {total} parts reviewed",
+    reviewPrivacy:
+      "Read on your phone. The PDF isn't kept and never leaves here.",
+    markPending: "To review",
+    markOk: "Looks right",
+    markCorrected: "Fixed",
+    markAbsent: "My plan doesn't have it",
+    sectionOpen: "Open {name}",
+    back: "Back to the list",
+    pageLabel: "PDF page {n}",
+    addedByYou: "Added by you",
+    unrecognizedNote:
+      "We didn't find this part in your PDF. Fill it in by hand, or say your plan doesn't have it.",
+    emptyNote: "Nothing here yet.",
+    confirmButton: "Looks right",
+    absentButton: "My plan doesn't have it",
+    absentRequired:
+      "Your plan needs this part to work: fill it in so you can save.",
+    absentHasContent:
+      "This part has entries. If your plan doesn't have it, remove them first.",
+    confirmEmpty:
+      "There's nothing to confirm yet: add what's missing, or say your plan doesn't have it.",
+    edit: "Edit",
+    remove: "Remove",
+    add: "Add",
+    saveRow: "Save changes",
+    cancel: "Cancel",
+    fieldsError: "Check the highlighted fields.",
+    removeLabel: "Remove {name}",
+    editLabel: "Edit {name}",
+    savePlan: "Save my plan",
+    saveBlocked: "{n} parts still to review before you can save.",
+    saveBlockedRequired: "Your plan needs these parts: {names}.",
+    saveFailed:
+      "We couldn't put your plan together with what's here. Check the parts below and try again.",
+    sec_validity: "Plan date",
+    sec_restricted: "Foods on a temporary break",
+    sec_red: "Fixed red: always avoided",
+    sec_additives: "Additives to watch",
+    sec_alsoAvoid: "Also avoid",
+    sec_green: "Green: allowed and encouraged",
+    sec_yellow: "Yellow: with a limit",
+    sec_equivalences: "Swaps",
+    sec_supplements: "Supplements",
+    sec_menu: "Daily menu",
+    sec_hydration: "Hydration",
+    sec_goals: "Activity and sleep goals",
+    hint_red:
+      "The PDF describes these foods in running text, so we can't separate them reliably. Add here, one by one, the ones your plan always asks to avoid.",
+    hint_restricted:
+      "The ones your plan asks to pause for a while. The app counts 90 days from the plan's date.",
+    f_name: "Name",
+    f_code: "Code (for example E123)",
+    f_foundIn: "Found in",
+    f_portion: "Portion",
+    f_items: "Foods, separated by commas",
+    f_limit: "Limit",
+    f_whenMissing: "When it's missing",
+    f_title: "Then",
+    f_uses: "Options, separated by commas",
+    f_days: "Days",
+    f_dose: "Dose",
+    f_when: "When",
+    f_start: "From",
+    f_end: "To",
+    f_content: "What it includes",
+    f_min: "Liters per day, minimum",
+    f_max: "Liters per day, maximum",
+    f_habit: "Habit",
+    f_activity: "Activity",
+    f_sleep: "Sleep",
+    f_issuedAt: "Plan date (YYYY-MM-DD)",
     orPaste: "…or paste the content",
     pasteHint:
       "If the file won't open on the phone, copy all its content and paste it here:",
