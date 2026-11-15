@@ -38,3 +38,15 @@ Rama `sprint-004/dieta-sin-internet` · orden: `SPRINT_004.md` (planeadora) · G
 
 ### Demo en rojo (regla 15/27) — `tests/unit/no-cloud-ai.test.ts`
 - Archivo `package.json`, mutación: añadir `"@ai-sdk/groq"` a dependencias → el gate falló nombrando `@ai-sdk/groq`, restauró y volvió a verde (3 pruebas).
+
+## F3 — sin señal y cierre
+- Service worker (ADR-003 revisado): `scripts/sw.template.js` + `scripts/build-sw.mjs` (en `prebuild` y `dev`) estampan `public/sw.js` (ahora ignorado por git) con un id de versión por build y la lista de las 8 pantallas. Precache en la instalación del HTML de cada pantalla y de los `/_next/static/*` que referencia; navegación red-primero con respaldo de caché (3 s de tope si hay copia); `/dieta/<id>` sin visita previa lleva a `/dieta`.
+- Versión nueva: el SW nuevo espera (sin `skipWaiting` al instalar); `SwRegister` muestra «Hay una versión nueva» con Actualizar / Ahora no; solo al aceptar manda `SKIP_WAITING` y recarga UNA vez. Textos `t.update` ES/EN.
+- e2e `tests/e2e/offline.spec.ts` (solo con `CI=1`, el SW solo existe en producción): apaga la red tras una visita, abre las 7 pantallas, usa el chat y el detalle no visitado; el aviso de versión (ES, EN, «Ahora no», «Actualizar») y axe con el aviso en tema light y dark. El «deploy nuevo» se simula registrando `/sw.js?v=…` (context.route no intercepta el script del SW). Gate de contrato (regla 19) en `tests/unit/build-sw.test.ts`.
+- Bug destapado por la e2e: Chromium headless tumbaba el renderizador si una consulta `LanguageModel.availability()` estaba en vuelo durante una navegación (13 de 40 corridas). Ahora se pregunta una vez por página e idioma, se recuerda y el chat la calienta al abrirse (50/50 y 96/96 después).
+- Lighthouse: `lhci` local da NO_FCP en este Mac (entorno); con `lighthouse` directo sobre `next start`: FCP ≈ 0,76 s, LCP ≈ 0,76 s, TBT ≤ 42 ms, CLS 0, script ≤ 327 KB, total ≤ 444 KB en `/`, `/dieta`, `/chat`, `/historial` y `/conoce` — dentro de `perf-budget.json` (el JS del chat bajó al quitar el AI SDK).
+- Docs: manual (chat reescrito, «Usar la app sin internet», historial S4), guía de prueba v2 (bloque F del chat, nuevo bloque J, NS `s4`, S3 pasa a regresión), BLUEPRINT (sin Groq ni `/api/chat`, SW, CI), BROCHURE (tarjeta del chat, garantía, instalación), export (F11, F13, F17, stack, privacidad), kit de prueba.
+- Tema oscuro: la app no tiene tema oscuro propio (solo la clase `.dark` de shadcn); axe «dark» corre con `emulateMedia({colorScheme})` y sirve de guardia si algún día lo hay.
+
+### Demo en rojo (regla 15/27) — `tests/unit/build-sw.test.ts`
+- Archivo `scripts/build-sw.mjs`, mutación: quitar `/historial` de `SHELL_ROUTES` → el gate falló nombrando «precachea el cascarón de TODAS las pantallas», restauró y volvió a verde (5 pruebas).
