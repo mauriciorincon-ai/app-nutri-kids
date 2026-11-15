@@ -7,6 +7,7 @@ import {
   type DietPlan,
 } from "./schema";
 import { clearDayLog } from "./day-log";
+import { clearProfileNotes } from "./profile-notes";
 import { dateKey } from "./logic";
 import { rebaseDemoWindow } from "./demo";
 
@@ -56,7 +57,20 @@ export function loadActiveDiet(): ActiveDiet {
     const stored = s.getItem(STORAGE_KEYS.diet);
     if (stored) {
       const parsed = parseDietJson(stored);
-      if (parsed.ok) return { diet: parsed.diet, source: "real" };
+      if (parsed.ok) {
+        // Un plan v1 guardado se migra al leer: se reescribe en v2 SOLO después de
+        // que la v2 validó (ADR-009); hasta entonces el original queda intacto.
+        if (parsed.migratedFrom === 1) {
+          try {
+            s.setItem(STORAGE_KEYS.diet, JSON.stringify(parsed.diet));
+            log.info({ event: "stored-diet-migrated", from: 1, to: 2 });
+          } catch {
+            // Cuota llena o modo privado: el plan migrado sirve igual esta vez.
+            log.warn({ event: "stored-diet-migrate-write-failed" });
+          }
+        }
+        return { diet: parsed.diet, source: "real" };
+      }
       // Corrupto: descartar y volver a demo (solo metadatos al log).
       log.warn(
         { event: "stored-diet-invalid", error: parsed.error },
@@ -110,7 +124,8 @@ export function hasStoredRealDiet(): boolean {
 }
 
 /**
- * "Borrar datos": elimina dieta importada + checklist del día (day-log) y vuelve a demo.
+ * "Borrar datos": elimina dieta importada + checklist del día (day-log) + lo que
+ * quien cuida anotó del niño (profile-notes) y vuelve a demo.
  * Conserva la preferencia de idioma (no es dato del niño).
  */
 export function clearAllData(): void {
@@ -119,6 +134,7 @@ export function clearAllData(): void {
   s.removeItem(STORAGE_KEYS.diet);
   s.removeItem(STORAGE_KEYS.source);
   clearDayLog();
+  clearProfileNotes();
   log.info({ event: "data-cleared" });
 }
 

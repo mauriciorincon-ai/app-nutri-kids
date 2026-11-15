@@ -202,6 +202,14 @@ export default function TodayPage() {
       </section>
 
       <Link
+        href="/perfil"
+        className="inline-flex min-h-11 items-center gap-1 self-start text-sm font-medium text-primary hover:underline"
+      >
+        {t.today.profileLink}
+        <ChevronRight aria-hidden className="size-4" />
+      </Link>
+
+      <Link
         href="/historial"
         className="inline-flex min-h-11 items-center gap-1 self-start text-sm font-medium text-primary hover:underline"
       >

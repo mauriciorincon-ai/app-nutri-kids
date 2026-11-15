@@ -44,7 +44,10 @@ test("lookup «¿la manzana se puede?» → veredicto del plan, sin red", async 
   const calls = watchNetwork(page);
   await ask(page, "¿la manzana se puede?");
   await expect(page.getByText("Evitar")).toBeVisible();
-  await expect(page.getByText("pera", { exact: true })).toBeVisible();
+  // La opción lleva su textura (símbolo + texto) después del nombre.
+  await expect(
+    page.getByRole("listitem").filter({ hasText: /^pera/ }),
+  ).toBeVisible();
   await expect(page.getByText("Desde tu plan · sin IA")).toBeVisible();
   expect(calls).toEqual([]);
 });

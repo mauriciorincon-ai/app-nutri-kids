@@ -27,7 +27,7 @@ describe("dietPlanSchema", () => {
   });
 
   it("rejects an unsupported schemaVersion", () => {
-    const tampered = { ...demoRaw, schemaVersion: 2 };
+    const tampered = { ...demoRaw, schemaVersion: 3 };
     const result = parseDietJson(JSON.stringify(tampered));
     expect(result).toMatchObject({ ok: false, error: "invalid-schema" });
     if (!result.ok) expect(result.detail).toContain("schemaVersion");
@@ -48,7 +48,7 @@ describe("dietPlanSchema", () => {
     if (!result.ok) return;
     const counts = dietCounts(result.diet);
     expect(counts).toEqual({
-      schemaVersion: 1,
+      schemaVersion: 2,
       greenGroups: 4,
       greenItems: 15,
       yellowItems: 3,
@@ -58,6 +58,9 @@ describe("dietPlanSchema", () => {
       equivalences: 3,
       supplements: 2,
       meals: 5,
+      allergies: 1,
+      intolerances: 1,
+      medications: 1,
     });
     // Ningún valor del resumen es texto de la dieta (solo números y versión).
     for (const value of Object.values(counts))
@@ -85,5 +88,23 @@ describe("demo diet content rules (producto)", () => {
     expect(demo.trafficLight.yellow.note).toBeDefined();
     expect(demo.supplementNotes).toBeDefined();
     expect(demo.hydration.glassesPerDay).toBe(4);
+  });
+
+  it("exercises v2: profile, goals and a texture on every demo option", () => {
+    const demo = dietPlanSchema.parse(demoRaw);
+    expect(demo.profile?.condition).toBeDefined();
+    expect(demo.profile?.allergies?.length).toBeGreaterThan(0);
+    expect(demo.profile?.intolerances?.length).toBeGreaterThan(0);
+    expect(demo.profile?.medications?.[0]?.dose).toBeDefined();
+    expect(demo.goals?.activity).toBeDefined();
+    expect(demo.goals?.sleep).toBeDefined();
+    for (const eq of demo.equivalences)
+      for (const u of eq.use) expect(u.texture).toBeDefined();
+  });
+
+  it("the demo profile is visibly made up (never a real one)", () => {
+    const demo = dietPlanSchema.parse(demoRaw);
+    expect(demo.profile?.condition?.es).toMatch(/ejemplo|inventad/i);
+    expect(demo.profile?.medications?.[0]?.name.es).toMatch(/demo/i);
   });
 });

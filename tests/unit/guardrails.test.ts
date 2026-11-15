@@ -19,7 +19,14 @@ describe("screenInput — frontera consulta vs. cambio médico", () => {
 
   it("diagnóstico/síntomas → medical", () => {
     expect(screenInput("le dio fiebre y vomitó, ¿qué hago?")).toBe("medical");
-    expect(screenInput("does he have an allergy?")).toBe("medical");
+    expect(screenInput("is this an allergic reaction?")).toBe("medical");
+    expect(screenInput("¿es una reacción alérgica?")).toBe("medical");
+  });
+
+  it("S5: consultar la alergia o los medicamentos del plan es legítimo → ok", () => {
+    expect(screenInput("does he have an allergy?")).toBe("ok");
+    expect(screenInput("¿es alérgico al maní?")).toBe("ok");
+    expect(screenInput("¿qué medicamentos toma?")).toBe("ok");
   });
 
   it("preguntas de comida legítimas → ok", () => {
@@ -54,5 +61,36 @@ describe("MAX_INPUT_CHARS", () => {
   it("es un tope razonable", () => {
     expect(MAX_INPUT_CHARS).toBeGreaterThan(200);
     expect(MAX_INPUT_CHARS).toBeLessThanOrEqual(4000);
+  });
+});
+
+describe("consulta de perfil vs. cambio de medicación (auditoría S5)", () => {
+  it.each([
+    "¿le cambio el medicamento?",
+    "¿le cambio la medicina?",
+    "¿puedo suspender la medicina?",
+    "¿puedo quitar la pastilla?",
+    "¿puedo dejar de darle el jarabe?",
+    "¿se puede subir la dosis del jarabe?",
+    "¿le doy el doble de medicamento?",
+    "¿puedo darle un medicamento para la alergia?",
+    "¿le doy medicina para la tos?",
+    "¿le puedo dar una pastilla para dormir?",
+    "can I stop the medication?",
+    "can I stop giving the medicine?",
+    "is it ok to skip the pills?",
+  ])("«%s» va al profesional", (q) => {
+    expect(screenInput(q)).toBe("medical");
+  });
+
+  it.each([
+    "¿es alérgico al maní?",
+    "¿qué medicamentos toma?",
+    "¿tiene alguna intolerancia?",
+    "is he allergic to peanuts?",
+    "what medication does he take?",
+    "does he have an allergy?",
+  ])("«%s» es una consulta de lectura", (q) => {
+    expect(screenInput(q)).toBe("ok");
   });
 });

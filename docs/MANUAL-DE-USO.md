@@ -94,14 +94,22 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
     después, sin regaños.
   - **"¿Qué le doy ahora?"** o **"¿qué le doy de merienda?"** → el menú de esa comida del plan.
   - **"¿Cuánta agua?"** → la meta de agua que dice tu plan.
+  - **"¿Cuántas horas duerme?"** o **"¿qué actividad le toca?"** → lo que dice el plan en sus
+    objetivos de sueño y de actividad.
+  - **"¿Es alérgico a los mariscos?"** → las alergias e intolerancias que **anota tu plan** (y, aparte, las que tú anotaste en el Perfil, dichas como «anotado por ti»). Si preguntas
+    por algo que el plan no lista, no te dice "no": te muestra lo que sí anota y que lo demás
+    **tu plan no lo dice**.
+  - **"¿Qué medicamentos toma?"** → los que tu plan lista, con su dosis y su momento, tal cual; los que tú anotaste salen aparte.
   - **Lo que tu plan no dice:** te lo dice tal cual ("Tu plan no lo dice. Pregúntale a tu
     profesional.") — **nunca se inventa una respuesta**.
 - **Cómo se usa:** ve a **Chat** (abajo). Escribe tu pregunta o toca una de las 4 sugerencias. La
   primera vez verás una nota corta que explica cómo funciona. Arriba verás el símbolo de "sin
   internet": el chat nunca lo necesita.
 - **Cosas importantes:**
-  - **No es consejo médico.** Si preguntas por dosis, medicinas o síntomas ("¿le subo la B12?"),
-    el chat te devuelve amablemente a tu pediatra o nutricionista — no responde eso.
+  - **No es consejo médico.** Consultar lo que dice el plan (sus alergias o sus medicamentos) sí
+    se puede. Pero si pides **cambiar** una dosis, hablas de síntomas o de un diagnóstico
+    ("¿le subo la B12?", "¿es una reacción alérgica?"), el chat te devuelve amablemente a tu
+    pediatra o nutricionista — no responde eso.
   - **La conversación no se guarda.** Al cerrar o recargar, el chat queda en blanco. Es a propósito
     (privacidad de los datos del peque).
   - **Nada sale del teléfono.** No hay asistente en la nube, ni servicio de terceros, ni cuenta.
@@ -111,9 +119,38 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
     que produce no encaja con el plan, verás siempre la respuesta directa del plan. El dato es
     el mismo en los dos casos.
 
+### Perfil de tu peque · desde Sprint 005
+
+- **Qué hace:** junta en una pantalla lo que **dijo el profesional** y lo que **tú completas** en
+  el teléfono, y cada dato dice de dónde viene:
+  - **«según tu plan»**: los objetivos del profesional (grupos de alimentos, horarios de comida,
+    hidratación, actividad y sueño), las restricciones vigentes, los suplementos y lo que el plan
+    trae del peque (condición, alergias, intolerancias y medicamentos). Lo que el plan no trae
+    dice **"Tu plan no lo dice."**; nunca se inventa.
+  - **«anotado por ti»**: las **texturas que hoy acepta** (líquida, puré, machacada, blanda,
+    picada, crujiente) y tus **notas** (hasta 140 letras, con un tipo: condición, alergia,
+    intolerancia, medicamento u otra).
+- **Cómo se usa:** toca **«Perfil de tu peque»** en **Hoy** o en **Ajustes** (no está en la barra
+  de abajo). Para marcar una textura, tócala: queda con una palomita y el borde grueso. Para
+  anotar, elige el tipo, escribe y toca **«Agregar nota»**; cada nota tiene su botón para quitarla.
+- **Las texturas ordenan, nunca esconden:** si marcas texturas, en el detalle de un alimento, en
+  la tarjeta del semáforo y en el chat las opciones de reemplazo con esas texturas van **primero**.
+  Las demás van **después**, con la marca **«textura que hoy no acepta»** (símbolo, texto y borde
+  punteado), y siguen a la vista: la lista nunca queda vacía. Si no marcas ninguna, ves el orden
+  del plan.
+- **Cosas importantes:**
+  - **Tus notas viven aparte del plan.** Si cargas un plan nuevo, se quedan. «Borrar mis datos» las
+    quita.
+  - **Nada sale del teléfono:** ni la condición, ni las alergias, ni los medicamentos, ni tus
+    notas viajan por internet, ni se registran, ni se envían a ningún servicio.
+  - **Un plan anterior sigue funcionando.** Si guardaste tu dieta antes de esta versión, se lee y
+    se actualiza sola sin perder nada; solo le faltarán los datos nuevos ("Tu plan no lo dice.")
+    hasta que cargues un plan que los traiga.
+  - Para cambios de dosis o dudas médicas, consulta a tu profesional.
+
 ### Usar la app sin internet · desde Sprint 004
 
-- **Qué hace:** después de abrirla **una vez con señal**, todas las pantallas (Hoy, Dieta,
+- **Qué hace:** después de abrirla **una vez con señal**, todas las pantallas (Hoy, Dieta, Perfil,
   Suplementos, Cargar, Ajustes, Chat, Historial y "Conoce Nutrikids") se abren **sin internet**:
   en la lonchera, en el parque, en el carro. Tu dieta y tu registro del día ya vivían en el
   teléfono; ahora la app también.
@@ -138,14 +175,16 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
 - **Qué hace:** cambia la app entre español e inglés, muestra qué dieta está cargada, y permite
   **borrar todos los datos** del teléfono.
 - **Cómo se usa:** **Ajustes** (abajo). Para borrar: **"Borrar mis datos"** → confirma. Se borra
-  la dieta cargada y **todo tu registro del día (marcas, horas y notas)**; la app vuelve a la demo.
+  la dieta cargada y **todo tu registro del día (marcas, horas y notas)** y **lo que anotaste en el perfil (notas y texturas)**; la app vuelve a la demo.
   Esto no se puede deshacer.
 
 ## Preguntas frecuentes
 
 - **¿Mis datos van a internet?** No. La dieta, las marcas, las horas y las notas viven solo en tu
   teléfono. Por eso mismo, si cambias de teléfono, vuelve a cargar el archivo de la dieta. Las notas
-  del día (lo que escribes en "Agregar nota") **nunca** salen del teléfono: el chat ni las lee.
+  del día (lo que escribes en "Agregar nota") **nunca** salen del teléfono: el chat ni las lee. Lo que
+  anotas en el **Perfil** tampoco sale: solo el chat de tu propio teléfono lo usa, para contestarte
+  con eso marcado como «anotado por ti».
 - **¿Por qué veo "Dieta demo"?** Aún no has cargado la dieta real (o la borraste). Ve a
   **Cargar**.
 - **¿La app cuenta calorías o pesa al niño?** No, y no lo hará: el enfoque es qué alimentos sí y
@@ -159,9 +198,10 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
 
 ## Historial
 
-| Sprint | Features añadidas a este manual                                                                                                                                                                                                                              |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 001    | Cargar dieta (archivo + pegar) · semáforo con reemplazos · checklist "Hoy" · suplementos de la semana · idioma ES/EN · borrar datos · instalación como app                                                                                                   |
-| 002    | Chat "Pregúntale a la dieta": consultas "¿se puede?" al instante sin internet + preguntas abiertas con asistente de IA anclado al plan · nota de transparencia IA _(la parte de IA en la nube se reemplazó en el 004)_                                                                                            |
-| 003    | Registro del día: hora real al marcar + nota corta por comida (etiquetas + texto) · recordatorio "Ahora mismo" (qué toca y qué sigue, sin notificaciones) · "Ver días anteriores" (historial local de solo lectura) · borrar datos ahora cubre horas y notas |
-| 004    | Chat nuevo que contesta con tu plan **sin internet y sin enviar nada** ("no tengo X", "no quiso X", "¿qué le doy ahora?", "¿cuánta agua?", "tu plan no lo dice") · todas las pantallas abren sin internet · aviso de versión nueva con "Actualizar" / "Ahora no" |
+| Sprint | Features añadidas a este manual                                                                                                                                                                                                                                                                                                                                               |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 001    | Cargar dieta (archivo + pegar) · semáforo con reemplazos · checklist "Hoy" · suplementos de la semana · idioma ES/EN · borrar datos · instalación como app                                                                                                                                                                                                                    |
+| 002    | Chat "Pregúntale a la dieta": consultas "¿se puede?" al instante sin internet + preguntas abiertas con asistente de IA anclado al plan · nota de transparencia IA _(la parte de IA en la nube se reemplazó en el 004)_                                                                                                                                                        |
+| 003    | Registro del día: hora real al marcar + nota corta por comida (etiquetas + texto) · recordatorio "Ahora mismo" (qué toca y qué sigue, sin notificaciones) · "Ver días anteriores" (historial local de solo lectura) · borrar datos ahora cubre horas y notas                                                                                                                  |
+| 004    | Chat nuevo que contesta con tu plan **sin internet y sin enviar nada** ("no tengo X", "no quiso X", "¿qué le doy ahora?", "¿cuánta agua?", "tu plan no lo dice") · todas las pantallas abren sin internet · aviso de versión nueva con "Actualizar" / "Ahora no"                                                                                                              |
+| 005    | Perfil de tu peque: lo del profesional **«según tu plan»** y lo tuyo **«anotado por ti»** (texturas que hoy acepta y notas) · opciones de reemplazo ordenadas por textura, con la marca «textura que hoy no acepta» · el chat contesta sueño, actividad, alergias y medicamentos del plan · el plan guardado de antes se actualiza solo · la pantalla nueva abre sin internet |

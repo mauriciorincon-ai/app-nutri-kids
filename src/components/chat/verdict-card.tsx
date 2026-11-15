@@ -1,9 +1,12 @@
 "use client";
 
+import { useProfileNotes } from "@/components/use-profile-notes";
+import { OptionChip } from "@/components/traffic-light/option-chip";
 import { StatusChip } from "@/components/traffic-light/status-chip";
 import { fmt, useI18n } from "@/i18n";
 import { formatShortDate } from "@/lib/format";
 import type { LocalVerdict } from "@/lib/diet/search";
+import { orderByTexture } from "@/lib/diet/texture";
 
 /**
  * Tarjeta de veredicto del Camino A (respondida desde el plan, sin IA).
@@ -12,6 +15,7 @@ import type { LocalVerdict } from "@/lib/diet/search";
  */
 export function VerdictCard({ verdict }: { verdict: LocalVerdict }) {
   const { t, l, locale } = useI18n();
+  const { acceptedTextures } = useProfileNotes();
 
   if (verdict.kind === "additive") {
     const { additive } = verdict;
@@ -66,13 +70,13 @@ export function VerdictCard({ verdict }: { verdict: LocalVerdict }) {
           <p className="text-sm font-semibold">{t.chat.replacementsTitle}</p>
           {status.equivalences.map((eq, i) => (
             <ul key={i} className="mt-2 flex flex-wrap gap-2">
-              {eq.use.map((u, j) => (
-                <li
+              {orderByTexture(eq.use, acceptedTextures).map((u, j) => (
+                <OptionChip
                   key={j}
-                  className="rounded-full bg-tl-green-surface px-3 py-1.5 text-sm font-semibold text-tl-green"
-                >
-                  {l(u)}
-                </li>
+                  name={l(u.name)}
+                  texture={u.texture}
+                  notAccepted={u.notAccepted}
+                />
               ))}
             </ul>
           ))}

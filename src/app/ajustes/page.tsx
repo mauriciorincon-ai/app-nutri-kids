@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Trash2 } from "lucide-react";
 
 import { useDiet } from "@/components/diet-provider";
@@ -65,6 +66,19 @@ export default function SettingsPage() {
             </Button>
           ))}
         </div>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-lg">{t.settings.profileTitle}</h2>
+        <p className="-mt-1 text-sm leading-relaxed text-muted-foreground">
+          {t.settings.profileBody}
+        </p>
+        <Link
+          href="/perfil"
+          className="inline-flex min-h-11 items-center self-start text-sm font-medium text-primary hover:underline"
+        >
+          {t.settings.profileLink}
+        </Link>
       </section>
 
       <section className="flex flex-col gap-2">

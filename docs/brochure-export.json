@@ -29,7 +29,7 @@
     "diferencial": "No califica al niño: sin calorías, peso, IMC ni percentiles, y sin convertir el «cumplimiento» en una nota. El chat contesta con tu plan dentro del teléfono y sin internet: lo que anotas del día, las horas y las notas sobre tu hijo, no sale del teléfono, ni siquiera para hacerle una pregunta al chat."
   },
   "funcionalidades": {
-    "total": 19,
+    "total": 21,
     "fuente_del_conteo": "docs/MANUAL-DE-USO.md",
     "descartadas": [],
     "grupos": [
@@ -118,7 +118,7 @@
           {
             "id": "F11",
             "nombre": "Preguntas abiertas, también con tu plan",
-            "que_hace": "Preguntas como «no tengo pollo, ¿qué le doy?», «no quiso el brócoli», «¿qué le doy ahora?» o «¿cuánta agua?» y recibes lo que tu plan propone: reemplazos, opciones y lo que toca después. Todo se calcula en el teléfono, sin internet. Si el plan no lo trae, te lo dice y te manda con tu profesional, en vez de inventar una respuesta.",
+            "que_hace": "Preguntas como «no tengo pollo, ¿qué le doy?», «no quiso el brócoli», «¿qué le doy ahora?», «¿cuánta agua?», «¿cuántas horas duerme?», «¿es alérgico a los mariscos?» o «¿qué medicamentos toma?» y recibes lo que tu plan dice: reemplazos, opciones, sueño, actividad, alergias y medicamentos. Todo se calcula en el teléfono, sin internet. Si el plan no lo trae, te lo dice y te manda con tu profesional, en vez de inventar una respuesta.",
             "seccion_manual": "Pregúntale a la dieta (Chat)"
           },
           {
@@ -168,6 +168,18 @@
         "linea": "Se instala como app, cambia entre español e inglés y lo borra todo cuando tú decidas",
         "features": [
           {
+            "id": "F20",
+            "nombre": "El perfil de tu peque, con el origen de cada dato",
+            "que_hace": "Ves en una pantalla lo que dijo el profesional —grupos, horarios, hidratación, actividad, sueño, alergias y medicamentos— marcado «según tu plan». Lo que el plan no trae dice «Tu plan no lo dice.»; nunca se inventa.",
+            "seccion_manual": "Perfil de tu peque"
+          },
+          {
+            "id": "F21",
+            "nombre": "Texturas y notas, solo tuyas",
+            "que_hace": "Marcas las texturas que hoy acepta tu peque y escribes notas cortas, marcadas «anotado por ti». Los reemplazos con otra textura pasan al final y dicen «textura que hoy no acepta», pero nunca se esconden. Se quedan al cargar un plan nuevo y no salen del teléfono.",
+            "seccion_manual": "Perfil de tu peque"
+          },
+          {
             "id": "F17",
             "nombre": "Se instala como una app",
             "que_hace": "La tienes en la pantalla de inicio, con su ícono, como cualquier otra app. Se agrega desde el menú del navegador del teléfono, sin pasar por una tienda de aplicaciones, y abre directo, sin la barra del navegador. Tras abrirla una vez con señal, todas las pantallas abren también sin internet, y cuando hay una versión nueva te avisa para que tú decidas cuándo actualizar.",
@@ -193,7 +205,7 @@
     {
       "clave": "funcionalidades",
       "etiqueta": "Funcionalidades del MVP",
-      "valor": 19,
+      "valor": 21,
       "unidad": "funcionalidades",
       "fuente": "medido",
       "detalle": "Contadas contra docs/MANUAL-DE-USO.md y verificadas por un test que compara el total con los bloques .feature del brochure. El marco no-médico (nota de primer uso y disclaimer permanente) no cuenta: es el encuadre de la app, no una funcionalidad."
@@ -201,42 +213,42 @@
     {
       "clave": "pantallas",
       "etiqueta": "Pantallas de la app",
-      "valor": 8,
+      "valor": 9,
       "unidad": "pantallas",
       "fuente": "medido",
-      "detalle": "Siete rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
+      "detalle": "Ocho rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes, perfil) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
     },
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 389,
+      "valor": 514,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-15 sobre c1ad632: 19 archivos, 389 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-15 sobre 108e6f4: 23 archivos, 514 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 118,
+      "valor": 138,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `CI=1 npx playwright test --workers=2` el 2026-11-15 sobre c1ad632, contra un build de producción: 118 pruebas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe y las de uso sin internet, todas en verde."
+      "detalle": "Salida de `CI=1 npx playwright test --workers=2` el 2026-11-15 sobre 108e6f4, contra un build de producción: 138 pruebas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe y las de uso sin internet, todas en verde."
     },
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 99.26,
+      "valor": 99.43,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib/diet y src/lib/ia el 2026-11-15 sobre c1ad632 (538 de 542 líneas), con umbrales del 80 % en vitest.config.ts."
+      "detalle": "v8 sobre src/lib/diet, src/lib/ia y src/lib/privacy el 2026-11-15 sobre 108e6f4 (703 de 707 líneas), con umbrales del 80 % en vitest.config.ts."
     },
     {
       "clave": "decisiones_registradas",
       "etiqueta": "Decisiones de arquitectura registradas",
-      "valor": 8,
+      "valor": 9,
       "unidad": "ADR",
       "fuente": "medido",
-      "detalle": "Archivos de decisions/ el 2026-11-15; la 008 (chat code-first) reemplaza a la 004 y la 005."
+      "detalle": "Archivos de decisions/ el 2026-11-15; la 008 (chat code-first) reemplaza a la 004 y la 005, y la 009 fija el perfil en el aparato y el schema v2."
     },
     {
       "clave": "dependencias_runtime",
@@ -265,10 +277,10 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 76203,
+      "valor": 77925,
       "unidad": "bytes",
       "fuente": "medido",
-      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-15 sobre c1ad632. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."
+      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-15 sobre 108e6f4. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."
     }
   ],
   "stack": [

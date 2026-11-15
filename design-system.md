@@ -119,6 +119,11 @@ dibujada en SVG con estos tokens (nunca una captura incrustada), topada a su tam
 - **ChecklistRow** (`components/day-checklist/`): checkbox 44px, hora tabular, texto que NO se
   tacha al marcarse (se atenúa — marcar no es "eliminar").
 - **DaySummary**: "Ya hiciste N de M" + qué falta en palabras — sin %, sin nota, sin juicio.
+- **Insignia de origen** (`app/perfil`): pastilla con ícono + texto — «según tu plan» (hoja, tinta
+  primaria) o «anotado por ti» (lápiz, tinta de texto). El origen nunca se dice solo con color.
+- **OptionChip** (`components/traffic-light/`): opción de reemplazo con su textura (símbolo + texto).
+  Si la textura hoy no se acepta: borde **punteado** + fondo apagado + «textura que hoy no acepta»;
+  va después de las aceptadas y jamás se oculta.
 - **Disclaimer**: elemento permanente del layout (no letra pequeña); versión completa en /ajustes.
 - **SourceBanner**: chip siempre visible "Dieta demo" / "Tu dieta" — nadie confunde la demo.
 - shadcn base: button, card, checkbox, tabs, dialog, textarea, badge — con los tokens de arriba,

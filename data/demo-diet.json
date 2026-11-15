@@ -1,15 +1,21 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "meta": {
     "id": "demo-diet-v1",
-    "title": { "es": "Dieta demo (de ejemplo)", "en": "Demo diet (sample)" },
+    "title": {
+      "es": "Dieta demo (de ejemplo)",
+      "en": "Demo diet (sample)"
+    },
     "source": {
       "es": "Contenido INVENTADO para demostración. No es un plan real: sirve para explorar la app antes de cargar tu dieta.",
       "en": "MADE-UP content for demonstration. Not a real plan: it lets you explore the app before loading your diet."
     },
     "issuedAt": "2026-07-01",
     "languages": ["es", "en"],
-    "childAlias": { "es": "el peque demo", "en": "the demo kid" },
+    "childAlias": {
+      "es": "el peque demo",
+      "en": "the demo kid"
+    },
     "disclaimer": {
       "es": "Esta guía organiza el plan que la familia decidió seguir. No es diagnóstico ni tratamiento médico: consulta siempre al pediatra o nutricionista.",
       "en": "This guide organizes the plan the family chose to follow. It is not a diagnosis or medical treatment: always check with your pediatrician or nutritionist."
@@ -23,16 +29,28 @@
       "en": "Temporary 90-day restriction (not an allergy). Afterwards, reintroduction is gradual and guided by the professional."
     },
     "foods": [
-      { "id": "manzana", "name": { "es": "Manzana", "en": "Apple" } },
+      {
+        "id": "manzana",
+        "name": {
+          "es": "Manzana",
+          "en": "Apple"
+        }
+      },
       {
         "id": "crema-mani",
-        "name": { "es": "Crema de maní", "en": "Peanut butter" }
+        "name": {
+          "es": "Crema de maní",
+          "en": "Peanut butter"
+        }
       }
     ]
   },
   "trafficLight": {
     "red": {
-      "label": { "es": "Rojo — evitar", "en": "Red — avoid" },
+      "label": {
+        "es": "Rojo — evitar",
+        "en": "Red — avoid"
+      },
       "items": [
         {
           "id": "gaseosas",
@@ -47,7 +65,10 @@
         },
         {
           "id": "snacks-paquete",
-          "name": { "es": "Snacks de paquete", "en": "Packaged snacks" },
+          "name": {
+            "es": "Snacks de paquete",
+            "en": "Packaged snacks"
+          },
           "why": {
             "es": "Suelen traer los aditivos que este plan pide evitar.",
             "en": "They usually contain the additives this plan asks to avoid."
@@ -68,7 +89,10 @@
       "additives": [
         {
           "code": "E999",
-          "name": { "es": "Aditivo demo uno", "en": "Demo additive one" },
+          "name": {
+            "es": "Aditivo demo uno",
+            "en": "Demo additive one"
+          },
           "foundIn": {
             "es": "snacks salados de ejemplo",
             "en": "sample salty snacks"
@@ -76,13 +100,25 @@
         },
         {
           "code": "E998",
-          "name": { "es": "Aditivo demo dos", "en": "Demo additive two" },
-          "foundIn": { "es": "galletas de ejemplo", "en": "sample cookies" }
+          "name": {
+            "es": "Aditivo demo dos",
+            "en": "Demo additive two"
+          },
+          "foundIn": {
+            "es": "galletas de ejemplo",
+            "en": "sample cookies"
+          }
         },
         {
           "code": "E997",
-          "name": { "es": "Aditivo demo tres", "en": "Demo additive three" },
-          "foundIn": { "es": "salsas de ejemplo", "en": "sample sauces" }
+          "name": {
+            "es": "Aditivo demo tres",
+            "en": "Demo additive three"
+          },
+          "foundIn": {
+            "es": "salsas de ejemplo",
+            "en": "sample sauces"
+          }
         }
       ],
       "alsoAvoid": [
@@ -103,7 +139,10 @@
       ]
     },
     "yellow": {
-      "label": { "es": "Amarillo — con límite", "en": "Yellow — limited" },
+      "label": {
+        "es": "Amarillo — con límite",
+        "en": "Yellow — limited"
+      },
       "note": {
         "es": "Se puede, pero con la condición que dice cada tarjeta.",
         "en": "Allowed, but with the condition on each card."
@@ -111,12 +150,21 @@
       "items": [
         {
           "id": "banano",
-          "name": { "es": "Banano", "en": "Banana" },
-          "limit": { "es": "máx. 1 al día", "en": "max 1 per day" }
+          "name": {
+            "es": "Banano",
+            "en": "Banana"
+          },
+          "limit": {
+            "es": "máx. 1 al día",
+            "en": "max 1 per day"
+          }
         },
         {
           "id": "queso-maduro",
-          "name": { "es": "Queso maduro", "en": "Aged cheese" },
+          "name": {
+            "es": "Queso maduro",
+            "en": "Aged cheese"
+          },
           "limit": {
             "es": "solo 2 veces por semana",
             "en": "only twice a week"
@@ -124,7 +172,10 @@
         },
         {
           "id": "yogurt",
-          "name": { "es": "Yogurt", "en": "Yogurt" },
+          "name": {
+            "es": "Yogurt",
+            "en": "Yogurt"
+          },
           "limit": {
             "es": "solo natural, SIN azúcar añadida (verificar etiqueta)",
             "en": "plain only, NO added sugar (check the label)"
@@ -140,24 +191,51 @@
       "groups": [
         {
           "id": "proteinas",
-          "name": { "es": "Proteínas", "en": "Proteins" },
+          "name": {
+            "es": "Proteínas",
+            "en": "Proteins"
+          },
           "portion": {
             "es": "1 porción del tamaño de la palma, 2 veces al día",
             "en": "1 palm-sized serving, twice a day"
           },
           "items": [
-            { "id": "pollo", "name": { "es": "Pollo", "en": "Chicken" } },
+            {
+              "id": "pollo",
+              "name": {
+                "es": "Pollo",
+                "en": "Chicken"
+              }
+            },
             {
               "id": "pescado-blanco",
-              "name": { "es": "Pescado blanco", "en": "White fish" }
+              "name": {
+                "es": "Pescado blanco",
+                "en": "White fish"
+              }
             },
-            { "id": "huevos", "name": { "es": "Huevos", "en": "Eggs" } },
-            { "id": "lentejas", "name": { "es": "Lentejas", "en": "Lentils" } }
+            {
+              "id": "huevos",
+              "name": {
+                "es": "Huevos",
+                "en": "Eggs"
+              }
+            },
+            {
+              "id": "lentejas",
+              "name": {
+                "es": "Lentejas",
+                "en": "Lentils"
+              }
+            }
           ]
         },
         {
           "id": "verduras",
-          "name": { "es": "Verduras", "en": "Vegetables" },
+          "name": {
+            "es": "Verduras",
+            "en": "Vegetables"
+          },
           "portion": {
             "es": "2 tipos por comida, firmes y de colores distintos",
             "en": "2 kinds per meal, firm and in different colors"
@@ -165,43 +243,106 @@
           "items": [
             {
               "id": "zanahoria",
-              "name": { "es": "Zanahoria", "en": "Carrot" }
+              "name": {
+                "es": "Zanahoria",
+                "en": "Carrot"
+              }
             },
-            { "id": "brocoli", "name": { "es": "Brócoli", "en": "Broccoli" } },
+            {
+              "id": "brocoli",
+              "name": {
+                "es": "Brócoli",
+                "en": "Broccoli"
+              }
+            },
             {
               "id": "calabacin",
-              "name": { "es": "Calabacín", "en": "Zucchini" }
+              "name": {
+                "es": "Calabacín",
+                "en": "Zucchini"
+              }
             },
-            { "id": "tomate", "name": { "es": "Tomate", "en": "Tomato" } }
+            {
+              "id": "tomate",
+              "name": {
+                "es": "Tomate",
+                "en": "Tomato"
+              }
+            }
           ]
         },
         {
           "id": "frutas",
-          "name": { "es": "Frutas", "en": "Fruits" },
+          "name": {
+            "es": "Frutas",
+            "en": "Fruits"
+          },
           "portion": {
             "es": "1–2 porciones pequeñas al día",
             "en": "1–2 small servings a day"
           },
           "items": [
-            { "id": "pera", "name": { "es": "Pera", "en": "Pear" } },
-            { "id": "kiwi", "name": { "es": "Kiwi", "en": "Kiwi" } },
-            { "id": "uvas", "name": { "es": "Uvas", "en": "Grapes" } },
-            { "id": "fresas", "name": { "es": "Fresas", "en": "Strawberries" } }
+            {
+              "id": "pera",
+              "name": {
+                "es": "Pera",
+                "en": "Pear"
+              }
+            },
+            {
+              "id": "kiwi",
+              "name": {
+                "es": "Kiwi",
+                "en": "Kiwi"
+              }
+            },
+            {
+              "id": "uvas",
+              "name": {
+                "es": "Uvas",
+                "en": "Grapes"
+              }
+            },
+            {
+              "id": "fresas",
+              "name": {
+                "es": "Fresas",
+                "en": "Strawberries"
+              }
+            }
           ]
         },
         {
           "id": "cereales",
-          "name": { "es": "Cereales y tubérculos", "en": "Grains and tubers" },
+          "name": {
+            "es": "Cereales y tubérculos",
+            "en": "Grains and tubers"
+          },
           "portion": {
             "es": "½ taza cocida por comida principal",
             "en": "½ cooked cup per main meal"
           },
           "items": [
-            { "id": "arroz", "name": { "es": "Arroz", "en": "Rice" } },
-            { "id": "avena", "name": { "es": "Avena", "en": "Oats" } },
+            {
+              "id": "arroz",
+              "name": {
+                "es": "Arroz",
+                "en": "Rice"
+              }
+            },
+            {
+              "id": "avena",
+              "name": {
+                "es": "Avena",
+                "en": "Oats"
+              }
+            },
             {
               "id": "papa",
-              "name": { "es": "Papa cocida", "en": "Boiled potato" }
+              "name": {
+                "es": "Papa cocida",
+                "en": "Boiled potato"
+              }
             }
           ]
         }
@@ -216,10 +357,34 @@
         "en": "Instead of apple (snack)"
       },
       "use": [
-        { "es": "pera", "en": "pear" },
-        { "es": "kiwi", "en": "kiwi" },
-        { "es": "uvas", "en": "grapes" },
-        { "es": "fresas", "en": "strawberries" }
+        {
+          "name": {
+            "es": "pera",
+            "en": "pear"
+          },
+          "texture": "chopped"
+        },
+        {
+          "name": {
+            "es": "kiwi",
+            "en": "kiwi"
+          },
+          "texture": "soft"
+        },
+        {
+          "name": {
+            "es": "uvas",
+            "en": "grapes"
+          },
+          "texture": "chopped"
+        },
+        {
+          "name": {
+            "es": "fresas",
+            "en": "strawberries"
+          },
+          "texture": "soft"
+        }
       ]
     },
     {
@@ -229,8 +394,20 @@
         "en": "Instead of peanut butter"
       },
       "use": [
-        { "es": "aguacate untado", "en": "mashed avocado" },
-        { "es": "queso fresco", "en": "fresh cheese" }
+        {
+          "name": {
+            "es": "aguacate untado",
+            "en": "mashed avocado"
+          },
+          "texture": "mashed"
+        },
+        {
+          "name": {
+            "es": "queso fresco",
+            "en": "fresh cheese"
+          },
+          "texture": "soft"
+        }
       ],
       "note": {
         "es": "Si el antojo es de algo cremoso, el aguacate funciona muy bien en tostadas.",
@@ -244,18 +421,42 @@
         "en": "Instead of packaged snacks"
       },
       "use": [
-        { "es": "palomitas caseras", "en": "homemade popcorn" },
-        { "es": "zanahoria en tiras", "en": "carrot sticks" },
-        { "es": "tostadas de arroz", "en": "rice cakes" }
+        {
+          "name": {
+            "es": "palomitas caseras",
+            "en": "homemade popcorn"
+          },
+          "texture": "crunchy"
+        },
+        {
+          "name": {
+            "es": "zanahoria en tiras",
+            "en": "carrot sticks"
+          },
+          "texture": "crunchy"
+        },
+        {
+          "name": {
+            "es": "tostadas de arroz",
+            "en": "rice cakes"
+          },
+          "texture": "crunchy"
+        }
       ]
     }
   ],
   "supplements": [
     {
       "id": "multivitaminico-demo",
-      "name": { "es": "Multivitamínico demo", "en": "Demo multivitamin" },
+      "name": {
+        "es": "Multivitamínico demo",
+        "en": "Demo multivitamin"
+      },
       "days": ["mon", "wed", "fri"],
-      "dose": { "es": "1 masticable", "en": "1 chewable" },
+      "dose": {
+        "es": "1 masticable",
+        "en": "1 chewable"
+      },
       "when": {
         "es": "con el desayuno (siempre con comida)",
         "en": "with breakfast (always with food)"
@@ -263,9 +464,15 @@
     },
     {
       "id": "omega-demo",
-      "name": { "es": "Omega demo (gotas)", "en": "Demo omega (drops)" },
+      "name": {
+        "es": "Omega demo (gotas)",
+        "en": "Demo omega (drops)"
+      },
       "days": ["tue", "sat"],
-      "dose": { "es": "2 goteros", "en": "2 droppers" },
+      "dose": {
+        "es": "2 goteros",
+        "en": "2 droppers"
+      },
       "when": {
         "es": "directo o disuelto en agua",
         "en": "directly or dissolved in water"
@@ -279,7 +486,10 @@
   "dailyMenu": [
     {
       "id": "desayuno",
-      "name": { "es": "Desayuno", "en": "Breakfast" },
+      "name": {
+        "es": "Desayuno",
+        "en": "Breakfast"
+      },
       "start": "07:00",
       "end": "08:00",
       "content": {
@@ -289,7 +499,10 @@
     },
     {
       "id": "media-manana",
-      "name": { "es": "Media mañana", "en": "Mid-morning" },
+      "name": {
+        "es": "Media mañana",
+        "en": "Mid-morning"
+      },
       "start": "10:00",
       "end": "10:30",
       "content": {
@@ -299,7 +512,10 @@
     },
     {
       "id": "almuerzo",
-      "name": { "es": "Almuerzo", "en": "Lunch" },
+      "name": {
+        "es": "Almuerzo",
+        "en": "Lunch"
+      },
       "start": "12:30",
       "end": "13:30",
       "content": {
@@ -309,7 +525,10 @@
     },
     {
       "id": "merienda",
-      "name": { "es": "Merienda", "en": "Afternoon snack" },
+      "name": {
+        "es": "Merienda",
+        "en": "Afternoon snack"
+      },
       "start": "16:00",
       "end": "16:30",
       "content": {
@@ -319,7 +538,10 @@
     },
     {
       "id": "cena",
-      "name": { "es": "Cena", "en": "Dinner" },
+      "name": {
+        "es": "Cena",
+        "en": "Dinner"
+      },
       "start": "18:30",
       "end": "19:00",
       "content": {
@@ -335,6 +557,57 @@
     "habit": {
       "es": "1 vaso al despertar, 1 con el almuerzo, 1 en la merienda y 1 con la cena.",
       "en": "1 glass on waking, 1 with lunch, 1 with the snack and 1 with dinner."
+    }
+  },
+  "profile": {
+    "condition": {
+      "es": "Condición de ejemplo (inventada para la demo): pide evitar ultraprocesados y aditivos.",
+      "en": "Sample condition (made up for the demo): calls for avoiding ultra-processed foods and additives."
+    },
+    "allergies": [
+      {
+        "id": "mariscos",
+        "name": {
+          "es": "Mariscos",
+          "en": "Shellfish"
+        }
+      }
+    ],
+    "intolerances": [
+      {
+        "id": "sorbitol",
+        "name": {
+          "es": "Sorbitol",
+          "en": "Sorbitol"
+        }
+      }
+    ],
+    "medications": [
+      {
+        "id": "medicamento-demo",
+        "name": {
+          "es": "Medicamento demo",
+          "en": "Demo medicine"
+        },
+        "dose": {
+          "es": "la que indica el profesional (ejemplo)",
+          "en": "as the professional indicates (sample)"
+        },
+        "when": {
+          "es": "en la mañana",
+          "en": "in the morning"
+        }
+      }
+    ]
+  },
+  "goals": {
+    "activity": {
+      "es": "Juego activo todos los días, al aire libre cuando se pueda (ejemplo).",
+      "en": "Active play every day, outdoors when possible (sample)."
+    },
+    "sleep": {
+      "es": "Dormir entre 10 y 11 horas cada noche, con horario fijo (ejemplo).",
+      "en": "Sleep 10 to 11 hours each night, on a regular schedule (sample)."
     }
   }
 }

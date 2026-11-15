@@ -30,8 +30,10 @@ function open(q: string, lang: "es" | "en", now = T10): OpenAnswer {
   return a;
 }
 
-const names = (items: { es: string; en: string }[], l: "es" | "en") =>
-  items.map((i) => i[l]);
+const names = (
+  items: { name: { es: string; en: string } }[],
+  l: "es" | "en",
+) => items.map((i) => i.name[l]);
 
 describe("tabla de patrones: cada intención nace {es, en}", () => {
   it.each(Object.keys(INTENT_PATTERNS) as OpenIntent[])(
@@ -425,7 +427,7 @@ describe("auditoría S4: casos de borde del motor", () => {
     const a = answerOpen("no tengo kiwi", sintetica, T10, "es");
     expect(a?.kind).toBe("replacement");
     if (a?.kind === "replacement") {
-      const dadas = a.options.items.map((i) => i.es);
+      const dadas = a.options.items.map((i) => i.name.es);
       expect(dadas).not.toContain("Pera");
       expect(dadas.length).toBeGreaterThan(0);
     }

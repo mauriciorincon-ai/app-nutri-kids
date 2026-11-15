@@ -20,6 +20,7 @@ export const SHELL_ROUTES = [
   "/suplementos",
   "/cargar",
   "/ajustes",
+  "/perfil",
   "/chat",
   "/historial",
   "/conoce",

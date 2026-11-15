@@ -18,7 +18,8 @@ import {
   waterGlassesTarget,
   type ItemStatus,
 } from "./logic";
-import type { DietPlan, LocalizedText } from "./schema";
+import type { DietPlan, LocalizedText, Texture } from "./schema";
+import { orderByTexture, type OrderedOption } from "./texture";
 import {
   matchItem,
   matchLookup,
@@ -30,7 +31,15 @@ import { screenInput } from "./guardrails";
 
 type Meal = DietPlan["dailyMenu"][number];
 
-export type OpenIntent = "refused" | "replacement" | "hydration" | "meal";
+export type OpenIntent =
+  | "refused"
+  | "replacement"
+  | "allergy"
+  | "medication"
+  | "sleep"
+  | "activity"
+  | "hydration"
+  | "meal";
 
 /**
  * Tabla de patrones. Cada intención nace {es, en}; una frase es una secuencia de
@@ -99,6 +108,32 @@ export const INTENT_PATTERNS: Record<OpenIntent, Record<Locale, string[]>> = {
       "substitut*",
     ],
   },
+  // Perfil del plan (S5): se contesta con lo que el profesional escribió, o «no lo dice».
+  allergy: {
+    es: ["alergi*", "alergic*", "intoleran*", "intolerante*"],
+    en: ["allerg*", "intoleran*"],
+  },
+  medication: {
+    es: ["medicament*", "medicina*", "pastilla*", "jarabe*"],
+    en: ["medication*", "medicine*", "pill*", "meds"],
+  },
+  sleep: {
+    es: [
+      "dormir",
+      "duerm*",
+      "sueno",
+      "acuest*",
+      "acostar*",
+      "hora de dormir",
+      "descans*",
+    ],
+    en: ["sleep*", "bedtime", "bed time", "go to bed", "nap*"],
+  },
+  // «jugo» (bebida) NO es «jugar»: por eso no hay «jug*».
+  activity: {
+    es: ["actividad*", "ejercicio*", "deporte*", "jugar", "juego*"],
+    en: ["activit*", "exercise*", "sport*", "play", "playing"],
+  },
   hydration: {
     es: ["agua", "hidrat*", "liquido*", "cuanto vaso"],
     en: ["water", "hydrat*", "fluid*", "how many glass*"],
@@ -148,6 +183,10 @@ export const INTENT_PATTERNS: Record<OpenIntent, Record<Locale, string[]>> = {
 const INTENT_ORDER: OpenIntent[] = [
   "refused",
   "replacement",
+  "allergy",
+  "medication",
+  "sleep",
+  "activity",
   "hydration",
   "meal",
 ];
@@ -263,10 +302,14 @@ function nextMealFrom(diet: DietPlan, now: Date): Meal | null {
 // Opciones del plan para un alimento
 // ---------------------------------------------------------------------------
 
+/** Una opción del plan, con su textura y si hoy cae en una que no acepta. */
+export type OptionItem = OrderedOption;
+
 export type Options = {
   /** De dónde salen: una equivalencia explícita del plan o su mismo grupo verde. */
   source: "equivalence" | "group";
-  items: LocalizedText[];
+  /** Ya ordenadas por textura (las que hoy no acepta, al final y marcadas). */
+  items: OptionItem[];
   note?: LocalizedText;
 };
 
@@ -288,16 +331,18 @@ export function planOptionsFor(
   status: ItemStatus,
   diet: DietPlan,
   now: Date,
+  /** Texturas que quien cuida marcó como aceptadas hoy (vacío = orden del plan). */
+  accepted: readonly Texture[] = [],
 ): Options | null {
   const eq = status.equivalences[0];
   if (eq) {
     const items = status.equivalences
       .flatMap((e) => e.use)
-      .filter((u) => isSafeOption(diet, u, now));
+      .filter((u) => isSafeOption(diet, u.name, now));
     if (items.length > 0)
       return {
         source: "equivalence",
-        items,
+        items: orderByTexture(items, accepted),
         ...(eq.note ? { note: eq.note } : {}),
       };
   }
@@ -305,8 +350,9 @@ export function planOptionsFor(
     const items = status.group.items
       .filter((i) => i.id !== status.id)
       .filter((i) => resolveItemStatus(diet, i.id, now)?.kind === "green")
-      .map((i) => i.name);
-    if (items.length > 0) return { source: "group", items };
+      .map((i) => ({ name: i.name }));
+    if (items.length > 0)
+      return { source: "group", items: orderByTexture(items, accepted) };
   }
   return null;
 }
@@ -332,6 +378,33 @@ export type OpenAnswer =
       /** now = la franja vigente · next = la siguiente · named = la que nombró · tomorrow = la primera de mañana */
       timing: "now" | "next" | "named" | "tomorrow";
     }
+  | { kind: "sleep"; text: LocalizedText }
+  | { kind: "activity"; text: LocalizedText }
+  | {
+      kind: "allergy";
+      /** Lo que el mensaje nombra y el plan lista (null = nombra algo que no está, o nada). */
+      match: {
+        name: LocalizedText;
+        as: "allergy" | "intolerance";
+        /** true = lo anotó quien cuida en el teléfono, no el plan. */
+        fromNote: boolean;
+      } | null;
+      allergies: LocalizedText[];
+      intolerances: LocalizedText[];
+      /** Anotado por quien cuida («anotado por ti»), aparte de lo que dice el plan. */
+      notedAllergies: LocalizedText[];
+      notedIntolerances: LocalizedText[];
+    }
+  | {
+      kind: "medication";
+      items: {
+        name: LocalizedText;
+        dose?: LocalizedText;
+        when?: LocalizedText;
+      }[];
+      /** Medicamentos que anotó quien cuida. */
+      noted: LocalizedText[];
+    }
   | {
       kind: "hydration";
       litersMin: number;
@@ -350,11 +423,22 @@ export type OpenAnswer =
  * Contesta una pregunta abierta con el plan. Devuelve null si el mensaje no
  * trae intención abierta (el llamador prueba el lookup).
  */
+/** Lo mínimo que el chat necesita de una anotación de quien cuida. */
+export type CaregiverNote = { kind: string; text: string };
+
+const notedTexts = (
+  notes: readonly CaregiverNote[],
+  kind: string,
+): LocalizedText[] =>
+  notes.filter((n) => n.kind === kind).map((n) => ({ es: n.text, en: n.text }));
+
 export function answerOpen(
   question: string,
   diet: DietPlan,
   now: Date,
   lang: Locale,
+  accepted: readonly Texture[] = [],
+  notes: readonly CaregiverNote[] = [],
 ): OpenAnswer | null {
   const intent = detectIntent(question, lang);
   if (!intent) return null;
@@ -363,7 +447,7 @@ export function answerOpen(
     case "replacement": {
       const item = matchItem(diet, question, lang, now);
       if (!item) return { kind: "not-in-plan", reason: "unknown-food" };
-      const options = planOptionsFor(item, diet, now);
+      const options = planOptionsFor(item, diet, now, accepted);
       if (!options)
         return { kind: "not-in-plan", reason: "no-options", food: item.name };
       return { kind: "replacement", food: item.name, options };
@@ -376,9 +460,78 @@ export function answerOpen(
         kind: "refused",
         food: item?.name ?? null,
         meal,
-        options: item ? planOptionsFor(item, diet, now) : null,
+        options: item ? planOptionsFor(item, diet, now, accepted) : null,
         next,
       };
+    }
+    case "allergy": {
+      const allergies = (diet.profile?.allergies ?? []).map((a) => a.name);
+      const intolerances = (diet.profile?.intolerances ?? []).map(
+        (a) => a.name,
+      );
+      const notedAllergies = notedTexts(notes, "allergy");
+      const notedIntolerances = notedTexts(notes, "intolerance");
+      if (
+        allergies.length +
+          intolerances.length +
+          notedAllergies.length +
+          notedIntolerances.length ===
+        0
+      )
+        return { kind: "not-in-plan", reason: "unknown" };
+      const msg = toTokens(question, lang);
+      // TODOS los términos del nombre deben estar en la pregunta: «frutos secos»
+      // no responde por «frutos rojos».
+      const named = (name: LocalizedText) => {
+        const own = toTokens(name[lang], lang).filter((n) => n.length >= 3);
+        return (
+          own.length > 0 && own.every((n) => msg.some((m) => stemEq(m, n)))
+        );
+      };
+      const a = allergies.find(named);
+      const i = intolerances.find(named);
+      const na = notedAllergies.find(named);
+      const ni = notedIntolerances.find(named);
+      const match = a
+        ? { name: a, as: "allergy" as const, fromNote: false }
+        : i
+          ? { name: i, as: "intolerance" as const, fromNote: false }
+          : na
+            ? { name: na, as: "allergy" as const, fromNote: true }
+            : ni
+              ? { name: ni, as: "intolerance" as const, fromNote: true }
+              : null;
+      return {
+        kind: "allergy",
+        match,
+        allergies,
+        intolerances,
+        notedAllergies,
+        notedIntolerances,
+      };
+    }
+    case "medication": {
+      const items = diet.profile?.medications ?? [];
+      const noted = notedTexts(notes, "medication");
+      if (items.length + noted.length === 0)
+        return { kind: "not-in-plan", reason: "unknown" };
+      return {
+        kind: "medication",
+        items: items.map(({ name, dose, when }) => ({
+          name: name,
+          ...(dose ? { dose } : {}),
+          ...(when ? { when } : {}),
+        })),
+        noted,
+      };
+    }
+    case "sleep":
+    case "activity": {
+      // «¿el jugo le quita el sueño?»: si nombra un alimento del plan, es una consulta.
+      if (matchItem(diet, question, lang, now)) return null;
+      const text = diet.goals?.[intent];
+      if (!text) return { kind: "not-in-plan", reason: "unknown" };
+      return { kind: intent, text };
     }
     case "hydration":
       // «¿se puede dar agua con limón?»: si nombra un alimento del plan, es una consulta.
@@ -434,11 +587,13 @@ export function answerQuestion(
   diet: DietPlan,
   now: Date,
   lang: Locale,
+  accepted: readonly Texture[] = [],
+  notes: readonly CaregiverNote[] = [],
 ): ChatAnswer {
   const screen = screenInput(question);
   if (screen !== "ok") return { kind: "rejection", reason: screen };
 
-  const open = answerOpen(question, diet, now, lang);
+  const open = answerOpen(question, diet, now, lang, accepted, notes);
   if (open) return { kind: "open", answer: open };
 
   const verdict = matchLookup(diet, question, lang, now);
