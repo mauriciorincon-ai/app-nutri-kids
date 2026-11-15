@@ -6,7 +6,7 @@
 <title>Guía de prueba — Nutrikids</title>
 <!--
   GUÍA DE PRUEBA VIVA Y ACUMULATIVA de Nutrikids. PRIMERA guía de la app (v1), pero ACUMULATIVA:
-  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) y S4 (sin internet). Autocontenida
+  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) S4 (sin internet) y S5 (perfil). Autocontenida
   (cero CDNs). Origen por línea (S1/S2 heredadas ⇒ regresión · Nuevo/Mejorado · S3). Gate mínimo ⭐
   = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s4.
 -->
@@ -102,10 +102,11 @@
 <body>
 <div class="pagina">
   <header>
-    <p class="eyebrow">Nutrikids · Guía de prueba viva y acumulativa · Sprint 4 · 2026-11-15</p>
+    <p class="eyebrow">Nutrikids · Guía de prueba viva y acumulativa · Sprint 5 · 2026-11-15</p>
     <h1>Guía de prueba</h1>
-    <p class="suave">Todas las pruebas vigentes de la app: las nuevas del S4 (el chat que contesta
-      sin internet, usar la app sin señal, el aviso de versión nueva), y las heredadas de S1 a S3 —
+    <p class="suave">Todas las pruebas vigentes de la app: las nuevas del S5 (el perfil de tu peque, las
+      texturas y lo que el chat contesta del plan) y del S4 (el chat sin internet, usar la app sin señal,
+      el aviso de versión nueva), y las heredadas de S1 a S3 —
       que corren como <strong>regresión</strong>. Filtra por origen para correr todo o solo
       lo que cambió. Las casillas se guardan solas en este navegador.</p>
     <p class="chica"><strong>Gate mínimo ⭐: 6 pruebas · ~30 min.</strong> Es lo que ninguna
@@ -128,7 +129,7 @@
     </div>
     <div class="filtros" role="group" aria-label="Filtrar pruebas por origen">
       <button type="button" data-filtro="todo" class="activo">Todo</button>
-      <button type="button" data-filtro="cambios">Lo que cambió en S4</button>
+      <button type="button" data-filtro="cambios">Lo que cambió (S4 y S5)</button>
       <button type="button" data-filtro="minimo">Gate mínimo ⭐</button>
     </div>
   </div>
@@ -290,6 +291,43 @@
       conversación reaparezca tras recargar.</p></div>
   </section>
 
+  <!-- ============================ K · PERFIL ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">K</span><h2>Perfil de tu peque</h2></div>
+    <p class="meta-bloque chica suave">~6 min · pantalla <strong>Perfil</strong> (desde Hoy o Ajustes) · cada dato con su origen · nada sale del teléfono.</p>
+    <ul class="pasos">
+      <li data-origen="nuevo"><input type="checkbox" id="k1"><label for="k1">En <strong>Hoy</strong> toca
+        <strong>«Perfil de tu peque»</strong> → ves los objetivos del profesional (grupos, horarios, agua,
+        actividad, sueño), las alergias y los medicamentos de la demo, cada bloque con
+        <strong>«según tu plan»</strong>; lo que la demo no trae dice «Tu plan no lo dice.».
+        <span class="origen origen-nuevo">Nuevo · S5</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="k2"><label for="k2">Marca la textura
+        <strong>«Blanda»</strong> (queda con palomita y borde grueso) y abre un alimento a reemplazar, por
+        ejemplo <strong>Manzana</strong> → kiwi y fresas primero; pera y uvas después, con
+        <strong>«textura que hoy no acepta»</strong>, <strong>ninguna escondida</strong>.
+        <span class="origen origen-nuevo">Nuevo · S5</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="k3"><label for="k3">En <strong>Chat</strong> pregunta
+        <strong>«no tengo manzana»</strong> → mismo orden y misma marca que en el detalle.
+        <span class="origen origen-nuevo">Nuevo · S5</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="k4"><label for="k4">En el chat pregunta
+        <strong>«¿cuántas horas duerme?»</strong>, <strong>«¿qué actividad le toca?»</strong>,
+        <strong>«¿es alérgico al maní?»</strong> y <strong>«¿qué medicamentos toma?»</strong> → responde lo
+        que dice el plan; con <strong>«¿es alérgico al kiwi?»</strong> muestra lo que el plan anota y dice
+        que lo demás <strong>«tu plan no lo dice»</strong>, nunca un «no».
+        <span class="origen origen-nuevo">Nuevo · S5</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="k5"><label for="k5">Anota una nota (tipo y texto),
+        luego en <strong>Cargar</strong> carga el archivo de otra dieta → la nota
+        <strong>sigue ahí</strong>, marcada «anotado por ti»; quítala con su botón.
+        <span class="origen origen-nuevo">Nuevo · S5</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="k6"><label for="k6">Si ya usabas la app, abre
+        <strong>Perfil</strong> sin cargar nada → tu dieta sigue ahí y solo faltan los datos nuevos
+        («Tu plan no lo dice.»). <em>(Juicio humano: ¿se perdió algo de tu dieta? No debe.)</em>
+        <span class="origen origen-nuevo">Nuevo · S5</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> un dato del perfil sin su origen, una
+      opción que desaparece por su textura, o un «no es alérgico» que el plan no dijo.</p></div>
+  </section>
+
   <!-- ============================ J · SIN INTERNET ============================ -->
   <section class="bloque">
     <div class="bloque-cabeza"><span class="letra">J</span><h2>Sin internet y versión nueva</h2></div>
@@ -297,7 +335,7 @@
     <ul class="pasos">
       <li data-origen="nuevo" data-minimo><input type="checkbox" id="j1"><label for="j1">Abre la app
         <strong>una vez con señal</strong>; luego pon el teléfono en <strong>modo avión</strong> y abre
-        <strong>cada pantalla</strong> (Hoy, Dieta, Suplementos, Cargar, Ajustes, Chat, Días anteriores) y
+        <strong>cada pantalla</strong> (Hoy, Dieta, Suplementos, Cargar, Ajustes, Chat, Días anteriores, Perfil) y
         hazle una pregunta al chat → <strong>todo responde</strong>, sin avisos de error de conexión.
         <span class="origen origen-nuevo">Nuevo · S4</span><span class="minimo">⭐ mínimo · dispositivo real</span></label></li>
       <li data-origen="nuevo"><input type="checkbox" id="j2"><label for="j2">En modo avión, el chat
@@ -373,6 +411,9 @@
     <details class="chica">
       <summary>Historial de la guía</summary>
       <ul>
+        <li><strong>S5 · 2026-11-15 (v3):</strong> nace el bloque K (perfil de tu peque: origen de cada dato,
+          texturas, notas, plan de antes y las preguntas nuevas del chat). Ninguna prueba eliminada; el modo
+          avión de J suma la pantalla Perfil.</li>
         <li><strong>S4 · 2026-11-15 (v2):</strong> el chat ya no usa un asistente en la nube: F·f2 deja de
           pedir Groq real (la feature dejó de existir y su diferido se retira) y pasa a «no tengo pollo» con
           el plan; nuevas F·f6–f8 (no quiso, ahora/merienda/agua, «el plan no lo dice»), se elimina F·f4
