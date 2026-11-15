@@ -236,15 +236,18 @@ export default function ProfilePage() {
                 <li key={tx}>
                   <Button
                     type="button"
-                    variant={on ? "default" : "outline"}
+                    variant="outline"
                     aria-pressed={on}
-                    className="min-h-11 gap-1.5"
+                    className={cn(
+                      "min-h-11 gap-1.5",
+                      on && "border-2 border-foreground bg-muted font-semibold",
+                    )}
                     onClick={() => {
                       toggleTexture(tx);
                       notifyLocalStore();
                     }}
                   >
-                    <span aria-hidden>{TEXTURE_SYMBOL[tx]}</span>
+                    <span aria-hidden>{on ? "✓" : TEXTURE_SYMBOL[tx]}</span>
                     {t.texture[tx]}
                     {on && (
                       <span className="sr-only"> · {t.texture.accepted}</span>

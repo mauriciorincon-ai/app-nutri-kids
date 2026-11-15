@@ -21,6 +21,7 @@ const SCREENS = [
   "/ajustes",
   "/chat",
   "/historial",
+  "/perfil",
   "/conoce",
 ];
 
