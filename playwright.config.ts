@@ -9,8 +9,8 @@ import { defineConfig, devices } from "@playwright/test";
  * Ahora: `E2E_PORT` mueve la suite a un puerto libre y `tests/e2e/global-setup.ts`
  * exige que quien conteste sea Nutri-Kids antes de correr nada.
  */
-const PORT = Number(process.env.E2E_PORT ?? 3000);
-const BASE_URL = `http://localhost:${PORT}`;
+const PORT = Number(process.env.E2E_PORT ?? 3600);
+const BASE_URL = `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
   testDir: "tests/e2e",

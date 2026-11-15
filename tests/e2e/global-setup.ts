@@ -20,7 +20,7 @@ export default async function verificarQuienContesta(config: FullConfig) {
   if (!respuesta) return; // no hay nadie: Playwright levantará su propio servidor
 
   const html = await respuesta.text();
-  if (html.includes("Nutri-Kids")) return;
+  if (html.includes("Nutrikids")) return;
 
   const titulo = /<title>([^<]*)<\/title>/i.exec(html)?.[1] ?? "(sin título)";
   throw new Error(
