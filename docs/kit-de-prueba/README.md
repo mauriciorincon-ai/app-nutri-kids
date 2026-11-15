@@ -8,7 +8,7 @@ inventar datos. Todo lo de aquí es de mentira y seguro de compartir.
 | Archivo                                                          | Para qué                                                                                                                                                                |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`../../data/demo-diet.json`](../../data/demo-diet.json)         | La **dieta demo** con la que arranca la app (inventada, anonimizada, bilingüe). Ya viene cargada; sirve para probar el semáforo, el chat y el registro sin cargar nada. |
-| [`preguntas-calibracion-chat.md`](preguntas-calibracion-chat.md) | Preguntas listas para copiar en el **chat**, con lo que deberías ver en cada una (respuesta local instantánea, respuesta de IA, o redirección amable).                  |
+| [`preguntas-calibracion-chat.md`](preguntas-calibracion-chat.md) | Preguntas listas para copiar en el **chat**, con lo que deberías ver en cada una (respuesta del plan, «tu plan no lo dice», o redirección amable).                  |
 | [`dia-de-registro-ejemplo.md`](dia-de-registro-ejemplo.md)       | Un **día de registro** de ejemplo para practicar marcar comidas con hora, poner notas y revisar "Días anteriores".                                                      |
 
 ## La dieta REAL no está aquí (a propósito)

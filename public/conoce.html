@@ -655,9 +655,9 @@
             <figure class="muestra">
               <svg viewBox="0 0 320 232" aria-hidden="true" focusable="false">
                 <text class="mz-h" x="16" y="28">Pregúntale a la dieta</text>
-                <text class="mz-s" x="16" y="46">Escribe como le hablas a alguien. Dos formas de responder:</text>
+                <text class="mz-s" x="16" y="46">Escribe como le hablas a alguien. Responde con tu plan:</text>
                 <circle cx="20" cy="60" r="3.5" style="fill: var(--muted-foreground)"/>
-                <text class="mz-s" x="30" y="64">Asistente IA: en pausa</text>
+                <text class="mz-s" x="30" y="64">Sin internet · todo en tu teléfono</text>
                 <text class="mz-t" x="16" y="86">Prueba con una de estas:</text>
                 <rect class="mz-caja" x="14" y="94" width="292" height="26" rx="13"/>
                 <text class="mz-t" x="30" y="111">¿La manzana se puede?</text>
@@ -670,9 +670,8 @@
                 <rect class="mz-solido" x="262" y="190" width="44" height="30" rx="12"/>
                 <path class="mz-st mz-st-inv" d="M275 205l18-6-6 12-3-5z"/>
               </svg>
-              <figcaption>Así se ve <strong>Chat</strong>: las preguntas de «¿se puede?» se
-                responden en el teléfono, sin salir; las abiertas las redacta la IA leyendo tu
-                plan con el nombre del peque oculto.</figcaption>
+              <figcaption>Así se ve <strong>Chat</strong>: todas las preguntas se responden en el
+                teléfono con tu plan, sin internet y sin enviar nada a ningún lado.</figcaption>
             </figure>
             <div class="feature">
               <h4>Respuesta al instante, sin internet</h4>
@@ -682,12 +681,15 @@
                 <strong>«Desde tu plan · sin IA»</strong>.</p>
             </div>
             <div class="feature">
-              <h4>Preguntas abiertas, con un asistente anclado a tu plan</h4>
-              <p class="como">Para lo más abierto —«no tengo pollo, ¿qué le doy?», «¿qué merienda le
-                preparo?»— un asistente de IA lee tu plan y responde <strong>solo con lo que la
-                dieta permite</strong>. Llevan la nota «Respuesta de IA» y necesitan internet.</p>
-              <p class="tip"><strong>Tip:</strong> si el asistente no está disponible, las preguntas
-                de «¿se puede?» siguen funcionando igual.</p>
+              <h4>Preguntas abiertas, también con tu plan</h4>
+              <p class="como">Para lo más abierto —«no tengo pollo, ¿qué le doy?», «no quiso el
+                brócoli», «¿qué le doy ahora?», «¿cuánta agua?»— el chat responde <strong>solo con lo
+                que tu plan dice</strong>: reemplazos, opciones y lo que toca después. Todo ocurre en
+                el teléfono, sin internet. Si tu plan no lo trae, te lo dice —«Tu plan no lo dice.
+                Pregúntale a tu profesional.»— y <strong>nunca inventa</strong>.</p>
+              <p class="tip"><strong>Tip:</strong> si tu teléfono ya trae su propio modelo de lenguaje,
+                el chat puede usarlo —sin descargar nada y sin salir del aparato— para decir la misma
+                respuesta con otras palabras; si no, ves la respuesta directa del plan.</p>
             </div>
             <div class="feature">
               <h4>La frontera no-médica</h4>
@@ -812,7 +814,9 @@
               <h4>Instalarla como app</h4>
               <p class="como">En Chrome, toca el menú (⋮) → <strong>«Agregar a pantalla de
                 inicio»</strong>. Queda con su ícono, como cualquier otra app, y abre sin pasar por
-                el navegador.</p>
+                el navegador. Tras abrirla una vez con señal, <strong>todas las pantallas abren sin
+                internet</strong>; cuando hay una versión nueva te avisa y tú decides cuándo
+                actualizar.</p>
             </div>
             <div class="feature">
               <h4>Español o English</h4>
@@ -881,13 +885,13 @@
     <p class="eyebrow">La garantía</p>
     <h2 id="t-garantia">Lo que escribes sobre tu peque se queda aquí</h2>
     <p class="suave">La dieta, las marcas, las horas y las notas viven <strong>solo en tu
-      teléfono</strong>. Cuando le haces una pregunta abierta al chat, lo único que sale es tu
-      plan con el nombre del peque oculto. Las horas y las notas del día
-      <strong>nunca salen — ni siquiera se le pasan al asistente de IA</strong>.</p>
+      teléfono</strong>. Cuando le haces una pregunta al chat, <strong>no sale nada</strong>: el chat
+      contesta con tu plan, dentro del teléfono y sin internet. Las horas y las notas del día
+      <strong>nunca salen</strong> y el chat ni las lee.</p>
 
     <div class="garantia-lienzo">
       <svg class="telefono" viewBox="0 0 320 200" role="img"
-           aria-label="Ilustración: dentro del teléfono quedan las horas y las notas del día; hacia afuera solo sale el plan sin el nombre del peque.">
+           aria-label="Ilustración: dentro del teléfono quedan las horas y las notas del día; al preguntarle al chat no sale nada hacia afuera.">
         <!-- marco del teléfono (trazo dibujado — excepción declarada) -->
         <rect pathLength="1" class="trazo trazable" x="8" y="10" width="150" height="180" rx="16"/>
         <line pathLength="1" class="trazo trazable" x1="68" y1="22" x2="98" y2="22"/>
@@ -902,13 +906,13 @@
         <rect class="fila" x="106" y="136" width="30" height="7" rx="3.5"/>
         <text class="etiqueta" x="26" y="172">horas y notas del día</text>
         <text class="etiqueta-fuerte" x="26" y="184">no se mueven de aquí</text>
-        <!-- lo único que sale: el plan sin nombre -->
-        <path class="flecha" d="M166 78 H244"/>
-        <path class="flecha" d="m236 71 8 7-8 7" stroke-dasharray="0"/>
-        <text class="etiqueta" x="252" y="70">al preguntar</text>
-        <text class="etiqueta" x="252" y="81">al chat sale</text>
-        <text class="etiqueta-fuerte" x="252" y="95">tu plan,</text>
-        <text class="etiqueta-fuerte" x="252" y="106">sin el nombre</text>
+        <!-- al chat no sale nada: la flecha termina en una barra de «alto» -->
+        <path class="flecha" d="M166 78 H206"/>
+        <path class="flecha" d="M206 64 V92"/>
+        <text class="etiqueta" x="218" y="70">al preguntar</text>
+        <text class="etiqueta" x="218" y="81">al chat</text>
+        <text class="etiqueta-fuerte" x="218" y="95">no sale</text>
+        <text class="etiqueta-fuerte" x="218" y="106">nada</text>
       </svg>
     </div>
   </section>
@@ -980,7 +984,7 @@
         <ul class="rutas">
           <li><a href="/"><code>Hoy</code></a> — el checklist del día, el recordatorio «Ahora mismo», las horas y las notas.</li>
           <li><a href="/dieta"><code>Dieta</code></a> — el buscador y el semáforo por pestañas Verde / Amarillo / Rojo.</li>
-          <li><a href="/chat"><code>Chat</code></a> — «pregúntale a la dieta», con y sin IA.</li>
+          <li><a href="/chat"><code>Chat</code></a> — «pregúntale a la dieta», todo con tu plan y sin internet.</li>
           <li><a href="/suplementos"><code>Suplementos</code></a> — el calendario de lunes a domingo.</li>
           <li><a href="/historial"><code>Días anteriores</code></a> — el historial de solo lectura.</li>
           <li><a href="/cargar"><code>Cargar</code></a> — traer tu dieta al teléfono (archivo o pegado).</li>

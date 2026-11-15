@@ -12,7 +12,7 @@
     "enlaces.produccion": "null cuando la app no tiene URL pública. `razon` explica por qué, y es lo que la vitrina muestra en lugar del enlace. Nunca se rellena con un enlace de repositorio ni con una promesa."
   },
   "schema_version": "1.0.0",
-  "actualizado": "2026-10-27",
+  "actualizado": "2026-11-15",
   "app": {
     "slug": "nutri-kids",
     "nombre": "Nutrikids",
@@ -26,7 +26,7 @@
     "tagline": "¿Esto se puede? La dieta de tu hijo te responde en segundos.",
     "intro": "Nutrikids pone en tu teléfono el plan de alimentación que el profesional le hizo a tu hijo, ese documento largo que nadie relee a la hora de la merienda. Lo vuelve una guía viva: qué se puede y qué no, con qué reemplazar lo que falta, qué toca ahora y cómo fue el día.",
     "para_quien": "Para la familia que cuida a un niño con una dieta médica estricta: la mamá, el papá o quien lo tenga a cargo ese día, que necesita saber qué darle sin abrir el documento y sin improvisar.",
-    "diferencial": "No califica al niño: sin calorías, peso, IMC ni percentiles, y sin convertir el «cumplimiento» en una nota. Lo que anotas del día, las horas y las notas sobre tu hijo, no sale del teléfono, ni siquiera hacia el asistente de inteligencia artificial."
+    "diferencial": "No califica al niño: sin calorías, peso, IMC ni percentiles, y sin convertir el «cumplimiento» en una nota. El chat contesta con tu plan dentro del teléfono y sin internet: lo que anotas del día, las horas y las notas sobre tu hijo, no sale del teléfono, ni siquiera para hacerle una pregunta al chat."
   },
   "funcionalidades": {
     "total": 19,
@@ -107,30 +107,30 @@
         "orden": 3,
         "estrella": false,
         "nombre": "Un chat que se sabe la dieta",
-        "linea": "Preguntas como le hablarías a alguien que se sabe el plan de memoria, sin que opine de medicina",
+        "linea": "Preguntas como le hablarías a alguien que se sabe el plan de memoria, sin internet y sin que opine de medicina",
         "features": [
           {
             "id": "F10",
             "nombre": "Respuestas al instante, sin señal",
-            "que_hace": "Preguntas «¿la manzana se puede?» y tienes la respuesta al instante, aunque no haya señal. El teléfono la saca de tu plan, sin inteligencia artificial, y la muestra como tarjeta del semáforo con sus reemplazos y la marca «Desde tu plan · sin IA».",
-            "seccion_manual": "Pregúntale a la dieta (Chat) · forma 1"
+            "que_hace": "Preguntas «¿la manzana se puede?» y tienes la respuesta al instante, aunque no haya señal. El teléfono la saca de tu plan y la muestra como tarjeta del semáforo con sus reemplazos y la marca «Desde tu plan · sin IA».",
+            "seccion_manual": "Pregúntale a la dieta (Chat)"
           },
           {
             "id": "F11",
-            "nombre": "Un asistente que solo usa tu plan",
-            "que_hace": "Para las preguntas abiertas, como «no tengo pollo, ¿qué le doy?», recibes una idea que respeta la dieta. Un asistente de inteligencia artificial lee el plan y responde solo con lo que este permite; la respuesta va marcada como «Respuesta de IA» y necesita internet.",
-            "seccion_manual": "Pregúntale a la dieta (Chat) · forma 2"
+            "nombre": "Preguntas abiertas, también con tu plan",
+            "que_hace": "Preguntas como «no tengo pollo, ¿qué le doy?», «no quiso el brócoli», «¿qué le doy ahora?» o «¿cuánta agua?» y recibes lo que tu plan propone: reemplazos, opciones y lo que toca después. Todo se calcula en el teléfono, sin internet. Si el plan no lo trae, te lo dice y te manda con tu profesional, en vez de inventar una respuesta.",
+            "seccion_manual": "Pregúntale a la dieta (Chat)"
           },
           {
             "id": "F12",
             "nombre": "No opina de medicina",
-            "que_hace": "El chat no se mete en lo que le toca al médico. Si le preguntas por dosis, medicinas o síntomas, te devuelve con amabilidad al pediatra o al nutricionista. Esa respuesta sale de reglas fijas, antes de consultar a la inteligencia artificial.",
+            "que_hace": "El chat no se mete en lo que le toca al médico. Si le preguntas por dosis, medicinas o síntomas, te devuelve con amabilidad al pediatra o al nutricionista. Esa respuesta sale de reglas fijas, antes de buscar cualquier otra cosa.",
             "seccion_manual": "Pregúntale a la dieta (Chat) · Cosas importantes"
           },
           {
             "id": "F13",
             "nombre": "La conversación no se guarda",
-            "que_hace": "Lo que le preguntas al chat sobre tu hijo no se queda en la app. Al cerrar o recargar, la conversación queda en blanco, y los registros técnicos solo anotan datos de funcionamiento, nunca lo que escribiste. Es una decisión de privacidad, no un olvido.",
+            "que_hace": "Lo que le preguntas al chat sobre tu hijo no se queda en la app ni sale del teléfono. Al cerrar o recargar, la conversación queda en blanco, y los registros técnicos solo anotan datos de funcionamiento, nunca lo que escribiste. Es una decisión de privacidad, no un olvido.",
             "seccion_manual": "Pregúntale a la dieta (Chat) · Cosas importantes"
           }
         ]
@@ -170,8 +170,8 @@
           {
             "id": "F17",
             "nombre": "Se instala como una app",
-            "que_hace": "La tienes en la pantalla de inicio, con su ícono, como cualquier otra app. Se agrega desde el menú del navegador del teléfono, sin pasar por una tienda de aplicaciones, y abre directo, sin la barra del navegador.",
-            "seccion_manual": "Primeros pasos · paso 3"
+            "que_hace": "La tienes en la pantalla de inicio, con su ícono, como cualquier otra app. Se agrega desde el menú del navegador del teléfono, sin pasar por una tienda de aplicaciones, y abre directo, sin la barra del navegador. Tras abrirla una vez con señal, todas las pantallas abren también sin internet, y cuando hay una versión nueva te avisa para que tú decidas cuándo actualizar.",
+            "seccion_manual": "Primeros pasos · paso 3 · Usar la app sin internet"
           },
           {
             "id": "F18",
@@ -233,18 +233,18 @@
     {
       "clave": "decisiones_registradas",
       "etiqueta": "Decisiones de arquitectura registradas",
-      "valor": 7,
+      "valor": 8,
       "unidad": "ADR",
       "fuente": "medido",
-      "detalle": "Archivos de decisions/."
+      "detalle": "Archivos de decisions/ el 2026-11-15; la 008 (chat code-first) reemplaza a la 004 y la 005."
     },
     {
       "clave": "dependencias_runtime",
       "etiqueta": "Dependencias en tiempo de ejecución",
-      "valor": 20,
+      "valor": 13,
       "unidad": "paquetes",
       "fuente": "medido",
-      "detalle": "Campo `dependencies` de package.json. Incluye los adaptadores de proveedores de IA que el chat conmuta por variable de entorno."
+      "detalle": "Campo `dependencies` de package.json el 2026-11-15 sobre 88f9c6d. Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
     },
     {
       "clave": "requests_del_registro",
@@ -260,12 +260,12 @@
       "valor": 0,
       "unidad": "USD",
       "fuente": "calculada",
-      "detalle": "Suma de los servicios contratados: Vercel Hobby (free) + GitHub Free + Sentry free + Groq free tier. Sin base de datos ni servidor propio que facturar. Techo declarado del proyecto: 10 USD/mes."
+      "detalle": "Suma de los servicios contratados: Vercel Hobby (free) + GitHub Free + Sentry free. Ningún servicio de IA ni de pago por uso. Sin base de datos ni servidor propio que facturar. Techo declarado del proyecto: 10 USD/mes."
     },
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 75714,
+      "valor": 76185,
       "unidad": "bytes",
       "fuente": "medido",
       "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-10-27 sobre 69538dc. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."
@@ -274,7 +274,7 @@
   "stack": [
     {
       "nombre": "Next.js",
-      "papel": "la PWA móvil-primero y su única ruta de servidor, la del chat"
+      "papel": "la PWA móvil-primero, sin rutas de servidor propias: Vercel solo la sirve"
     },
     {
       "nombre": "TypeScript",
@@ -293,8 +293,8 @@
       "papel": "el esquema de la dieta: un archivo malformado se rechaza antes de entrar"
     },
     {
-      "nombre": "Vercel AI SDK + Groq",
-      "papel": "el asistente del chat, conmutable por variable de entorno y con apagado manual"
+      "nombre": "Prompt API del navegador (opcional)",
+      "papel": "si el teléfono ya trae su modelo de lenguaje, redacta con otras palabras una respuesta que el código ya decidió; sin descargar nada, sin red y con respaldo en el código. Ningún proveedor de IA, ni de pago ni de terceros"
     },
     {
       "nombre": "Vitest y Playwright",
@@ -309,9 +309,9 @@
     "datos_del_menor_solo_en_dispositivo": true,
     "registro_del_dia_sale_del_dispositivo": false,
     "conversacion_persistida": false,
-    "red_saliente": true,
-    "usa_ia": true,
-    "detalle": "La dieta, las marcas, las horas y las notas viven solo en el teléfono: no hay servidor de datos, ni cuenta, ni nube. La app sale a internet para una sola cosa, las preguntas abiertas del chat, y ahí viaja únicamente el plan, sin el nombre del niño. El registro del día no puede llegar a ese envío ni por accidente: la parte de la app que lo guarda no está al alcance de la que habla con la IA, y dos pruebas automáticas con un dato centinela (una unitaria y una de punta a punta) fallan si alguien lo intentara. La conversación no se guarda y los registros técnicos llevan solo datos de funcionamiento, nunca contenido. «Borrar mis datos» elimina la dieta y todo el registro, incluidas las copias que dejaron versiones anteriores de la app."
+    "red_saliente": false,
+    "usa_ia": false,
+    "detalle": "La dieta, las marcas, las horas y las notas viven solo en el teléfono: no hay servidor de datos, ni cuenta, ni nube. El chat no manda nada a internet: contesta con programación sobre el plan cargado, dentro del teléfono y también sin señal, y un test de punta a punta registra todas las peticiones y exige cero al preguntar. No hay proveedor de inteligencia artificial: si el navegador del teléfono trae su propio modelo, el chat puede usarlo para decir con otras palabras una respuesta que el código ya decidió, sin descargar nada. El registro del día no está al alcance del chat, y pruebas automáticas con un dato centinela fallan si alguien lo intentara. La conversación no se guarda y los registros técnicos llevan solo datos de funcionamiento, nunca contenido. «Borrar mis datos» elimina la dieta y todo el registro, incluidas las copias que dejaron versiones anteriores de la app."
   },
   "enlaces": {
     "produccion": null,
