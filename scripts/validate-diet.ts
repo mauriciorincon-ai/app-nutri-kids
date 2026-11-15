@@ -1,5 +1,5 @@
 /**
- * Valida un JSON de dieta contra el schema v1 — dev-only, NO corre en CI.
+ * Valida un JSON de dieta contra el schema (v2; un v1 se migra y se informa) — dev-only, NO corre en CI.
  * Uso: pnpm tsx scripts/validate-diet.ts <ruta-al-json>
  *
  * Imprime SOLO metadatos (versión, conteos) — nunca contenido. Sirve para
@@ -21,5 +21,9 @@ if (!result.ok) {
   process.exit(1);
 }
 
-console.log("VÁLIDA ✓ — conteos:");
+console.log(
+  result.migratedFrom
+    ? "VÁLIDA ✓ (v1, migrada a v2) — conteos:"
+    : "VÁLIDA ✓ — conteos:",
+);
 console.table(dietCounts(result.diet));

@@ -292,7 +292,7 @@ export function planOptionsFor(
   const eq = status.equivalences[0];
   if (eq) {
     const items = status.equivalences
-      .flatMap((e) => e.use)
+      .flatMap((e) => e.use.map((u) => u.name))
       .filter((u) => isSafeOption(diet, u, now));
     if (items.length > 0)
       return {

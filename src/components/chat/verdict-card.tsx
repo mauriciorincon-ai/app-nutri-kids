@@ -71,7 +71,7 @@ export function VerdictCard({ verdict }: { verdict: LocalVerdict }) {
                   key={j}
                   className="rounded-full bg-tl-green-surface px-3 py-1.5 text-sm font-semibold text-tl-green"
                 >
-                  {l(u)}
+                  {l(u.name)}
                 </li>
               ))}
             </ul>

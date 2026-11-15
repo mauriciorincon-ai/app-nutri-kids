@@ -1,7 +1,10 @@
 import { z } from "zod";
 
+import { migrateV1toV2 } from "./migrate";
+
 /**
- * Schema zod v1 del plan de dieta (dietPlan).
+ * Schema zod v2 del plan de dieta (dietPlan) — ADR-009. La v1 sigue aceptándose
+ * al importar o leer y se migra a v2 (`migrate.ts`), sin perder nada.
  * TODO el contenido nutricional de la app entra por aquí (regla de dominio):
  * el import FALLA si el JSON está malformado (fail-safe). Ningún alimento
  * hardcodeado en componentes.
@@ -66,12 +69,60 @@ const greenGroupSchema = z.object({
   items: z.array(namedItemSchema).min(1),
 });
 
-const equivalenceSchema = z.object({
+/**
+ * Texturas: lista CERRADA (la etiqueta {es, en} vive en i18n, `t.texture`). Quien
+ * cuida marca en el teléfono las que el niño hoy acepta; el plan dice la de cada opción.
+ */
+export const TEXTURES = [
+  "liquid",
+  "puree",
+  "mashed",
+  "soft",
+  "chopped",
+  "crunchy",
+] as const;
+export const textureSchema = z.enum(TEXTURES);
+
+/** Una opción de reemplazo del plan, con su textura si el plan la dice. */
+const optionSchema = z.object({
+  name: localizedTextSchema,
+  texture: textureSchema.optional(),
+});
+
+const equivalenceFields = {
   /** id del alimento/categoría que falta o está restringido. */
   whenMissing: z.string().min(1),
   title: localizedTextSchema,
-  use: z.array(localizedTextSchema).min(1),
   note: localizedTextSchema.optional(),
+};
+
+const equivalenceV1Schema = z.object({
+  ...equivalenceFields,
+  use: z.array(localizedTextSchema).min(1),
+});
+
+const equivalenceSchema = z.object({
+  ...equivalenceFields,
+  use: z.array(optionSchema).min(1),
+});
+
+/** Lo que el PLAN dice del niño (todo opcional: el plan puede no traerlo). */
+const medicationSchema = namedItemSchema.extend({
+  dose: localizedTextSchema.optional(),
+  when: localizedTextSchema.optional(),
+});
+
+const profileSchema = z.object({
+  condition: localizedTextSchema.optional(),
+  allergies: z.array(namedItemSchema).optional(),
+  intolerances: z.array(namedItemSchema).optional(),
+  medications: z.array(medicationSchema).optional(),
+});
+
+/** Objetivos del profesional tal como los escribe el plan (sin cifras del cuerpo). */
+const goalsSchema = z.object({
+  activity: localizedTextSchema.optional(),
+  sleep: localizedTextSchema.optional(),
 });
 
 const supplementSchema = z.object({
@@ -90,8 +141,7 @@ const mealSchema = z.object({
   content: localizedTextSchema,
 });
 
-export const dietPlanSchema = z.object({
-  schemaVersion: z.literal(1),
+const planFields = {
   meta: z.object({
     id: z.string().min(1),
     title: localizedTextSchema,
@@ -124,7 +174,6 @@ export const dietPlanSchema = z.object({
       groups: z.array(greenGroupSchema).min(1),
     }),
   }),
-  equivalences: z.array(equivalenceSchema),
   supplements: z.array(supplementSchema).min(1),
   supplementNotes: localizedTextSchema.optional(),
   dailyMenu: z
@@ -150,11 +199,31 @@ export const dietPlanSchema = z.object({
     glassesPerDay: z.number().int().positive().optional(),
     habit: localizedTextSchema,
   }),
+};
+
+/** El plan v1 (S1–S4): solo se lee para migrarlo. */
+export const dietPlanV1Schema = z.object({
+  schemaVersion: z.literal(1),
+  ...planFields,
+  equivalences: z.array(equivalenceV1Schema),
+});
+
+export const dietPlanSchema = z.object({
+  schemaVersion: z.literal(2),
+  ...planFields,
+  equivalences: z.array(equivalenceSchema),
+  profile: profileSchema.optional(),
+  goals: goalsSchema.optional(),
 });
 
 export type LocalizedText = z.infer<typeof localizedTextSchema>;
 export type Weekday = z.infer<typeof weekdaySchema>;
 export type DietPlan = z.infer<typeof dietPlanSchema>;
+export type DietPlanV1 = z.infer<typeof dietPlanV1Schema>;
+export type Texture = z.infer<typeof textureSchema>;
+export type PlanOption = z.infer<typeof optionSchema>;
+export type Profile = z.infer<typeof profileSchema>;
+export type Medication = z.infer<typeof medicationSchema>;
 export type GreenGroup = DietPlan["trafficLight"]["green"]["groups"][number];
 export type Supplement = DietPlan["supplements"][number];
 export type Meal = DietPlan["dailyMenu"][number];
@@ -162,7 +231,7 @@ export type Equivalence = DietPlan["equivalences"][number];
 
 /** Resultado tipado del parseo — el llamador decide el mensaje legible (i18n). */
 export type ParseDietResult =
-  | { ok: true; diet: DietPlan }
+  | { ok: true; diet: DietPlan; migratedFrom?: 1 }
   | { ok: false; error: "invalid-json" | "invalid-schema"; detail: string };
 
 export function parseDietJson(text: string): ParseDietResult {
@@ -174,16 +243,30 @@ export function parseDietJson(text: string): ParseDietResult {
     // texto de entrada y este detail termina en logs (regla: cero contenido).
     return { ok: false, error: "invalid-json", detail: "unparseable JSON" };
   }
-  const parsed = dietPlanSchema.safeParse(raw);
-  if (!parsed.success) {
-    // detail = paths inválidos (metadatos, nunca contenido) — apto para logs.
-    const paths = parsed.error.issues
-      .slice(0, 5)
-      .map((i) => i.path.join(".") || "(root)")
-      .join(", ");
-    return { ok: false, error: "invalid-schema", detail: paths };
+  // v1 guardada o importada: se valida como v1 y se migra (ADR-009).
+  if (
+    typeof raw === "object" &&
+    raw !== null &&
+    (raw as { schemaVersion?: unknown }).schemaVersion === 1
+  ) {
+    const v1 = dietPlanV1Schema.safeParse(raw);
+    if (!v1.success) return schemaError(v1.error);
+    const v2 = dietPlanSchema.safeParse(migrateV1toV2(v1.data));
+    if (!v2.success) return schemaError(v2.error);
+    return { ok: true, diet: v2.data, migratedFrom: 1 };
   }
+  const parsed = dietPlanSchema.safeParse(raw);
+  if (!parsed.success) return schemaError(parsed.error);
   return { ok: true, diet: parsed.data };
+}
+
+function schemaError(error: z.ZodError): ParseDietResult {
+  // detail = paths inválidos (metadatos, nunca contenido) — apto para logs.
+  const paths = error.issues
+    .slice(0, 5)
+    .map((i) => i.path.join(".") || "(root)")
+    .join(", ");
+  return { ok: false, error: "invalid-schema", detail: paths };
 }
 
 /** Conteos para el resumen de carga y los logs (SOLO metadatos, jamás contenido). */
@@ -204,5 +287,9 @@ export function dietCounts(diet: DietPlan) {
     equivalences: diet.equivalences.length,
     supplements: diet.supplements.length,
     meals: diet.dailyMenu.length,
+    // Del perfil, solo CUÁNTOS (jamás cuáles): regla dura 6.
+    allergies: diet.profile?.allergies?.length ?? 0,
+    intolerances: diet.profile?.intolerances?.length ?? 0,
+    medications: diet.profile?.medications?.length ?? 0,
   };
 }

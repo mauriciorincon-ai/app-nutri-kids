@@ -73,7 +73,7 @@ describe("resolveItemStatus (semáforo)", () => {
     });
     if (status?.kind !== "restricted") return;
     expect(status.until).toBe("2026-09-28");
-    expect(status.equivalences[0]?.use.map((u) => u.es)).toContain("pera");
+    expect(status.equivalences[0]?.use.map((u) => u.name.es)).toContain("pera");
   });
 
   it("marks expired restrictions as no longer active", () => {
