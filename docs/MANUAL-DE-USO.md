@@ -118,8 +118,8 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
   en la lonchera, en el parque, en el carro. Tu dieta y tu registro del día ya vivían en el
   teléfono; ahora la app también.
 - **Cómo se usa:** no hay nada que activar. Abre la app una vez con señal (se guarda sola) y
-  listo. Si abres un alimento que nunca habías visitado estando sin señal, te lleva a la lista de
-  la **Dieta**, donde lo encuentras.
+  listo. También el detalle de cualquier alimento de tu dieta abre sin señal, aunque nunca lo hayas
+  visitado.
 - **Cuando hay una versión nueva:** con señal, la app lo detecta y muestra un aviso abajo: **"Hay
   una versión nueva de Nutrikids. Tu dieta y tu registro no se tocan."** Toca **"Actualizar"**
   cuando te convenga (la app se recarga una vez) o **"Ahora no"** para seguir con lo que estás

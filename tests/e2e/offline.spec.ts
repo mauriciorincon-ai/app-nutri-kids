@@ -71,13 +71,13 @@ test("sin internet: cada pantalla abre y se hidrata; el chat contesta", async ({
     "Si no hay pollo",
   );
 
-  // Un alimento YA visitado con señal abre sin red (se guardó al verlo).
-  // (se prueba abajo, en su propio test: requiere visitarlo antes de apagar la red)
-
-  // Un alimento no visitado (/dieta/<id>) sin red lleva a la lista, no al dinosaurio.
-  await page.goto("/dieta/algo-que-no-visite");
-  await expect(page).toHaveURL(/\/dieta$/);
-  await expect(page.locator("h1")).toBeVisible();
+  // Un alimento NO visitado abre igual: el cascarón del detalle lee el id de la URL.
+  await page.goto("/dieta/pera");
+  await expect(page.locator("h1")).toContainText("Pera");
+  await page.goto("/dieta/algo-que-no-existe");
+  await expect(
+    page.getByText("no está en el plan", { exact: false }),
+  ).toBeVisible();
 });
 
 /**

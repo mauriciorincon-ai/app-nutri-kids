@@ -25,6 +25,9 @@ export const SHELL_ROUTES = [
   "/conoce",
 ];
 
+/** Cascarón del detalle de alimento: sirve de respaldo a `/dieta/<id>` sin visita previa. */
+export const DETAIL_SHELL = "/dieta/_";
+
 export function buildId() {
   let sha = (process.env.VERCEL_GIT_COMMIT_SHA ?? "").slice(0, 7);
   if (!sha) {
@@ -44,6 +47,7 @@ export function buildId() {
 
 export function renderSw(template, id, routes = SHELL_ROUTES) {
   return template
+    .replace("__DETAIL_SHELL__", JSON.stringify(DETAIL_SHELL))
     .replace("__BUILD_ID__", id)
     .replace("__SHELL_ROUTES__", JSON.stringify(routes));
 }

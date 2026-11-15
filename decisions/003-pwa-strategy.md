@@ -29,9 +29,10 @@
     algo falla, la instalación falla entera y sigue la versión anterior.
   - **Navegación: red primero, caché de respaldo.** Con señal se ve siempre lo último del deploy
     (el riesgo de HTML viejo que motivó la v1 se evita porque la red manda); sin señal, o con la red
-    más lenta que 3 s habiendo copia, sale el cascarón guardado. `/dieta/<id>` sin visita previa redirige
-    a `/dieta` (servir el HTML de otra ruta rompe la hidratación de Next).
-  - **Versión nueva:** el SW nuevo queda **en espera** (sin `skipWaiting` al instalar). La página avisa
+    más lenta que 3 s habiendo copia, sale el cascarón guardado. `/dieta/<id>` sin visita previa usa el
+    cascarón genérico `/dieta/_` (la página lee el id de la URL con `usePathname`, no de los params del
+    servidor, y por eso un mismo cascarón sirve cualquier alimento; una ruta desconocida vuelve a Hoy).
+  - **Versión nueva:** el SW nuevo queda **en espera** (sin `skipWaiting` al instalar; las otras pestañas avisan también al quedar con la versión vieja). La página avisa
     «hay una versión nueva» con «Actualizar» y «Ahora no»; solo al aceptar manda `SKIP_WAITING`, el SW
     toma el control y se recarga una vez. **Nunca recarga a la fuerza.**
 - **Gates (regla 19, puente SW ↔ página):** `tests/unit/build-sw.test.ts` compara la lista de pantallas

@@ -15,7 +15,8 @@ export const SKIP_WAITING_MESSAGE = "SKIP_WAITING";
  */
 export function SwRegister() {
   const { t } = useI18n();
-  const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
+  // ServiceWorker = versión nueva esperando · "reload" = otra pestaña ya la activó y esta quedó con la vieja.
+  const [waiting, setWaiting] = useState<ServiceWorker | "reload" | null>(null);
   const accepted = useRef(false);
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export function SwRegister() {
     // Tras aceptar, el SW nuevo toma el control y recargamos UNA vez.
     const onControllerChange = () => {
       if (accepted.current) window.location.reload();
+      else setWaiting("reload"); // otra pestaña aceptó: esta avisa, no recarga sola
     };
     sw.addEventListener("controllerchange", onControllerChange);
 
@@ -72,13 +74,17 @@ export function SwRegister() {
       role="status"
       aria-live="polite"
       data-testid="sw-update-notice"
-      className="fixed inset-x-3 bottom-20 z-50 mx-auto flex max-w-md items-center gap-3 rounded-xl border bg-card px-4 py-3 shadow-lg lg:bottom-4 lg:left-48"
+      className="fixed inset-x-3 top-2 z-50 mx-auto flex max-w-md items-center gap-3 rounded-xl border bg-card px-4 py-3 shadow-lg lg:left-48"
     >
       <RefreshCw aria-hidden className="size-5 shrink-0 text-primary" />
       <p className="flex-1 text-sm font-semibold">{t.update.notice}</p>
       <button
         type="button"
         onClick={() => {
+          if (waiting === "reload") {
+            window.location.reload();
+            return;
+          }
           accepted.current = true;
           waiting.postMessage({ type: SKIP_WAITING_MESSAGE });
         }}
