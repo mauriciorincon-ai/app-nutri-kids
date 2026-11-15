@@ -13,14 +13,15 @@ test.skip(
   "el service worker solo existe en producción: corre con CI=1",
 );
 
-const SCREENS: { path: string; heading: RegExp }[] = [
-  { path: "/", heading: /./ },
-  { path: "/dieta", heading: /./ },
-  { path: "/suplementos", heading: /./ },
-  { path: "/cargar", heading: /./ },
-  { path: "/ajustes", heading: /./ },
-  { path: "/chat", heading: /./ },
-  { path: "/historial", heading: /./ },
+const SCREENS = [
+  "/",
+  "/dieta",
+  "/suplementos",
+  "/cargar",
+  "/ajustes",
+  "/chat",
+  "/historial",
+  "/conoce",
 ];
 
 async function firstVisit(page: Page) {
@@ -53,11 +54,12 @@ test("sin internet: cada pantalla abre y se hidrata; el chat contesta", async ({
   await firstVisit(page);
   await context.setOffline(true);
 
-  for (const { path } of SCREENS) {
+  for (const path of SCREENS) {
     await page.goto(path);
-    await expect(page.locator("h1")).toBeVisible();
-    // Hidratada de verdad: la navegación inferior (cliente) marca la página activa.
-    await expect(page.getByRole("navigation").first()).toBeVisible();
+    await expect(page.locator("h1").first()).toBeVisible();
+    // Hidratada de verdad: la navegación inferior (solo la pintan las pantallas de la app).
+    if (path !== "/conoce")
+      await expect(page.getByRole("navigation").first()).toBeVisible();
   }
 
   // El chat sin red contesta con el plan.
@@ -68,6 +70,9 @@ test("sin internet: cada pantalla abre y se hidrata; el chat contesta", async ({
   await expect(page.locator('[data-answer="replacement"]')).toContainText(
     "Si no hay pollo",
   );
+
+  // Un alimento YA visitado con señal abre sin red (se guardó al verlo).
+  // (se prueba abajo, en su propio test: requiere visitarlo antes de apagar la red)
 
   // Un alimento no visitado (/dieta/<id>) sin red lleva a la lista, no al dinosaurio.
   await page.goto("/dieta/algo-que-no-visite");
@@ -103,7 +108,9 @@ test("versión nueva: avisa, no recarga a la fuerza y actualiza solo si se acept
   // Sigue en la misma página, sin recargar, aunque el SW nuevo ya esté esperando.
   await page.waitForTimeout(500);
   expect(
-    await page.evaluate(() => (window as unknown as { __viva?: boolean }).__viva),
+    await page.evaluate(
+      () => (window as unknown as { __viva?: boolean }).__viva,
+    ),
   ).toBe(true);
 
   // «Ahora no» lo cierra sin tocar nada.
@@ -128,7 +135,11 @@ test("versión nueva en inglés", async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem(
       "nutrikids.prefs.v1",
-      JSON.stringify({ locale: "en", disclaimerSeen: true, chatIntroSeen: true }),
+      JSON.stringify({
+        locale: "en",
+        disclaimerSeen: true,
+        chatIntroSeen: true,
+      }),
     );
   });
   await page.goto("/");
@@ -156,3 +167,16 @@ for (const colorScheme of ["light", "dark"] as const) {
     expect(results.violations).toEqual([]);
   });
 }
+
+test("sin internet: el detalle de un alimento visitado con señal abre completo", async ({
+  page,
+  context,
+}) => {
+  await firstVisit(page);
+  await page.goto("/dieta/manzana");
+  await expect(page.locator("h1")).toBeVisible();
+  const titulo = await page.locator("h1").innerText();
+  await context.setOffline(true);
+  await page.goto("/dieta/manzana");
+  await expect(page.locator("h1")).toHaveText(titulo);
+});

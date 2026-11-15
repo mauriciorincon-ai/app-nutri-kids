@@ -152,7 +152,7 @@ export const en: Dictionary = {
     replacementGroupLead:
       "If there's no {food}, you can use another food from the same group:",
     refusedFoodLead:
-      "It happens, and it's not a failure. If he didn't want {food}, your plan offers:",
+      "It happens, and it's not a failure. If {food} wasn't a hit, your plan offers:",
     refusedLead: "It happens, and it's not a failure: no need to insist.",
     nextTitle: "What's next",
     refusedNext: "{meal}, at {start}: {content}",

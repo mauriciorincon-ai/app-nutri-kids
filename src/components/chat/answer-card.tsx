@@ -38,8 +38,8 @@ export function AnswerCard({
             {c.itemsTitle}
           </p>
           <ul className="mt-1 flex flex-col gap-1">
-            {c.items.map((item) => (
-              <li key={item} className="flex items-center gap-2">
+            {c.items.map((item, i) => (
+              <li key={`${i}-${item}`} className="flex items-center gap-2">
                 <Check aria-hidden className="size-4 shrink-0 text-tl-green" />
                 <span>{item}</span>
               </li>

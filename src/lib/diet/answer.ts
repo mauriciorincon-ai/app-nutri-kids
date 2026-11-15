@@ -12,7 +12,12 @@
  * Puro: la fecha entra por parámetro y solo se leen datos del `DietPlan`.
  * La redacción vive en i18n (`answer-text.ts` la compone): el motor decide QUÉ.
  */
-import { currentMealSlot, waterGlassesTarget, type ItemStatus } from "./logic";
+import {
+  currentMealSlot,
+  resolveItemStatus,
+  waterGlassesTarget,
+  type ItemStatus,
+} from "./logic";
 import type { DietPlan, LocalizedText } from "./schema";
 import {
   matchItem,
@@ -38,9 +43,9 @@ export const INTENT_PATTERNS: Record<OpenIntent, Record<Locale, string[]>> = {
   refused: {
     es: [
       "no quiso",
-      "no quiere",
+      "no quier*",
       "no le gusto",
-      "no le gusta",
+      "no le gusta*",
       "no se lo comio",
       "no comio",
       "rechaz*",
@@ -61,6 +66,8 @@ export const INTENT_PATTERNS: Record<OpenIntent, Record<Locale, string[]>> = {
       "did not like",
       "doesn t like",
       "doesnt like",
+      "don t like",
+      "dont like",
       "refus*",
     ],
   },
@@ -96,34 +103,44 @@ export const INTENT_PATTERNS: Record<OpenIntent, Record<Locale, string[]>> = {
     es: ["agua", "hidrat*", "liquido*", "cuanto vaso"],
     en: ["water", "hydrat*", "fluid*", "how many glass*"],
   },
+  // «~» = exactamente una palabra cualquiera: «qué MERIENDA le doy», «what SNACK can I give».
   meal: {
     es: [
       "que le doy",
+      "que ~ le doy",
       "que le puedo dar",
+      "que ~ le puedo dar",
       "que le preparo",
+      "que ~ le preparo",
       "que le cocino",
+      "que ~ le cocino",
       "que le hago",
+      "que ~ le hago",
       "que cocino",
       "que preparo",
       "que toca",
       "que sigue",
-      "que hago",
-      "ahora",
+      "que hago ahora",
+      "ahora toca",
+      "toca ahora",
     ],
     en: [
       "what can i give",
+      "what ~ can i give",
       "what should i give",
+      "what ~ should i give",
       "what do i give",
       "what to give",
       "what can he eat",
       "what can she eat",
+      "what ~ can he eat",
+      "what ~ can she eat",
       "what should i make",
       "what should i cook",
       "what do i make",
       "what s next",
       "whats next",
       "what now",
-      "right now",
     ],
   },
 };
@@ -137,12 +154,16 @@ const INTENT_ORDER: OpenIntent[] = [
 
 function phraseTokens(pattern: string, locale: Locale): string[] {
   const wildcard = pattern.endsWith("*");
-  const tokens = toTokens(wildcard ? pattern.slice(0, -1) : pattern, locale);
+  const words = (wildcard ? pattern.slice(0, -1) : pattern).split(" ");
+  const tokens = words.flatMap((w) =>
+    w === "~" ? ["~"] : toTokens(w, locale),
+  );
   if (wildcard && tokens.length > 0) tokens[tokens.length - 1] += "*";
   return tokens;
 }
 
 function tokenEq(msg: string, pat: string): boolean {
+  if (pat === "~") return true;
   return pat.endsWith("*") ? msg.startsWith(pat.slice(0, -1)) : msg === pat;
 }
 
@@ -161,6 +182,9 @@ export function detectIntent(
 ): OpenIntent | null {
   const msg = toTokens(message, locale);
   for (const intent of INTENT_ORDER) {
+    // «¿no hay problema si come queso?» es una consulta, no un «no tengo».
+    if (intent === "replacement" && msg.some((t) => /^problem/.test(t)))
+      continue;
     const patterns = INTENT_PATTERNS[intent][locale];
     if (patterns.some((p) => hasPhrase(msg, phraseTokens(p, locale)))) {
       return intent;
@@ -246,20 +270,41 @@ export type Options = {
   note?: LocalizedText;
 };
 
-/** Reemplazos que el plan da para un alimento; null si el plan no trae ninguno. */
-export function planOptionsFor(status: ItemStatus): Options | null {
+/** ¿Ese nombre es hoy una opción segura (verde, o un nombre que el plan no clasifica)? */
+function isSafeOption(diet: DietPlan, name: LocalizedText, now: Date): boolean {
+  for (const locale of ["es", "en"] as const) {
+    const hit = matchItem(diet, name[locale], locale, now);
+    if (hit && hit.kind !== "green") return false;
+  }
+  return true;
+}
+
+/**
+ * Reemplazos que el plan da para un alimento; null si no hay ninguno. Nunca se
+ * propone algo que HOY esté restringido o en rojo, aunque el plan lo liste o viva
+ * en un grupo verde.
+ */
+export function planOptionsFor(
+  status: ItemStatus,
+  diet: DietPlan,
+  now: Date,
+): Options | null {
   const eq = status.equivalences[0];
   if (eq) {
-    const items = status.equivalences.flatMap((e) => e.use);
-    return {
-      source: "equivalence",
-      items,
-      ...(eq.note ? { note: eq.note } : {}),
-    };
+    const items = status.equivalences
+      .flatMap((e) => e.use)
+      .filter((u) => isSafeOption(diet, u, now));
+    if (items.length > 0)
+      return {
+        source: "equivalence",
+        items,
+        ...(eq.note ? { note: eq.note } : {}),
+      };
   }
   if (status.kind === "green") {
     const items = status.group.items
       .filter((i) => i.id !== status.id)
+      .filter((i) => resolveItemStatus(diet, i.id, now)?.kind === "green")
       .map((i) => i.name);
     if (items.length > 0) return { source: "group", items };
   }
@@ -318,7 +363,7 @@ export function answerOpen(
     case "replacement": {
       const item = matchItem(diet, question, lang, now);
       if (!item) return { kind: "not-in-plan", reason: "unknown-food" };
-      const options = planOptionsFor(item);
+      const options = planOptionsFor(item, diet, now);
       if (!options)
         return { kind: "not-in-plan", reason: "no-options", food: item.name };
       return { kind: "replacement", food: item.name, options };
@@ -331,11 +376,13 @@ export function answerOpen(
         kind: "refused",
         food: item?.name ?? null,
         meal,
-        options: item ? planOptionsFor(item) : null,
+        options: item ? planOptionsFor(item, diet, now) : null,
         next,
       };
     }
     case "hydration":
+      // «¿se puede dar agua con limón?»: si nombra un alimento del plan, es una consulta.
+      if (matchItem(diet, question, lang, now)) return null;
       return {
         kind: "hydration",
         litersMin: diet.hydration.targetLitersMin,
@@ -344,8 +391,15 @@ export function answerOpen(
         habit: diet.hydration.habit,
       };
     case "meal": {
+      // «¿puede comer pollo ahora?»: si nombra un alimento del plan, es una consulta.
+      if (matchItem(diet, question, lang, now)) return null;
       const named = matchMeal(diet, question, lang);
       if (named) return { kind: "meal", meal: named, timing: "named" };
+      // «¿qué le doy mañana?»: arranca el día siguiente, no la franja de ahora.
+      if (
+        toTokens(question, lang).some((t) => t === "manana" || t === "tomorrow")
+      )
+        return { kind: "meal", meal: sortedMeals(diet)[0], timing: "tomorrow" };
       const slot = currentMealSlot(diet, now);
       if (!slot) return { kind: "not-in-plan", reason: "unknown" };
       switch (slot.kind) {
@@ -392,4 +446,3 @@ export function answerQuestion(
 
   return { kind: "open", answer: { kind: "not-in-plan", reason: "unknown" } };
 }
-

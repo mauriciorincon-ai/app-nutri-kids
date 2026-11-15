@@ -74,6 +74,18 @@ export function accentSchema(
       (out) => [...numbersIn(out)].every((n) => srcNumbers.has(n)),
       "new-numbers",
     )
+    // Horas, litros y vasos del plan no se pierden ni se cambian (menú e hidratación).
+    .refine((out) => {
+      const got = numbersIn(out);
+      return [...srcNumbers].every((n) => got.has(n));
+    }, "lost-numbers")
+    .refine(
+      (out) =>
+        !/\b(deberia|deberias|should|tienes que|tiene que|have to|has to|need to|necesita)\b/.test(
+          normalizeText(out, locale),
+        ),
+      "advice-words",
+    )
     .refine((out) => {
       const words = normalizeText(out, locale).split(" ");
       return !BANNED.some((b) => words.some((w) => w.startsWith(b)));

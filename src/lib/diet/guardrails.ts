@@ -29,7 +29,7 @@ function normalize(input: string): string {
 const MEDICAL_ACTION_PATTERNS: RegExp[] = [
   // ES — cambios de dosis/medicación
   /\b(sub[oe]|baj[oe]|aument[oa]|reduc|dobl|cambi|quit[oa]|suspend|empiez[oa]|dej[oa] de dar)\b.*\b(dosis|suplement|vitamin|medic|gotas|b12|hierro|omega|zinc|melatonin)/,
-  /\b(dosis|medic|receta|diagnos|sintoma|enferm|alergi|reaccion|dolor|fiebre|vomit|diarrea)/,
+  /\b(dosis|medic|recetar|recetaron|receto|recetado|diagnos|sintoma|enferm|alergi|reaccion|dolor|fiebre|vomit|diarrea)/,
   // ES — pedir diagnóstico/tratamiento
   /\b(que le pasa|es normal que|deberia llevarl|tiene (algo|autismo|tea)|le dio)/,
   // EN

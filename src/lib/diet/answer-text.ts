@@ -87,7 +87,14 @@ export function composeAnswer(
           end: m.end,
           content: m.content[locale],
         }),
-        required: [m.name[locale]],
+        // El nombre de la comida y CADA alimento del menú deben sobrevivir al acento.
+        required: [
+          m.name[locale],
+          ...m.content[locale]
+            .split(/,|;| y | and /)
+            .map((x) => x.trim())
+            .filter((x) => x.length > 2),
+        ],
       };
     }
     case "hydration": {

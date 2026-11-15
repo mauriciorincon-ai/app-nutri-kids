@@ -130,3 +130,53 @@ describe("con modelo del aparato, solo re-redacta lo que el código decidió", (
     expect(schema.safeParse("Something is next.").success).toBe(false);
   });
 });
+
+describe("auditoría S4: el esquema protege menú e hidratación", () => {
+  const MEAL = "Media mañana, 10:00 a 10:30: Pera, yogur natural";
+  it("meal: pierde un alimento del menú → rechaza; conserva todo → acepta", () => {
+    const required = ["Media mañana", "Pera", "yogur natural"];
+    const schema = accentSchema(MEAL, required, "es");
+    expect(
+      schema.safeParse("Toca media mañana, de 10:00 a 10:30: pera.").success,
+    ).toBe(false);
+    expect(
+      schema.safeParse(
+        "Toca media mañana, de 10:00 a 10:30: pera y yogur natural.",
+      ).success,
+    ).toBe(true);
+  });
+  it("meal: cambia la hora → rechaza", () => {
+    const schema = accentSchema(
+      MEAL,
+      ["Media mañana", "Pera", "yogur natural"],
+      "es",
+    );
+    expect(
+      schema.safeParse("Media mañana a las 11:00: pera y yogur natural.")
+        .success,
+    ).toBe(false);
+  });
+  it("hydration: pierde o cambia las cifras → rechaza", () => {
+    const src = "Tu plan pide entre 1,2 y 1,5 litros al día (6 vasos).";
+    const schema = accentSchema(src, [], "es");
+    expect(
+      schema.safeParse("Tu plan pide tomar harta agua al día.").success,
+    ).toBe(false);
+    expect(
+      schema.safeParse("Tu plan pide entre 1,2 y 2 litros (6 vasos).").success,
+    ).toBe(false);
+    expect(
+      schema.safeParse(
+        "Tu plan pide entre 1,2 y 1,5 litros al día, unos 6 vasos.",
+      ).success,
+    ).toBe(true);
+  });
+  it("consejo o imperativo médico («deberías», «should») → rechaza", () => {
+    const schema = accentSchema("Toma agua.", [], "es");
+    expect(schema.safeParse("Deberías tomar agua.").success).toBe(false);
+    expect(
+      accentSchema("Drink water.", [], "en").safeParse("He should drink water.")
+        .success,
+    ).toBe(false);
+  });
+});

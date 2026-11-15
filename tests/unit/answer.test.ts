@@ -34,21 +34,47 @@ const names = (items: { es: string; en: string }[], l: "es" | "en") =>
   items.map((i) => i[l]);
 
 describe("tabla de patrones: cada intención nace {es, en}", () => {
-  it.each(Object.keys(INTENT_PATTERNS) as OpenIntent[])("%s tiene ES y EN", (intent) => {
-    expect(INTENT_PATTERNS[intent].es.length).toBeGreaterThan(0);
-    expect(INTENT_PATTERNS[intent].en.length).toBeGreaterThan(0);
-  });
+  it.each(Object.keys(INTENT_PATTERNS) as OpenIntent[])(
+    "%s tiene ES y EN",
+    (intent) => {
+      expect(INTENT_PATTERNS[intent].es.length).toBeGreaterThan(0);
+      expect(INTENT_PATTERNS[intent].en.length).toBeGreaterThan(0);
+    },
+  );
+
+  // Una prueba por CADA frase de la tabla (no solo un ejemplo por intención).
+  const PHRASES = (Object.keys(INTENT_PATTERNS) as OpenIntent[]).flatMap((i) =>
+    (["es", "en"] as const).flatMap((l) =>
+      INTENT_PATTERNS[i][l].map((p) => [i, l, p] as const),
+    ),
+  );
+  it.each(PHRASES)(
+    "%s · %s · «%s» dispara su intención",
+    (intent, lang, pattern) => {
+      // «~» = una palabra cualquiera; «*» = cualquier terminación.
+      const q = pattern.replace(/~/g, "algo").replace(/\*$/, "o");
+      expect(detectIntent(q, lang)).toBe(intent);
+    },
+  );
 
   const PAIRS: [OpenIntent, string, string][] = [
     ["replacement", "no tengo pollo", "I don't have chicken"],
     ["replacement", "se acabó la manzana", "we ran out of apples"],
-    ["replacement", "¿con qué reemplazo la manzana?", "what can I replace apples with?"],
+    [
+      "replacement",
+      "¿con qué reemplazo la manzana?",
+      "what can I replace apples with?",
+    ],
     ["replacement", "en vez de manzana", "instead of apples"],
     ["refused", "no quiso el brócoli", "he didn't want the broccoli"],
     ["refused", "no le gustó la pera", "she didn't like the pear"],
     ["refused", "rechazó el desayuno", "he refused breakfast"],
     ["meal", "¿qué le doy ahora?", "what can I give now?"],
-    ["meal", "¿qué le doy de merienda?", "what should I give for the afternoon snack?"],
+    [
+      "meal",
+      "¿qué le doy de merienda?",
+      "what should I give for the afternoon snack?",
+    ],
     ["meal", "¿qué toca?", "what's next?"],
     ["hydration", "¿cuánta agua le doy?", "how much water should he drink?"],
     ["hydration", "¿cuántos vasos al día?", "how many glasses a day?"],
@@ -59,8 +85,12 @@ describe("tabla de patrones: cada intención nace {es, en}", () => {
   });
 
   it("precedencia: el rechazo gana a la pregunta de menú, el reemplazo también", () => {
-    expect(detectIntent("no quiso desayunar, ¿qué hago?", "es")).toBe("refused");
-    expect(detectIntent("no tengo pollo, ¿qué le doy?", "es")).toBe("replacement");
+    expect(detectIntent("no quiso desayunar, ¿qué hago?", "es")).toBe(
+      "refused",
+    );
+    expect(detectIntent("no tengo pollo, ¿qué le doy?", "es")).toBe(
+      "replacement",
+    );
   });
 
   it("«aguacate» no es agua (tokens, no subcadenas)", () => {
@@ -79,7 +109,12 @@ describe("«no tengo X» → reemplazos del plan", () => {
     expect(a.kind).toBe("replacement");
     if (a.kind !== "replacement") return;
     expect(a.options.source).toBe("equivalence");
-    expect(names(a.options.items, "es")).toEqual(["pera", "kiwi", "uvas", "fresas"]);
+    expect(names(a.options.items, "es")).toEqual([
+      "pera",
+      "kiwi",
+      "uvas",
+      "fresas",
+    ]);
     const b = open("we ran out of apples", "en");
     expect(b.kind === "replacement" && b.options.items.length).toBe(4);
   });
@@ -136,9 +171,21 @@ describe("«no quiso X» → otras opciones y lo que sigue, sin culpa", () => {
   });
 
   it("el texto no culpa ni califica (ES/EN)", () => {
-    for (const [t, l] of [[es, "es"], [en, "en"]] as const) {
-      const c = composeAnswer(open(l === "es" ? "no quiso el brócoli" : "he didn't want the broccoli", l), t.answer, l);
-      expect(c.lead.toLowerCase()).not.toMatch(/culpa|mal|castigo|premio|guilt|bad|punish|reward/);
+    for (const [t, l] of [
+      [es, "es"],
+      [en, "en"],
+    ] as const) {
+      const c = composeAnswer(
+        open(
+          l === "es" ? "no quiso el brócoli" : "he didn't want the broccoli",
+          l,
+        ),
+        t.answer,
+        l,
+      );
+      expect(c.lead.toLowerCase()).not.toMatch(
+        /culpa|mal|castigo|premio|guilt|bad|punish|reward/,
+      );
     }
   });
 });
@@ -164,7 +211,9 @@ describe("«¿qué le doy ahora?» → el menú de la hora", () => {
       timing: "named",
       meal: { id: "merienda" },
     });
-    expect(open("what should I give for dinner?", "en", at("07:30"))).toMatchObject({
+    expect(
+      open("what should I give for dinner?", "en", at("07:30")),
+    ).toMatchObject({
       meal: { id: "cena" },
     });
   });
@@ -180,7 +229,12 @@ describe("«¿qué le doy ahora?» → el menú de la hora", () => {
 describe("«¿cuánta agua?» → hidratación del plan", () => {
   it("ES/EN con la meta y el hábito del plan", () => {
     const a = open("¿cuánta agua le doy?", "es");
-    expect(a).toMatchObject({ kind: "hydration", litersMin: 1.2, litersMax: 1.5, glasses: 4 });
+    expect(a).toMatchObject({
+      kind: "hydration",
+      litersMin: 1.2,
+      litersMax: 1.5,
+      glasses: 4,
+    });
     const c = composeAnswer(a, es.answer, "es");
     expect(c.lead).toContain("1,2");
     expect(c.lead).toContain(diet.hydration.habit.es);
@@ -191,16 +245,22 @@ describe("«¿cuánta agua?» → hidratación del plan", () => {
 
 describe("answerQuestion: la única puerta del chat", () => {
   it("médico → rechazo antes que cualquier respuesta", () => {
-    expect(answerQuestion("¿le subo la dosis de la B12?", diet, T10, "es")).toEqual({
+    expect(
+      answerQuestion("¿le subo la dosis de la B12?", diet, T10, "es"),
+    ).toEqual({
       kind: "rejection",
       reason: "medical",
     });
   });
   it("off-topic → rechazo", () => {
-    expect(answerQuestion("¿quién ganó el partido?", diet, T10, "es").kind).toBe("rejection");
+    expect(
+      answerQuestion("¿quién ganó el partido?", diet, T10, "es").kind,
+    ).toBe("rejection");
   });
   it("lookup → veredicto", () => {
-    expect(answerQuestion("¿la manzana se puede?", diet, T10, "es").kind).toBe("verdict");
+    expect(answerQuestion("¿la manzana se puede?", diet, T10, "es").kind).toBe(
+      "verdict",
+    );
   });
   it("lo que el plan no dice → «no lo dice», jamás inventado (ES/EN)", () => {
     for (const [q, l] of [
@@ -227,28 +287,147 @@ describe("composeAnswer: todo sale del plan + plantillas i18n", () => {
     ["no tengo mandarina", "I don't have tangerines"],
     ["no tengo yogurt", "I don't have yogurt"],
   ])("«%s» / «%s» sin placeholders sueltos", (qEs, qEn) => {
-    for (const [q, l, t] of [[qEs, "es", es], [qEn, "en", en]] as const) {
+    for (const [q, l, t] of [
+      [qEs, "es", es],
+      [qEn, "en", en],
+    ] as const) {
       const c = composeAnswer(open(q, l, at("16:10")), t.answer, l);
       expect(c.lead).not.toMatch(/\{\w+\}/);
       expect(c.next?.text ?? "").not.toMatch(/\{\w+\}/);
-      for (const r of c.required) expect(c.lead.toLowerCase()).toContain(r.toLowerCase());
+      for (const r of c.required)
+        expect(c.lead.toLowerCase()).toContain(r.toLowerCase());
     }
   });
 
   it("«no lo dice» dice que lo pregunte a su profesional", () => {
-    const c = composeAnswer({ kind: "not-in-plan", reason: "unknown" }, es.answer, "es");
+    const c = composeAnswer(
+      { kind: "not-in-plan", reason: "unknown" },
+      es.answer,
+      "es",
+    );
     expect(c.notInPlan).toBe(true);
     expect(c.lead).toMatch(/no lo dice/);
-    expect(composeAnswer({ kind: "not-in-plan", reason: "unknown" }, en.answer, "en").lead).toMatch(/doesn't say/);
+    expect(
+      composeAnswer({ kind: "not-in-plan", reason: "unknown" }, en.answer, "en")
+        .lead,
+    ).toMatch(/doesn't say/);
   });
 
   it("después de la cena, el rechazo dice que mañana empieza como siempre", () => {
-    const c = composeAnswer(open("no quiso cenar", "es", at("20:00")), es.answer, "es");
+    const c = composeAnswer(
+      open("no quiso cenar", "es", at("20:00")),
+      es.answer,
+      "es",
+    );
     expect(c.next?.text).toBe(es.answer.refusedNoNext);
   });
 
   it("mañana: tras la última comida el menú apunta al desayuno de mañana", () => {
-    const c = composeAnswer(open("¿qué toca?", "es", at("21:00")), es.answer, "es");
+    const c = composeAnswer(
+      open("¿qué toca?", "es", at("21:00")),
+      es.answer,
+      "es",
+    );
     expect(c.lead).toMatch(/Mañana/);
+  });
+});
+
+describe("auditoría S4: casos de borde del motor", () => {
+  it("las 4 sugerencias del chat contestan algo del plan, en ES y EN", () => {
+    for (const [lang, dict] of [
+      ["es", es],
+      ["en", en],
+    ] as const) {
+      for (const q of [
+        dict.chat.sugg1,
+        dict.chat.sugg2,
+        dict.chat.sugg3,
+        dict.chat.sugg4,
+      ]) {
+        const a = answerQuestion(q, diet, T10, lang);
+        const unknown = a.kind === "open" && a.answer.kind === "not-in-plan";
+        expect(unknown, `«${q}» (${lang}) cayó en «el plan no lo dice»`).toBe(
+          false,
+        );
+      }
+    }
+  });
+
+  it("«qué desayuno le preparo / qué almuerzo le doy» se entienden", () => {
+    expect(detectIntent("¿Qué desayuno le preparo?", "es")).toBe("meal");
+    expect(detectIntent("¿Qué almuerzo le doy?", "es")).toBe("meal");
+    expect(detectIntent("What dinner can I give?", "en")).toBe("meal");
+  });
+
+  it("nombrar un alimento gana sobre «ahora», «agua» o «qué hago»: es una consulta", () => {
+    for (const [q, lang] of [
+      ["¿puede comer pollo ahora?", "es"],
+      ["can he eat chicken right now?", "en"],
+    ] as const) {
+      const a = answerQuestion(q, diet, T10, lang);
+      expect(a.kind, q).toBe("verdict");
+    }
+  });
+
+  it("«¿qué hago con el yogurt?» ya no se confunde con el menú de ahora", () => {
+    const a = answerQuestion("¿qué hago con el yogurt?", diet, T10, "es");
+    expect(a.kind === "open" ? a.answer.kind : a.kind).not.toBe("meal");
+  });
+
+  it("«¿no hay problema si come queso?» es una consulta, no un «no tengo»", () => {
+    expect(detectIntent("¿no hay problema si come queso?", "es")).not.toBe(
+      "replacement",
+    );
+    const a = answerQuestion(
+      "¿no hay problema si come queso?",
+      diet,
+      T10,
+      "es",
+    );
+    // Nunca un reemplazo inventado: o veredicto, o «tu plan no lo dice».
+    expect(a.kind === "open" ? a.answer.kind : a.kind).not.toBe("replacement");
+  });
+
+  it("«receta» ya no dispara el guardrail médico: pregunta de comida → «el plan no lo dice», ES y EN", () => {
+    for (const [q, lang] of [
+      ["¿tienes una receta con pollo?", "es"],
+      ["any recipe with chicken?", "en"],
+    ] as const) {
+      const a = answerQuestion(q, diet, T10, lang);
+      expect(a.kind, q).not.toBe("rejection");
+    }
+    // …y recetar medicina sigue siendo médico.
+    expect(
+      answerQuestion("¿le recetaron algo para dormir?", diet, T10, "es").kind,
+    ).toBe("rejection");
+  });
+
+  it("plurales y conjugaciones: «no le gustan las verduras», «no quieren»", () => {
+    expect(detectIntent("no le gustan las verduras", "es")).toBe("refused");
+    expect(detectIntent("no quieren comer", "es")).toBe("refused");
+    expect(detectIntent("he doesn't like vegetables", "en")).toBe("refused");
+  });
+
+  it("«¿qué le doy mañana?» responde con el primer menú de mañana, no con el de ahora", () => {
+    const a = open("¿qué le doy mañana?", "es");
+    expect(a.kind).toBe("meal");
+    if (a.kind === "meal") expect(a.timing).toBe("tomorrow");
+    const e = open("what can I give tomorrow?", "en");
+    if (e.kind === "meal") expect(e.timing).toBe("tomorrow");
+  });
+
+  it("jamás propone un alimento restringido hoy, ni de su grupo ni de las equivalencias", () => {
+    const sintetica = structuredClone(diet);
+    sintetica.restrictions.foods.push({
+      id: "pera",
+      name: { es: "Pera", en: "Pear" },
+    });
+    const a = answerOpen("no tengo kiwi", sintetica, T10, "es");
+    expect(a?.kind).toBe("replacement");
+    if (a?.kind === "replacement") {
+      const dadas = a.options.items.map((i) => i.es);
+      expect(dadas).not.toContain("Pera");
+      expect(dadas.length).toBeGreaterThan(0);
+    }
   });
 });

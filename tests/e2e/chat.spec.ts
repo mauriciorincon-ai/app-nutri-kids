@@ -14,7 +14,11 @@ async function openChat(page: Page, locale: "es" | "en" = "es") {
   await page.addInitScript((loc) => {
     window.localStorage.setItem(
       "nutrikids.prefs.v1",
-      JSON.stringify({ locale: loc, disclaimerSeen: true, chatIntroSeen: true }),
+      JSON.stringify({
+        locale: loc,
+        disclaimerSeen: true,
+        chatIntroSeen: true,
+      }),
     );
   }, locale);
   await page.goto("/chat");
@@ -33,7 +37,9 @@ async function ask(page: Page, question: string) {
   await page.getByRole("textbox").press("Enter");
 }
 
-test("lookup «¿la manzana se puede?» → veredicto del plan, sin red", async ({ page }) => {
+test("lookup «¿la manzana se puede?» → veredicto del plan, sin red", async ({
+  page,
+}) => {
   await openChat(page);
   const calls = watchNetwork(page);
   await ask(page, "¿la manzana se puede?");
@@ -77,7 +83,9 @@ test("las cuatro preguntas abiertas en ES contestan con el plan demo y cero red"
   expect(calls).toEqual([]);
 });
 
-test("lo que el plan no dice → «tu plan no lo dice», jamás inventado", async ({ page }) => {
+test("lo que el plan no dice → «tu plan no lo dice», jamás inventado", async ({
+  page,
+}) => {
   await openChat(page);
   await ask(page, "No tengo mandarina");
   await expect(page.locator('[data-answer="not-in-plan"]')).toContainText(
@@ -91,12 +99,16 @@ test("consejo médico → redirección amable al profesional", async ({ page }) 
   await expect(page.getByText(/pediatra o nutricionista/i)).toBeVisible();
 });
 
-test("la conversación NO se persiste: al recargar, el hilo amanece vacío", async ({ page }) => {
+test("la conversación NO se persiste: al recargar, el hilo amanece vacío", async ({
+  page,
+}) => {
   await openChat(page);
   await ask(page, "¿la manzana se puede?");
   await expect(page.getByText("Evitar")).toBeVisible();
   await page.reload();
-  await expect(page.getByRole("button", { name: "¿La manzana se puede?" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "¿La manzana se puede?" }),
+  ).toBeVisible();
   await expect(page.getByText("Evitar")).toBeHidden();
 });
 
@@ -108,12 +120,16 @@ test("EN: open questions answer in English from the plan", async ({ page }) => {
     "If there's no chicken",
   );
   await ask(page, "How much water should he drink?");
-  await expect(page.locator('[data-answer="hydration"]')).toContainText("1.2 to 1.5 liters");
+  await expect(page.locator('[data-answer="hydration"]')).toContainText(
+    "1.2 to 1.5 liters",
+  );
   expect(calls).toEqual([]);
 });
 
 for (const colorScheme of ["light", "dark"] as const) {
-  test(`axe limpio con respuestas en el hilo · tema ${colorScheme}`, async ({ page }) => {
+  test(`axe limpio con respuestas en el hilo · tema ${colorScheme}`, async ({
+    page,
+  }) => {
     await page.emulateMedia({ colorScheme });
     await openChat(page);
     await ask(page, "¿la manzana se puede?");
@@ -127,3 +143,25 @@ for (const colorScheme of ["light", "dark"] as const) {
     expect(results.violations).toEqual([]);
   });
 }
+
+test("con un modelo del aparato disponible, la respuesta sale marcada «redactado en tu teléfono» y sigue sin red", async ({
+  page,
+}) => {
+  // Modelo FALSO que devuelve la misma frase con otras palabras, conservando lo del plan.
+  await page.addInitScript(() => {
+    (globalThis as unknown as Record<string, unknown>).LanguageModel = {
+      availability: async () => "available",
+      create: async () => ({
+        prompt: async (src: string) => src,
+        destroy: () => {},
+      }),
+    };
+  });
+  await openChat(page);
+  const calls = watchNetwork(page);
+  await ask(page, "No tengo pollo, ¿qué le doy?");
+  await expect(page.getByText("redactado en tu teléfono")).toBeVisible();
+  const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations).toEqual([]);
+  expect(calls).toEqual([]);
+});
