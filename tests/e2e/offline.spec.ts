@@ -180,3 +180,35 @@ test("sin internet: el detalle de un alimento visitado con señal abre completo"
   await page.goto("/dieta/manzana");
   await expect(page.locator("h1")).toHaveText(titulo);
 });
+
+test("dos pestañas: al aceptar en una, la otra avisa (no se recarga sola)", async ({
+  page,
+  context,
+}) => {
+  await firstVisit(page);
+  const otra = await context.newPage();
+  await otra.goto("/");
+  await otra.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
+  await expect
+    .poll(() => otra.evaluate(() => !!navigator.serviceWorker.controller))
+    .toBe(true);
+  await otra.evaluate(() => {
+    (window as unknown as { __viva: boolean }).__viva = true;
+  });
+
+  await publishNewVersion(page);
+  await page
+    .getByTestId("sw-update-notice")
+    .getByRole("button", { name: "Actualizar" })
+    .click();
+
+  // La otra pestaña quedó con la versión vieja: avisa y conserva su página viva.
+  await expect(otra.getByTestId("sw-update-notice")).toBeVisible();
+  expect(
+    await otra.evaluate(
+      () => (window as unknown as { __viva?: boolean }).__viva,
+    ),
+  ).toBe(true);
+});

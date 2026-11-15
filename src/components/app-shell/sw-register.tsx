@@ -27,10 +27,12 @@ export function SwRegister() {
       return;
 
     const sw = navigator.serviceWorker;
+    // La primera instalación también dispara controllerchange (clients.claim): no es una versión nueva.
+    const hadController = !!sw.controller;
     // Tras aceptar, el SW nuevo toma el control y recargamos UNA vez.
     const onControllerChange = () => {
       if (accepted.current) window.location.reload();
-      else setWaiting("reload"); // otra pestaña aceptó: esta avisa, no recarga sola
+      else if (hadController) setWaiting("reload"); // otra pestaña aceptó: esta avisa, no recarga sola
     };
     sw.addEventListener("controllerchange", onControllerChange);
 
