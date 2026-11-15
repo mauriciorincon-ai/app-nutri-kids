@@ -3,7 +3,8 @@
  * con las plantillas de i18n (`t.answer`). Pura: sin React, sin red.
  */
 import type { Dictionary } from "@/i18n/es";
-import type { OpenAnswer } from "./answer";
+import type { OpenAnswer, OptionItem } from "./answer";
+import type { LocalizedText } from "./schema";
 import type { Locale } from "./search";
 
 export type AnswerTemplates = Dictionary["answer"];
@@ -11,8 +12,8 @@ export type AnswerTemplates = Dictionary["answer"];
 export type ComposedAnswer = {
   /** Frase principal (la única que el modelo del aparato puede re-redactar). */
   lead: string;
-  /** Opciones del plan, tal cual vienen en los datos. */
-  items: string[];
+  /** Opciones del plan, tal cual vienen en los datos; `marked` = textura que hoy no acepta. */
+  items: { text: string; marked: boolean }[];
   /** Título de la lista, si hay lista. */
   itemsTitle: string | null;
   /** «Lo que sigue», cuando aplica. */
@@ -31,6 +32,12 @@ function fill(template: string, values: Record<string, string | number>): string
 
 const lower = (s: string, locale: Locale) => s.toLocaleLowerCase(locale);
 
+const toItems = (items: OptionItem[], locale: Locale) =>
+  items.map((i) => ({ text: i.name[locale], marked: i.notAccepted }));
+
+const listOf = (names: LocalizedText[], locale: Locale) =>
+  names.map((n) => n[locale]).join(", ");
+
 export function composeAnswer(
   answer: OpenAnswer,
   t: AnswerTemplates,
@@ -45,7 +52,7 @@ export function composeAnswer(
       return {
         ...base,
         lead: fill(lead, { food }),
-        items: answer.options.items.map((i) => i[locale]),
+        items: toItems(answer.options.items, locale),
         itemsTitle: t.optionsTitle,
         required: [food],
       };
@@ -65,7 +72,7 @@ export function composeAnswer(
       return {
         ...base,
         lead: food && answer.options ? fill(t.refusedFoodLead, { food }) : t.refusedLead,
-        items: answer.options?.items.map((i) => i[locale]) ?? [],
+        items: answer.options ? toItems(answer.options.items, locale) : [],
         itemsTitle: answer.options ? t.optionsTitle : null,
         next,
         required: food && answer.options ? [food] : [],
@@ -107,6 +114,56 @@ export function composeAnswer(
           glasses: answer.glasses,
           habit: answer.habit[locale],
         }),
+      };
+    }
+    case "sleep":
+      return { ...base, lead: answer.text[locale] };
+    case "activity":
+      return { ...base, lead: answer.text[locale] };
+    case "allergy": {
+      const { match } = answer;
+      const lead = match
+        ? fill(match.as === "allergy" ? t.allergyYes : t.intoleranceYes, {
+            food: lower(match.name[locale], locale),
+          })
+        : [
+            answer.allergies.length > 0
+              ? fill(t.allergyList, { list: listOf(answer.allergies, locale) })
+              : "",
+            answer.intolerances.length > 0
+              ? fill(t.intoleranceList, {
+                  list: listOf(answer.intolerances, locale),
+                })
+              : "",
+            t.allergyOther,
+          ]
+            .filter(Boolean)
+            .join(" ");
+      return {
+        ...base,
+        lead,
+        required: [...answer.allergies, ...answer.intolerances].map((n) =>
+          lower(n[locale], locale),
+        ),
+      };
+    }
+    case "medication": {
+      const items = answer.items.map((m) => ({
+        text: [m.name[locale], m.dose?.[locale], m.when?.[locale]]
+          .filter(Boolean)
+          .join(" · "),
+        marked: false,
+      }));
+      return {
+        ...base,
+        lead: t.medicationLead,
+        items,
+        itemsTitle: t.medicationTitle,
+        required: answer.items.flatMap((m) =>
+          [m.name[locale], m.dose?.[locale], m.when?.[locale]].filter(
+            (x): x is string => Boolean(x),
+          ),
+        ),
       };
     }
     case "not-in-plan":

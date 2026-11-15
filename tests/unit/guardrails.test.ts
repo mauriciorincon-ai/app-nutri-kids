@@ -19,7 +19,14 @@ describe("screenInput — frontera consulta vs. cambio médico", () => {
 
   it("diagnóstico/síntomas → medical", () => {
     expect(screenInput("le dio fiebre y vomitó, ¿qué hago?")).toBe("medical");
-    expect(screenInput("does he have an allergy?")).toBe("medical");
+    expect(screenInput("is this an allergic reaction?")).toBe("medical");
+    expect(screenInput("¿es una reacción alérgica?")).toBe("medical");
+  });
+
+  it("S5: consultar la alergia o los medicamentos del plan es legítimo → ok", () => {
+    expect(screenInput("does he have an allergy?")).toBe("ok");
+    expect(screenInput("¿es alérgico al maní?")).toBe("ok");
+    expect(screenInput("¿qué medicamentos toma?")).toBe("ok");
   });
 
   it("preguntas de comida legítimas → ok", () => {

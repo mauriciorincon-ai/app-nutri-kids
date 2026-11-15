@@ -37,6 +37,24 @@ const MEDICAL_ACTION_PATTERNS: RegExp[] = [
   /\b(dose|dosage|prescri|diagnos|symptom|disease|allerg|reaction|fever|vomit|diarrhea)/,
 ];
 
+/**
+ * CONSULTAR lo que el plan ya trae del perfil («¿es alérgico al maní?», «¿qué
+ * medicamentos toma?») es legítimo y lo contesta el motor con el plan o con «tu
+ * plan no lo dice». PEDIR un cambio, un diagnóstico o hablar de síntomas sigue
+ * siendo del profesional: eso lo decide CHANGE_OR_DIAGNOSIS, que gana siempre.
+ */
+const PROFILE_QUERY_PATTERNS: RegExp[] = [
+  /\b(alergia|alergic|alergen|intoleran|medicament|medicina|pastilla|jarabe)/,
+  /\b(allerg|intoleran|medication|medicine)|\b(pill|pills|meds)\b/,
+];
+
+const CHANGE_OR_DIAGNOSIS_PATTERNS: RegExp[] = [
+  MEDICAL_ACTION_PATTERNS[0],
+  MEDICAL_ACTION_PATTERNS[2],
+  MEDICAL_ACTION_PATTERNS[3],
+  /\b(recetar|recetaron|receto|recetado|diagnos|sintoma|enferm|reaccion|dolor|fiebre|vomit|diarrea|prescri|symptom|disease|reaction|fever|diarrhea)/,
+];
+
 /** Temas claramente ajenos a la dieta. */
 const OFF_TOPIC_PATTERNS: RegExp[] = [
   /\b(partido|futbol|pelicula|clima|noticia|politic|chiste|cancion|videojuego|bitcoin|president)/,
@@ -52,7 +70,11 @@ const FOOD_TOPIC_PATTERNS: RegExp[] = [
 export function screenInput(message: string): GuardrailOutcome {
   const norm = normalize(message);
 
-  if (MEDICAL_ACTION_PATTERNS.some((r) => r.test(norm))) return "medical";
+  const profileQuery =
+    PROFILE_QUERY_PATTERNS.some((r) => r.test(norm)) &&
+    !CHANGE_OR_DIAGNOSIS_PATTERNS.some((r) => r.test(norm));
+  if (!profileQuery && MEDICAL_ACTION_PATTERNS.some((r) => r.test(norm)))
+    return "medical";
 
   const looksFood = FOOD_TOPIC_PATTERNS.some((r) => r.test(norm));
   if (!looksFood && OFF_TOPIC_PATTERNS.some((r) => r.test(norm))) {
