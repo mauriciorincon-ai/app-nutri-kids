@@ -1,6 +1,7 @@
 # ADR 005 — Estrategia de grounding: serialización compacta mono-idioma
 
-- **Estado:** aceptada · Sprint 002 · 2026-07-07
+- **Estado:** superada por ADR-008 «chat code-first» (Sprint 004, 2026-11-15): el plan ya no viaja a ningún servidor; `grounding.ts` se retiró. Se conserva como historia.
+- **Estado original:** aceptada · Sprint 002 · 2026-07-07
 - **Contexto:** el LLM debe responder **anclado a la dieta cargada** (demo o real), que vive en el
   dispositivo (localStorage), nunca en un servidor. Hay que hacerle llegar el plan como contexto
   sin exceder el presupuesto de tokens del free tier ni filtrar contenido innecesario.

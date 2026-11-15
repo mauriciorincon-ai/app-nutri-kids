@@ -23,3 +23,18 @@ Rama `sprint-004/dieta-sin-internet` · orden: `SPRINT_004.md` (planeadora) · G
 ### Fricción del kit / del entorno
 - Las pruebas del kit (`cero-enlaces`, `horas-sprint`, `verificar-dependencias`) asumen entorno `node`; la app corre vitest en jsdom → hizo falta `// @vitest-environment node` en cada una y un guard `typeof window` en `tests/setup.ts`.
 - `sed -i` de BSD (macOS) exige sufijo: los cambios por script se hacen con python.
+
+## F2 — el chat que contesta
+- Motor `answerOpen(question, diet, now, lang)` en `src/lib/diet/answer.ts` + `answerQuestion` como única puerta (guardrail → abierta → lookup → «tu plan no lo dice»). Tabla `INTENT_PATTERNS` {es, en} con precedencia rechazo > reemplazo > agua > menú; coincidencia por tokens («aguacate» ≠ «agua») y por tronco para comidas. Redacción en `answer-text.ts` con plantillas `t.answer` (i18n ES/EN).
+- Retirados: `ai` y `@ai-sdk/*` (7 paquetes), `src/app/api/chat/route.ts`, `src/lib/ia/{provider,grounding}.ts`, `src/lib/rate-limit.ts`, 4 tests, las variables `CHAT_*` de `.env.example` y `playwright.config.ts`. `guardrails.ts` pasa a `src/lib/diet/`.
+- Acento opcional del aparato: `src/lib/ia/device-accent.ts` (Prompt API `LanguageModel`, solo si `availability() === "available"`; esquema Zod por frase; 4 s de tope). Sin modelo, responde el código.
+- UI: `AnswerCard` + hilo sin red (`use-chat-thread.ts` sin `fetch`), estados «disabled/error» retirados, ajustes y nota del chat con el copy nuevo.
+- ADR-008 «chat code-first» (reemplaza al 004; 005 superado, 006 vigente en no-persistencia).
+- Verde local: typecheck, lint, vitest 279/279 (cobertura líneas 99 %), e2e 96/96 con `CI=1`.
+
+### Bugs hallados por la e2e (resueltos en la fase)
+- «¿Qué le doy ahora?» respondía con la franja equivocada: el hilo usaba `useToday()` (mediodía fijo). Ahora lee la hora del envío (`now` inyectable).
+- axe: `<div>` dentro de `<ol>` (ancla de scroll, venía del S2) y salto de encabezados h1→h3 en la tarjeta de veredicto (venía del S2; axe solo auditaba el chat vacío). Ancla fuera de la lista, h2 en la tarjeta.
+
+### Demo en rojo (regla 15/27) — `tests/unit/no-cloud-ai.test.ts`
+- Archivo `package.json`, mutación: añadir `"@ai-sdk/groq"` a dependencias → el gate falló nombrando `@ai-sdk/groq`, restauró y volvió a verde (3 pruebas).
