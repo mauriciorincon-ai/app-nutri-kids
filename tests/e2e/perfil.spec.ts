@@ -122,6 +122,23 @@ test("un plan v1 guardado se lee migrado: sin perfil, dice «tu plan no lo dice�
   await expect(page.locator("h1")).toBeVisible();
 });
 
+test("restricciones: sin el día no se afirma nada; antes de empezar, dice que empieza", async ({
+  page,
+}) => {
+  const diet = JSON.parse(DEMO);
+  diet.restrictions.validFrom = "2027-01-10";
+  diet.restrictions.validUntil = "2027-03-10";
+  await page.addInitScript((d) => {
+    window.localStorage.setItem("nutrikids.diet.v1", d);
+    window.localStorage.setItem("nutrikids.source.v1", "real");
+  }, JSON.stringify(diet));
+  await open(page, "/perfil"); // reloj fijo en 2026-07: aún no empieza
+  const p = page.locator("[data-restriction]");
+  await expect(p).toHaveAttribute("data-restriction", "future");
+  await expect(p).toContainText("El descanso empieza el");
+  await expect(p).not.toContainText("terminó");
+});
+
 test("detalle: las opciones con textura aceptada van primero; las otras, marcadas y a la vista", async ({
   page,
 }) => {

@@ -93,6 +93,20 @@ describe("un plan v1 guardado se migra al leer, sin perderse", () => {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEYS.diet) ?? "{}");
     expect(stored.schemaVersion).toBe(2);
   });
+
+  it("si no se puede reescribir en v2 (cuota llena), igual devuelve el plan migrado", () => {
+    localStorage.setItem(STORAGE_KEYS.source, "real");
+    localStorage.setItem(STORAGE_KEYS.diet, JSON.stringify(v1Raw));
+    const spy = vi
+      .spyOn(Storage.prototype, "setItem")
+      .mockImplementation(() => {
+        throw new Error("QuotaExceededError");
+      });
+    const active = loadActiveDiet();
+    spy.mockRestore();
+    expect(active.source).toBe("real");
+    expect(active.diet.schemaVersion).toBe(2);
+  });
 });
 
 describe("el perfil no sale del teléfono: ni logs ni Sentry", () => {
@@ -150,7 +164,11 @@ describe("el perfil no sale del teléfono: ni logs ni Sentry", () => {
       breadcrumbs: [
         { category: "console", message: "Mariscos" },
         { category: "ui.input", message: "algo" },
-        { category: "navigation", message: "/perfil", data: { to: "Sorbitol" } },
+        {
+          category: "navigation",
+          message: "/perfil",
+          data: { to: "Sorbitol" },
+        },
       ],
       exception: {
         values: [

@@ -9,7 +9,7 @@ import { useDiet } from "@/components/diet-provider";
 import { Button } from "@/components/ui/button";
 import { useProfileNotes } from "@/components/use-profile-notes";
 import { fmt, useI18n } from "@/i18n";
-import { isRestrictionActive } from "@/lib/diet/logic";
+import { dateKey, isRestrictionActive } from "@/lib/diet/logic";
 import {
   NOTE_KINDS,
   PROFILE_NOTE_MAX,
@@ -84,7 +84,17 @@ export default function ProfilePage() {
   const nf = new Intl.NumberFormat(locale);
   const profile = diet.profile;
   const glasses = diet.hydration.glassesPerDay ?? 4;
-  const restrictionActive = today ? isRestrictionActive(diet, today) : false;
+  // Tres estados y uno «aún no sé»: sin el día (prerender/hidratación) no se afirma nada.
+  const restrictionState = !today
+    ? "unknown"
+    : isRestrictionActive(diet, today)
+      ? "active"
+      : dateKey(today) < diet.restrictions.validFrom
+        ? "future"
+        : "ended";
+  const restrictionFoods = diet.restrictions.foods
+    .map((f) => l(f.name))
+    .join(", ");
 
   const onAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,6 +114,75 @@ export default function ProfilePage() {
     <div className="flex flex-col gap-6 pb-6">
       <h1 className="text-3xl">{t.profile.title}</h1>
       <p className="-mt-3 text-muted-foreground">{t.profile.intro}</p>
+
+      <section className="flex flex-col gap-3" aria-labelledby="child-title">
+        <h2 id="child-title" className="text-lg">
+          {t.profile.childTitle}
+        </h2>
+        <Block title={t.profile.conditionTitle}>
+          {profile?.condition ? l(profile.condition) : notSaid}
+        </Block>
+        <Block title={t.profile.allergiesTitle}>
+          {profile?.allergies?.length
+            ? profile.allergies.map((a) => l(a.name)).join(", ")
+            : notSaid}
+        </Block>
+        <Block title={t.profile.intolerancesTitle}>
+          {profile?.intolerances?.length
+            ? profile.intolerances.map((a) => l(a.name)).join(", ")
+            : notSaid}
+        </Block>
+        <Block title={t.profile.medicationsTitle}>
+          {profile?.medications?.length ? (
+            <ul className="flex flex-col gap-1">
+              {profile.medications.map((m) => (
+                <li key={m.id}>
+                  <span className="font-semibold">{l(m.name)}</span>
+                  {m.dose && <> · {l(m.dose)}</>}
+                  {m.when && <> · {l(m.when)}</>}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            notSaid
+          )}
+        </Block>
+        <p className="text-sm text-muted-foreground">
+          {t.profile.medicalReminder}
+        </p>
+      </section>
+
+      <section className="flex flex-col gap-3" aria-labelledby="limits-title">
+        <h2 id="limits-title" className="text-lg">
+          {t.profile.limitsTitle}
+        </h2>
+        <Block title={t.diet.restrictedSection}>
+          <p data-restriction={restrictionState}>
+            {restrictionState === "active" &&
+              fmt(t.profile.restrictionsActive, {
+                date: formatShortDate(diet.restrictions.validUntil, locale),
+                foods: restrictionFoods,
+              })}
+            {restrictionState === "future" &&
+              fmt(t.profile.restrictionsFuture, {
+                date: formatShortDate(diet.restrictions.validFrom, locale),
+                foods: restrictionFoods,
+              })}
+            {restrictionState === "ended" && t.profile.restrictionsEnded}
+          </p>
+        </Block>
+        <Block title={t.supplements.title}>
+          <p>
+            {fmt(t.profile.supplementsCount, { n: diet.supplements.length })}
+          </p>
+          <Link
+            href="/suplementos"
+            className="mt-1 inline-flex min-h-11 items-center font-medium text-primary hover:underline"
+          >
+            {t.profile.supplementsLink}
+          </Link>
+        </Block>
+      </section>
 
       <section className="flex flex-col gap-3" aria-labelledby="goals-title">
         <h2 id="goals-title" className="text-lg">
@@ -143,72 +222,6 @@ export default function ProfilePage() {
         <Block title={t.profile.sleepTitle}>
           {diet.goals?.sleep ? l(diet.goals.sleep) : notSaid}
         </Block>
-      </section>
-
-      <section className="flex flex-col gap-3" aria-labelledby="limits-title">
-        <h2 id="limits-title" className="text-lg">
-          {t.profile.limitsTitle}
-        </h2>
-        <Block title={t.diet.restrictedSection}>
-          <p>
-            {restrictionActive
-              ? fmt(t.profile.restrictionsActive, {
-                  date: formatShortDate(diet.restrictions.validUntil, locale),
-                  foods: diet.restrictions.foods
-                    .map((f) => l(f.name))
-                    .join(", "),
-                })
-              : t.profile.restrictionsEnded}
-          </p>
-        </Block>
-        <Block title={t.supplements.title}>
-          <p>
-            {fmt(t.profile.supplementsCount, { n: diet.supplements.length })}
-          </p>
-          <Link
-            href="/suplementos"
-            className="mt-1 inline-flex min-h-11 items-center font-medium text-primary hover:underline"
-          >
-            {t.profile.supplementsLink}
-          </Link>
-        </Block>
-      </section>
-
-      <section className="flex flex-col gap-3" aria-labelledby="child-title">
-        <h2 id="child-title" className="text-lg">
-          {t.profile.childTitle}
-        </h2>
-        <Block title={t.profile.conditionTitle}>
-          {profile?.condition ? l(profile.condition) : notSaid}
-        </Block>
-        <Block title={t.profile.allergiesTitle}>
-          {profile?.allergies?.length
-            ? profile.allergies.map((a) => l(a.name)).join(", ")
-            : notSaid}
-        </Block>
-        <Block title={t.profile.intolerancesTitle}>
-          {profile?.intolerances?.length
-            ? profile.intolerances.map((a) => l(a.name)).join(", ")
-            : notSaid}
-        </Block>
-        <Block title={t.profile.medicationsTitle}>
-          {profile?.medications?.length ? (
-            <ul className="flex flex-col gap-1">
-              {profile.medications.map((m) => (
-                <li key={m.id}>
-                  <span className="font-semibold">{l(m.name)}</span>
-                  {m.dose && <> · {l(m.dose)}</>}
-                  {m.when && <> · {l(m.when)}</>}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            notSaid
-          )}
-        </Block>
-        <p className="text-sm text-muted-foreground">
-          {t.profile.medicalReminder}
-        </p>
       </section>
 
       <section className="flex flex-col gap-3" aria-labelledby="mine-title">

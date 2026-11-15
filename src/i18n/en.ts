@@ -302,7 +302,8 @@ export const en: Dictionary = {
     restrictionsActive: "On hold until {date}: {foods}.",
     restrictionsEnded:
       "The diet's hold period is over — check with your professional.",
-    supplementsCount: "{n} supplements in your calendar.",
+    restrictionsFuture: "The hold period starts on {date}: {foods}.",
+    supplementsCount: "Supplements in your calendar: {n}.",
     supplementsLink: "See the supplements calendar",
     childTitle: "About your child",
     conditionTitle: "Condition",

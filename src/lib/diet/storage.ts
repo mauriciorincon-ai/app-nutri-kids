@@ -61,8 +61,13 @@ export function loadActiveDiet(): ActiveDiet {
         // Un plan v1 guardado se migra al leer: se reescribe en v2 SOLO después de
         // que la v2 validó (ADR-009); hasta entonces el original queda intacto.
         if (parsed.migratedFrom === 1) {
-          s.setItem(STORAGE_KEYS.diet, JSON.stringify(parsed.diet));
-          log.info({ event: "stored-diet-migrated", from: 1, to: 2 });
+          try {
+            s.setItem(STORAGE_KEYS.diet, JSON.stringify(parsed.diet));
+            log.info({ event: "stored-diet-migrated", from: 1, to: 2 });
+          } catch {
+            // Cuota llena o modo privado: el plan migrado sirve igual esta vez.
+            log.warn({ event: "stored-diet-migrate-write-failed" });
+          }
         }
         return { diet: parsed.diet, source: "real" };
       }
