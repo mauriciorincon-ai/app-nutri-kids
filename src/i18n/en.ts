@@ -256,11 +256,11 @@ export const en: Dictionary = {
     dietVersionInfo: "{title} · issued on {date}",
     clearTitle: "Delete data",
     clearBody:
-      "Deletes the loaded diet and your whole day record (checkmarks, times and notes) from this device. The app returns to the demo.",
+      "Deletes the loaded diet and your whole day record (checkmarks, times and notes) and what you noted in the profile (notes and textures) from this device. The app returns to the demo.",
     clearButton: "Delete my data",
     clearConfirmTitle: "Delete everything?",
     clearConfirmBody:
-      "The loaded diet and the whole day record (checkmarks, times and notes) will be deleted. This cannot be undone.",
+      "The loaded diet and the whole day record (checkmarks, times and notes) and what you noted in the profile (notes and textures) will be deleted. This cannot be undone.",
     clearConfirmYes: "Yes, delete",
     clearConfirmNo: "Cancel",
     clearedToast: "Data deleted. You're back on the demo diet.",

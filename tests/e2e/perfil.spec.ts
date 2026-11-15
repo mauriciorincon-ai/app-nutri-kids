@@ -164,6 +164,7 @@ test("veredicto y chat: mismo orden y la misma marca, sin red", async ({
   await open(page, "/perfil");
   await acceptSoft(page);
   await page.goto("/chat");
+  await page.waitForLoadState("networkidle"); // los prefetch de enlaces ya pasaron
   const calls = watchNetwork(page);
   await ask(page, "¿la manzana se puede?");
   await expect(

@@ -1,6 +1,9 @@
 import * as Sentry from "@sentry/nextjs";
 
-import { scrubSentryEvent } from "@/lib/privacy/sentry-scrub";
+import {
+  scrubSentryEvent,
+  scrubSentryTransaction,
+} from "@/lib/privacy/sentry-scrub";
 
 export async function register() {
   // DSN por env (Vercel / .env.local). Sin DSN, Sentry queda inactivo (dev local).
@@ -11,6 +14,7 @@ export async function register() {
     sendDefaultPii: false,
     // El servidor nunca ve el perfil (vive en el aparato); igual se quita todo lo que no es metadato.
     beforeSend: (event) => scrubSentryEvent(event, []),
+    beforeSendTransaction: (event) => scrubSentryTransaction(event, []),
   });
 }
 

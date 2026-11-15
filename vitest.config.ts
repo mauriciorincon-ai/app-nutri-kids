@@ -14,7 +14,7 @@ export default defineConfig({
       // El gate cubre el motor de la dieta (núcleo: >80% en lib/diet, incluido el
       // motor del chat) y el acento del modelo del aparato (estándar 7). utils/log
       // del kit quedan fuera: se cubren vía componentes y e2e.
-      include: ["src/lib/diet/**", "src/lib/ia/**"],
+      include: ["src/lib/diet/**", "src/lib/ia/**", "src/lib/privacy/**"],
       thresholds: {
         lines: 80,
         functions: 80,

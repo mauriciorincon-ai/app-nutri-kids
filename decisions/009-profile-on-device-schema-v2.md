@@ -15,7 +15,8 @@ The VISION's MVP asks for the child's profile (condition, allergies, intolerance
 2. **Migration on read, never a loss.** `parseDietJson` accepts v1 and v2 and always returns v2. A v1 is validated as v1, migrated by the pure `migrateV1toV2` (`src/lib/diet/migrate.ts`), and validated again as v2. Only then does `loadActiveDiet` rewrite the stored plan. Until that point the original stays untouched. Migration copies every field and turns each option into `{ name }`. It invents nothing: there is no texture, profile or goals unless the plan says so. Tested field by field against an invented v1 fixture shaped like a real plan (`tests/unit/migrate.test.ts`).
 3. **What the caregiver knows lives apart from the plan** (decision 1 a). `nutrikids.profile-notes.v1` (`src/lib/diet/profile-notes.ts`, Zod-validated) holds the accepted textures and dated notes (`condition · allergy · intolerance · medication · other`, ≤ 140 chars).
    - Loading a new plan does not touch it. «Borrar datos» deletes it.
-   - The UI always shows the origin of each piece: «según tu plan» or «anotado por ti».
+   - The UI always shows the origin of each piece: «según tu plan» or «anotado por ti» (an icon + text badge; the not-accepted texture chip uses a dashed border + text + symbol, never color alone: see `design-system.md`).
+   - The on-device chat also reads the notes (allergy, intolerance, medication) and says them as «anotado por ti», never as the plan's.
 4. **Textures order, never hide** (decision 2 a). Options with an accepted texture come first. Options with no texture in the plan come next. Options with a texture the child does not accept today come last, marked «textura que hoy no acepta». A list is never emptied by the filter. With no textures marked, the plan's order stands. One pure helper is shared by the food detail, the verdict card and the chat.
 5. **It never leaves the phone** (hard rule 6):
    - The profile and the notes live only in `localStorage`.

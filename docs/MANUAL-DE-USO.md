@@ -96,10 +96,10 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
   - **"¿Cuánta agua?"** → la meta de agua que dice tu plan.
   - **"¿Cuántas horas duerme?"** o **"¿qué actividad le toca?"** → lo que dice el plan en sus
     objetivos de sueño y de actividad.
-  - **"¿Es alérgico al maní?"** → las alergias e intolerancias que **anota tu plan**. Si preguntas
+  - **"¿Es alérgico a los mariscos?"** → las alergias e intolerancias que **anota tu plan** (y, aparte, las que tú anotaste en el Perfil, dichas como «anotado por ti»). Si preguntas
     por algo que el plan no lista, no te dice "no": te muestra lo que sí anota y que lo demás
     **tu plan no lo dice**.
-  - **"¿Qué medicamentos toma?"** → los que tu plan lista, con su dosis y su momento, tal cual.
+  - **"¿Qué medicamentos toma?"** → los que tu plan lista, con su dosis y su momento, tal cual; los que tú anotaste salen aparte.
   - **Lo que tu plan no dice:** te lo dice tal cual ("Tu plan no lo dice. Pregúntale a tu
     profesional.") — **nunca se inventa una respuesta**.
 - **Cómo se usa:** ve a **Chat** (abajo). Escribe tu pregunta o toca una de las 4 sugerencias. La
@@ -175,14 +175,16 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
 - **Qué hace:** cambia la app entre español e inglés, muestra qué dieta está cargada, y permite
   **borrar todos los datos** del teléfono.
 - **Cómo se usa:** **Ajustes** (abajo). Para borrar: **"Borrar mis datos"** → confirma. Se borra
-  la dieta cargada y **todo tu registro del día (marcas, horas y notas)**; la app vuelve a la demo.
+  la dieta cargada y **todo tu registro del día (marcas, horas y notas)** y **lo que anotaste en el perfil (notas y texturas)**; la app vuelve a la demo.
   Esto no se puede deshacer.
 
 ## Preguntas frecuentes
 
 - **¿Mis datos van a internet?** No. La dieta, las marcas, las horas y las notas viven solo en tu
   teléfono. Por eso mismo, si cambias de teléfono, vuelve a cargar el archivo de la dieta. Las notas
-  del día (lo que escribes en "Agregar nota") **nunca** salen del teléfono: el chat ni las lee.
+  del día (lo que escribes en "Agregar nota") **nunca** salen del teléfono: el chat ni las lee. Lo que
+  anotas en el **Perfil** tampoco sale: solo el chat de tu propio teléfono lo usa, para contestarte
+  con eso marcado como «anotado por ti».
 - **¿Por qué veo "Dieta demo"?** Aún no has cargado la dieta real (o la borraste). Ve a
   **Cargar**.
 - **¿La app cuenta calorías o pesa al niño?** No, y no lo hará: el enfoque es qué alimentos sí y

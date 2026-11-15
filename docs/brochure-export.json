@@ -118,7 +118,7 @@
           {
             "id": "F11",
             "nombre": "Preguntas abiertas, también con tu plan",
-            "que_hace": "Preguntas como «no tengo pollo, ¿qué le doy?», «no quiso el brócoli», «¿qué le doy ahora?», «¿cuánta agua?», «¿cuántas horas duerme?», «¿es alérgico al maní?» o «¿qué medicamentos toma?» y recibes lo que tu plan dice: reemplazos, opciones, sueño, actividad, alergias y medicamentos. Todo se calcula en el teléfono, sin internet. Si el plan no lo trae, te lo dice y te manda con tu profesional, en vez de inventar una respuesta.",
+            "que_hace": "Preguntas como «no tengo pollo, ¿qué le doy?», «no quiso el brócoli», «¿qué le doy ahora?», «¿cuánta agua?», «¿cuántas horas duerme?», «¿es alérgico a los mariscos?» o «¿qué medicamentos toma?» y recibes lo que tu plan dice: reemplazos, opciones, sueño, actividad, alergias y medicamentos. Todo se calcula en el teléfono, sin internet. Si el plan no lo trae, te lo dice y te manda con tu profesional, en vez de inventar una respuesta.",
             "seccion_manual": "Pregúntale a la dieta (Chat)"
           },
           {
@@ -277,7 +277,7 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 77718,
+      "valor": 77925,
       "unidad": "bytes",
       "fuente": "medido",
       "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-15 sobre c1ad632. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."

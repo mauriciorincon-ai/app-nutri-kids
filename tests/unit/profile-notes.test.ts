@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ErrorEvent } from "@sentry/nextjs";
+import type { ErrorEvent, NodeOptions } from "@sentry/nextjs";
+
+type TransactionEvent = Parameters<
+  NonNullable<NodeOptions["beforeSendTransaction"]>
+>[0];
 
 import demoRaw from "../../data/demo-diet.json";
 import v1Raw from "../fixtures/diet-v1.json";
@@ -22,6 +26,8 @@ import {
 import {
   REDACTED,
   scrubSentryEvent,
+  scrubSentryTransaction,
+  scrubUrl,
   sensitiveTerms,
 } from "@/lib/privacy/sentry-scrub";
 
@@ -218,5 +224,59 @@ describe("no existe un camino de export que pueda llevarse el perfil", () => {
       );
     // Si algún día nace un export (S7+), este test obliga a decidir qué lleva: el perfil NO.
     expect(hits).toEqual([]);
+  });
+});
+
+describe("auditoría S5: la URL y las transacciones tampoco llevan contenido", () => {
+  it("scrubUrl quita consulta, ancla, host e id del alimento", () => {
+    expect(scrubUrl("https://x.test/dieta/mariscos?q=1#a")).toBe("/dieta/:id");
+    expect(scrubUrl("/perfil?nota=Sorbitol")).toBe("/perfil");
+    expect(scrubUrl(undefined)).toBeUndefined();
+  });
+
+  it("el evento de error sale sin consulta, cabeceras, etiquetas ni contextos", () => {
+    const out = scrubSentryEvent(
+      {
+        request: {
+          url: "/dieta/mariscos?q=1",
+          query_string: "q=1",
+          headers: { a: "b" },
+        },
+        tags: { x: "1" },
+        contexts: { c: {} },
+      } as unknown as ErrorEvent,
+      [],
+    );
+    expect(out.request?.url).toBe("/dieta/:id");
+    expect(out.request?.query_string).toBeUndefined();
+    expect(out.request?.headers).toBeUndefined();
+    expect(out.tags).toBeUndefined();
+    expect(out.contexts).toBeUndefined();
+  });
+
+  it("la transacción pierde extra, usuario, migas y datos de spans, y tapa términos", () => {
+    const out = scrubSentryTransaction(
+      {
+        type: "transaction",
+        transaction: "/dieta/mariscos",
+        extra: { a: 1 },
+        user: { id: "x" },
+        request: { url: "/dieta/mariscos?q=1", headers: { a: "b" } },
+        breadcrumbs: [{ message: "x" }],
+        spans: [
+          { description: "GET /dieta/mariscos", data: { q: "Sorbitol" } },
+          { description: "leyó Sorbitol", data: {} },
+        ],
+      } as unknown as TransactionEvent,
+      ["Sorbitol"],
+    );
+    expect(out.transaction).toBe("/dieta/:id");
+    expect(out.extra).toBeUndefined();
+    expect(out.user).toBeUndefined();
+    expect(out.breadcrumbs).toBeUndefined();
+    expect(out.request?.url).toBe("/dieta/:id");
+    expect(out.spans?.[0].data).toEqual({});
+    expect(out.spans?.[0].description).toBe("GET /dieta/:id");
+    expect(out.spans?.[1].description).toBe(REDACTED);
   });
 });

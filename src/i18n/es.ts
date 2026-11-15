@@ -255,11 +255,11 @@ export const es = {
     dietVersionInfo: "{title} · emitida el {date}",
     clearTitle: "Borrar datos",
     clearBody:
-      "Borra la dieta cargada y todo tu registro del día (marcas, horas y notas) de este dispositivo. La app vuelve a la demo.",
+      "Borra la dieta cargada y todo tu registro del día (marcas, horas y notas) y lo que anotaste en el perfil (notas y texturas) de este dispositivo. La app vuelve a la demo.",
     clearButton: "Borrar mis datos",
     clearConfirmTitle: "¿Borrar todo?",
     clearConfirmBody:
-      "Se borrará la dieta cargada y todo el registro de días (marcas, horas y notas). Esto no se puede deshacer.",
+      "Se borrará la dieta cargada y todo el registro de días (marcas, horas y notas) y lo que anotaste en el perfil (notas y texturas). Esto no se puede deshacer.",
     clearConfirmYes: "Sí, borrar",
     clearConfirmNo: "Cancelar",
     clearedToast: "Datos borrados. Volviste a la dieta demo.",

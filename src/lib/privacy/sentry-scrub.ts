@@ -1,4 +1,8 @@
-import type { ErrorEvent } from "@sentry/nextjs";
+import type { ErrorEvent, NodeOptions } from "@sentry/nextjs";
+
+type TransactionEvent = Parameters<
+  NonNullable<NodeOptions["beforeSendTransaction"]>
+>[0];
 
 import type { DietPlan } from "../diet/schema";
 import type { ProfileNotes } from "../diet/profile-notes";
@@ -38,6 +42,50 @@ function redact(text: string | undefined, terms: string[]): string | undefined {
   return terms.some((t) => low.includes(t.toLowerCase())) ? REDACTED : text;
 }
 
+/**
+ * Una URL viaja sin consulta, sin ancla y sin el id del alimento: `/dieta/mani`
+ * es contenido de la dieta, así que queda `/dieta/:id`.
+ */
+export function scrubUrl(url: string | undefined): string | undefined {
+  if (!url) return url;
+  const path = url
+    .replace(/^[a-z][a-z0-9+.-]*:\/\/[^/]+/i, "")
+    .split(/[?#]/)[0];
+  return path.replace(/\/dieta\/[^/\s]+/g, "/dieta/:id");
+}
+
+/** Transacciones (rendimiento): mismo trato que los errores, sin contexto libre. */
+export function scrubSentryTransaction(
+  event: TransactionEvent,
+  terms: string[],
+): TransactionEvent {
+  const out: TransactionEvent = { ...event };
+  delete out.extra;
+  delete out.user;
+  delete out.contexts?.profile;
+  out.tags = undefined;
+  if (out.transaction) out.transaction = scrubUrl(out.transaction);
+  if (out.request)
+    out.request = {
+      ...out.request,
+      url: scrubUrl(out.request.url),
+      query_string: undefined,
+      headers: undefined,
+      data: undefined,
+      cookies: undefined,
+    };
+  out.breadcrumbs = undefined;
+  if (out.spans)
+    out.spans = out.spans.map(
+      (s: NonNullable<TransactionEvent["spans"]>[number]) => ({
+        ...s,
+        description: redact(scrubUrl(s.description), terms),
+        data: {},
+      }),
+    );
+  return out;
+}
+
 export function scrubSentryEvent(
   event: ErrorEvent,
   terms: string[],
@@ -46,7 +94,16 @@ export function scrubSentryEvent(
   delete out.extra;
   delete out.user;
   if (out.request)
-    out.request = { ...out.request, data: undefined, cookies: undefined };
+    out.request = {
+      ...out.request,
+      url: scrubUrl(out.request.url),
+      query_string: undefined,
+      headers: undefined,
+      data: undefined,
+      cookies: undefined,
+    };
+  out.tags = undefined;
+  out.contexts = undefined;
   if (out.breadcrumbs)
     out.breadcrumbs = out.breadcrumbs
       .filter((b) => b.category !== "console" && !b.category?.startsWith("ui."))

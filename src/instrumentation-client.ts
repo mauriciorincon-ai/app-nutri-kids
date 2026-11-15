@@ -2,7 +2,11 @@ import * as Sentry from "@sentry/nextjs";
 
 import { loadProfileNotes } from "@/lib/diet/profile-notes";
 import { loadActiveDiet } from "@/lib/diet/storage";
-import { scrubSentryEvent, sensitiveTerms } from "@/lib/privacy/sentry-scrub";
+import {
+  scrubSentryEvent,
+  scrubSentryTransaction,
+  sensitiveTerms,
+} from "@/lib/privacy/sentry-scrub";
 
 function termsOnThisDevice(): string[] {
   try {
@@ -19,6 +23,8 @@ Sentry.init({
   sendDefaultPii: false,
   // Perfil y anotaciones de quien cuida jamás viajan (regla dura 6, ADR-009).
   beforeSend: (event) => scrubSentryEvent(event, termsOnThisDevice()),
+  beforeSendTransaction: (event) =>
+    scrubSentryTransaction(event, termsOnThisDevice()),
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
