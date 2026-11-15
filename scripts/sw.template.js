@@ -6,7 +6,7 @@
  *  - PRECACHE: al instalarse guarda el cascarón HTML de cada pantalla y los
  *    estáticos que ese HTML referencia, de modo que la app abra sin internet.
  *  - NAVEGACIÓN: red primero (si el deploy cambió, se ve lo nuevo) y, sin señal,
- *    el cascarón guardado. `/dieta/<id>` sin visita previa redirige a `/dieta`.
+ *    el cascarón guardado. `/dieta/<id>` sin visita previa lleva a `/dieta`.
  *  - ESTÁTICOS inmutables (`/_next/static`, íconos, fuentes): caché primero.
  *  - VERSIÓN NUEVA: se instala en espera y la página avisa; solo se activa cuando
  *    la persona acepta (mensaje SKIP_WAITING). Nunca recarga a la fuerza.
@@ -67,13 +67,24 @@ self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
 });
 
-/** Sin red y sin copia propia: `/dieta/<id>` redirige a la lista; lo demás, a Hoy. */
+/**
+ * Sin red y sin copia propia: `/dieta/<id>` lleva a la lista; lo demás, a Hoy.
+ * No se sirve el HTML de otra ruta (Next no se hidrata con un cascarón ajeno) ni un 302:
+ * una página mínima que se reemplaza sola por la pantalla guardada.
+ */
 async function offlineFallback(cache, pathname) {
   const target = pathname.startsWith("/dieta/") ? "/dieta" : "/";
-  // Un redirect, no el HTML de otra ruta: Next no se hidrata con un cascarón ajeno.
-  if (pathname !== target && (await cache.match(shellKey(target))))
-    return Response.redirect(self.location.origin + target, 302);
-  return (await cache.match(shellKey(target))) || Response.error();
+  const shell = await cache.match(shellKey(target));
+  if (!shell) return Response.error();
+  if (pathname === target) return shell;
+  const html =
+    '<!doctype html><html lang="es"><meta charset="utf-8"><title>Nutrikids</title>' +
+    '<meta http-equiv="refresh" content="0;url=' + target + '">' +
+    '<script>location.replace(' + JSON.stringify(target) + ")</script>" +
+    '<a href="' + target + '">Nutrikids</a></html>';
+  return new Response(html, {
+    headers: { "content-type": "text/html; charset=utf-8" },
+  });
 }
 
 async function navigate(request, url) {

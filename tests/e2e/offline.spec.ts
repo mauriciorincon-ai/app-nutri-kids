@@ -69,7 +69,7 @@ test("sin internet: cada pantalla abre y se hidrata; el chat contesta", async ({
     "Si no hay pollo",
   );
 
-  // Un alimento no visitado (/dieta/<id>) sin red redirige a la lista, no al dinosaurio.
+  // Un alimento no visitado (/dieta/<id>) sin red lleva a la lista, no al dinosaurio.
   await page.goto("/dieta/algo-que-no-visite");
   await expect(page).toHaveURL(/\/dieta$/);
   await expect(page.locator("h1")).toBeVisible();

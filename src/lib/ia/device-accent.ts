@@ -53,7 +53,11 @@ function numbersIn(text: string): Set<string> {
 }
 
 /** Esquema de la salida del modelo para UNA frase de origen. */
-export function accentSchema(source: string, required: string[], locale: Locale) {
+export function accentSchema(
+  source: string,
+  required: string[],
+  locale: Locale,
+) {
   const srcNumbers = numbersIn(source);
   const max = Math.max(source.length * 2, source.length + 160);
   return z
@@ -66,7 +70,10 @@ export function accentSchema(source: string, required: string[], locale: Locale)
       const norm = normalizeText(out, locale);
       return required.every((r) => norm.includes(normalizeText(r, locale)));
     }, "lost-plan-terms")
-    .refine((out) => [...numbersIn(out)].every((n) => srcNumbers.has(n)), "new-numbers")
+    .refine(
+      (out) => [...numbersIn(out)].every((n) => srcNumbers.has(n)),
+      "new-numbers",
+    )
     .refine((out) => {
       const words = normalizeText(out, locale).split(" ");
       return !BANNED.some((b) => words.some((w) => w.startsWith(b)));
@@ -74,25 +81,50 @@ export function accentSchema(source: string, required: string[], locale: Locale)
 }
 
 function deviceModel(): LanguageModelApi | null {
-  const api = (globalThis as { LanguageModel?: LanguageModelApi }).LanguageModel;
-  return api && typeof api.availability === "function" && typeof api.create === "function"
+  const api = (globalThis as { LanguageModel?: LanguageModelApi })
+    .LanguageModel;
+  return api &&
+    typeof api.availability === "function" &&
+    typeof api.create === "function"
     ? api
     : null;
 }
 
-/** ¿Hay un modelo del aparato listo, sin descargar nada? */
-export async function hasDeviceModel(locale: Locale): Promise<boolean> {
+const availabilityCache = new WeakMap<
+  LanguageModelApi,
+  Map<Locale, Promise<boolean>>
+>();
+
+/**
+ * ¿Hay un modelo del aparato listo, sin descargar nada? Se pregunta UNA vez por
+ * página e idioma y se recuerda: el chat lo calienta al abrirse, así que ninguna
+ * respuesta queda con una consulta al navegador en vuelo cuando la persona cambia
+ * de pantalla (en Chromium headless eso tumbaba el renderizador, e2e offline).
+ */
+export function hasDeviceModel(locale: Locale): Promise<boolean> {
   const api = deviceModel();
-  if (!api) return false;
-  try {
-    const state = await api.availability({
-      expectedInputs: [{ type: "text", languages: [locale] }],
-      expectedOutputs: [{ type: "text", languages: [locale] }],
-    });
-    return state === "available";
-  } catch {
-    return false;
+  if (!api) return Promise.resolve(false);
+  let perLocale = availabilityCache.get(api);
+  if (!perLocale) {
+    perLocale = new Map();
+    availabilityCache.set(api, perLocale);
   }
+  let known = perLocale.get(locale);
+  if (!known) {
+    known = (async () => {
+      try {
+        const state = await api.availability({
+          expectedInputs: [{ type: "text", languages: [locale] }],
+          expectedOutputs: [{ type: "text", languages: [locale] }],
+        });
+        return state === "available";
+      } catch {
+        return false;
+      }
+    })();
+    perLocale.set(locale, known);
+  }
+  return known;
 }
 
 const SYSTEM = {

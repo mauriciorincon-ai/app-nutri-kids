@@ -58,9 +58,38 @@ describe("sin modelo del aparato, el código responde igual", () => {
   });
 });
 
+describe("la consulta al navegador se hace una sola vez por página e idioma", () => {
+  it("varias respuestas seguidas no vuelven a preguntar", async () => {
+    const fake = installFake(
+      "available",
+      "Si no hay manzana, tu plan da estas opciones.",
+    );
+    await hasDeviceModel("es");
+    await hasDeviceModel("es");
+    await accentWithDevice(SOURCE, ["manzana"], "es");
+    await accentWithDevice(SOURCE, ["manzana"], "es");
+    expect(fake.availability).toHaveBeenCalledTimes(1);
+    await hasDeviceModel("en"); // otro idioma = otra pregunta
+    expect(fake.availability).toHaveBeenCalledTimes(2);
+  });
+
+  it("si availability truena de golpe (sin promesa) tampoco rompe", async () => {
+    (globalThis as Record<string, unknown>).LanguageModel = {
+      availability: () => {
+        throw new Error("boom");
+      },
+      create: vi.fn(),
+    };
+    expect(await hasDeviceModel("es")).toBe(false);
+  });
+});
+
 describe("con modelo del aparato, solo re-redacta lo que el código decidió", () => {
   it("una salida válida se usa (y la sesión se cierra)", async () => {
-    const fake = installFake("available", "Si se acabó la manzana, mira lo que trae tu plan:");
+    const fake = installFake(
+      "available",
+      "Si se acabó la manzana, mira lo que trae tu plan:",
+    );
     expect(await accentWithDevice(SOURCE, ["manzana"], "es")).toBe(
       "Si se acabó la manzana, mira lo que trae tu plan:",
     );

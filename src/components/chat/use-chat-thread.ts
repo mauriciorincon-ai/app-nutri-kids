@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { answerQuestion, type OpenAnswer } from "@/lib/diet/answer";
 import { composeAnswer, type AnswerTemplates } from "@/lib/diet/answer-text";
 import type { DietPlan } from "@/lib/diet/schema";
 import type { LocalVerdict } from "@/lib/diet/search";
-import { accentWithDevice } from "@/lib/ia/device-accent";
+import { accentWithDevice, hasDeviceModel } from "@/lib/ia/device-accent";
 
 /**
  * Hilo del chat: la única fuente de verdad de la conversación (efímera, en
@@ -35,6 +35,12 @@ export function useChatThread(
   const [entries, setEntries] = useState<Entry[]>([]);
   const counter = useRef(0);
   const nextId = () => `e${counter.current++}`;
+
+  // Calienta la consulta «¿hay modelo en el aparato?» al abrir el chat (se hace una
+  // sola vez por página): así ninguna respuesta la deja en vuelo al cambiar de pantalla.
+  useEffect(() => {
+    void hasDeviceModel(locale);
+  }, [locale]);
 
   const send = useCallback(
     (raw: string) => {
