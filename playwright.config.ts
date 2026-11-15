@@ -40,12 +40,8 @@ export default defineConfig({
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
-    // Chat en modo determinístico: provider `mock` (cero red), IA habilitada.
-    // NEXT_PUBLIC_* se inlinea en build → debe estar presente para `pnpm build`.
+    // El chat no tiene variables (ADR-008: código primero, cero red).
     env: {
-      CHAT_PROVIDER: "mock",
-      CHAT_ENABLED: "true",
-      NEXT_PUBLIC_CHAT_ENABLED: "true",
       PORT: String(PORT),
     },
   },
