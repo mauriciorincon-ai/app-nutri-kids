@@ -155,7 +155,8 @@ const planFields = {
     validFrom: isoDateSchema,
     validUntil: isoDateSchema,
     note: localizedTextSchema,
-    foods: z.array(namedItemSchema).min(1),
+    // Puede venir vacía: un plan sin restricción temporal (S6, «mi plan no lo trae»).
+    foods: z.array(namedItemSchema),
   }),
   trafficLight: z.object({
     red: z.object({
@@ -167,14 +168,16 @@ const planFields = {
     yellow: z.object({
       label: localizedTextSchema,
       note: localizedTextSchema.optional(),
-      items: z.array(yellowItemSchema).min(1),
+      // La plantilla no trae amarillo propio: puede quedar vacío (S6).
+      items: z.array(yellowItemSchema),
     }),
     green: z.object({
       label: localizedTextSchema,
       groups: z.array(greenGroupSchema).min(1),
     }),
   }),
-  supplements: z.array(supplementSchema).min(1),
+  // Un plan puede no traer suplementos (S6, «mi plan no lo trae»).
+  supplements: z.array(supplementSchema),
   supplementNotes: localizedTextSchema.optional(),
   dailyMenu: z
     .array(mealSchema)
@@ -214,6 +217,11 @@ export const dietPlanSchema = z.object({
   equivalences: z.array(equivalenceSchema),
   profile: profileSchema.optional(),
   goals: goalsSchema.optional(),
+  /**
+   * Página del PDF de donde salió cada dato (`<sección>` o `<sección>.<id>`), cuando el
+   * plan se leyó de un PDF (ADR-010). Opcional: un JSON v2 sin ella sigue igual.
+   */
+  pages: z.record(z.string(), z.number().int().positive()).optional(),
 });
 
 export type LocalizedText = z.infer<typeof localizedTextSchema>;
