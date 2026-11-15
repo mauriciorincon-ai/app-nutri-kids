@@ -40,7 +40,7 @@ const storeSchema = z.object({
 export type ProfileNote = z.infer<typeof noteSchema>;
 export type ProfileNotes = z.infer<typeof storeSchema>;
 
-const EMPTY: ProfileNotes = { acceptedTextures: [], notes: [] };
+export const EMPTY_NOTES: ProfileNotes = { acceptedTextures: [], notes: [] };
 
 function storage(): Storage | null {
   return typeof window === "undefined" ? null : window.localStorage;
@@ -48,12 +48,12 @@ function storage(): Storage | null {
 
 export function loadProfileNotes(): ProfileNotes {
   const raw = storage()?.getItem(PROFILE_NOTES_KEY);
-  if (!raw) return EMPTY;
+  if (!raw) return EMPTY_NOTES;
   try {
     const parsed = storeSchema.safeParse(JSON.parse(raw));
-    return parsed.success ? parsed.data : EMPTY;
+    return parsed.success ? parsed.data : EMPTY_NOTES;
   } catch {
-    return EMPTY;
+    return EMPTY_NOTES;
   }
 }
 

@@ -6,9 +6,12 @@ import { ArrowLeft } from "lucide-react";
 
 import { useToday } from "@/components/day-checklist/use-today";
 import { useDiet } from "@/components/diet-provider";
+import { OptionChip } from "@/components/traffic-light/option-chip";
 import { StatusChip } from "@/components/traffic-light/status-chip";
+import { useProfileNotes } from "@/components/use-profile-notes";
 import { fmt, useI18n } from "@/i18n";
 import { resolveItemStatus } from "@/lib/diet/logic";
+import { orderByTexture } from "@/lib/diet/texture";
 import { formatShortDate } from "@/lib/format";
 
 /**
@@ -22,6 +25,7 @@ export default function ItemDetailPage() {
   const pathname = usePathname();
   const rawId = pathname.split("/").filter(Boolean).pop() ?? "";
   const { diet } = useDiet();
+  const { acceptedTextures } = useProfileNotes();
   const { t, l, locale } = useI18n();
   const today = useToday();
 
@@ -97,13 +101,13 @@ export default function ItemDetailPage() {
                 <div key={i} className="rounded-xl border bg-card px-4 py-3">
                   <p className="font-semibold">{l(eq.title)}</p>
                   <ul className="mt-2 flex flex-wrap gap-2">
-                    {eq.use.map((u, j) => (
-                      <li
+                    {orderByTexture(eq.use, acceptedTextures).map((u, j) => (
+                      <OptionChip
                         key={j}
-                        className="rounded-full bg-tl-green-surface px-3 py-1.5 text-sm font-semibold text-tl-green"
-                      >
-                        {l(u.name)}
-                      </li>
+                        name={l(u.name)}
+                        texture={u.texture}
+                        notAccepted={u.notAccepted}
+                      />
                     ))}
                   </ul>
                   {eq.note && (

@@ -76,6 +76,7 @@ export const en: Dictionary = {
     noteRemove: "Remove note",
     noteCancel: "Cancel",
     historyLink: "See previous days",
+    profileLink: "Your child's profile",
   },
   reminder: {
     heading: "Right now",
@@ -166,6 +167,17 @@ export const en: Dictionary = {
     hydration:
       "Your plan asks for {min} to {max} liters of water a day, about {glasses} glasses. {habit}",
     notInPlan: "Your plan doesn't say. Ask your professional.",
+    allergyYes:
+      "Yes: your plan lists {food} as an allergy. It isn't given, not even in small amounts.",
+    intoleranceYes:
+      "Your plan lists {food} as an intolerance: ask your professional how much and when.",
+    allergyList: "Your plan lists these allergies: {list}.",
+    intoleranceList: "And these intolerances: {list}.",
+    allergyOther:
+      "If you're asking about something else, your plan doesn't say. Ask your professional.",
+    medicationLead:
+      "This is what your plan says about medications. Any change is only for your professional.",
+    medicationTitle: "Medications in your plan",
     notInPlanFood:
       "Your plan has no replacements for {food}. Ask your professional.",
   },
@@ -229,6 +241,9 @@ export const en: Dictionary = {
     useReal: "Use your diet",
   },
   settings: {
+    profileTitle: "Your child's profile",
+    profileBody: "What your plan says and what you note, each with its origin.",
+    profileLink: "Open the profile",
     title: "Settings",
     language: "Language",
     languageEs: "Español",
@@ -255,5 +270,62 @@ export const en: Dictionary = {
     mainNav: "Main navigation",
     statusIcon: "Status: {status}",
     loading: "Loading…",
+  },
+  texture: {
+    liquid: "Liquid",
+    puree: "Purée",
+    mashed: "Mashed",
+    soft: "Soft",
+    chopped: "Chopped",
+    crunchy: "Crunchy",
+    notAccepted: "texture not accepted today",
+    accepted: "accepted today",
+  },
+  profile: {
+    title: "Your child's profile",
+    intro:
+      "What your plan says and what you note on this phone, each with its origin. None of this leaves the phone.",
+    originPlan: "from your plan",
+    originYou: "noted by you",
+    notSaid: "Your plan doesn't say.",
+    goalsTitle: "Professional's goals",
+    groupsTitle: "Food groups",
+    scheduleTitle: "Meal times",
+    hydrationTitle: "Hydration",
+    hydrationValue: "{min} to {max} liters a day, about {glasses} glasses.",
+    activityTitle: "Activity",
+    sleepTitle: "Sleep",
+    limitsTitle: "Current restrictions and supplements",
+    restrictionsActive: "On hold until {date}: {foods}.",
+    restrictionsEnded:
+      "The diet's hold period is over — check with your professional.",
+    supplementsCount: "{n} supplements in your calendar.",
+    supplementsLink: "See the supplements calendar",
+    childTitle: "About your child",
+    conditionTitle: "Condition",
+    allergiesTitle: "Allergies",
+    intolerancesTitle: "Intolerances",
+    medicationsTitle: "Medications",
+    mineTitle: "What you note",
+    mineBody:
+      "Saved only on this phone, apart from your plan: if you load a new plan, your notes stay.",
+    texturesTitle: "Textures accepted today",
+    texturesHint:
+      "Mark them: options with another texture show at the end, marked, and are never hidden.",
+    noteKindLabel: "Note type",
+    noteLabel: "Your note (up to {max} characters)",
+    noteAdd: "Add note",
+    noteRemove: "Remove the note: {text}",
+    noteAdded: "Note added.",
+    noteRemoved: "Note removed.",
+    noteEmpty: "You haven't noted anything yet.",
+    noteDate: "Noted on {date}",
+    noteKinds_condition: "Condition",
+    noteKinds_allergy: "Allergy",
+    noteKinds_intolerance: "Intolerance",
+    noteKinds_medication: "Medication",
+    noteKinds_other: "Other note",
+    medicalReminder:
+      "For dose changes or medical questions, check with your professional.",
   },
 };

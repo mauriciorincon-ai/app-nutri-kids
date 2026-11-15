@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Info } from "lucide-react";
+import { Check, CircleDashed, Info } from "lucide-react";
 
 import { useI18n } from "@/i18n";
 import type { OpenAnswer } from "@/lib/diet/answer";
@@ -39,9 +39,23 @@ export function AnswerCard({
           </p>
           <ul className="mt-1 flex flex-col gap-1">
             {c.items.map((item, i) => (
-              <li key={`${i}-${item}`} className="flex items-center gap-2">
-                <Check aria-hidden className="size-4 shrink-0 text-tl-green" />
-                <span>{item}</span>
+              <li key={`${i}-${item.text}`} className="flex items-center gap-2">
+                {item.marked ? (
+                  <CircleDashed
+                    aria-hidden
+                    className="size-4 shrink-0 text-foreground"
+                  />
+                ) : (
+                  <Check aria-hidden className="size-4 shrink-0 text-tl-green" />
+                )}
+                <span>
+                  {item.text}
+                  {item.marked && (
+                    <span className="ml-1.5 text-muted-foreground">
+                      · {t.texture.notAccepted}
+                    </span>
+                  )}
+                </span>
               </li>
             ))}
           </ul>

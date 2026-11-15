@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useProfileNotes } from "@/components/use-profile-notes";
 import { answerQuestion, type OpenAnswer } from "@/lib/diet/answer";
 import { composeAnswer, type AnswerTemplates } from "@/lib/diet/answer-text";
 import type { DietPlan } from "@/lib/diet/schema";
@@ -32,6 +33,7 @@ export function useChatThread(
   /** Reloj inyectable: «¿qué le doy ahora?» depende de la HORA del envío. */
   now: () => Date = systemNow,
 ) {
+  const { acceptedTextures } = useProfileNotes();
   const [entries, setEntries] = useState<Entry[]>([]);
   const counter = useRef(0);
   const nextId = () => `e${counter.current++}`;
@@ -46,7 +48,7 @@ export function useChatThread(
     (raw: string) => {
       const text = raw.trim();
       if (!text) return;
-      const result = answerQuestion(text, diet, now(), locale);
+      const result = answerQuestion(text, diet, now(), locale, acceptedTextures);
       const id = nextId();
       const reply: Entry =
         result.kind === "verdict"
@@ -74,7 +76,7 @@ export function useChatThread(
         },
       );
     },
-    [diet, locale, templates, now],
+    [diet, locale, templates, now, acceptedTextures],
   );
 
   return { entries, send };
