@@ -5,6 +5,8 @@ description: Patrón obligatorio para features con IA generativa embebida - sali
 
 # IA embebida — el patrón de sinergia app↔LLM
 
+> **Nutrikids (desde el S4): este patrón de nube NO aplica.** Rige la regla dura 5 y [ADR-008](../../decisions/008-chat-code-first.md): el chat contesta con código sobre el plan, sin proveedor, sin SDK, sin API de pago ni de terceros y sin red; lo único generativo admitido es el modelo que el propio navegador ya trae (`src/lib/ia/device-accent.ts`), validado con Zod y con respaldo en el código. Lo que sigue es el patrón genérico del kit, para otras apps.
+
 Objetivo del pipeline: apps donde la IA generativa **interactúa nativamente** y sus resultados se
 **descomponen y almacenan** como datos de primera clase de la aplicación — no chatbots pegados a un
 lado. Este skill define el patrón único que toda feature LLM sigue.

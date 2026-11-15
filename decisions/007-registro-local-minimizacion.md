@@ -1,5 +1,7 @@
 # ADR 007 — Registro del día: local-only + minimización (jamás red, repo ni grounding)
 
+> **Revisión S4 (2026-11-15):** la regla sigue intacta y más fuerte: el registro no entra al chat. Pero ya no existen `grounding.ts`, el POST a `/api/chat` ni el LLM de terceros que este texto describe (retirados por [ADR-008](008-chat-code-first.md): el chat contesta con código y no manda nada a la red). Lo de abajo es el texto original, de época.
+
 - **Estado:** aceptada · Sprint 003 · 2026-07-20
 - **Contexto:** el S3 añade el **registro del día** — la hora real a la que se marcó cada comida y
   una **nota corta** (chips rechazó/dolor/antojo/otro + texto libre breve) por comida. Esto son

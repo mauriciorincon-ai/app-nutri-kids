@@ -63,7 +63,7 @@
 <main>
   <h1>Nutrikids — Blueprint de infraestructura <span class="badge">as-built</span></h1>
   <p class="meta">Ciclo: <strong>H-2 Producto completo (en curso)</strong> · Sprints: <strong>S1–S3</strong> (H-1) y <strong>S4</strong> (la dieta responde sin internet) · Última actualización: <strong>2026-11-15</strong> (Sprint 004)</p>
-  <p class="nota"><strong>Entregable del CIERRE DE CICLO</strong> (método v1.8.1 · kit v1.7.1): el mapa real de TODA la infraestructura que soporta la app, escrito con lo <strong>DESPLEGADO de verdad</strong>. Rasgo definitorio de Nutrikids: es <strong>local-first sin backend</strong> — los datos del niño viven SOLO en el dispositivo (ADR-001, ratificado por ADR-007); <strong>desde el S4 el chat responde con código sobre el plan cargado y no manda nada a la red</strong> (ADR-008): ya no hay proveedor de IA, ni endpoint de chat, ni secreto. Vivo y acumulativo entre ciclos. HTML autocontenido con SVG embebido — cero CDNs.</p>
+  <p class="nota"><strong>Entregable del CIERRE DE CICLO</strong> (método v2.3.0 · kit v2.4.0): el mapa real de TODA la infraestructura que soporta la app, escrito con lo <strong>DESPLEGADO de verdad</strong>. Rasgo definitorio de Nutrikids: es <strong>local-first sin backend</strong> — los datos del niño viven SOLO en el dispositivo (ADR-001, ratificado por ADR-007); <strong>desde el S4 el chat responde con código sobre el plan cargado y no manda nada a la red</strong> (ADR-008): ya no hay proveedor de IA, ni endpoint de chat, ni secreto. Vivo y acumulativo entre ciclos. HTML autocontenido con SVG embebido — cero CDNs.</p>
 
   <h2>Diagrama</h2>
   <div class="diagrama">
@@ -159,7 +159,7 @@
       <tr><td>Observabilidad</td><td>Pino + Sentry (free)</td><td>Pino: logs estructurados <strong>solo-metadatos</strong> (versión de schema, conteos, outcome — jamás contenido de dieta ni registro). Sentry client-only, inerte sin <code>NEXT_PUBLIC_SENTRY_DSN</code></td></tr>
       <tr><td>Crons / keep-alives</td><td>NINGUNO</td><td>Sin backend que mantener despierto; la app estática no los necesita</td></tr>
       <tr><td>Secretos</td><td>Vercel env vars + <code>.env.local</code> (gitignored)</td><td><strong>Ninguno de runtime</strong>: la única variable es <code>NEXT_PUBLIC_SENTRY_DSN</code> (pública, opcional). Doble gate gitleaks (hook pre-commit + PreToolUse)</td></tr>
-      <tr><td>Dominio</td><td>Subdominio de Vercel (asignado por la plataforma)</td><td>Administrado en Vercel; sin dominio propio en fase 1. La URL NO se versiona en el repo (regla 17 — cero enlaces); el campo <code>homepage</code> del repo se mantiene vacío y se re-limpia tras cada deploy de producción</td></tr>
+      <tr><td>Dominio</td><td>Subdominio de Vercel (asignado por la plataforma)</td><td>Administrado en Vercel; sin dominio propio en fase 1. La URL NO se versiona en el repo (regla 17 — cero enlaces); el campo <code>homepage</code> del repo apunta al propio repo (Vercel solo rellena un campo vacío: jamás se deja vacío) y <code>cero-enlaces</code> lo vigila en la CI</td></tr>
       <tr class="critica"><td>Costo real / mes</td><td><strong>US$0</strong></td><td>Vercel Hobby (100 GB-h, uso mínimo) · GitHub Free (2000 min CI/mes) · Sentry free · <strong>cero servicios de IA</strong> (el chat ya no consume cuota de nadie). Presupuesto techo declarado: ≤US$10/mes; el real no lo usa</td></tr>
       <tr class="critica"><td>Punto único de falla</td><td><strong>El dispositivo del usuario</strong></td><td>Los datos del niño viven SOLO en el teléfono, sin respaldo en la nube (decisión de privacidad, no descuido). Mitigación: la dieta se re-importa desde su archivo original; el registro del día es local y aceptado como fase-1 (sync multi-dispositivo = fase 2). "Borrar datos" es intencional y confirmado. Secundario: Vercel como host — ya no es punto de falla del día a día: tras una visita con señal, TODAS las pantallas y el chat abren sin internet (service worker, ADR-003 revisado en el S4)</td></tr>
     </tbody>
@@ -177,7 +177,7 @@
   </table>
   </div>
 
-  <footer>Blueprint as-built de Nutrikids · pipeline AI-APPs · se actualiza en cada cierre de ciclo (método v1.8.1). Archivo del repo — sin CDNs ni dependencias externas. Jamás contiene secretos ni datos del niño.</footer>
+  <footer>Blueprint as-built de Nutrikids · pipeline AI-APPs · se actualiza en cada cierre de ciclo (método v2.3.0). Archivo del repo — sin CDNs ni dependencias externas. Jamás contiene secretos ni datos del niño.</footer>
 </main>
 </body>
 </html>

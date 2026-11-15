@@ -6,7 +6,7 @@ import { loadPrefs, savePrefs } from "@/lib/diet/storage";
 import { notifyLocalStore, useLocalStore } from "@/lib/local-store";
 
 /**
- * Nota de transparencia IA del chat — se muestra UNA vez (flag en prefs).
+ * Nota de cómo funciona el chat (con tu plan, sin internet) — se muestra UNA vez (flag en prefs).
  *
  * Mismo patrón que FirstUseDialog: overlay estático que viaja en el HTML del
  * servidor (LCP-seguro), y un script inline pre-paint lo oculta para quien ya

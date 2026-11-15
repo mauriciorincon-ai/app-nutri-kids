@@ -20,7 +20,7 @@ eso a propósito). Si pones el teléfono en modo avión, todas deben salir igual
 | Escribe esto                    | Deberías ver                                                                                                          |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | `no tengo pollo, ¿qué le doy?`  | "Si no hay pollo…" y opciones **del plan** (huevos y otras proteínas del grupo), sin mencionar rojos                  |
-| `no quiso el brócoli`           | "No pasa nada" (sin regaño) · otras opciones del plan · bloque **"Lo que sigue"** con la próxima comida               |
+| `no quiso el brócoli`           | "Pasa, y no es una falla" (sin regaño) · otras opciones del plan · bloque **"Lo que sigue"** con la próxima comida               |
 | `no quiso desayunar`            | Lo que toca **después del desayuno**, sin culpa                                                                       |
 | `¿qué le doy ahora?`            | El menú de la **franja de este momento** (o la siguiente si no hay una activa)                                        |
 | `¿qué le doy de merienda?`      | El menú de **merienda** del plan                                                                                      |

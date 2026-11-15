@@ -7,7 +7,7 @@ import { defineConfig, devices } from "@playwright/test";
  * puerto, Playwright lo reutiliza y la suite entera corre contra OTRA app: 60 tests
  * en rojo sin una sola pista, o —peor— en verde. Pasó dos veces el 2026-08-22.
  * Ahora: `E2E_PORT` mueve la suite a un puerto libre y `tests/e2e/global-setup.ts`
- * exige que quien conteste sea Nutri-Kids antes de correr nada.
+ * exige que quien conteste sea Nutrikids antes de correr nada.
  */
 const PORT = Number(process.env.E2E_PORT ?? 3600);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
