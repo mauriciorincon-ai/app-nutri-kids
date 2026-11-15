@@ -4,7 +4,7 @@ import {
   rejectionMessage,
   screenInput,
   MAX_INPUT_CHARS,
-} from "@/lib/ia/guardrails";
+} from "@/lib/diet/guardrails";
 
 describe("screenInput — frontera consulta vs. cambio médico", () => {
   it("consultar el plan es legítimo ('¿cuándo toca la B12?') → ok", () => {

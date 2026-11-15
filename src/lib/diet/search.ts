@@ -7,7 +7,8 @@
  * `resolveItemStatus` de `logic.ts` (este motor lo CONSUME, no lo modifica).
  *
  * Si la pregunta NO es un lookup (p. ej. "no tengo pollo, ¿qué le doy?"),
- * devuelve `null` → el llamador la manda al LLM (Camino B).
+ * devuelve `null` → el llamador la resuelve con `answerOpen` (answer.ts), también
+ * con código y sin red (ADR-008).
  */
 import type { DietPlan, LocalizedText } from "./schema";
 import { allItemIds, resolveItemStatus, type ItemStatus } from "./logic";
@@ -18,7 +19,7 @@ export type LocalVerdict =
   | { kind: "item"; status: ItemStatus; matched: LocalizedText }
   | { kind: "additive"; additive: Additive; matched: LocalizedText };
 
-type Locale = "es" | "en";
+export type Locale = "es" | "en";
 
 /** minúsculas + sin acentos + sin puntuación + espacios colapsados. */
 export function normalizeText(input: string, locale: Locale = "es"): string {
@@ -43,7 +44,7 @@ function singularize(token: string): string {
   return token;
 }
 
-function toTokens(input: string, locale: Locale): string[] {
+export function toTokens(input: string, locale: Locale): string[] {
   return normalizeText(input, locale)
     .split(" ")
     .filter(Boolean)
@@ -51,7 +52,7 @@ function toTokens(input: string, locale: Locale): string[] {
 }
 
 /** ¿aparece la secuencia `needle` de forma contigua dentro de `haystack`? */
-function containsPhrase(haystack: string[], needle: string[]): boolean {
+export function containsPhrase(haystack: string[], needle: string[]): boolean {
   if (needle.length === 0 || needle.length > haystack.length) return false;
   for (let i = 0; i + needle.length <= haystack.length; i++) {
     let ok = true;
@@ -67,8 +68,8 @@ function containsPhrase(haystack: string[], needle: string[]): boolean {
 }
 
 /**
- * Frases que delatan una pregunta ABIERTA (Camino B): pedir ideas, reemplazos,
- * o describir una falta. Si el mensaje contiene alguna, NO es un lookup local.
+ * Frases que delatan una pregunta ABIERTA: pedir ideas, reemplazos, o describir
+ * una falta. Si el mensaje contiene alguna, NO es un lookup: la contesta `answerOpen`.
  */
 const OPEN_PATTERNS: string[] = [
   // ES
@@ -134,6 +135,29 @@ const LOOKUP_MARKERS: string[] = [
   "allowed",
   "can eat",
 ];
+
+/**
+ * El alimento del plan (por id) más específico que aparezca en el texto, sin
+ * mirar la intención. Lo usan `matchLookup` y `answerOpen`.
+ */
+export function matchItem(
+  diet: DietPlan,
+  message: string,
+  locale: Locale,
+  date: Date,
+): ItemStatus | null {
+  const msgTokens = toTokens(message, locale);
+  let best: { status: ItemStatus; span: number } | null = null;
+  for (const id of allItemIds(diet)) {
+    const status = resolveItemStatus(diet, id, date);
+    if (!status) continue;
+    const needle = toTokens(status.name[locale], locale);
+    if (containsPhrase(msgTokens, needle) && needle.length > (best?.span ?? 0)) {
+      best = { status, span: needle.length };
+    }
+  }
+  return best?.status ?? null;
+}
 
 function additiveVerdict(diet: DietPlan): { additive: Additive }[] {
   return diet.trafficLight.red.additives.map((additive) => ({ additive }));
