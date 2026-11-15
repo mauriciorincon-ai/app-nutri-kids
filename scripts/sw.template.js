@@ -16,10 +16,12 @@ const VERSION = "__BUILD_ID__";
 const CACHE = "nutrikids-shell-" + VERSION;
 const SHELL_ROUTES = __SHELL_ROUTES__;
 const DETAIL_SHELL = __DETAIL_SHELL__;
+/** pdf.js y su worker, servidos por la app: el PDF se lee en el aparato, también sin red. */
+const EXTRA_ASSETS = __EXTRA_ASSETS__;
 const NAV_TIMEOUT_MS = 3000;
 
 const ASSET_PATTERN = /\/_next\/static\/[^"'\s\\)<>]+/g;
-const STATIC_PATTERN = /\/(_next\/static|icons)\/|\.(?:png|ico|woff2?)$/;
+const STATIC_PATTERN = /\/(_next\/static|icons|pdfjs)\/|\.(?:png|ico|woff2?)$/;
 
 /** Clave de caché de una pantalla: su ruta, sin query ni hash. */
 function shellKey(pathname) {
@@ -28,7 +30,7 @@ function shellKey(pathname) {
 
 async function precache() {
   const cache = await caches.open(CACHE);
-  const assets = new Set();
+  const assets = new Set(EXTRA_ASSETS);
   // Las pantallas son obligatorias: si una falla, la instalación falla y sigue la versión anterior.
   await Promise.all(
     [...SHELL_ROUTES, DETAIL_SHELL].map(async (route) => {

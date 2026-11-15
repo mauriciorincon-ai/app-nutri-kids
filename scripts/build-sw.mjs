@@ -7,7 +7,7 @@
  * con las rutas reales de `src/app`.
  */
 import { execSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -28,6 +28,23 @@ export const SHELL_ROUTES = [
 
 /** Cascarón del detalle de alimento: sirve de respaldo a `/dieta/<id>` sin visita previa. */
 export const DETAIL_SHELL = "/dieta/_";
+
+/**
+ * pdf.js y su worker (ADR-010): se sirven desde la propia app (ninguna CDN) y se
+ * precachean, así un PDF se lee en el aparato también sin señal. Build «legacy»: la que
+ * abre en teléfonos con navegadores de hace unos años.
+ */
+export const PDFJS_ASSETS = ["/pdfjs/pdf.min.mjs", "/pdfjs/pdf.worker.min.mjs"];
+
+export function copyPdfJs() {
+  const from = join(root, "node_modules/pdfjs-dist/legacy/build");
+  const to = join(root, "public/pdfjs");
+  mkdirSync(to, { recursive: true });
+  for (const asset of PDFJS_ASSETS) {
+    const name = asset.split("/").pop();
+    copyFileSync(join(from, name), join(to, name));
+  }
+}
 
 export function buildId() {
   let sha = (process.env.VERCEL_GIT_COMMIT_SHA ?? "").slice(0, 7);
@@ -50,6 +67,7 @@ export function renderSw(template, id, routes = SHELL_ROUTES) {
   return template
     .replace("__DETAIL_SHELL__", JSON.stringify(DETAIL_SHELL))
     .replace("__BUILD_ID__", id)
+    .replace("__EXTRA_ASSETS__", JSON.stringify(PDFJS_ASSETS))
     .replace("__SHELL_ROUTES__", JSON.stringify(routes));
 }
 
@@ -57,5 +75,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const template = readFileSync(join(root, "scripts/sw.template.js"), "utf8");
   const id = buildId();
   writeFileSync(join(root, "public/sw.js"), renderSw(template, id));
+  copyPdfJs();
   console.log(`sw.js ← ${id} (${SHELL_ROUTES.length} pantallas)`);
 }
