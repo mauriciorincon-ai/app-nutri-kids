@@ -14,6 +14,9 @@ test-results/
 .DS_Store
 Thumbs.db
 
+# Estampado por scripts/build-sw.mjs desde scripts/sw.template.js
+public/sw.js
+
 # Lighthouse CI artifacts
 .lighthouseci/
 

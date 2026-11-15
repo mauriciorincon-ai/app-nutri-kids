@@ -1,6 +1,6 @@
 # ADR 003 — PWA: manifest + íconos + service worker mínimo escrito a mano
 
-- **Estado:** aceptada · Sprint 001 · 2026-07-07
+- **Estado:** aceptada · Sprint 001 · 2026-07-07 · **revisada en el Sprint 004 (2026-11-15):** el SW ahora precachea el cascarón de todas las pantallas (ver «Revisión S4»; el «límite conocido» de abajo quedó superado).
 - **Contexto:** la app debe ser instalable (Add to Home Screen, uso diario en el teléfono).
   Opciones: next-pwa (sin mantenimiento activo para Next 16), Serwist, o SW mínimo propio.
 - **Decisión:** sin dependencia: `public/manifest.webmanifest` (standalone, portrait, íconos
@@ -18,3 +18,25 @@
   "lonchera sin señal" es de sprints futuros — se haría con precache del app shell o Serwist).
 - **Versionado:** el nombre del caché (`nutrikids-static-v1`) se rota si cambia la estrategia;
   `activate` limpia caches viejos.
+
+## Revisión S4 — «la dieta responde sin internet» (2026-11-15)
+
+- **Qué cambia:** el SW sigue escrito a mano y sin dependencias, pero ya no es solo de estáticos.
+  - `scripts/sw.template.js` es la plantilla; `scripts/build-sw.mjs` (en `prebuild` y `dev`) la estampa
+    en `public/sw.js` (ignorado por git) con un id de versión por build y la lista de pantallas.
+  - **Precache en la instalación:** el HTML de `/`, `/dieta`, `/suplementos`, `/cargar`, `/ajustes`,
+    `/chat`, `/historial` y `/conoce`, más los estáticos `/_next/static/*` que ese HTML referencia. Si
+    algo falla, la instalación falla entera y sigue la versión anterior.
+  - **Navegación: red primero, caché de respaldo.** Con señal se ve siempre lo último del deploy
+    (el riesgo de HTML viejo que motivó la v1 se evita porque la red manda); sin señal, o con la red
+    más lenta que 3 s habiendo copia, sale el cascarón guardado. `/dieta/<id>` sin visita previa redirige
+    a `/dieta` (servir el HTML de otra ruta rompe la hidratación de Next).
+  - **Versión nueva:** el SW nuevo queda **en espera** (sin `skipWaiting` al instalar). La página avisa
+    «hay una versión nueva» con «Actualizar» y «Ahora no»; solo al aceptar manda `SKIP_WAITING`, el SW
+    toma el control y se recarga una vez. **Nunca recarga a la fuerza.**
+- **Gates (regla 19, puente SW ↔ página):** `tests/unit/build-sw.test.ts` compara la lista de pantallas
+  con las rutas reales de `src/app`, exige que la versión nueva espere y que el mensaje coincida en ambos
+  lados; `tests/e2e/offline.spec.ts` apaga la red tras una visita y abre cada pantalla, usa el chat y
+  congela el aviso de versión con axe. Demostrado en rojo quitando una pantalla de la lista.
+- **Lo que no cambia:** los datos de la dieta y del registro viven en `localStorage`, nunca en el caché
+  del SW; el SW solo se registra en producción.

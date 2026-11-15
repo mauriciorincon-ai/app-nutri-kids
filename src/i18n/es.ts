@@ -9,6 +9,11 @@ export const es = {
     name: "Nutrikids",
     tagline: "La dieta de tu peque, viva y a la mano",
   },
+  update: {
+    notice: "Hay una versión nueva de Nutrikids. Tu dieta y tu registro no se tocan.",
+    action: "Actualizar",
+    later: "Ahora no",
+  },
   nav: {
     today: "Hoy",
     diet: "Dieta",

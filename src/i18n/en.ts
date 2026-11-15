@@ -9,6 +9,11 @@ export const en: Dictionary = {
     name: "Nutrikids",
     tagline: "Your kid's diet, alive and at hand",
   },
+  update: {
+    notice: "There is a new version of Nutrikids. Your diet and log stay as they are.",
+    action: "Update",
+    later: "Not now",
+  },
   nav: {
     today: "Today",
     diet: "Diet",

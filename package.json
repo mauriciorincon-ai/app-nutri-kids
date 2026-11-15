@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/sync-brochure.mjs && next dev -H 127.0.0.1 -p 3600",
-    "prebuild": "node scripts/sync-brochure.mjs",
+    "dev": "node scripts/sync-brochure.mjs && node scripts/build-sw.mjs && next dev -H 127.0.0.1 -p 3600",
+    "prebuild": "node scripts/sync-brochure.mjs && node scripts/build-sw.mjs",
     "build": "next build",
     "start": "next start -H 127.0.0.1 -p 3600",
     "lint": "eslint",
