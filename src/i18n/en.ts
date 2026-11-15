@@ -223,6 +223,8 @@ export const en: Dictionary = {
     errorNoStorage:
       "Your browser didn't allow saving the diet on the device. Try another browser (for example Chrome).",
     activeSource: "Active diet:",
+    activeDemo: "the demo",
+    activeReal: "your diet",
     useDemo: "Use the demo",
     useReal: "Use your diet",
   },

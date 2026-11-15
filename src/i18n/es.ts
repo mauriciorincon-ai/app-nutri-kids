@@ -225,6 +225,8 @@ export const es = {
     errorNoStorage:
       "Tu navegador no dejó guardar la dieta en el dispositivo. Intenta desde otro navegador (por ejemplo Chrome).",
     activeSource: "Dieta activa:",
+    activeDemo: "la demo",
+    activeReal: "tu dieta",
     useDemo: "Usar la demo",
     useReal: "Usar tu dieta",
   },

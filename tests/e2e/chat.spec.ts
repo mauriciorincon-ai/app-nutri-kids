@@ -126,6 +126,8 @@ test("EN: open questions answer in English from the plan", async ({ page }) => {
   expect(calls).toEqual([]);
 });
 
+// Nota: el sistema de diseño es solo claro (no hay tema oscuro real); «dark» es una guarda:
+// si algún día se agrega un tema oscuro, esta e2e ya lo cubre con axe.
 for (const colorScheme of ["light", "dark"] as const) {
   test(`axe limpio con respuestas en el hilo · tema ${colorScheme}`, async ({
     page,

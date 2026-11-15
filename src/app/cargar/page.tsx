@@ -176,7 +176,10 @@ export default function LoadPage() {
       {ready && hasStoredRealDiet() && (
         <section className="flex flex-col gap-2 rounded-xl border bg-card px-4 py-3">
           <p className="text-sm font-semibold text-muted-foreground">
-            {t.load.activeSource}
+            {t.load.activeSource}{" "}
+            <span data-testid="active-source">
+              {source === "real" ? t.load.activeReal : t.load.activeDemo}
+            </span>
           </p>
           <div
             className="flex gap-2"

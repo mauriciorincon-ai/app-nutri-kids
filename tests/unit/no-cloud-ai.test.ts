@@ -11,12 +11,21 @@ const pkg = JSON.parse(readFileSync(resolve("package.json"), "utf8")) as {
 };
 const deps = Object.keys({ ...pkg.dependencies, ...pkg.devDependencies });
 
-const CLOUD_SDK = /^(ai|@ai-sdk\/.*|openai|@anthropic-ai\/.*|@google\/genai|@google\/generative-ai|groq-sdk|@azure\/openai|@mistralai\/.*|cohere-ai)$/;
+const CLOUD_SDK =
+  /^(ai|@ai-sdk\/.*|openai|@anthropic-ai\/.*|@google\/genai|@google\/generative-ai|@google-cloud\/.*|groq-sdk|@azure\/openai|@aws-sdk\/client-bedrock.*|@mistralai\/.*|cohere-ai|@huggingface\/inference|replicate|together-ai|@langchain\/.*|langchain|ollama|@xenova\/transformers)$/;
+
+// Toda vía de red desde el navegador: fetch, XHR, beacons, sockets y streams de eventos.
+const NETWORK_CALL =
+  /\b(fetch\s*\(|XMLHttpRequest|sendBeacon|new\s+WebSocket|new\s+EventSource)/;
 
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const p = join(dir, name);
-    return statSync(p).isDirectory() ? sourceFiles(p) : /\.(ts|tsx)$/.test(p) ? [p] : [];
+    return statSync(p).isDirectory()
+      ? sourceFiles(p)
+      : /\.(ts|tsx)$/.test(p)
+        ? [p]
+        : [];
   });
 }
 
@@ -29,11 +38,13 @@ describe("sin IA en la nube (regla dura 5)", () => {
     expect(existsSync(resolve("src/app/api"))).toBe(false);
   });
 
-  it("ningún archivo de src/ importa un SDK de proveedor ni llama a fetch", () => {
+  it("ningún archivo de src/ importa un SDK de proveedor ni abre una vía de red", () => {
     const offenders = sourceFiles(resolve("src")).filter((f) => {
       const code = readFileSync(f, "utf8");
-      const imports = [...code.matchAll(/from\s+["']([^"']+)["']/g)].map((m) => m[1]);
-      return imports.some((i) => CLOUD_SDK.test(i)) || /\bfetch\s*\(/.test(code);
+      const imports = [...code.matchAll(/from\s+["']([^"']+)["']/g)].map(
+        (m) => m[1],
+      );
+      return imports.some((i) => CLOUD_SDK.test(i)) || NETWORK_CALL.test(code);
     });
     expect(offenders).toEqual([]);
   });

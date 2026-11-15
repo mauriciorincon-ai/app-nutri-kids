@@ -155,6 +155,8 @@ test("versión nueva en inglés", async ({ page }) => {
   await expect(notice.getByRole("button", { name: "Update" })).toBeVisible();
 });
 
+// Nota: el sistema de diseño es solo claro (no hay tema oscuro real); «dark» es una guarda:
+// si algún día se agrega un tema oscuro, esta e2e ya lo cubre con axe.
 for (const colorScheme of ["light", "dark"] as const) {
   test(`axe limpio con el aviso de versión visible · tema ${colorScheme}`, async ({
     page,
