@@ -204,31 +204,31 @@
       "valor": 8,
       "unidad": "pantallas",
       "fuente": "medido",
-      "detalle": "Archivos page.tsx bajo src/app/. La ruta /conoce sirve este brochure y no es una pantalla del producto."
+      "detalle": "Siete rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
     },
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 214,
+      "valor": 389,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `pnpm exec vitest run --coverage --maxWorkers=2` el 2026-10-27 sobre 69538dc: 15 archivos, 214 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-15 sobre c1ad632: 19 archivos, 389 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 94,
+      "valor": 118,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `pnpm exec playwright test --workers=1` el 2026-10-27 sobre 69538dc, contra un build de producción con el chat en modo de prueba: 94 pruebas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe, todas en verde."
+      "detalle": "Salida de `CI=1 npx playwright test --workers=2` el 2026-11-15 sobre c1ad632, contra un build de producción: 118 pruebas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe y las de uso sin internet, todas en verde."
     },
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 99.52,
+      "valor": 99.26,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib/diet, src/lib/ia y src/lib/rate-limit (422 de 424 líneas), con umbrales del 80 % en vitest.config.ts."
+      "detalle": "v8 sobre src/lib/diet y src/lib/ia el 2026-11-15 sobre c1ad632 (538 de 542 líneas), con umbrales del 80 % en vitest.config.ts."
     },
     {
       "clave": "decisiones_registradas",
@@ -265,10 +265,10 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 76185,
+      "valor": 76203,
       "unidad": "bytes",
       "fuente": "medido",
-      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-10-27 sobre 69538dc. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."
+      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-15 sobre c1ad632. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."
     }
   ],
   "stack": [
