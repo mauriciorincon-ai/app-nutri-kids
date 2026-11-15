@@ -1,6 +1,7 @@
 # ADR 006 — Privacidad del chat: no-persistencia y logs solo-metadatos
 
-- **Estado:** aceptada · Sprint 002 · 2026-07-07
+- **Estado:** vigente en su regla 1 (no-persistencia); las reglas sobre `/api/chat` y el proveedor quedan sin objeto por ADR-008 «chat code-first» (Sprint 004, 2026-11-15): el chat no hace peticiones.
+- **Estado original:** aceptada · Sprint 002 · 2026-07-07
 - **Contexto:** el chat maneja datos de salud de un **menor** (Ley 1581/2012: minimización, alta
   privacidad por defecto, propósito limitado). Parte del contenido (la dieta anonimizada) sale del
   dispositivo hacia un proveedor de IA de terceros para responder preguntas abiertas.

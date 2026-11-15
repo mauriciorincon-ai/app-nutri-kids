@@ -1,11 +1,11 @@
 /**
- * Guardrails de entrada — corren en la route ANTES de gastar tokens.
+ * Guardrails de entrada — corren en el teléfono ANTES de contestar (ADR-008).
  *
  * Distinguen tres cosas:
- *  - `ok`: pregunta legítima sobre el plan → pasa al LLM.
+ *  - `ok`: pregunta legítima sobre el plan → la contesta el motor (answer.ts).
  *  - `medical`: pide consejo médico, dosis/medicación nuevas o diagnóstico →
- *    redirección amable al profesional (SIN tokens).
- *  - `off-topic`: nada que ver con la dieta → redirección estática (SIN tokens).
+ *    redirección amable al profesional.
+ *  - `off-topic`: nada que ver con la dieta → redirección estática.
  *
  * Frontera fina (riesgo de falso positivo): CONSULTAR lo que el plan ya dice
  * ("¿cuándo toca la B12?") es legítimo; PEDIR un cambio/dosis nueva
@@ -29,7 +29,7 @@ function normalize(input: string): string {
 const MEDICAL_ACTION_PATTERNS: RegExp[] = [
   // ES — cambios de dosis/medicación
   /\b(sub[oe]|baj[oe]|aument[oa]|reduc|dobl|cambi|quit[oa]|suspend|empiez[oa]|dej[oa] de dar)\b.*\b(dosis|suplement|vitamin|medic|gotas|b12|hierro|omega|zinc|melatonin)/,
-  /\b(dosis|medic|receta|diagnos|sintoma|enferm|alergi|reaccion|dolor|fiebre|vomit|diarrea)/,
+  /\b(dosis|medic|recetar|recetaron|receto|recetado|diagnos|sintoma|enferm|alergi|reaccion|dolor|fiebre|vomit|diarrea)/,
   // ES — pedir diagnóstico/tratamiento
   /\b(que le pasa|es normal que|deberia llevarl|tiene (algo|autismo|tea)|le dio)/,
   // EN
@@ -61,7 +61,7 @@ export function screenInput(message: string): GuardrailOutcome {
   return "ok";
 }
 
-/** Respuestas estáticas de redirección (bilingües), sin gastar tokens. */
+/** Respuestas estáticas de redirección (bilingües). */
 export function rejectionMessage(
   outcome: Exclude<GuardrailOutcome, "ok">,
   locale: Locale,
@@ -76,5 +76,5 @@ export function rejectionMessage(
     : "Solo puedo ayudarte con el plan de alimentación del peque — prueba con algo como “¿la manzana se puede?” o “¿qué merienda le doy?”.";
 }
 
-/** Longitud máxima de input aceptada (anti-abuso, sin gastar tokens). */
+/** Longitud máxima de la pregunta (el campo de texto la corta aquí). */
 export const MAX_INPUT_CHARS = 1000;

@@ -57,7 +57,7 @@
 }
 
 :root {
-  /* Nutri-Kids v1 — paleta "cocina familiar" (design-system.md). Light-only en S1. */
+  /* Nutrikids v1 — paleta "cocina familiar" (design-system.md). Light-only en S1. */
   --background: oklch(0.977 0.008 84);
   --foreground: oklch(0.28 0.02 50);
   --card: oklch(0.995 0.005 84);
@@ -142,7 +142,7 @@
   html[data-first-use-seen] .first-use-overlay {
     display: none;
   }
-  /* Misma técnica para la nota de transparencia IA del chat (Sprint 002). */
+  /* Misma técnica para la nota de cómo funciona el chat (Sprint 002). */
   html[data-chat-intro-seen] .chat-intro-overlay {
     display: none;
   }

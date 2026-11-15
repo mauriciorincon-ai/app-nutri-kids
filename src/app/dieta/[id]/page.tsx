@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { useToday } from "@/components/day-checklist/use-today";
@@ -17,13 +17,16 @@ import { formatShortDate } from "@/lib/format";
  * Ruta 100% dinámica en cliente: la dieta vive en el dispositivo.
  */
 export default function ItemDetailPage() {
-  const params = useParams<{ id: string }>();
+  // El id sale de la URL del navegador (no de los params del servidor): así el
+  // cascarón guardado por el service worker sirve CUALQUIER alimento sin red.
+  const pathname = usePathname();
+  const rawId = pathname.split("/").filter(Boolean).pop() ?? "";
   const { diet } = useDiet();
   const { t, l, locale } = useI18n();
   const today = useToday();
 
   const date = today ?? new Date(`${diet.restrictions.validFrom}T12:00:00`);
-  const status = resolveItemStatus(diet, decodeURIComponent(params.id), date);
+  const status = resolveItemStatus(diet, decodeURIComponent(rawId), date);
 
   return (
     <div className="flex flex-col gap-5 pb-6">

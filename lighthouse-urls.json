@@ -1,10 +1,10 @@
 {
   "_comment": "Rutas auditadas por Lighthouse CI contra perf-budget.json. Añadir aquí cada ruta nueva con LCP-sensibilidad (S1: / y /dieta; S2: +/chat; S3: +/historial; entrega brochure: +/conoce). Todas son públicas en preview.",
   "urls": [
-    "http://localhost:3000",
-    "http://localhost:3000/dieta",
-    "http://localhost:3000/chat",
-    "http://localhost:3000/historial",
-    "http://localhost:3000/conoce"
+    "http://127.0.0.1:3600",
+    "http://127.0.0.1:3600/dieta",
+    "http://127.0.0.1:3600/chat",
+    "http://127.0.0.1:3600/historial",
+    "http://127.0.0.1:3600/conoce"
   ]
 }

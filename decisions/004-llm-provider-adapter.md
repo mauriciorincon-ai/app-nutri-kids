@@ -1,6 +1,7 @@
 # ADR 004 — Proveedor LLM y adapter conmutable por env
 
-- **Estado:** aceptada · Sprint 002 · 2026-07-07
+- **Estado:** superada por ADR-008 «chat code-first» (Sprint 004, 2026-11-15): los adaptadores de nube, la ruta `/api/chat` y sus variables se retiraron. Se conserva como historia.
+- **Estado original:** aceptada · Sprint 002 · 2026-07-07
 - **Contexto:** el chat "habla con tu dieta" (Camino B) necesita un LLM para las preguntas
   abiertas. La visión exige proveedor **agnóstico** (no atarse a uno) y presupuesto runtime
   **≤ US$20/mes**. CI no puede llamar a un proveedor real (determinismo + costo + privacidad).

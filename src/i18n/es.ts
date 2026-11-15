@@ -6,8 +6,13 @@
  */
 export const es = {
   app: {
-    name: "Nutri-Kids",
+    name: "Nutrikids",
     tagline: "La dieta de tu peque, viva y a la mano",
+  },
+  update: {
+    notice: "Hay una versión nueva de Nutrikids. Tu dieta y tu registro no se tocan.",
+    action: "Actualizar",
+    later: "Ahora no",
   },
   nav: {
     today: "Hoy",
@@ -19,7 +24,7 @@ export const es = {
   },
   disclaimer: {
     short: "Esta guía no reemplaza a tu pediatra.",
-    full: "Nutri-Kids organiza el plan de alimentación que la familia decidió seguir. No es diagnóstico ni tratamiento médico: ante cualquier duda, consulta siempre al pediatra o a tu nutricionista.",
+    full: "Nutrikids organiza el plan de alimentación que la familia decidió seguir. No es diagnóstico ni tratamiento médico: ante cualquier duda, consulta siempre al pediatra o a tu nutricionista.",
     firstUseTitle: "Antes de empezar",
     firstUseBody:
       "Esta app convierte el plan nutricional de tu peque en una guía fácil de consultar. Es una ayuda para el día a día, no un consejo médico: tu pediatra y tu nutricionista siempre tienen la última palabra.",
@@ -120,35 +125,50 @@ export const es = {
   },
   chat: {
     title: "Pregúntale a la dieta",
-    intro: "Escribe como le hablas a alguien. Dos formas de responder:",
+    intro:
+      "Escribe como le hablas a alguien. Todo se responde con tu plan, aquí en el teléfono y sin internet.",
     emptyHint: "Prueba con una de estas:",
     sugg1: "¿La manzana se puede?",
     sugg2: "¿Qué merienda le doy?",
     sugg3: "No tengo pollo, ¿qué le doy?",
+    sugg4: "¿Cuánta agua le doy?",
     inputPlaceholder: "Escribe tu pregunta…",
     send: "Enviar",
-    sending: "Enviando…",
-    thinking: "Pensando…",
     fromPlanBadge: "Desde tu plan · sin IA",
-    aiBadge: "Respuesta de IA",
-    aiDisclaimer:
-      "Lo genera una IA sobre tu plan. Verifícalo con tu profesional.",
+    deviceBadge: "Desde tu plan · redactado en tu teléfono",
+    offlineStatus: "Responde sin internet",
     replacementsTitle: "Si no hay, usa…",
     additiveTitle: "Aditivo a evitar",
     additiveFoundIn: "Suele venir en: {where}",
     restrictedUntil: "En descanso hasta el {date}",
     restrictionEnded: "El descanso ya terminó — consulta al profesional.",
-    errorTitle: "El asistente no está disponible",
-    errorBody:
-      "No pudimos conectar con el asistente ahora. Las consultas rápidas de “¿se puede?” siguen funcionando.",
-    disabledTitle: "El asistente está en pausa",
-    disabledBody:
-      "La parte de IA está apagada por ahora. Puedes seguir preguntando “¿la manzana se puede?” y te respondo al instante desde tu plan.",
     introTitle: "Cómo funciona este chat",
     introBody:
-      "Las preguntas de “¿se puede?” se responden al instante desde tu plan, aquí en el teléfono. Para preguntas más abiertas, una IA lee tu plan (con el nombre del peque oculto) y responde solo con lo que el plan permite. No es consejo médico.",
+      "Respondo solo con lo que dice tu plan: qué se puede, con qué reemplazar, qué toca ahora y cuánta agua. Todo pasa aquí en el teléfono; nada sale a internet. Si tu plan no lo dice, te lo digo. No es consejo médico.",
     introAccept: "Entendido",
-    aiDot: "Asistente IA",
+  },
+  answer: {
+    optionsTitle: "Opciones de tu plan",
+    replacementLead: "Si no hay {food}, tu plan da estas opciones:",
+    replacementGroupLead:
+      "Si no hay {food}, puedes usar otro alimento de su mismo grupo:",
+    refusedFoodLead:
+      "Pasa, y no es una falla. Si no quiso {food}, tu plan ofrece:",
+    refusedLead: "Pasa, y no es una falla: no hace falta insistir.",
+    nextTitle: "Lo que sigue",
+    refusedNext: "{meal}, a las {start}: {content}",
+    refusedNoNext:
+      "Por hoy ya pasaron las comidas del plan; mañana empieza como siempre.",
+    mealNow: "Ahora toca {meal} ({start}–{end}): {content}",
+    mealNext: "Lo siguiente es {meal}, a las {start}: {content}",
+    mealNamed: "{meal} en tu plan ({start}–{end}): {content}",
+    mealTomorrow:
+      "Por hoy ya pasaron las comidas. Mañana empieza con {meal}, a las {start}: {content}",
+    hydration:
+      "Tu plan pide entre {min} y {max} litros de agua al día, unos {glasses} vasos. {habit}",
+    notInPlan: "Tu plan no lo dice. Pregúntale a tu profesional.",
+    notInPlanFood:
+      "Tu plan no trae reemplazos para {food}. Pregúntale a tu profesional.",
   },
   detail: {
     whyTitle: "¿Por qué?",
@@ -201,10 +221,12 @@ export const es = {
     errorInvalidJson:
       "Ese archivo no se pudo leer como una dieta. Revisa que sea el archivo .json correcto y vuelve a intentar.",
     errorInvalidSchema:
-      "El archivo se abre, pero no tiene el formato de una dieta de Nutri-Kids. Pide de nuevo el archivo original (.json) a quien te lo compartió.",
+      "El archivo se abre, pero no tiene el formato de una dieta de Nutrikids. Pide de nuevo el archivo original (.json) a quien te lo compartió.",
     errorNoStorage:
       "Tu navegador no dejó guardar la dieta en el dispositivo. Intenta desde otro navegador (por ejemplo Chrome).",
     activeSource: "Dieta activa:",
+    activeDemo: "la demo",
+    activeReal: "tu dieta",
     useDemo: "Usar la demo",
     useReal: "Usar tu dieta",
   },
@@ -227,11 +249,9 @@ export const es = {
     clearConfirmNo: "Cancelar",
     clearedToast: "Datos borrados. Volviste a la dieta demo.",
     disclaimerTitle: "Sobre esta app",
-    aiTitle: "Asistente IA del chat",
+    aiTitle: "Cómo responde el chat",
     aiBody:
-      "Cuando haces una pregunta abierta en el chat, tu plan (con el nombre del peque oculto) se envía a un proveedor de IA para redactar la respuesta. Las preguntas de “¿se puede?” se responden en el teléfono, sin salir. Nada de la conversación se guarda ni queda en registros.",
-    aiStatusEnabled: "Asistente IA: activo",
-    aiStatusDisabled: "Asistente IA: en pausa",
+      "El chat responde con código, solo con lo que trae tu plan, aquí en el teléfono: no usa servicios de inteligencia artificial en internet y nada de lo que escribes sale del teléfono. Si tu navegador trae un modelo de lenguaje propio dentro del teléfono, se usa solo para redactar con otras palabras una respuesta que el código ya decidió. Nada de la conversación se guarda.",
   },
   a11y: {
     mainNav: "Navegación principal",

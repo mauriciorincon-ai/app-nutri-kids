@@ -477,7 +477,7 @@ test.describe("brochure /conoce", () => {
     // intermedio (a media animación el contraste calculado es el del fundido).
     await page.waitForTimeout(2000);
     await abrirTarjeta(page, /El día de hoy/);
-    await abrirTarjeta(page, /¿Esto se puede\?/);
+    await abrirTarjeta(page, /El semáforo: ¿esto se puede\?/);
     await page.waitForTimeout(700);
     await page
       .locator("details.fino")

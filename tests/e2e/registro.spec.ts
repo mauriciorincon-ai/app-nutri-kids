@@ -204,7 +204,7 @@ test("migración v1→v2: el estado de un usuario S1/S2 no pierde marcas", async
   await expect(page.getByText("Ya hiciste 3 de 10")).toBeVisible();
 });
 
-test("privacidad: el registro del día NO viaja en el request del chat (grounding)", async ({
+test("privacidad: preguntar al chat no hace NINGUNA petición; el registro no sale del teléfono", async ({
   page,
 }) => {
   const SENTINEL = "NOTA-SECRETA-REGISTRO-7k2";
@@ -231,29 +231,20 @@ test("privacidad: el registro del día NO viaja en el request del chat (groundin
     );
   }, SENTINEL);
 
-  // Capturamos el body del POST a /api/chat.
-  let body: unknown = null;
-  await page.route("**/api/chat", async (route) => {
-    const req = route.request();
-    body = req.postDataJSON();
-    // El centinela tampoco puede viajar por la URL (query param) del request.
-    expect(req.url()).not.toContain(SENTINEL);
-    await route.continue();
-  });
-
   await page.goto("/chat");
+  await page.waitForLoadState("networkidle");
+
+  // Desde aquí, cualquier petición sería una fuga: el chat contesta con código (ADR-008).
+  const requests: { url: string; body: string | null }[] = [];
+  page.on("request", (req) =>
+    requests.push({ url: req.url(), body: req.postData() }),
+  );
+
   await page.getByRole("textbox").fill("no tengo pollo, ¿qué le doy?");
   await page.getByRole("textbox").press("Enter");
-  await expect(page.getByText(/opciones verdes/i)).toBeVisible();
+  await expect(page.getByText("Opciones de tu plan")).toBeVisible();
 
-  // El request lleva EXACTAMENTE {messages, diet, locale} — nada del registro.
-  expect(body).not.toBeNull();
-  expect(Object.keys(body as Record<string, unknown>).sort()).toEqual([
-    "diet",
-    "locale",
-    "messages",
-  ]);
-  // Y el centinela del registro no aparece en NINGUNA parte del payload.
-  expect(JSON.stringify(body)).not.toContain(SENTINEL);
-  expect(JSON.stringify(body)).not.toContain("13:47");
+  expect(requests).toEqual([]);
+  // Y el centinela del registro tampoco aparece en lo que se pinta del chat.
+  await expect(page.getByText(SENTINEL)).toHaveCount(0);
 });

@@ -3,6 +3,8 @@ name: repo-app
 description: Estructura, CI/CD y deploy del repo standalone de una app del pipeline (sucede al monorepo Turborepo). Invocar al estampar una app nueva, configurar CI o preparar el deploy en Vercel.
 ---
 
+> **Nota Nutrikids (S4):** esta app no usa ninguna clave de proveedor de IA (regla dura 5, ADR-008); las menciones a `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` son del patrón genérico del kit y no aplican aquí.
+
 # Repo standalone de app — estructura, CI y deploy
 
 > Sucesor del skill `monorepo-turborepo` (retirado 2026-07-02: el pipeline pasó de monorepo a

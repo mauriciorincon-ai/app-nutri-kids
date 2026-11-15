@@ -1,4 +1,4 @@
-# Nutri-Kids — Manual de uso
+# Nutrikids — Manual de uso
 
 > **Documento obligatorio y vivo.** Toda feature que llega a `main` se documenta aquí en el mismo
 > sprint (regla 9 del CLAUDE.md). Escrito para el **usuario final** en español llano — sin jerga
@@ -7,7 +7,7 @@
 
 ## Qué es esta app
 
-Nutri-Kids convierte el plan de alimentación de tu peque (ese PDF largo que nadie relee a la hora
+Nutrikids convierte el plan de alimentación de tu peque (ese PDF largo que nadie relee a la hora
 de la merienda) en una guía viva en tu teléfono: qué se puede y qué no (con un semáforo), con qué
 reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcando el día.
 **Importante:** es una ayuda para el día a día — no reemplaza a tu pediatra ni a tu nutricionista.
@@ -84,26 +84,48 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
 - **Limitaciones conocidas:** vive solo en ese teléfono; **"Borrar mis datos"** en Ajustes lo borra
   todo (incluidas horas y notas).
 
-### Pregúntale a la dieta (Chat) · desde Sprint 002
+### Pregúntale a la dieta (Chat) · desde Sprint 002 (reescrito en Sprint 004)
 
-- **Qué hace:** un chat donde preguntas con tus palabras. Responde de dos formas:
-  1. **Al instante y sin internet** las preguntas de "¿esto se puede?" — como "¿la manzana se
-     puede?" o "¿le doy mandarina?". Te muestra la tarjeta del semáforo (con reemplazos si aplica).
-     Abajo dice **"Desde tu plan · sin IA"**: la respuesta salió de tu dieta, aquí en el teléfono.
-  2. **Con ayuda de un asistente de IA** las preguntas más abiertas — como "no tengo pollo, ¿qué le
-     doy?" o "¿qué merienda le preparo?". El asistente lee tu plan y responde **solo con lo que la
-     dieta permite**. Estas respuestas necesitan internet y llevan la nota **"Respuesta de IA"**.
-- **Cómo se usa:** ve a **Chat** (abajo). Escribe tu pregunta o toca una de las sugerencias. La
-  primera vez verás una nota corta que explica cómo funciona.
+- **Qué hace:** un chat donde preguntas con tus palabras y te contesta **con tu plan, aquí en el
+  teléfono, sin internet y sin enviar nada a ningún lado**. Entiende cosas como:
+  - **"¿La manzana se puede?"** → la tarjeta del semáforo, con reemplazos si aplica.
+  - **"No tengo pollo, ¿qué le doy?"** → lo que tu plan propone en su lugar.
+  - **"No quiso el brócoli"** (o "no quiso desayunar") → otras opciones del plan y qué toca
+    después, sin regaños.
+  - **"¿Qué le doy ahora?"** o **"¿qué le doy de merienda?"** → el menú de esa comida del plan.
+  - **"¿Cuánta agua?"** → la meta de agua que dice tu plan.
+  - **Lo que tu plan no dice:** te lo dice tal cual ("Tu plan no lo dice. Pregúntale a tu
+    profesional.") — **nunca se inventa una respuesta**.
+- **Cómo se usa:** ve a **Chat** (abajo). Escribe tu pregunta o toca una de las 4 sugerencias. La
+  primera vez verás una nota corta que explica cómo funciona. Arriba verás el símbolo de "sin
+  internet": el chat nunca lo necesita.
 - **Cosas importantes:**
   - **No es consejo médico.** Si preguntas por dosis, medicinas o síntomas ("¿le subo la B12?"),
     el chat te devuelve amablemente a tu pediatra o nutricionista — no responde eso.
   - **La conversación no se guarda.** Al cerrar o recargar, el chat queda en blanco. Es a propósito
     (privacidad de los datos del peque).
-  - Para las preguntas abiertas, tu dieta (con el nombre del peque oculto) se envía a un servicio de
-    IA para redactar la respuesta. Lo explica la nota de **Ajustes → Asistente IA del chat**.
-  - **Si el asistente no responde** (sin señal o en mantenimiento), verás un aviso y las preguntas
-    de "¿se puede?" siguen funcionando igual.
+  - **Nada sale del teléfono.** No hay asistente en la nube, ni servicio de terceros, ni cuenta.
+  - **Si tu teléfono ya trae un modelo de lenguaje propio** (algunos Chrome recientes), el chat
+    puede usarlo, **sin descargar nada y sin internet**, solo para decir la misma respuesta con
+    otras palabras. Se nota con la etiqueta **"Desde tu plan · redactado en tu teléfono"**. Si no lo trae, o si lo
+    que produce no encaja con el plan, verás siempre la respuesta directa del plan. El dato es
+    el mismo en los dos casos.
+
+### Usar la app sin internet · desde Sprint 004
+
+- **Qué hace:** después de abrirla **una vez con señal**, todas las pantallas (Hoy, Dieta,
+  Suplementos, Cargar, Ajustes, Chat, Historial y "Conoce Nutrikids") se abren **sin internet**:
+  en la lonchera, en el parque, en el carro. Tu dieta y tu registro del día ya vivían en el
+  teléfono; ahora la app también.
+- **Cómo se usa:** no hay nada que activar. Abre la app una vez con señal (se guarda sola) y
+  listo. También el detalle de cualquier alimento de tu dieta abre sin señal, aunque nunca lo hayas
+  visitado.
+- **Cuando hay una versión nueva:** con señal, la app lo detecta y muestra un aviso abajo: **"Hay
+  una versión nueva de Nutrikids. Tu dieta y tu registro no se tocan."** Toca **"Actualizar"**
+  cuando te convenga (la app se recarga una vez) o **"Ahora no"** para seguir con lo que estás
+  haciendo. **Nunca se actualiza sola mientras la usas.**
+- **Limitaciones conocidas:** la primera vez necesita señal. Si cambias de teléfono, la dieta no
+  viaja sola: vuelve a cargar el archivo.
 
 ### Suplementos de la semana · desde Sprint 001
 
@@ -123,22 +145,23 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
 
 - **¿Mis datos van a internet?** No. La dieta, las marcas, las horas y las notas viven solo en tu
   teléfono. Por eso mismo, si cambias de teléfono, vuelve a cargar el archivo de la dieta. Las notas
-  del día (lo que escribes en "Agregar nota") **nunca** salen del teléfono: ni siquiera se le pasan
-  al chat de IA.
+  del día (lo que escribes en "Agregar nota") **nunca** salen del teléfono: el chat ni las lee.
 - **¿Por qué veo "Dieta demo"?** Aún no has cargado la dieta real (o la borraste). Ve a
   **Cargar**.
 - **¿La app cuenta calorías o pesa al niño?** No, y no lo hará: el enfoque es qué alimentos sí y
   cuáles descansan, sin números de peso ni calorías.
-- **¿El chat inventa cosas?** Está hecho para responder solo con lo que dice tu plan. Aun así,
-  como cualquier asistente de IA, conviene verificar con tu profesional lo importante — por eso
-  cada respuesta lleva ese recordatorio.
-- **¿El chat funciona sin internet?** Las preguntas de "¿se puede?" sí (salen de tu teléfono). Las
-  preguntas abiertas necesitan internet porque las responde el asistente de IA.
+- **¿El chat inventa cosas?** No: contesta con programación sobre tu plan, no "adivina". Cuando tu
+  plan no trae la respuesta, lo dice ("Tu plan no lo dice. Pregúntale a tu profesional.") en vez
+  de inventarla.
+- **¿El chat funciona sin internet?** Sí, **todas** sus respuestas: nunca usa internet.
+- **¿La app abre sin internet?** Sí, todas las pantallas, después de haberla abierto una vez con
+  señal.
 
 ## Historial
 
 | Sprint | Features añadidas a este manual                                                                                                                                                                                                                              |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 001    | Cargar dieta (archivo + pegar) · semáforo con reemplazos · checklist "Hoy" · suplementos de la semana · idioma ES/EN · borrar datos · instalación como app                                                                                                   |
-| 002    | Chat "Pregúntale a la dieta": consultas "¿se puede?" al instante sin internet + preguntas abiertas con asistente de IA anclado al plan · nota de transparencia IA                                                                                            |
+| 002    | Chat "Pregúntale a la dieta": consultas "¿se puede?" al instante sin internet + preguntas abiertas con asistente de IA anclado al plan · nota de transparencia IA _(la parte de IA en la nube se reemplazó en el 004)_                                                                                            |
 | 003    | Registro del día: hora real al marcar + nota corta por comida (etiquetas + texto) · recordatorio "Ahora mismo" (qué toca y qué sigue, sin notificaciones) · "Ver días anteriores" (historial local de solo lectura) · borrar datos ahora cubre horas y notas |
+| 004    | Chat nuevo que contesta con tu plan **sin internet y sin enviar nada** ("no tengo X", "no quiso X", "¿qué le doy ahora?", "¿cuánta agua?", "tu plan no lo dice") · todas las pantallas abren sin internet · aviso de versión nueva con "Actualizar" / "Ahora no" |

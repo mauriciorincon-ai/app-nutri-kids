@@ -4,5 +4,6 @@ import { afterEach } from "vitest";
 
 afterEach(() => {
   cleanup();
-  window.localStorage.clear();
+  // Las pruebas de scripts del kit corren en `node` (sin window).
+  if (typeof window !== "undefined") window.localStorage.clear();
 });

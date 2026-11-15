@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Guía de prueba — Nutri-Kids</title>
+<title>Guía de prueba — Nutrikids</title>
 <!--
-  GUÍA DE PRUEBA VIVA Y ACUMULATIVA de Nutri-Kids. PRIMERA guía de la app (v1), pero ACUMULATIVA:
-  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat) y S3 (día completo). Autocontenida
+  GUÍA DE PRUEBA VIVA Y ACUMULATIVA de Nutrikids. PRIMERA guía de la app (v1), pero ACUMULATIVA:
+  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) y S4 (sin internet). Autocontenida
   (cero CDNs). Origen por línea (S1/S2 heredadas ⇒ regresión · Nuevo/Mejorado · S3). Gate mínimo ⭐
-  = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s3.
+  = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s4.
 -->
 <style>
   :root {
@@ -102,19 +102,19 @@
 <body>
 <div class="pagina">
   <header>
-    <p class="eyebrow">Nutri-Kids · Guía de prueba viva y acumulativa · Sprint 3 · 2026-07-20</p>
+    <p class="eyebrow">Nutrikids · Guía de prueba viva y acumulativa · Sprint 4 · 2026-11-15</p>
     <h1>Guía de prueba</h1>
-    <p class="suave">Todas las pruebas vigentes de la app: las nuevas del S3 (registro del día,
-      recordatorio, historial), las que este sprint mejoró, y las heredadas de S1 (dieta viva) y S2
-      (chat) — que corren como <strong>regresión</strong>. Filtra por origen para correr todo o solo
+    <p class="suave">Todas las pruebas vigentes de la app: las nuevas del S4 (el chat que contesta
+      sin internet, usar la app sin señal, el aviso de versión nueva), y las heredadas de S1 a S3 —
+      que corren como <strong>regresión</strong>. Filtra por origen para correr todo o solo
       lo que cambió. Las casillas se guardan solas en este navegador.</p>
     <p class="chica"><strong>Gate mínimo ⭐: 6 pruebas · ~30 min.</strong> Es lo que ninguna
-      automatización puede verificar: la respuesta del chat con IA real, la migración en TU teléfono,
+      automatización puede verificar: abrir la app en modo avión en TU teléfono, la migración,
       instalar la app, el recorrido de la mamá con la dieta real y la aprobación visual. Todo lo demás
       (unit, e2e, axe, budgets) lo respalda la CI y se corre en pases completos.</p>
     <div class="url-caja">
       <p class="eyebrow" style="margin:0 0 6px">URL de prueba</p>
-      <code>Preview de la rama <strong>sprint-003/el-dia-completo</strong> — se pega aquí al abrir el PR (Vercel la genera).</code>
+      <code>Preview de la rama <strong>sprint-004/dieta-sin-internet</strong> — se pega aquí al abrir el PR (Vercel la genera).</code>
       <p class="chica suave" style="margin:8px 0 0">Dirección estable de la rama: no cambia aunque se
         suban correcciones. Si pide login de Vercel: Settings → Deployment Protection → Vercel
         Authentication → Disabled.</p>
@@ -128,7 +128,7 @@
     </div>
     <div class="filtros" role="group" aria-label="Filtrar pruebas por origen">
       <button type="button" data-filtro="todo" class="activo">Todo</button>
-      <button type="button" data-filtro="cambios">Lo que cambió en S3</button>
+      <button type="button" data-filtro="cambios">Lo que cambió en S4</button>
       <button type="button" data-filtro="minimo">Gate mínimo ⭐</button>
     </div>
   </div>
@@ -188,17 +188,17 @@
       <li data-origen="heredada"><input type="checkbox" id="c1"><label for="c1">Marca un vaso de agua y
         el suplemento → el contador sube («Ya hiciste 2 de 10») y abajo dice «Te falta: …», sin
         porcentajes ni notas. <span class="origen origen-heredada">S1</span></label></li>
-      <li data-origen="mejorado"><input type="checkbox" id="c2"><label for="c2">Marca una comida → junto
+      <li data-origen="heredada"><input type="checkbox" id="c2"><label for="c2">Marca una comida → junto
         a ella aparece <strong>«Hecho ·» con la hora real</strong> de cuando la marcaste (no una inventada).
-        <span class="origen origen-mejorado">Mejorado en S3</span></label></li>
-      <li data-origen="nuevo"><input type="checkbox" id="c3"><label for="c3">Debajo de una comida toca
+        <span class="origen origen-heredada">S3</span></label></li>
+      <li data-origen="heredada"><input type="checkbox" id="c3"><label for="c3">Debajo de una comida toca
         <strong>«Agregar nota»</strong> → elige la etiqueta <strong>«Lo rechazó»</strong> y escribe algo
         corto → <strong>«Guardar»</strong>. Queda visible «Lo rechazó · …» y se puede editar o quitar.
-        <span class="origen origen-nuevo">Nuevo · S3</span></label></li>
-      <li data-origen="nuevo" data-minimo><input type="checkbox" id="c4"><label for="c4">Lee el bloque
+        <span class="origen origen-heredada">S3</span></label></li>
+      <li data-origen="heredada" data-minimo><input type="checkbox" id="c4"><label for="c4">Lee el bloque
         <strong>«Ahora mismo»</strong> arriba: ¿lo que dice que toca (comida/suplemento/agua) coincide con
         la hora real y el tono <strong>informa sin reprochar</strong>? (juicio humano sobre la experiencia)
-        <span class="origen origen-nuevo">Nuevo · S3</span><span class="minimo">⭐ mínimo</span></label></li>
+        <span class="origen origen-heredada">S3</span><span class="minimo">⭐ mínimo</span></label></li>
       <li data-origen="heredada"><input type="checkbox" id="c5"><label for="c5">Recarga la página: las
         marcas, la hora y la nota <strong>siguen ahí</strong>. Al día siguiente el checklist amanece
         limpio sin borrar el historial. <span class="origen origen-heredada">S1</span></label></li>
@@ -220,12 +220,12 @@
     <div class="bloque-cabeza"><span class="letra">D</span><h2>Días anteriores</h2></div>
     <p class="meta-bloque chica suave">~2 min · <strong>Hoy → «Ver días anteriores»</strong> · repasar lo registrado, solo lectura.</p>
     <ul class="pasos">
-      <li data-origen="nuevo"><input type="checkbox" id="d1"><label for="d1">Tras registrar el día, abre
+      <li data-origen="heredada"><input type="checkbox" id="d1"><label for="d1">Tras registrar el día, abre
         <strong>«Ver días anteriores»</strong> → el día de hoy aparece con la etiqueta <strong>HOY</strong>,
-        las horas y las notas. <span class="origen origen-nuevo">Nuevo · S3</span></label></li>
-      <li data-origen="nuevo"><input type="checkbox" id="d2"><label for="d2">Es <strong>solo de
+        las horas y las notas. <span class="origen origen-heredada">S3</span></label></li>
+      <li data-origen="heredada"><input type="checkbox" id="d2"><label for="d2">Es <strong>solo de
         lectura</strong>: no hay forma de editar desde ahí; «Volver a Hoy» regresa.
-        <span class="origen origen-nuevo">Nuevo · S3</span></label></li>
+        <span class="origen origen-heredada">S3</span></label></li>
     </ul>
     <div class="reportame"><p><strong>Repórtame sí o sí:</strong> un día que aparezca vacío teniendo
       marcas, o notas que se muestren cambiadas respecto a lo que escribiste.</p></div>
@@ -250,37 +250,67 @@
   <!-- ============================ F · CHAT ============================ -->
   <section class="bloque">
     <div class="bloque-cabeza"><span class="letra">F</span><h2>Chat «Pregúntale a la dieta»</h2></div>
-    <p class="meta-bloque chica suave">~7 min · pantalla <strong>Chat</strong> · consulta local instantánea + pregunta abierta con IA + límites.</p>
+    <p class="meta-bloque chica suave">~7 min · pantalla <strong>Chat</strong> · todo se contesta con tu plan, sin internet · límites.</p>
     <ul class="pasos">
       <li data-origen="heredada"><input type="checkbox" id="f1"><label for="f1">Escribe
         <strong>«¿la manzana se puede?»</strong> → tarjeta 🔴 con reemplazos e insignia
-        <strong>«Desde tu plan · sin IA»</strong>, <strong>al instante</strong> (funciona sin internet).
+        <strong>«Desde tu plan · sin IA»</strong>, <strong>al instante</strong>.
         <span class="origen origen-heredada">S2</span></label></li>
-      <li data-origen="heredada" data-minimo><input type="checkbox" id="f2"><label for="f2">Con el
-        <strong>asistente de IA real activo (Groq)</strong>, pregunta <strong>«no tengo pollo, ¿qué le
-        doy al almuerzo?»</strong> → respuesta redactada que propone <strong>SOLO cosas del plan</strong>,
-        con la nota «Respuesta de IA». <em>(Juicio humano: ¿alguna vez recomienda algo rojo? No debe.)</em>
-        <span class="origen origen-heredada">S2</span><span class="minimo">⭐ mínimo · Groq real</span></label></li>
+      <li data-origen="mejorado"><input type="checkbox" id="f2"><label for="f2">Escribe
+        <strong>«no tengo pollo, ¿qué le doy?»</strong> → te propone <strong>solo lo que tu plan da en su
+        lugar</strong> (huevos, otras proteínas del grupo…), sin red. <em>(Juicio humano: ¿alguna vez
+        propone algo rojo? No debe.)</em>
+        <span class="origen origen-mejorado">Mejorado en S4</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="f6"><label for="f6">Escribe
+        <strong>«no quiso el brócoli»</strong> y luego <strong>«no quiso desayunar»</strong> → otras
+        opciones del plan y lo que toca después, <strong>sin regaño ni culpa</strong>.
+        <span class="origen origen-nuevo">Nuevo · S4</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="f7"><label for="f7">Escribe
+        <strong>«¿qué le doy ahora?»</strong>, <strong>«¿qué le doy de merienda?»</strong> y
+        <strong>«¿cuánta agua?»</strong> → el menú de esa franja (o la que nombraste) y la meta de agua
+        <strong>de tu plan</strong>.
+        <span class="origen origen-nuevo">Nuevo · S4</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="f8"><label for="f8">Pregunta algo que tu plan
+        no trae (<strong>«¿puede comer pastel de cumpleaños?»</strong> o «no tengo mandarina») → dice
+        <strong>«Tu plan no lo dice. Pregúntale a tu profesional.»</strong>, no inventa.
+        <span class="origen origen-nuevo">Nuevo · S4</span></label></li>
       <li data-origen="heredada"><input type="checkbox" id="f3"><label for="f3">Pregunta médica
-        <strong>«¿le subo la dosis de la B12?»</strong> → redirección amable al profesional, <strong>sin</strong>
-        insignia de IA. Una pregunta fuera de tema («¿quién ganó el partido?») también se redirige.
-        <span class="origen origen-heredada">S2</span></label></li>
-      <li data-origen="heredada"><input type="checkbox" id="f4"><label for="f4">Sin señal o con el
-        asistente en pausa → aviso honesto; las preguntas de «¿se puede?» siguen respondiendo igual.
+        <strong>«¿le subo la dosis de la B12?»</strong> → redirección amable al profesional. Una pregunta
+        fuera de tema («¿quién ganó el partido?») también se redirige.
         <span class="origen origen-heredada">S2</span></label></li>
       <li data-origen="heredada"><input type="checkbox" id="f5"><label for="f5">Recarga el chat → el hilo
         <strong>amanece vacío</strong> (la conversación no se guarda — privacidad del peque).
         <span class="origen origen-heredada">S2</span></label></li>
     </ul>
     <div class="kit"><p><strong>Kit de prueba:</strong> batería lista para copiar en
-      <code>docs/kit-de-prueba/preguntas-calibracion-chat.md</code> (locales, de IA y de redirección, con
-      lo que se espera en cada una).</p></div>
-    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> que el asistente recomiende un alimento
-      rojo o restringido, que dé consejo médico/dosis, o que la conversación reaparezca tras recargar.</p></div>
-    <div class="diferido"><p><strong>Diferido pagado aquí:</strong> la validación con <strong>Groq REAL</strong>
-      quedó pendiente del S2 (la key no estaba configurada; el chat degradaba a local, honesto). Este gate
-      la salda: configura <code>GROQ_API_KEY</code> + <code>CHAT_PROVIDER=groq</code> +
-      <code>CHAT_ENABLED=true</code> y corre la prueba <strong>f2</strong> con la IA real.</p></div>
+      <code>docs/kit-de-prueba/preguntas-calibracion-chat.md</code> (del plan, redirecciones y «el plan no
+      lo dice», con lo que se espera en cada una).</p></div>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> que el chat proponga un alimento
+      rojo o restringido, que dé consejo médico/dosis, que invente algo que el plan no dice, o que la
+      conversación reaparezca tras recargar.</p></div>
+  </section>
+
+  <!-- ============================ J · SIN INTERNET ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">J</span><h2>Sin internet y versión nueva</h2></div>
+    <p class="meta-bloque chica suave">~4 min · en el teléfono · lo que solo el aparato real prueba.</p>
+    <ul class="pasos">
+      <li data-origen="nuevo" data-minimo><input type="checkbox" id="j1"><label for="j1">Abre la app
+        <strong>una vez con señal</strong>; luego pon el teléfono en <strong>modo avión</strong> y abre
+        <strong>cada pantalla</strong> (Hoy, Dieta, Suplementos, Cargar, Ajustes, Chat, Días anteriores) y
+        hazle una pregunta al chat → <strong>todo responde</strong>, sin avisos de error de conexión.
+        <span class="origen origen-nuevo">Nuevo · S4</span><span class="minimo">⭐ mínimo · dispositivo real</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="j2"><label for="j2">En modo avión, el chat
+        muestra el símbolo de <strong>sin internet</strong> y aun así contesta.
+        <span class="origen origen-nuevo">Nuevo · S4</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="j3"><label for="j3">Cuando el equipo publique
+        una versión nueva y abras la app con señal, ves el aviso <strong>«Hay una versión nueva…»</strong>
+        con <strong>Actualizar</strong> / <strong>Ahora no</strong>; <strong>no se recarga sola</strong>. Si
+        tocas Actualizar, se recarga una vez y tu dieta y tu registro siguen intactos.
+        <span class="origen origen-nuevo">Nuevo · S4</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> una pantalla que no abra sin señal, que
+      el chat pida internet, o que la app se recargue sola en medio de una comida.</p></div>
   </section>
 
   <!-- ============================ G · IDIOMA Y BORRAR ============================ -->
@@ -291,10 +321,10 @@
       <li data-origen="heredada"><input type="checkbox" id="g1"><label for="g1">Cambia a
         <strong>English</strong> → toda la UI y el contenido bilingüe cambian; recargar mantiene el idioma.
         Tu <strong>nota escrita a mano NO se traduce</strong> (es tuya). <span class="origen origen-heredada">S1</span></label></li>
-      <li data-origen="mejorado"><input type="checkbox" id="g2"><label for="g2"><strong>«Borrar mis
+      <li data-origen="heredada"><input type="checkbox" id="g2"><label for="g2"><strong>«Borrar mis
         datos»</strong> → confirma → se borra la dieta cargada <strong>y todo el registro (marcas, horas
         y notas)</strong>; la app vuelve a la demo. El copy ahora nombra horas y notas.
-        <span class="origen origen-mejorado">Mejorado en S3</span></label></li>
+        <span class="origen origen-heredada">S3</span></label></li>
     </ul>
     <div class="reportame"><p><strong>Repórtame sí o sí:</strong> que tras «Borrar mis datos» quede alguna
       nota, hora o marca de días anteriores.</p></div>
@@ -305,10 +335,10 @@
     <div class="bloque-cabeza"><span class="letra">H</span><h2>Tu teléfono real: migración e instalación</h2></div>
     <p class="meta-bloque chica suave">~5 min · en el teléfono de la mamá · lo que solo el dispositivo real prueba.</p>
     <ul class="pasos">
-      <li data-origen="nuevo" data-minimo><input type="checkbox" id="h1"><label for="h1">Si ya usabas la
+      <li data-origen="heredada" data-minimo><input type="checkbox" id="h1"><label for="h1">Si ya usabas la
         app antes del S3: al abrir esta versión, <strong>tus marcas anteriores siguen ahí</strong> (la
         migración no pierde nada; las marcas viejas salen como «Hecho» sin hora, honesto). <em>Solo tu
-        teléfono tiene tu estado real.</em> <span class="origen origen-nuevo">Nuevo · S3</span><span class="minimo">⭐ mínimo · dispositivo real</span></label></li>
+        teléfono tiene tu estado real.</em> <span class="origen origen-heredada">S3</span><span class="minimo">⭐ mínimo · dispositivo real</span></label></li>
       <li data-origen="heredada" data-minimo><input type="checkbox" id="h2"><label for="h2">Instala la app:
         Chrome → menú (⋮) → <strong>«Agregar a pantalla de inicio»</strong> → se abre con su ícono, a
         pantalla completa, como cualquier app. <span class="origen origen-heredada">S1</span><span class="minimo">⭐ mínimo · dispositivo real</span></label></li>
@@ -322,13 +352,13 @@
     <div class="bloque-cabeza"><span class="letra">I</span><h2>El recorrido de la mamá ⭐</h2></div>
     <p class="meta-bloque chica suave">~10 min · con la <strong>dieta REAL</strong>, en su teléfono · el gate que ninguna automatización sustituye.</p>
     <ul class="pasos">
-      <li data-origen="nuevo" data-minimo><input type="checkbox" id="i1"><label for="i1">Carga la
+      <li data-origen="heredada" data-minimo><input type="checkbox" id="i1"><label for="i1">Carga la
         <strong>dieta oficial real</strong> (entregada aparte, fuera del repo) desde <strong>Cargar</strong>.
-        El semáforo, los suplementos y el chat responden con SU dieta. <span class="origen origen-nuevo">Nuevo · S3</span><span class="minimo">⭐ mínimo · dieta real</span></label></li>
-      <li data-origen="nuevo" data-minimo><input type="checkbox" id="i2"><label for="i2">Haz un día real:
+        El semáforo, los suplementos y el chat responden con SU dieta. <span class="origen origen-heredada">S3</span><span class="minimo">⭐ mínimo · dieta real</span></label></li>
+      <li data-origen="heredada" data-minimo><input type="checkbox" id="i2"><label for="i2">Haz un día real:
         marca comidas a su hora, pon una nota verdadera, mira el recordatorio, revisa «Días anteriores».
         ¿Se siente <strong>cálido, claro y sin culpa</strong> en su teléfono? (aprobación visual + de tono)
-        <span class="origen origen-nuevo">Nuevo · S3</span><span class="minimo">⭐ mínimo · aprobación visual</span></label></li>
+        <span class="origen origen-heredada">S3</span><span class="minimo">⭐ mínimo · aprobación visual</span></label></li>
     </ul>
     <div class="reportame"><p><strong>Repórtame sí o sí:</strong> cualquier cosa que se sienta clínica,
       culpígena o confusa; cualquier dato del niño que parezca salir del teléfono; cualquier pantalla que
@@ -337,12 +367,17 @@
 
   <footer>
     <p class="chica suave">Guía <strong>viva y acumulativa</strong>: contiene TODAS las pruebas vigentes
-      de Nutri-Kids (S1 + S2 + S3) con su origen visible; una prueba solo se elimina cuando su feature
+      de Nutrikids (S1 a S4) con su origen visible; una prueba solo se elimina cuando su feature
       dejó de existir. Archivo autocontenido — se abre sin internet, se versiona con el repo y se comparte
       tal cual.</p>
     <details class="chica">
       <summary>Historial de la guía</summary>
       <ul>
+        <li><strong>S4 · 2026-11-15 (v2):</strong> el chat ya no usa un asistente en la nube: F·f2 deja de
+          pedir Groq real (la feature dejó de existir y su diferido se retira) y pasa a «no tengo pollo» con
+          el plan; nuevas F·f6–f8 (no quiso, ahora/merienda/agua, «el plan no lo dice»), se elimina F·f4
+          (ya no hay asistente en pausa) y nace el bloque J (sin internet y versión nueva). El gate
+          mínimo sigue en 6: el modo avión en el teléfono real reemplaza a «Groq real».</li>
         <li><strong>S3 · 2026-07-20 (v1, primera guía):</strong> nace la guía acumulativa cubriendo S1–S3.
           Nuevo: bloques C (registro: hora + nota + recordatorio), D (días anteriores), H (migración v1→v2
           + PWA en dispositivo real), I (recorrido de la mamá con dieta real). Mejorado: C (hora/nota sobre
@@ -357,9 +392,9 @@
 
 <script>
   (function () {
-    // NS VERSIONADO POR SPRINT (regla dura): s3. Una regresión sin correr no aparece marcada por
+    // NS VERSIONADO POR SPRINT (regla dura): s4. Una regresión sin correr no aparece marcada por
     // una versión anterior de la guía.
-    var NS = "guia-nutri-kids:s3:";
+    var NS = "guia-nutri-kids:s4:";
     var casillas = Array.prototype.slice.call(document.querySelectorAll('input[type="checkbox"]'));
     var barra = document.getElementById("barra-avance");
     var contador = document.getElementById("contador");

@@ -1,4 +1,4 @@
-# Nutri-Kids — Design System v1 (Sprint 001)
+# Nutrikids — Design System v1 (Sprint 001)
 
 > Fuente de verdad visual de la app. Creado en el Sprint 1 (no había prototipo previo; decisión
 > del usuario 2026-07-07: el builder bosqueja, el usuario aprueba sobre la preview). Toda pantalla

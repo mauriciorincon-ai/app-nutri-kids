@@ -7,6 +7,8 @@ import {
   type DietPlan,
 } from "./schema";
 import { clearDayLog } from "./day-log";
+import { dateKey } from "./logic";
+import { rebaseDemoWindow } from "./demo";
 
 /**
  * Almacenamiento local (ADR: localStorage con claves versionadas).
@@ -28,6 +30,17 @@ let demoDietCache: DietPlan | null = null;
 export function getDemoDiet(): DietPlan {
   demoDietCache ??= dietPlanSchema.parse(demoRaw);
   return demoDietCache;
+}
+
+let rebasedDemo: { key: string; diet: DietPlan } | null = null;
+
+/** La demo con su ventana corrida al día del aparato (misma referencia durante el día). */
+export function getDemoDietFor(now: Date): DietPlan {
+  const key = dateKey(now);
+  if (rebasedDemo?.key !== key) {
+    rebasedDemo = { key, diet: rebaseDemoWindow(getDemoDiet(), now) };
+  }
+  return rebasedDemo.diet;
 }
 
 function storage(): Storage | null {
@@ -53,7 +66,7 @@ export function loadActiveDiet(): ActiveDiet {
       s.removeItem(STORAGE_KEYS.source);
     }
   }
-  return { diet: getDemoDiet(), source: "demo" };
+  return { diet: getDemoDietFor(new Date()), source: "demo" };
 }
 
 export type ImportResult =

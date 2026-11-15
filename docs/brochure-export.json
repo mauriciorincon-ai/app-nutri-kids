@@ -12,21 +12,21 @@
     "enlaces.produccion": "null cuando la app no tiene URL pública. `razon` explica por qué, y es lo que la vitrina muestra en lugar del enlace. Nunca se rellena con un enlace de repositorio ni con una promesa."
   },
   "schema_version": "1.0.0",
-  "actualizado": "2026-08-22",
+  "actualizado": "2026-11-15",
   "app": {
     "slug": "nutri-kids",
-    "nombre": "Nutri-Kids",
-    "ciclo": "fase-1",
+    "nombre": "Nutrikids",
+    "ciclo": "H-2",
     "estado": "inicial",
     "sellado_en": null,
     "sprints_cerrados": 3,
     "version_repo": "0.1.0"
   },
   "promesa": {
-    "tagline": "La dieta de tu peque, viva en tu bolsillo.",
-    "intro": "Convierte el plan de alimentación que un profesional le hizo a tu hijo —ese PDF largo que nadie relee a la hora de la merienda— en una guía que responde en segundos: qué se puede, con qué se reemplaza, qué toca ahora y qué ya pasó.",
-    "para_quien": "Para la familia que cuida a un niño con una dieta médica estricta y hoy sufre que el plan viva encerrado en un documento, mientras cada cuidador improvisa por su lado.",
-    "diferencial": "Ninguna otra app de nutrición infantil promete lo que esta: no calificar al niño. Sin calorías, sin peso, sin IMC, sin percentiles y sin 'cumplimiento' como nota moral — y el registro del día (las horas y las notas sobre su hijo) jamás sale del teléfono, ni siquiera al asistente de IA."
+    "tagline": "¿Esto se puede? La dieta de tu hijo te responde en segundos.",
+    "intro": "Nutrikids pone en tu teléfono el plan de alimentación que el profesional le hizo a tu hijo, ese documento largo que nadie relee a la hora de la merienda. Lo vuelve una guía viva: qué se puede y qué no, con qué reemplazar lo que falta, qué toca ahora y cómo fue el día.",
+    "para_quien": "Para la familia que cuida a un niño con una dieta médica estricta: la mamá, el papá o quien lo tenga a cargo ese día, que necesita saber qué darle sin abrir el documento y sin improvisar.",
+    "diferencial": "No califica al niño: sin calorías, peso, IMC ni percentiles, y sin convertir el «cumplimiento» en una nota. El chat contesta con tu plan dentro del teléfono y sin internet: lo que anotas del día, las horas y las notas sobre tu hijo, no sale del teléfono, ni siquiera para hacerle una pregunta al chat."
   },
   "funcionalidades": {
     "total": 19,
@@ -36,25 +36,25 @@
       {
         "orden": 1,
         "estrella": true,
-        "nombre": "¿Esto se puede?",
-        "linea": "La pregunta de todos los días, respondida en segundos",
+        "nombre": "El semáforo: ¿esto se puede?",
+        "linea": "Busca cualquier alimento y sabe al instante si se puede, cuánto y con qué reemplazarlo",
         "features": [
           {
             "id": "F1",
-            "nombre": "El semáforo de alimentos",
-            "que_hace": "Buscas el alimento y sale con su color Y su palabra: Se puede, Con límite (dice cuánto) o Evitar (dice por qué y hasta cuándo si es temporal). El color solo refuerza: el símbolo y el texto comunican solos.",
+            "nombre": "Semáforo de alimentos",
+            "que_hace": "Sabes en segundos si un alimento se puede, va con límite o hay que evitarlo. Lo buscas por su nombre y aparece con color, símbolo y palabra: el límite dice cuánto, y lo que se evita dice por qué y, si es temporal, hasta cuándo.",
             "seccion_manual": "El semáforo de la dieta"
           },
           {
             "id": "F2",
-            "nombre": "Equivalencias y reemplazos",
-            "que_hace": "El porqué en palabras simples y con qué reemplazar lo que falta: «si no hay pollo → atún, huevo o queso», respetando las texturas que el niño sí acepta.",
+            "nombre": "Con qué reemplazarlo",
+            "que_hace": "Cuando falta un alimento, tienes a la mano con qué reemplazarlo sin salirte del plan. Al tocarlo ves el porqué en palabras simples y los reemplazos que trae tu plan, como «en vez de manzana: pera, kiwi, uvas o fresas».",
             "seccion_manual": "El semáforo de la dieta"
           },
           {
             "id": "F3",
-            "nombre": "Aditivos para revisar en etiquetas",
-            "que_hace": "Los códigos E- que conviene mirar en lo empacado, con dónde suelen aparecer.",
+            "nombre": "Aditivos que vigilar en la etiqueta",
+            "que_hace": "Compras lo empacado sabiendo qué buscar en la etiqueta. En la pestaña Rojo, la app lista los códigos de aditivo que el plan pide evitar, los que empiezan por E, y en qué productos suelen aparecer.",
             "seccion_manual": "El semáforo de la dieta"
           }
         ]
@@ -62,43 +62,43 @@
       {
         "orden": 2,
         "estrella": false,
-        "nombre": "El día de hoy",
-        "linea": "Qué toca ahora, qué sigue, y qué ya pasó",
+        "nombre": "El día de hoy, en orden",
+        "linea": "Qué toca ahora, qué ya pasó y cómo fue cada comida, anotado en segundos",
         "features": [
           {
             "id": "F4",
-            "nombre": "El checklist del día",
-            "que_hace": "Las comidas con su horario, el suplemento del día y los vasos de agua, para ir marcando. Al día siguiente amanece limpio solo, sin borrar el historial.",
+            "nombre": "La lista del día",
+            "que_hace": "Ves de un vistazo todo lo que toca hoy y lo vas marcando a medida que pasa: cada comida con su horario, el suplemento del día y los vasos de agua. Al día siguiente la lista amanece limpia, sin borrar lo anterior.",
             "seccion_manual": "«Hoy» — el checklist del día"
           },
           {
             "id": "F5",
-            "nombre": "El recordatorio «Ahora mismo»",
-            "que_hace": "Qué toca en este momento y qué sigue: la comida de la franja, el suplemento del día si falta, y cómo va el agua. Sin notificaciones ni permisos, y sin reprochar nunca.",
+            "nombre": "Qué toca ahora mismo",
+            "que_hace": "Abres la app y sabes qué toca en este momento y qué sigue. Arriba aparecen la comida de la franja, el suplemento del día si falta y cómo va el agua, sin notificaciones, sin pedir permisos y sin reproches.",
             "seccion_manual": "«Hoy» · Recordatorio «Ahora mismo» (Sprint 003)"
           },
           {
             "id": "F6",
             "nombre": "La hora real de cada comida",
-            "que_hace": "Al marcar una comida queda anotada la hora a la que pasó («Hecho · 7:35 a. m.»). Es memoria, no calificación.",
+            "que_hace": "Recuerdas a qué hora comió de verdad, no a qué hora tocaba. Al marcar una comida, la app anota la hora y la muestra al lado («Hecho · 7:35 a. m.»), como memoria y nunca como calificación.",
             "seccion_manual": "«Hoy» · Guarda la hora real (Sprint 003)"
           },
           {
             "id": "F7",
-            "nombre": "Una nota corta por comida",
-            "que_hace": "Etiquetas rápidas (Lo rechazó · Le dolió · Tuvo antojo · Otra cosa) y un texto breve opcional, para contarle al pediatra cómo fue la semana sin fiarse de la memoria. Editable y borrable.",
+            "nombre": "Una nota por comida",
+            "que_hace": "Llegas a la cita con el pediatra con lo que pasó en cada comida, sin fiarte de la memoria. Con un toque marcas «Lo rechazó», «Le dolió» o «Tuvo antojo» y, si quieres, escribes una línea que puedes editar o quitar.",
             "seccion_manual": "«Hoy» · Nota corta por comida (Sprint 003)"
           },
           {
             "id": "F8",
-            "nombre": "Días anteriores",
-            "que_hace": "El historial local por fecha, del más reciente al más antiguo, con las horas y las notas. Solo para consultar: no se edita.",
+            "nombre": "Los días anteriores",
+            "que_hace": "Repasas cómo fueron los últimos días antes de una consulta. El historial queda por fecha, del más reciente al más antiguo, con las horas y las notas de cada comida, y es solo de consulta: no se edita.",
             "seccion_manual": "Días anteriores"
           },
           {
             "id": "F9",
-            "nombre": "Suplementos de la semana",
-            "que_hace": "El calendario de lunes a domingo con dosis y momento. El día de hoy sale resaltado y su marca es la misma del checklist.",
+            "nombre": "El calendario de suplementos",
+            "que_hace": "Sabes qué suplemento toca hoy, en qué dosis y en qué momento. El calendario de lunes a domingo resalta el día de hoy, y la marca de «ya lo tomó» es la misma de la lista del día.",
             "seccion_manual": "Suplementos de la semana"
           }
         ]
@@ -106,31 +106,31 @@
       {
         "orden": 3,
         "estrella": false,
-        "nombre": "Pregúntale con tus palabras",
-        "linea": "Como le hablarías a alguien que se sabe el plan de memoria",
+        "nombre": "Un chat que se sabe la dieta",
+        "linea": "Preguntas como le hablarías a alguien que se sabe el plan de memoria, sin internet y sin que opine de medicina",
         "features": [
           {
             "id": "F10",
-            "nombre": "Respuesta al instante, sin internet",
-            "que_hace": "Las preguntas de «¿esto se puede?» se resuelven en el teléfono, sin señal, mostrando la tarjeta del semáforo con sus reemplazos. Lleva la nota «Desde tu plan · sin IA».",
-            "seccion_manual": "Pregúntale a la dieta (Chat) · forma 1"
+            "nombre": "Respuestas al instante, sin señal",
+            "que_hace": "Preguntas «¿la manzana se puede?» y tienes la respuesta al instante, aunque no haya señal. El teléfono la saca de tu plan y la muestra como tarjeta del semáforo con sus reemplazos y la marca «Desde tu plan · sin IA».",
+            "seccion_manual": "Pregúntale a la dieta (Chat)"
           },
           {
             "id": "F11",
-            "nombre": "Preguntas abiertas con un asistente anclado al plan",
-            "que_hace": "Para lo abierto («no tengo pollo, ¿qué le doy?»), un asistente de IA lee el plan y responde solo con lo que la dieta permite. Marcadas como «Respuesta de IA»; necesitan internet.",
-            "seccion_manual": "Pregúntale a la dieta (Chat) · forma 2"
+            "nombre": "Preguntas abiertas, también con tu plan",
+            "que_hace": "Preguntas como «no tengo pollo, ¿qué le doy?», «no quiso el brócoli», «¿qué le doy ahora?» o «¿cuánta agua?» y recibes lo que tu plan propone: reemplazos, opciones y lo que toca después. Todo se calcula en el teléfono, sin internet. Si el plan no lo trae, te lo dice y te manda con tu profesional, en vez de inventar una respuesta.",
+            "seccion_manual": "Pregúntale a la dieta (Chat)"
           },
           {
             "id": "F12",
-            "nombre": "La frontera no-médica del chat",
-            "que_hace": "Ante dosis, medicinas o síntomas, el chat no responde: devuelve amablemente al pediatra o al nutricionista.",
+            "nombre": "No opina de medicina",
+            "que_hace": "El chat no se mete en lo que le toca al médico. Si le preguntas por dosis, medicinas o síntomas, te devuelve con amabilidad al pediatra o al nutricionista. Esa respuesta sale de reglas fijas, antes de buscar cualquier otra cosa.",
             "seccion_manual": "Pregúntale a la dieta (Chat) · Cosas importantes"
           },
           {
             "id": "F13",
             "nombre": "La conversación no se guarda",
-            "que_hace": "Al cerrar o recargar, el chat queda en blanco. Es una decisión de privacidad de los datos del menor, no un olvido.",
+            "que_hace": "Lo que le preguntas al chat sobre tu hijo no se queda en la app ni sale del teléfono. Al cerrar o recargar, la conversación queda en blanco, y los registros técnicos solo anotan datos de funcionamiento, nunca lo que escribiste. Es una decisión de privacidad, no un olvido.",
             "seccion_manual": "Pregúntale a la dieta (Chat) · Cosas importantes"
           }
         ]
@@ -138,25 +138,25 @@
       {
         "orden": 4,
         "estrella": false,
-        "nombre": "Tu dieta, adentro",
-        "linea": "El archivo del profesional, vuelto la app entera",
+        "nombre": "La dieta real, dentro de la app",
+        "linea": "El plan del profesional entra desde un archivo y toda la app responde con él; antes, una demo para explorar",
         "features": [
           {
             "id": "F14",
-            "nombre": "Cargar el archivo de la dieta",
-            "que_hace": "Se elige el archivo .json que entregó el profesional y la app entera pasa a responder con esa dieta. Muestra un resumen de lo cargado.",
+            "nombre": "Carga el archivo del plan",
+            "que_hace": "Toda la app pasa a responder con la dieta real de tu hijo. Eliges el archivo del plan que te compartieron, la app revisa que tenga el formato correcto antes de aceptarlo y te muestra un resumen de lo que encontró.",
             "seccion_manual": "Cargar tu dieta"
           },
           {
             "id": "F15",
-            "nombre": "Cargar pegando el contenido",
-            "que_hace": "Camino alterno cuando el archivo no abre desde el teléfono: se pega su contenido en una caja de texto y se carga igual.",
+            "nombre": "Plan B: pegar el contenido",
+            "que_hace": "Si el archivo no abre desde el teléfono, igual cargas la dieta. Copias todo su contenido desde donde te lo enviaron, lo pegas en una caja de texto y la app lo revisa y lo carga como si fuera el archivo.",
             "seccion_manual": "Cargar tu dieta · «Si el archivo no abre»"
           },
           {
             "id": "F16",
-            "nombre": "Dieta demo y letrero de cuál está activa",
-            "que_hace": "La app arranca con una dieta de ejemplo inventada para explorar sin riesgo, y un letrero siempre visible dice si estás viendo «Dieta demo» o «Tu dieta».",
+            "nombre": "Una demo para explorar sin riesgo",
+            "que_hace": "Recorres toda la app antes de cargar nada, con una dieta de ejemplo inventada. Un letrero siempre visible dice si estás viendo la «Dieta demo» o «Tu dieta», y puedes pasar de una a otra cuando quieras.",
             "seccion_manual": "Primeros pasos · Preguntas frecuentes"
           }
         ]
@@ -164,25 +164,25 @@
       {
         "orden": 5,
         "estrella": false,
-        "nombre": "Tuya, en tu teléfono",
-        "linea": "Instalarla, cambiarle el idioma, y borrarlo todo cuando quieras",
+        "nombre": "Tuya y privada, en tu teléfono",
+        "linea": "Se instala como app, cambia entre español e inglés y lo borra todo cuando tú decidas",
         "features": [
           {
             "id": "F17",
-            "nombre": "Instalarla como app",
-            "que_hace": "Se agrega a la pantalla de inicio desde el menú del navegador y queda con su ícono, abriendo sin pasar por el navegador.",
-            "seccion_manual": "Primeros pasos · paso 3"
+            "nombre": "Se instala como una app",
+            "que_hace": "La tienes en la pantalla de inicio, con su ícono, como cualquier otra app. Se agrega desde el menú del navegador del teléfono, sin pasar por una tienda de aplicaciones, y abre directo, sin la barra del navegador. Tras abrirla una vez con señal, todas las pantallas abren también sin internet, y cuando hay una versión nueva te avisa para que tú decidas cuándo actualizar.",
+            "seccion_manual": "Primeros pasos · paso 3 · Usar la app sin internet"
           },
           {
             "id": "F18",
             "nombre": "Español o English",
-            "que_hace": "Cambia toda la interfaz y el contenido de la dieta entre los dos idiomas. Lo que el cuidador escribió en una nota se conserva tal cual.",
+            "que_hace": "Cualquier cuidador la usa en español o en inglés. Un toque cambia toda la interfaz y también el contenido de la dieta, y lo que alguien escribió en una nota se conserva tal cual, sin traducirse.",
             "seccion_manual": "Idioma y borrar datos"
           },
           {
             "id": "F19",
             "nombre": "Borrar mis datos",
-            "que_hace": "Borra la dieta cargada y todo el registro —marcas, horas y notas— del dispositivo, y devuelve la app a la demo. No se puede deshacer.",
+            "que_hace": "Tú decides cuándo no queda rastro en el teléfono. Un botón borra la dieta cargada y todo el registro, con sus marcas, horas y notas, y deja la app otra vez en la demo. Pide confirmación, porque no se puede deshacer.",
             "seccion_manual": "Idioma y borrar datos"
           }
         ]
@@ -204,47 +204,47 @@
       "valor": 8,
       "unidad": "pantallas",
       "fuente": "medido",
-      "detalle": "Archivos page.tsx bajo src/app/. La ruta /conoce sirve este brochure y no es una pantalla del producto."
+      "detalle": "Siete rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
     },
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 214,
+      "valor": 389,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `pnpm test` el 2026-08-22: 15 archivos, 212 pruebas."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-15 sobre c1ad632: 19 archivos, 389 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 94,
+      "valor": 118,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `pnpm test:e2e` el 2026-08-22: 39 pruebas corridas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe."
+      "detalle": "Salida de `CI=1 npx playwright test --workers=2` el 2026-11-15 sobre c1ad632, contra un build de producción: 118 pruebas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe y las de uso sin internet, todas en verde."
     },
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 99.52,
+      "valor": 99.26,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib/diet, src/lib/ia y src/lib/rate-limit (422 de 424 líneas), con umbrales del 80 % en vitest.config.ts."
+      "detalle": "v8 sobre src/lib/diet y src/lib/ia el 2026-11-15 sobre c1ad632 (538 de 542 líneas), con umbrales del 80 % en vitest.config.ts."
     },
     {
       "clave": "decisiones_registradas",
       "etiqueta": "Decisiones de arquitectura registradas",
-      "valor": 7,
+      "valor": 8,
       "unidad": "ADR",
       "fuente": "medido",
-      "detalle": "Archivos de decisions/."
+      "detalle": "Archivos de decisions/ el 2026-11-15; la 008 (chat code-first) reemplaza a la 004 y la 005."
     },
     {
       "clave": "dependencias_runtime",
       "etiqueta": "Dependencias en tiempo de ejecución",
-      "valor": 20,
+      "valor": 13,
       "unidad": "paquetes",
       "fuente": "medido",
-      "detalle": "Campo `dependencies` de package.json. Incluye los adaptadores de proveedores de IA que el chat conmuta por variable de entorno."
+      "detalle": "Campo `dependencies` de package.json el 2026-11-15 sobre 88f9c6d. Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
     },
     {
       "clave": "requests_del_registro",
@@ -260,21 +260,21 @@
       "valor": 0,
       "unidad": "USD",
       "fuente": "calculada",
-      "detalle": "Suma de los servicios contratados: Vercel Hobby (free) + GitHub Free + Sentry free + Groq free tier. Sin base de datos ni servidor propio que facturar. Techo declarado del proyecto: 10 USD/mes."
+      "detalle": "Suma de los servicios contratados: Vercel Hobby (free) + GitHub Free + Sentry free. Ningún servicio de IA ni de pago por uso. Sin base de datos ni servidor propio que facturar. Techo declarado del proyecto: 10 USD/mes."
     },
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 75459,
+      "valor": 76203,
       "unidad": "bytes",
       "fuente": "medido",
-      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."
+      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-15 sobre c1ad632. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."
     }
   ],
   "stack": [
     {
       "nombre": "Next.js",
-      "papel": "la PWA móvil-primero y su única ruta de servidor, la del chat"
+      "papel": "la PWA móvil-primero, sin rutas de servidor propias: Vercel solo la sirve"
     },
     {
       "nombre": "TypeScript",
@@ -293,8 +293,8 @@
       "papel": "el esquema de la dieta: un archivo malformado se rechaza antes de entrar"
     },
     {
-      "nombre": "Vercel AI SDK + Groq",
-      "papel": "el asistente del chat, conmutable por variable de entorno y con apagado manual"
+      "nombre": "Prompt API del navegador (opcional)",
+      "papel": "si el teléfono ya trae su modelo de lenguaje, redacta con otras palabras una respuesta que el código ya decidió; sin descargar nada, sin red y con respaldo en el código. Ningún proveedor de IA, ni de pago ni de terceros"
     },
     {
       "nombre": "Vitest y Playwright",
@@ -309,15 +309,15 @@
     "datos_del_menor_solo_en_dispositivo": true,
     "registro_del_dia_sale_del_dispositivo": false,
     "conversacion_persistida": false,
-    "red_saliente": true,
-    "usa_ia": true,
-    "detalle": "La dieta, las marcas, las horas y las notas viven solo en el dispositivo (ADR-001, ratificada por ADR-007): no hay servidor de datos, ni cuenta, ni nube. La app sí hace red, pero solo para una cosa: las preguntas abiertas del chat, donde viaja únicamente el plan con el nombre del menor oculto (ADR-005/006) — el registro del día no puede llegar ahí ni por accidente, porque el módulo que lo guarda no es alcanzable desde la capa de IA, y dos pruebas negativas (una unitaria y una e2e con centinela) fallan si alguien lo intentara. La conversación no se persiste. Los registros técnicos llevan solo metadatos, nunca contenido. «Borrar mis datos» elimina la dieta y el registro completo, incluidas las claves de versiones anteriores."
+    "red_saliente": false,
+    "usa_ia": false,
+    "detalle": "La dieta, las marcas, las horas y las notas viven solo en el teléfono: no hay servidor de datos, ni cuenta, ni nube. El chat no manda nada a internet: contesta con programación sobre el plan cargado, dentro del teléfono y también sin señal, y un test de punta a punta registra todas las peticiones y exige cero al preguntar. No hay proveedor de inteligencia artificial: si el navegador del teléfono trae su propio modelo, el chat puede usarlo para decir con otras palabras una respuesta que el código ya decidió, sin descargar nada. El registro del día no está al alcance del chat, y pruebas automáticas con un dato centinela fallan si alguien lo intentara. La conversación no se guarda y los registros técnicos llevan solo datos de funcionamiento, nunca contenido. «Borrar mis datos» elimina la dieta y todo el registro, incluidas las copias que dejaron versiones anteriores de la app."
   },
   "enlaces": {
     "produccion": null,
-    "razon": "La producción no se entrega desde la vitrina: el acceso a Nutri-Kids se gestiona por lista de espera.",
+    "razon": "Nutrikids se muestra en el Portafolio, pero no se entrega desde aquí: el acceso es por lista de espera.",
     "repositorio": null,
-    "razon_repositorio": "El repositorio no se enlaza desde la vitrina (regla de cero enlaces del portafolio).",
+    "razon_repositorio": "El código no se enlaza desde el Portafolio: ninguna ficha publica enlaces de acceso ni de repositorio.",
     "brochure_archivo": "docs/BROCHURE.html",
     "brochure_ruta_local": "/conoce"
   }

@@ -1,0 +1,139 @@
+/**
+ * Service worker de Nutrikids (ADR-003, revisado en el S4).
+ *
+ * Esta es la PLANTILLA: `scripts/build-sw.mjs` la estampa en `public/sw.js` en cada
+ * build, con el id de versión y la lista de pantallas. Lo que hace:
+ *  - PRECACHE: al instalarse guarda el cascarón HTML de cada pantalla y los
+ *    estáticos que ese HTML referencia, de modo que la app abra sin internet.
+ *  - NAVEGACIÓN: red primero (si el deploy cambió, se ve lo nuevo) y, sin señal,
+ *    el cascarón guardado. `/dieta/<id>` sin visita previa usa el cascarón del detalle.
+ *  - ESTÁTICOS inmutables (`/_next/static`, íconos, fuentes): caché primero.
+ *  - VERSIÓN NUEVA: se instala en espera y la página avisa; solo se activa cuando
+ *    la persona acepta (mensaje SKIP_WAITING). Nunca recarga a la fuerza.
+ * Los datos de la dieta viven en localStorage, jamás aquí.
+ */
+const VERSION = "__BUILD_ID__";
+const CACHE = "nutrikids-shell-" + VERSION;
+const SHELL_ROUTES = __SHELL_ROUTES__;
+const DETAIL_SHELL = __DETAIL_SHELL__;
+const NAV_TIMEOUT_MS = 3000;
+
+const ASSET_PATTERN = /\/_next\/static\/[^"'\s\\)<>]+/g;
+const STATIC_PATTERN = /\/(_next\/static|icons)\/|\.(?:png|ico|woff2?)$/;
+
+/** Clave de caché de una pantalla: su ruta, sin query ni hash. */
+function shellKey(pathname) {
+  return new Request(self.location.origin + pathname);
+}
+
+async function precache() {
+  const cache = await caches.open(CACHE);
+  const assets = new Set();
+  // Las pantallas son obligatorias: si una falla, la instalación falla y sigue la versión anterior.
+  await Promise.all(
+    [...SHELL_ROUTES, DETAIL_SHELL].map(async (route) => {
+      const res = await fetch(route, { cache: "reload" });
+      if (!res.ok) throw new Error("precache " + route + " " + res.status);
+      const html = await res.clone().text();
+      for (const m of html.matchAll(ASSET_PATTERN)) assets.add(m[0]);
+      await cache.put(shellKey(route), res);
+    }),
+  );
+  // Los estáticos se guardan «lo mejor posible»: uno que falle no tumba la instalación
+  // (se cachea al pedirlo la primera vez).
+  await Promise.allSettled(
+    [...assets].map(async (asset) => {
+      const res = await fetch(asset);
+      if (res.ok) await cache.put(asset, res);
+    }),
+  );
+}
+
+self.addEventListener("install", (event) => {
+  // Sin skipWaiting aquí: una versión nueva espera a que la persona la acepte.
+  event.waitUntil(precache());
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
+        ),
+      )
+      .then(() => self.clients.claim()),
+  );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
+});
+
+/**
+ * Sin red y sin copia propia de esa URL:
+ *  - `/dieta/<id>` → el cascarón del detalle (la página lee el id de la URL);
+ *  - cualquier otra ruta desconocida → una página mínima que se reemplaza sola por Hoy
+ *    (no se sirve el HTML de otra ruta: Next no se hidrata con un cascarón ajeno).
+ */
+async function offlineFallback(cache, pathname) {
+  if (pathname.startsWith("/dieta/")) {
+    const detail = await cache.match(shellKey(DETAIL_SHELL));
+    if (detail) return detail;
+  }
+  const home = await cache.match(shellKey("/"));
+  if (!home) return Response.error();
+  const html =
+    '<!doctype html><html><meta charset="utf-8"><title>Nutrikids</title>' +
+    '<meta http-equiv="refresh" content="0;url=/">' +
+    '<script>location.replace("/")</script><a href="/">Nutrikids</a></html>';
+  return new Response(html, {
+    headers: { "content-type": "text/html; charset=utf-8" },
+  });
+}
+
+async function navigate(event, request, url) {
+  const cache = await caches.open(CACHE);
+  const key = shellKey(url.pathname);
+  const network = fetch(request).then((res) => {
+    if (res.ok && res.headers.get("content-type")?.includes("text/html"))
+      // Se espera: el SW no puede morir antes de terminar de escribir.
+      event.waitUntil(cache.put(key, res.clone()).catch(() => {}));
+    return res;
+  });
+  const cached = await cache.match(key);
+  if (!cached) {
+    // Sin copia propia: red; si falla, el cascarón de respaldo.
+    return network.catch(() => offlineFallback(cache, url.pathname));
+  }
+  // Con copia: la red manda, pero sin señal, muy lenta o con error del servidor sale la guardada.
+  const slow = new Promise((resolve) =>
+    setTimeout(() => resolve(cached), NAV_TIMEOUT_MS),
+  );
+  return Promise.race([network, slow])
+    .then((res) => (res.ok ? res : cached))
+    .catch(() => cached);
+}
+
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+  if (request.method !== "GET" || url.origin !== self.location.origin) return;
+
+  if (request.mode === "navigate") {
+    event.respondWith(navigate(event, request, url));
+    return;
+  }
+  if (!STATIC_PATTERN.test(url.pathname)) return;
+
+  event.respondWith(
+    caches.open(CACHE).then(async (cache) => {
+      const cached = await cache.match(request);
+      if (cached) return cached;
+      const response = await fetch(request);
+      if (response.ok) cache.put(request, response.clone());
+      return response;
+    }),
+  );
+});

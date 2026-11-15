@@ -3,6 +3,8 @@ name: security-owasp
 description: Checklist OWASP y patrones de seguridad aplicables a las apps del pipeline. Invocar antes de merge a main, durante code review, o cuando se agregue una ruta/API nueva.
 ---
 
+> **Nota Nutrikids (S4):** esta app no usa ninguna clave de proveedor de IA (regla dura 5, ADR-008); las menciones a `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` son del patrón genérico del kit y no aplican aquí.
+
 # Security OWASP — Kit General
 
 Checklist y patrones alineados con OWASP Top 10 (2021). Aplica a todas las apps del pipeline. Non-negotiable #4 de los estándares del pipeline (CLAUDE.md § Estándares).
