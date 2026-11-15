@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Send, Sparkles, TriangleAlert } from "lucide-react";
+import { Send, WifiOff } from "lucide-react";
 
+import { AnswerCard } from "@/components/chat/answer-card";
 import { VerdictCard } from "@/components/chat/verdict-card";
 import { useChatThread } from "@/components/chat/use-chat-thread";
 import { useDiet } from "@/components/diet-provider";
-import { useToday } from "@/components/day-checklist/use-today";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/i18n";
+import { MAX_INPUT_CHARS, rejectionMessage } from "@/lib/diet/guardrails";
 
 /**
  * Panel interactivo del chat. Su primer render (hilo vacío + sugerencias) es
@@ -18,27 +19,22 @@ import { useI18n } from "@/i18n";
 export function ChatPanel() {
   const { diet } = useDiet();
   const { t, locale } = useI18n();
-  const today = useToday();
-  const { entries, status, send, dismissError, aiEnabled } = useChatThread(
-    diet,
-    locale,
-    today,
-  );
+  const { entries, send } = useChatThread(diet, locale, t.answer);
   const [input, setInput] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end" });
-  }, [entries, status]);
+  }, [entries]);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const text = input;
     setInput("");
-    void send(text);
+    send(text);
   };
 
-  const suggestions = [t.chat.sugg1, t.chat.sugg2, t.chat.sugg3];
+  const suggestions = [t.chat.sugg1, t.chat.sugg2, t.chat.sugg3, t.chat.sugg4];
 
   return (
     <div className="flex flex-col gap-4 pb-4">
@@ -46,15 +42,8 @@ export function ChatPanel() {
         <h1 className="text-3xl">{t.chat.title}</h1>
         <p className="text-sm text-muted-foreground">{t.chat.intro}</p>
         <p className="mt-1 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-          <span
-            aria-hidden
-            className={
-              aiEnabled
-                ? "size-2 rounded-full bg-tl-green"
-                : "size-2 rounded-full bg-muted-foreground/50"
-            }
-          />
-          {aiEnabled ? t.settings.aiStatusEnabled : t.settings.aiStatusDisabled}
+          <WifiOff aria-hidden className="size-3.5" />
+          {t.chat.offlineStatus}
         </p>
       </header>
 
@@ -70,7 +59,7 @@ export function ChatPanel() {
             <button
               key={s}
               type="button"
-              onClick={() => void send(s)}
+              onClick={() => send(s)}
               className="min-h-11 rounded-xl border bg-card px-4 py-2.5 text-left text-sm font-medium transition-colors hover:bg-accent"
             >
               {s}
@@ -103,59 +92,27 @@ export function ChatPanel() {
                 </li>
               );
             }
-            // assistant (ai | rejection)
+            if (entry.role === "open") {
+              return (
+                <li key={entry.id} className="flex flex-col gap-1">
+                  <AnswerCard answer={entry.answer} accent={entry.accent} />
+                  <span className="pl-1 text-xs font-medium text-muted-foreground">
+                    {entry.accent ? t.chat.deviceBadge : t.chat.fromPlanBadge}
+                  </span>
+                </li>
+              );
+            }
             return (
               <li key={entry.id} className="flex flex-col gap-1">
-                <div className="max-w-[92%] rounded-2xl rounded-bl-sm border bg-card px-4 py-3 text-sm leading-relaxed">
-                  {entry.text || (
-                    <span className="text-muted-foreground">
-                      {t.chat.thinking}
-                    </span>
-                  )}
-                </div>
-                {entry.kind === "ai" && entry.text && (
-                  <span className="inline-flex items-center gap-1 pl-1 text-xs font-medium text-muted-foreground">
-                    <Sparkles aria-hidden className="size-3" />
-                    {t.chat.aiBadge} · {t.chat.aiDisclaimer}
-                  </span>
-                )}
+                <p className="max-w-[92%] rounded-2xl rounded-bl-sm border bg-card px-4 py-3 text-sm leading-relaxed">
+                  {rejectionMessage(entry.reason, locale)}
+                </p>
               </li>
             );
           })}
-          <div ref={endRef} />
         </ol>
       )}
-
-      {status === "error" && (
-        <div
-          role="alert"
-          className="flex items-start gap-2 rounded-xl bg-tl-yellow-surface px-4 py-3 text-sm text-tl-yellow"
-        >
-          <TriangleAlert aria-hidden className="mt-0.5 size-4 shrink-0" />
-          <div>
-            <p className="font-semibold">{t.chat.errorTitle}</p>
-            <p className="mt-0.5">{t.chat.errorBody}</p>
-            <button
-              type="button"
-              onClick={dismissError}
-              className="mt-1 min-h-11 text-xs font-semibold underline"
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-      {status === "disabled" && (
-        <div
-          role="status"
-          className="rounded-xl bg-muted px-4 py-3 text-sm text-muted-foreground"
-        >
-          <p className="font-semibold text-foreground">
-            {t.chat.disabledTitle}
-          </p>
-          <p className="mt-0.5">{t.chat.disabledBody}</p>
-        </div>
-      )}
+      <div ref={endRef} />
 
       <form
         onSubmit={submit}
@@ -170,13 +127,14 @@ export function ChatPanel() {
           onChange={(e) => setInput(e.target.value)}
           placeholder={t.chat.inputPlaceholder}
           autoComplete="off"
+          maxLength={MAX_INPUT_CHARS}
           className="h-12 flex-1 rounded-xl border bg-card px-4 text-base shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
         <Button
           type="submit"
           size="lg"
           className="h-12 w-12 shrink-0 p-0"
-          disabled={status === "streaming" || input.trim().length === 0}
+          disabled={input.trim().length === 0}
           aria-label={t.chat.send}
         >
           <Send aria-hidden className="size-5" />

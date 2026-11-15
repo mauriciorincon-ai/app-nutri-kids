@@ -18,9 +18,9 @@ export function VerdictCard({ verdict }: { verdict: LocalVerdict }) {
     return (
       <div className="rounded-2xl border bg-card p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-lg font-semibold">
+          <h2 className="text-lg font-semibold">
             {additive.code} · {l(additive.name)}
-          </h3>
+          </h2>
           <StatusChip color="red" label={t.chat.additiveTitle} />
         </div>
         <p className="mt-1.5 text-sm text-foreground/80">
@@ -34,7 +34,7 @@ export function VerdictCard({ verdict }: { verdict: LocalVerdict }) {
   return (
     <div className="rounded-2xl border bg-card p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-lg font-semibold">{l(status.name)}</h3>
+        <h2 className="text-lg font-semibold">{l(status.name)}</h2>
         <StatusChip color={status.color} />
       </div>
 

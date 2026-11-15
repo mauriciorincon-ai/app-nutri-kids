@@ -2,167 +2,74 @@
 
 import { useCallback, useRef, useState } from "react";
 
+import { answerQuestion, type OpenAnswer } from "@/lib/diet/answer";
+import { composeAnswer, type AnswerTemplates } from "@/lib/diet/answer-text";
 import type { DietPlan } from "@/lib/diet/schema";
-import { matchLookup, type LocalVerdict } from "@/lib/diet/search";
+import type { LocalVerdict } from "@/lib/diet/search";
+import { accentWithDevice } from "@/lib/ia/device-accent";
 
 /**
  * Hilo del chat: la única fuente de verdad de la conversación (efímera, en
  * memoria — NO se persiste, decisión de privacidad del S2).
  *
- * Enruta cada envío entre los dos caminos:
- *  - Camino A (lookup local): `matchLookup` responde al instante, SIN tocar la
- *    red. La entrada `verdict` lleva la tarjeta de veredicto.
- *  - Camino B (pregunta abierta): POST a `/api/chat` y se va acumulando el
- *    streaming (SSE del UIMessageStream) en la entrada `assistant`.
- *
- * Se hace con fetch manual (no `useChat`) para tener UN hilo unificado que
- * intercala veredictos locales y respuestas del LLM, y control exacto de cuándo
- * se llama a `/api/chat` (los lookups NUNCA lo llaman — lo verifica el e2e).
+ * Código primero (ADR-008): cada pregunta la contesta `answerQuestion` en el
+ * teléfono, sin red. Si el navegador trae un modelo propio en el aparato, se le
+ * pide re-redactar la frase principal DESPUÉS de mostrar la respuesta del código;
+ * si no hay modelo o su salida no pasa el esquema, se queda la del código.
  */
 export type Entry =
   | { id: string; role: "user"; text: string }
   | { id: string; role: "verdict"; verdict: LocalVerdict }
-  | { id: string; role: "assistant"; text: string; kind: "ai" | "rejection" };
+  | { id: string; role: "open"; answer: OpenAnswer; accent: string | null }
+  | { id: string; role: "rejection"; reason: "medical" | "off-topic" };
 
-export type ChatStatus = "idle" | "streaming" | "error" | "disabled";
-
-const AI_ENABLED = process.env.NEXT_PUBLIC_CHAT_ENABLED === "true";
+const systemNow = () => new Date();
 
 export function useChatThread(
   diet: DietPlan,
   locale: "es" | "en",
-  today: Date | null,
+  templates: AnswerTemplates,
+  /** Reloj inyectable: «¿qué le doy ahora?» depende de la HORA del envío. */
+  now: () => Date = systemNow,
 ) {
   const [entries, setEntries] = useState<Entry[]>([]);
-  const [status, setStatus] = useState<ChatStatus>("idle");
   const counter = useRef(0);
   const nextId = () => `e${counter.current++}`;
 
   const send = useCallback(
-    async (raw: string) => {
+    (raw: string) => {
       const text = raw.trim();
-      if (!text || status === "streaming") return;
-      const date = today ?? new Date();
+      if (!text) return;
+      const result = answerQuestion(text, diet, now(), locale);
+      const id = nextId();
+      const reply: Entry =
+        result.kind === "verdict"
+          ? { id, role: "verdict", verdict: result.verdict }
+          : result.kind === "rejection"
+            ? { id, role: "rejection", reason: result.reason }
+            : { id, role: "open", answer: result.answer, accent: null };
 
-      setEntries((prev) => [...prev, { id: nextId(), role: "user", text }]);
-
-      // Camino A — lookup local (sin red).
-      const verdict = matchLookup(diet, text, locale, date);
-      if (verdict) {
-        setEntries((prev) => [
-          ...prev,
-          { id: nextId(), role: "verdict", verdict },
-        ]);
-        return;
-      }
-
-      // Kill-switch conocido en cliente: ni siquiera intentamos la red.
-      if (!AI_ENABLED) {
-        setStatus("disabled");
-        return;
-      }
-
-      // Camino B — LLM en streaming.
-      setStatus("streaming");
-      const assistantId = nextId();
       setEntries((prev) => [
         ...prev,
-        { id: assistantId, role: "assistant", text: "", kind: "ai" },
+        { id: nextId(), role: "user", text },
+        reply,
       ]);
 
-      const appendDelta = (delta: string) =>
-        setEntries((prev) =>
-          prev.map((e) =>
-            e.id === assistantId && e.role === "assistant"
-              ? { ...e, text: e.text + delta }
-              : e,
-          ),
-        );
-      const dropEmptyAssistant = () =>
-        setEntries((prev) =>
-          prev.filter(
-            (e) =>
-              !(
-                e.id === assistantId &&
-                e.role === "assistant" &&
-                e.text === ""
-              ),
-          ),
-        );
-
-      try {
-        const res = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            messages: [
-              { id: "u", role: "user", parts: [{ type: "text", text }] },
-            ],
-            diet,
-            locale,
-          }),
-        });
-
-        if (res.status === 503) {
-          dropEmptyAssistant();
-          setStatus("disabled");
-          return;
-        }
-        if (!res.ok || !res.body) {
-          dropEmptyAssistant();
-          setStatus("error");
-          return;
-        }
-
-        // Un rechazo de guardrail (médico/off-topic) llega como texto estático
-        // con este header → se pinta sin la etiqueta "Respuesta de IA".
-        const outcome = res.headers.get("x-chat-outcome");
-        if (outcome === "medical" || outcome === "off-topic") {
+      if (reply.role !== "open" || reply.answer.kind === "not-in-plan") return;
+      const composed = composeAnswer(reply.answer, templates, locale);
+      void accentWithDevice(composed.lead, composed.required, locale).then(
+        (accent) => {
+          if (!accent) return;
           setEntries((prev) =>
             prev.map((e) =>
-              e.id === assistantId && e.role === "assistant"
-                ? { ...e, kind: "rejection" }
-                : e,
+              e.id === id && e.role === "open" ? { ...e, accent } : e,
             ),
           );
-        }
-
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        for (;;) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() ?? "";
-          for (const line of lines) {
-            if (!line.startsWith("data: ")) continue;
-            const payload = line.slice(6).trim();
-            if (payload === "[done]") continue;
-            try {
-              const evt = JSON.parse(payload) as {
-                type?: string;
-                delta?: string;
-              };
-              if (evt.type === "text-delta" && typeof evt.delta === "string") {
-                appendDelta(evt.delta);
-              }
-            } catch {
-              // líneas de control del SSE → se ignoran
-            }
-          }
-        }
-        setStatus("idle");
-      } catch {
-        dropEmptyAssistant();
-        setStatus("error");
-      }
+        },
+      );
     },
-    [diet, locale, today, status],
+    [diet, locale, templates, now],
   );
 
-  const dismissError = useCallback(() => setStatus("idle"), []);
-
-  return { entries, status, send, dismissError, aiEnabled: AI_ENABLED };
+  return { entries, send };
 }
