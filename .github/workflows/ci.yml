@@ -21,6 +21,17 @@ jobs:
       - run: pnpm test            # vitest run --coverage (umbral 70% en vitest.config)
       - run: pnpm build
       - run: pnpm audit --audit-level high
+      - name: Regla 18 — ningun paquete por debajo de main (kit v2.4.0)
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin main --depth=1
+          node scripts/verificar-dependencias.mjs origin/main
+      - name: Cero enlaces — arbol y homepage del repo (regla 17, kit v2.4.0)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          HOMEPAGE="$(gh api "repos/${GITHUB_REPOSITORY}" --jq '.homepage // ""')"
+          node scripts/cero-enlaces.mjs --homepage "$HOMEPAGE"
 
   e2e:
     runs-on: ubuntu-latest
@@ -34,6 +45,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e        # incluye scans axe (@axe-core/playwright)
+      - uses: actions/upload-artifact@v4   # evidencia solo si falla (kit v1.26.0)
+        if: failure()
+        with:
+          name: playwright-test-results
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore
 
   lighthouse:
     runs-on: ubuntu-latest
