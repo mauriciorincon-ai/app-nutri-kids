@@ -55,7 +55,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
   if (fugaHomepage) {
     rojo = true;
-    console.error(`::error::cero enlaces: el campo homepage del repo apunta a producción (${fugaHomepage}); debe ser vacío o el propio repo: gh repo edit --homepage ""`);
+    console.error(`::error::cero enlaces: el campo homepage del repo apunta a producción (${fugaHomepage}); debe ser el propio repo: gh repo edit --homepage https://github.com/<owner>/<repo> (jamás vacío: Vercel solo rellena el campo vacío)`);
   }
   if (rojo) process.exit(1);
   const homepageDada = i > -1 || process.env.CERO_ENLACES_HOMEPAGE !== undefined;

@@ -11,14 +11,14 @@ Rama `sprint-004/dieta-sin-internet` · orden: `SPRINT_004.md` (planeadora) · G
 
 ## F1 — el núcleo y la limpieza
 - `CLAUDE.md` = `ordenes/CLAUDE-md-para-app.md` (`cmp` = 0; centinela «el plan vivo, y en casa» presente). La constitución v1 anterior vive entera en `docs/REGLAS-ANEXO.md` § «Nutrikids».
-- Piezas del kit v2.4.0: `scripts/{horas-sprint,cero-enlaces,verificar-dependencias}.mjs`, `scripts/demo-rojo.sh` (100755), `scripts/degradaciones-permitidas.json`, `cero-enlaces.json` (incluye `vercel.app`), `.github/workflows/un-pr-vivo.yml`, comandos v2 (`audita-sprint`, `design-sync`, `release-check` nuevos; `deploy-check`, `plan-sprint`, `run-tests` actualizados) y sus tres pruebas unitarias.
+- Piezas del kit v2.4.0: `scripts/{horas-sprint,cero-enlaces,verificar-dependencias}.mjs`, `scripts/demo-rojo.sh` (100755), `scripts/degradaciones-permitidas.json`, `cero-enlaces.json` (incluye el dominio de hosting de Vercel), `.github/workflows/un-pr-vivo.yml`, comandos v2 (`audita-sprint`, `design-sync`, `release-check` nuevos; `deploy-check`, `plan-sprint`, `run-tests` actualizados) y sus tres pruebas unitarias.
 - CI: pasos `verificar-dependencias` (solo PR) y `cero-enlaces` en `quality`; evidencia de e2e subida si falla.
 - Puertos: `dev` y `start` con `-H 127.0.0.1 -p 3600`; Playwright `E2E_PORT ?? 3600` en `127.0.0.1`; `lighthouse-urls.json` y README alineados.
 - Devolución 026: (1) export con el copy de la planeadora · (2) `BROCHURE.html` sin «Tu dieta, adentro» ni «texturas», con los nombres y líneas de grupo nuevos · (3) `app.ciclo: "H-2"` · (4) fecha y sha de cada métrica: se re-miden en F3 (los valores cambian al retirar la IA) · (5) la demo no caduca: `src/lib/diet/demo.ts` corre la ventana a la fecha del aparato (−30/+60 días) + `tests/unit/demo-aging.test.ts` en 7 fechas (regla 23) · (6) Chromium rev. 1228 ya estaba instalado (`~/Library/Caches/ms-playwright`); sin acción · (7) «Nutrikids» en ES/EN, layout, manifest, docs y `global-setup`.
 - Verde local: typecheck, lint, vitest 238/238, e2e (CI=1, `next start` en 127.0.0.1:3600).
 
 ### Demo en rojo (regla 15/27) — `cero-enlaces`
-- Archivo `README.md`, mutación: añadir un dominio `.vercel.app` al final de la línea 1 → el gate falló nombrando `README.md:1`, restauró y volvió a verde (`scripts/demo-rojo.sh`).
+- Archivo `README.md`, mutación: añadir un dominio de hosting de Vercel al final de la línea 1 → el gate falló nombrando `README.md:1`, restauró y volvió a verde (`scripts/demo-rojo.sh`).
 
 ### Fricción del kit / del entorno
 - Las pruebas del kit (`cero-enlaces`, `horas-sprint`, `verificar-dependencias`) asumen entorno `node`; la app corre vitest en jsdom → hizo falta `// @vitest-environment node` en cada una y un guard `typeof window` en `tests/setup.ts`.

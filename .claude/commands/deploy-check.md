@@ -18,7 +18,7 @@ Esto es solo lo que la CI no puede ver. Se corre después de `/audita-sprint`, a
 - [ ] 5. **Cero enlaces:** el paso «Cero enlaces» del job `quality` existe en el `ci.yml` de esta app (árbol +
       homepage del repo, dominios de `cero-enlaces.json` ampliados con el host real del stack); si aún no, aquí:
       `node scripts/cero-enlaces.mjs --homepage "$(gh repo view --json homepageUrl -q .homepageUrl)"` sale en verde.
-      Si el homepage apunta a producción: `gh repo edit --homepage ""` (o el propio repo).
+      Si el homepage está vacío o apunta a producción: `gh repo edit --homepage https://github.com/<owner>/<repo>` (el propio repo; jamás `--homepage ""`: Vercel solo rellena el campo vacío, kit v1.32.1).
 - [ ] 6. **Auditoría pagada:** cada hallazgo con `pagado · <commit>` en el cierre; cero abiertos salvo lo
       imposible con la decisión del dueño escrita (kit v2.4.0).
 - [ ] 7. **Aprovisionamiento nuevo probado** (solo si hubo): cada credencial o servicio nuevo con su humo
