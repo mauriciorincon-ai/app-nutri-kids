@@ -1,3 +1,5 @@
+import { generateKeyPairSync, randomBytes } from "node:crypto";
+
 import { defineConfig, devices } from "@playwright/test";
 
 /**
@@ -11,6 +13,26 @@ import { defineConfig, devices } from "@playwright/test";
  */
 const PORT = Number(process.env.E2E_PORT ?? 3600);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
+
+/**
+ * Llaves de PRUEBA de los avisos (S8 · ADR-012): VAPID y la firma del disparador. Nacen aquí,
+ * en cada corrida, y viajan por el entorno (el proceso del servidor y los de las pruebas las
+ * heredan): ninguna llave, real o de prueba, vive en el repo, y jamás se usan las reales.
+ */
+function testKeys() {
+  if (process.env.E2E_VAPID_PUBLIC) return;
+  const { privateKey } = generateKeyPairSync("ec", { namedCurve: "P-256" });
+  const jwk = privateKey.export({ format: "jwk" });
+  process.env.E2E_VAPID_PUBLIC = Buffer.concat([
+    Buffer.from([4]),
+    Buffer.from(jwk.x!, "base64url"),
+    Buffer.from(jwk.y!, "base64url"),
+  ]).toString("base64url");
+  process.env.E2E_VAPID_PRIVATE = jwk.d!;
+  process.env.E2E_QSTASH_CURRENT = randomBytes(24).toString("base64url");
+  process.env.E2E_QSTASH_NEXT = randomBytes(24).toString("base64url");
+}
+testKeys();
 
 export default defineConfig({
   testDir: "tests/e2e",
@@ -46,6 +68,12 @@ export default defineConfig({
     env: {
       PORT: String(PORT),
       FAMILY_STORE: "memory",
+      // Los avisos (S8): llaves de prueba y el emisor doble (con `memory` no sale a la red).
+      VAPID_PUBLIC_KEY: process.env.E2E_VAPID_PUBLIC!,
+      VAPID_PRIVATE_KEY: process.env.E2E_VAPID_PRIVATE!,
+      VAPID_SUBJECT: "mailto:e2e@example.org",
+      QSTASH_CURRENT_SIGNING_KEY: process.env.E2E_QSTASH_CURRENT!,
+      QSTASH_NEXT_SIGNING_KEY: process.env.E2E_QSTASH_NEXT!,
     },
   },
 });

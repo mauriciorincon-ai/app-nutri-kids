@@ -1,8 +1,10 @@
 import demoRaw from "../../../data/demo-diet.json";
 import { clearDevice, getDeviceId } from "../device";
 import { clearKeys } from "../family/keystore";
+import { clearNotices } from "../family/notices";
 import { clearFamilyLocal } from "../family/state";
 import { log } from "../log";
+import { clearPushState } from "../push/state";
 import {
   dietCounts,
   dietPlanSchema,
@@ -254,6 +256,10 @@ export function clearAllData(): void {
   clearFamilyLocal();
   void clearKeys();
   clearDevice();
+  // Avisos (S8): los de la familia y el estado de los de este teléfono. La suscripción y la
+  // copia del trabajador las quita «Borrar datos» en Ajustes (necesitan red y IndexedDB).
+  clearNotices();
+  clearPushState();
   log.info({ event: "data-cleared" });
 }
 

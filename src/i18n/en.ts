@@ -355,11 +355,11 @@ export const en: Dictionary = {
     dietVersionInfo: "{title} · issued on {date}",
     clearTitle: "Delete data",
     clearBody:
-      "Deletes the loaded diet and your whole day record (checkmarks, times and notes) and what you noted in the profile (notes and textures) from this device, and you leave the family if you were in one. What is already shared online is deleted from “Share with the family”. The app returns to the demo.",
+      "Deletes the loaded diet and your whole day record (checkmarks, times and notes) and what you noted in the profile (notes and textures) from this device, you stop receiving notices, and you leave the family if you were in one. What is already shared online is deleted from “Share with the family”. The app returns to the demo.",
     clearButton: "Delete my data",
     clearConfirmTitle: "Delete everything?",
     clearConfirmBody:
-      "The loaded diet and the whole day record (checkmarks, times and notes) and what you noted in the profile (notes and textures) will be deleted, and you will leave the family. This cannot be undone.",
+      "The loaded diet and the whole day record (checkmarks, times and notes) and what you noted in the profile (notes and textures) will be deleted, you will stop receiving notices, and you will leave the family. This cannot be undone.",
     clearAlsoShared:
       "Also delete what is shared on the internet. The family's other phones keep their copy.",
     clearConfirmYes: "Yes, delete",
@@ -369,6 +369,93 @@ export const en: Dictionary = {
     aiTitle: "How the chat answers",
     aiBody:
       "The chat answers with code, only with what your plan contains, right here on the phone: it uses no internet AI services and nothing you type leaves the phone. If your browser has its own language model inside the phone, it's only used to reword an answer the code already decided. None of the conversation is saved.",
+  },
+  push: {
+    title: "Notices on this phone",
+    intro:
+      "Nutrikids can notify you at each meal, supplement and water time, even with the app closed. The times come from your plan.",
+    privacy:
+      "The notice is built on your phone. The only things that leave it are the address to wake it and the times of day, without a label (and, if you mark something before its time, the day and minute of that notice, so it isn't repeated); the server doesn't know what is due and sends an empty tap. No names, foods, supplements or notes ever go.",
+    askNote:
+      "When you tap the button, your phone asks for permission to show notices. It asks only this once.",
+    enable: "Turn on notices on this phone",
+    working: "One moment…",
+    on: "✓ Notices are on for this phone",
+    typesTitle: "What you want to be notified about",
+    supplements: "Supplements",
+    supplementsHint: "At the first meal's time, on the days they are due.",
+    meals: "Meals and snacks",
+    mealsHint: "At the time of each one.",
+    water: "Water",
+    waterHint: "Spread between the first and the last meal.",
+    family: "Family notices",
+    familyHint: "When someone in the family leaves you a note.",
+    familyNeeds: "To receive family notices, this phone has to be in a family.",
+    hideTitle: "Hide the detail while the phone is locked",
+    hideHint:
+      "When on, the notice shows a generic message instead of the detail, and the detail shows once you open the app. It applies to this phone only.",
+    off: "Stop receiving notices",
+    offDone:
+      "Done: this phone no longer receives notices and its address was deleted from the server.",
+    offDoneLocal:
+      "Done: this phone no longer receives notices. Its address will clear itself from the server.",
+    denied:
+      "⚠ Permission is blocked. You can change it in the browser or phone settings and come back here.",
+    unavailable:
+      "ℹ Notices are not available on this service. The rest of the app works the same.",
+    unsupported:
+      "ℹ This browser can't show notices. Try another one, or the installed app.",
+    installTitle: "First install the app on your iPhone",
+    installIntro:
+      "On iPhone, notices work from iOS 16.4 and only with the app installed on the home screen.",
+    install1: "Open Nutrikids in Safari.",
+    install2: "Tap the Share button.",
+    install3: "Choose “Add to Home Screen”.",
+    install4: "Open the app from its icon and come back to Settings.",
+    lost: "The browser removed this phone's subscription. Turn notices on again.",
+    errOffline: "No connection. Try again when the network is back.",
+    errUpdate:
+      "A new version of the app is waiting. Update it from the version notice (or close and reopen the app) and come back here.",
+    errWorker:
+      "The notice service couldn't be prepared in this browser. Reload the page and try again.",
+    errDismissed:
+      "You didn't give permission, so nothing was turned on. You can try again whenever you like.",
+    errServer: "It couldn't be saved. Try again in a little while.",
+    errFull:
+      "Many family phones already have notices. Remove one and try again.",
+  },
+  pushNotify: {
+    supplementTitle: "Today's supplement",
+    waterTitle: "A glass of water",
+    waterBody: "Glass {n} of {total}",
+    genericTitle: "Nutrikids",
+    genericBody:
+      "There is something in the plan for this time. Open it to see.",
+    allDoneTitle: "This time's items are already checked",
+    allDoneBody: "Nothing else to do.",
+    many: "Several things are due",
+    familyFrom: "Notice from {name}",
+    familyGenericTitle: "There is a new notice",
+    familyGenericBody: "Open it to see.",
+  },
+  notices: {
+    title: "Family notices",
+    send: "Notify the family",
+    hint: "A short note that wakes the other phones. It travels encrypted: no one else can read it.",
+    label: "Your notice",
+    placeholder: "A short note for the family",
+    count: "{n} of {max}",
+    submit: "Send notice",
+    sending: "Sending…",
+    sent: "✓ Notice sent.",
+    queued: "✓ Saved. It will be sent when the network is back.",
+    needName:
+      "Give this phone a name in Settings so they know who is notifying.",
+    errEmpty: "Write something before sending.",
+    errSend: "It couldn't be sent. Try again.",
+    empty: "No notices today.",
+    mine: "By you",
+    at: "{time}",
   },
   family: {
     title: "Share with the family",

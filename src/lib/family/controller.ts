@@ -1,10 +1,13 @@
 import { setDeviceName } from "@/lib/device";
 import { notifyLocalStore } from "@/lib/local-store";
+import { touchFamily } from "@/lib/push/touch";
 
 import { familyApi, type FamilyApi } from "./client";
 import { clearKeys, loadKeys, saveKeys } from "./keystore";
 import { browserLocal } from "./local";
+import { newNoticeId } from "./notices";
 import { formatCode } from "./phrase";
+import { NOTICE_TEXT_MAX } from "./records";
 import {
   createFamily,
   destroyFamily,
@@ -85,6 +88,8 @@ export type ControllerDeps = {
   /** Avisa a la pantalla que los datos locales cambiaron (relee). */
   notify(): void;
   today(): string;
+  /** Tras subir un aviso propio: despierta a los otros teléfonos (S8). Opcional en las pruebas. */
+  touch?(ctx: FamilyCtx): Promise<unknown>;
 };
 
 export type ActionResult<T = object> =
@@ -190,6 +195,9 @@ export function createController(deps: ControllerDeps) {
       });
       if (r.ok && r.changed) deps.notify();
       await setPhase(r.ok ? "idle" : phaseOf(r.reason));
+      // Un aviso propio acaba de subir: el servidor despierta a los demás (sin saber qué dice).
+      if (r.ok && r.noticesPushed > 0 && ctx)
+        await deps.touch?.(ctx).catch(() => null);
     })().finally(() => {
       running = null;
     });
@@ -346,6 +354,34 @@ export function createController(deps: ControllerDeps) {
       return this.leave();
     },
 
+    /**
+     * «Avisar a la familia»: guarda la nota aquí, la sube con el resto (cifrada, como todo) y
+     * despierta a los otros teléfonos. Sin red queda guardada y sale al volver (`queued`).
+     */
+    async sendNotice(text: string): Promise<ActionResult<{ queued: boolean }>> {
+      const here = await ensureCtx();
+      if (!here) return { ok: false, reason: "no-family" };
+      const name = deps.local.deviceName();
+      if (!name) return { ok: false, reason: "no-name" };
+      const clean = text.trim();
+      if (!clean || clean.length > NOTICE_TEXT_MAX)
+        return { ok: false, reason: "error" };
+      deps.local.mergeNotice(newNoticeId(), {
+        text: clean,
+        name,
+        by: deps.local.deviceId(),
+        t: deps.now(),
+        date: deps.today(),
+      });
+      deps.notify();
+      await sync();
+      const st = deps.state.load();
+      const pending = Object.keys(deps.local.notices()).some(
+        (id) => st?.pushed[`notice:${id}`] === undefined,
+      );
+      return { ok: true, queued: pending };
+    },
+
     async dismissNotice(): Promise<void> {
       const st = deps.state.load();
       if (!st?.planNotice) return;
@@ -409,6 +445,7 @@ export function getFamily(): Controller {
     now: () => Date.now(),
     online: () => (typeof navigator === "undefined" ? true : navigator.onLine),
     notify: notifyLocalStore,
+    touch: (ctx) => touchFamily(ctx.family, ctx.keys.token),
     today: () => {
       const d = new Date();
       const p = (n: number) => String(n).padStart(2, "0");

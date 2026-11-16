@@ -10,6 +10,7 @@ import { ReminderCard } from "@/components/day-checklist/reminder-card";
 import { useDayLog, useToday } from "@/components/day-checklist/use-today";
 import { useDiet } from "@/components/diet-provider";
 import { useWho } from "@/components/family/use-family";
+import { FamilyNotices } from "@/components/notices/family-notices";
 import { fmt, useI18n } from "@/i18n";
 import {
   buildDayChecklist,
@@ -151,6 +152,8 @@ export default function TodayPage() {
       <h1 className="text-3xl">{t.today.title}</h1>
 
       <ReminderCard diet={diet} doneIds={doneIds} />
+
+      <FamilyNotices today={today} />
 
       {checklist ? (
         <DaySummary checklist={checklist} labelFor={labelFor} />

@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react";
 
 import { useDiet } from "@/components/diet-provider";
 import { FamilySection } from "@/components/family/family-section";
+import { PushSection } from "@/components/push/push-section";
 import { CheckLine, errorText } from "@/components/family/parts";
 import { useFamily } from "@/components/family/use-family";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import {
 import { fmt, useI18n, type Locale } from "@/i18n";
 import { clearAllData } from "@/lib/diet/storage";
 import { getFamily } from "@/lib/family/controller";
+import { getPush } from "@/lib/push/controller";
 import { formatShortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -53,6 +55,10 @@ export default function SettingsPage() {
       }
       if (!r.ok) await getFamily().leave();
     }
+    // Los avisos, justo antes de borrar: necesitan su token para quitar la suscripción del
+    // servidor, y `clearAllData` lo olvida. Si la familia falló arriba, no se llega aquí y nada
+    // queda a medias. Sin red, la dirección caduca sola (el navegador ya la quitó).
+    await getPush().disable();
     clearAllData();
     refresh();
     setConfirmOpen(false);
@@ -107,6 +113,8 @@ export default function SettingsPage() {
       </section>
 
       <FamilySection />
+
+      <PushSection />
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg">{t.settings.dietVersion}</h2>

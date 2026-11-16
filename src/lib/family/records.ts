@@ -59,16 +59,37 @@ export const deviceSchema = z.object({
   consent: z.string().regex(DATE),
 });
 
+/**
+ * «Avisar a la familia» (S8 · ADR-012): una nota corta de quien cuida, un registro por aviso.
+ * Viaja cifrada como todo lo demás; el servidor solo despierta a los otros teléfonos y es el
+ * trabajador de cada uno quien la abre.
+ */
+export const NOTICE_TEXT_MAX = 140;
+export const noticeSchema = z.object({
+  text: z.string().trim().min(1).max(NOTICE_TEXT_MAX),
+  /** Nombre de quien la escribió, tal como lo dice su teléfono. */
+  name: z.string().trim().min(1).max(DEVICE_NAME_MAX),
+  /** Id del teléfono que la escribió. */
+  by: z.string().min(1).max(24),
+  /** Cuándo (ms). */
+  t: z.number().int().nonnegative(),
+  /** Día local (YYYY-MM-DD): «Hoy» muestra solo los de hoy. */
+  date: z.string().regex(DATE),
+});
+export const NOTICE_ID = /^[0-9a-z]{6,24}$/;
+
 export type DayShared = z.infer<typeof daySchema>;
 export type ProfileShared = z.infer<typeof profileSchema>;
 export type PlanShared = z.infer<typeof planSchema>;
 export type DeviceShared = z.infer<typeof deviceSchema>;
+export type NoticeShared = z.infer<typeof noticeSchema>;
 
 export type Named =
   | { name: "plan"; data: PlanShared }
   | { name: "profile"; data: ProfileShared }
   | { name: `day:${string}`; data: DayShared }
-  | { name: `device:${string}`; data: DeviceShared };
+  | { name: `device:${string}`; data: DeviceShared }
+  | { name: `notice:${string}`; data: NoticeShared };
 
 /** Tipo que ve el servidor: solo distingue el plan (más grande) del resto. */
 export type Kind = "plan" | "item";
@@ -80,6 +101,9 @@ export function dayName(date: string): `day:${string}` {
 }
 export function deviceName(id: string): `device:${string}` {
   return `device:${id}`;
+}
+export function noticeName(id: string): `notice:${string}` {
+  return `notice:${id}`;
 }
 
 /** Valida un registro descifrado según su nombre; null si no encaja. */
@@ -108,6 +132,10 @@ export function parseNamed(value: unknown): Named | null {
     return data && data.id === n.slice(7)
       ? { name: n as `device:${string}`, data }
       : null;
+  }
+  if (n.startsWith("notice:") && NOTICE_ID.test(n.slice(7))) {
+    const data = pick(noticeSchema);
+    return data ? { name: n as `notice:${string}`, data } : null;
   }
   return null;
 }

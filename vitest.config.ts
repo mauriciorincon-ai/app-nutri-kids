@@ -20,6 +20,7 @@ export default defineConfig({
         "src/lib/pdf/**",
         "src/lib/privacy/**",
         "src/lib/family/**",
+        "src/lib/push/**",
       ],
       thresholds: {
         lines: 80,
@@ -28,6 +29,13 @@ export default defineConfig({
         statements: 80,
         // S7: el cifrado y la sincronía de la familia, al 90 % o más.
         "src/lib/family/**": {
+          lines: 90,
+          functions: 90,
+          branches: 90,
+          statements: 90,
+        },
+        // S8: los avisos (horas, VAPID, firma del disparador, registro), al 90 % o más.
+        "src/lib/push/**": {
           lines: 90,
           functions: 90,
           branches: 90,

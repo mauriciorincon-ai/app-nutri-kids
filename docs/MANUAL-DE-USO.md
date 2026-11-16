@@ -96,8 +96,12 @@ Profile stays.
   semana sin fiarte de la memoria. Puedes editarla o quitarla cuando quieras.
 - **Recordatorio "Ahora mismo" (Sprint 003):** arriba de todo, la app te dice **qué toca en este
   momento** y **qué sigue** (la comida de la franja, el suplemento del día si falta, y los vasos de
-  agua). No manda notificaciones ni pide permisos: es simplemente la información correcta cuando
-  abres la app. Nunca te reprocha nada — solo informa.
+  agua). Es la información correcta cuando
+  abres la app, y con los **avisos en este teléfono** (más abajo) también te llega aunque la app esté cerrada.
+  Nunca te reprocha nada — solo informa.
+- **Avisar a la familia (Sprint 008):** si estás en una familia, debajo del recordatorio hay
+  **«Avisar a la familia»**: escribes una nota corta (hasta 140 letras) y despierta los demás teléfonos.
+  Los avisos de hoy se leen ahí mismo, con quién los dejó («Por Papá») y la hora.
 - **Limitaciones conocidas:** las marcas, las horas y las notas viven en tu teléfono; si activas
   **«Compartir con la familia»** (en Ajustes), los demás teléfonos las ven y cada marca dice quién la hizo
   («Por Mamá»). Si dos personas marcan lo mismo a la vez, gana el último cambio.
@@ -236,12 +240,54 @@ when the connection returns. To remove a phone or if the phrase is lost, **Chang
 other phones join again with the new phrase. **Leave the family** keeps this phone's data; **Delete
 what's shared** erases it from the internet and each phone keeps its copy.
 
+### Avisos que llegan · desde Sprint 008
+
+- **Qué hace:** te avisa en el teléfono a la hora de cada comida, del suplemento y del agua, aunque la
+  app esté cerrada, y deja que quien cuida le avise a la familia con una nota corta. Las horas salen de
+  tu plan: comidas y meriendas a su hora, el suplemento a la hora de la primera comida los días que
+  toca, y el agua repartida entre la primera y la última comida.
+- **Cómo se activa:** **Ajustes → Avisos en este teléfono**. Primero lees qué sale del teléfono, y solo
+  al tocar **«Activar avisos en este teléfono»** el teléfono te pide el permiso (una sola vez). En
+  iPhone, los avisos funcionan desde iOS 16.4 y solo con la app instalada en la pantalla de inicio: la
+  pantalla te muestra los 4 pasos.
+- **Qué eliges:** cuatro tipos, cada uno por teléfono: **Suplementos**, **Comidas y meriendas**,
+  **Agua** y **Avisos de la familia**. Y **«Ocultar el detalle con el teléfono bloqueado»** (apagado al
+  inicio): con él prendido, el aviso trae un mensaje genérico en vez del detalle, y el detalle se ve al abrir la app.
+- **Si ya lo marcaste:** si marcas una comida o el suplemento antes de su hora, ese aviso de hoy no
+  suena. Si lo desmarcas, vuelve a sonar.
+- **Avisar a la familia:** en **Hoy**, **«Avisar a la familia»** → escribe → **«Enviar aviso»**. La nota
+  viaja cifrada y los demás teléfonos con los avisos de la familia activos suenan con «Aviso de
+  Mamá»; al tocarlo abre **Hoy** en esa nota. Hace falta que este teléfono tenga nombre (Ajustes).
+- **Dejar de recibir avisos:** **Ajustes → Dejar de recibir avisos** borra la dirección del servidor y
+  quita los avisos de este teléfono. **«Borrar mis datos»** también lo hace.
+- **Qué sabe el servidor:** solo la dirección para despertar tu teléfono, tu huso horario y las horas
+  del día **sin etiqueta** (no sabe si es comida, suplemento o agua), más el código de la familia si
+  recibes avisos de ella. Si marcas algo **antes de su hora**, también sale el día y el minuto de ese
+  aviso (para no repetirlo): el servidor no sabe qué era, pero sí que algo de ese minuto ya se marcó. El toque va vacío: el aviso se arma en tu teléfono. Nunca viajan nombres,
+  alimentos, suplementos ni notas. Google, Apple, Mozilla o Microsoft (el servicio de tu navegador) ven
+  que llegó un toque vacío, nada más.
+- **Limitaciones conocidas:** el reloj es de cada 5 minutos, así que un aviso puede llegar hasta unos
+  minutos después de su hora; uno que llega tarde no se repite y uno que se pierde no rompe nada. Si el
+  navegador quita el permiso o la suscripción, la pantalla te pide activarlos de nuevo. Sin la
+  conexión del servicio configurada, la pantalla lo dice y el resto de la app sigue igual.
+
+**In English — Notices that arrive (since Sprint 008).** **Settings → Notices on this phone** explains
+what leaves the phone, and only when you tap **Activate notices on this phone** does the phone ask for
+permission (once). On iPhone, notices work from iOS 16.4 and only with the app on the home screen; the
+screen shows the 4 steps. Four types are switched per phone: supplements, meals and snacks, water and
+family notices; times come from the plan. **Hide the detail on a locked phone** is off at first. Marking
+something early skips that notice for today. In **Today**, **Notify the family** sends a short note
+(up to 140 characters) that wakes the other phones; it travels encrypted and opens Today with the note
+and who wrote it. The server keeps only the address, the time zone and label-free times (plus the day and minute of a notice you marked early), and sends an
+empty push: the notice is built on your phone. **Stop receiving notices** and **Delete my data** both
+delete the subscription.
+
 ### Idioma y borrar datos · desde Sprint 001
 
 - **Qué hace:** cambia la app entre español e inglés, muestra qué dieta está cargada, y permite
   **borrar todos los datos** del teléfono.
 - **Cómo se usa:** **Ajustes** (abajo). Para borrar: **"Borrar mis datos"** → confirma. Se borra
-  la dieta cargada y **todo tu registro del día (marcas, horas y notas)** y **lo que anotaste en el perfil (notas y texturas)**, y este teléfono sale de la familia; la app vuelve a la demo.
+  la dieta cargada y **todo tu registro del día (marcas, horas y notas)** y **lo que anotaste en el perfil (notas y texturas)**, y este teléfono sale de la familia y deja de recibir avisos; la app vuelve a la demo.
   Esto no se puede deshacer. Si estás en una familia, el cuadro trae la casilla **«También borrar lo compartido de internet»**: con ella marcada se borra también la copia cifrada (los demás teléfonos conservan la suya); sin marcar, solo sales de la familia. También puedes borrarla antes desde **«Borrar lo compartido»** en Compartir con la familia.
 
 ## Preguntas frecuentes
@@ -251,9 +297,11 @@ what's shared** erases it from the internet and each phone keeps its copy.
   y el contacto que traiga el PDF se descartan: no entran al plan ni se guardan.
 - **¿Mis datos van a internet?** Solo si activas «Compartir con la familia»: entonces el plan, el
   día (marcas, horas y notas) y el perfil (notas, alergias y medicamentos) viajan **cifrados desde tu
-  teléfono**, y en internet solo quedan datos ilegibles. Sin familia, nada sale del teléfono. El chat
+  teléfono**, y en internet solo quedan datos ilegibles. Sin familia y sin avisos, nada sale del teléfono; con los avisos activos salen solo la dirección para despertarlo y horas sin etiqueta (y, si marcas antes de la hora, el día y el minuto de ese aviso). El chat
   **nunca** envía nada: solo el de tu propio teléfono usa lo que anotaste, para contestarte con eso
   marcado como «anotado por quien cuida».
+- **¿Los avisos le cuentan algo a alguien?** Solo que un teléfono quiere avisos a ciertas horas del día,
+  sin decir de qué, y que algo de un minuto de hoy ya se marcó cuando marcas antes de la hora. El aviso se arma en tu teléfono con lo que ya tiene; el servidor manda un toque vacío.
 - **¿Y si pierdo la frase de la familia?** Con otro teléfono que ya esté dentro, **«Cambiar la frase»**
   crea una nueva; los demás teléfonos entran con ella. Sin ningún teléfono dentro, la familia no se
   puede abrir: se crea otra (nadie, ni nosotros, puede leerla).
@@ -274,8 +322,9 @@ what's shared** erases it from the internet and each phone keeps its copy.
 | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 001    | Cargar dieta (archivo + pegar) · semáforo con reemplazos · checklist "Hoy" · suplementos de la semana · idioma ES/EN · borrar datos · instalación como app                                                                                                                                                                                                                        |
 | 002    | Chat "Pregúntale a la dieta": consultas "¿se puede?" al instante sin internet + preguntas abiertas con asistente de IA anclado al plan · nota de transparencia IA _(la parte de IA en la nube se reemplazó en el 004)_                                                                                                                                                            |
-| 003    | Registro del día: hora real al marcar + nota corta por comida (etiquetas + texto) · recordatorio "Ahora mismo" (qué toca y qué sigue, sin notificaciones) · "Ver días anteriores" (historial local de solo lectura) · borrar datos ahora cubre horas y notas                                                                                                                      |
+| 003    | Registro del día: hora real al marcar + nota corta por comida (etiquetas + texto) · recordatorio "Ahora mismo" (qué toca y qué sigue; los avisos con la app cerrada llegaron en el 008) · "Ver días anteriores" (historial local de solo lectura) · borrar datos ahora cubre horas y notas                                                                                                                      |
 | 004    | Chat nuevo que contesta con tu plan **sin internet y sin enviar nada** ("no tengo X", "no quiso X", "¿qué le doy ahora?", "¿cuánta agua?", "tu plan no lo dice") · todas las pantallas abren sin internet · aviso de versión nueva con "Actualizar" / "Ahora no"                                                                                                                  |
 | 005    | Perfil de tu peque: lo del profesional **«según tu plan»** y lo anotado **«por quien cuida»** (texturas que hoy acepta y notas) · opciones de reemplazo ordenadas por textura, con la marca «textura que hoy no acepta» · el chat contesta sueño, actividad, alergias y medicamentos del plan · el plan guardado de antes se actualiza solo · la pantalla nueva abre sin internet |
 | 006    | **Tu PDF, vuelto app:** cargas el PDF de tu profesional, que se lee en tu teléfono sin internet y sin guardarse · «Revisa tu plan» parte por parte, con la página de cada dato («está bien», corregir o «mi plan no lo trae») · una revisión a medias se retoma · el JSON sigue funcionando y tus notas del Perfil se quedan                                                      |
 | 007    | **Compartir con la familia:** el plan, el día (marcas, horas y notas) y el perfil en todos los teléfonos de quienes cuidan, **cifrados de punta a punta** · cada dato dice quién lo hizo («Por Mamá») · funciona sin internet y sube al volver · cambiar la frase para sacar a un teléfono · salir y borrar lo compartido                                                         |
+| 008    | **Avisos que llegan:** avisos en el teléfono a la hora de las comidas, el suplemento y el agua, con la app cerrada · se eligen 4 tipos por teléfono y se puede ocultar el detalle con el teléfono bloqueado · marcar antes de la hora evita ese aviso · «Avisar a la familia» con una nota cifrada de hasta 140 letras · el servidor solo guarda horas sin etiqueta y manda toques vacíos · «Dejar de recibir avisos» y «Borrar mis datos» quitan la suscripción |

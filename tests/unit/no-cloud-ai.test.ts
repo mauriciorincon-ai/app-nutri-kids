@@ -1,7 +1,8 @@
 // @vitest-environment node
 // Regla dura 5 · ADR-008: el chat contesta con código; ningún SDK de IA en la nube
-// ni ruta de servidor vuelve a entrar sin un ADR nuevo. La ÚNICA excepción es la de la
-// familia (S7 · ADR-011): guarda cifrados, y solo dos archivos abren la red.
+// ni ruta de servidor vuelve a entrar sin un ADR nuevo. Las ÚNICAS excepciones son las de la
+// familia (S7 · ADR-011: guarda cifrados) y las de los avisos (S8 · ADR-012: toques vacíos y
+// horas sin etiqueta); solo los clientes y los almacenes de esas dos rutas abren la red.
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -35,12 +36,15 @@ describe("sin IA en la nube (regla dura 5)", () => {
     expect(deps.filter((d) => CLOUD_SDK.test(d))).toEqual([]);
   });
 
-  it("la única ruta de servidor es la de la familia (ADR-011)", () => {
+  it("las únicas rutas de servidor son la de la familia (ADR-011) y la de avisos (ADR-012)", () => {
     expect(existsSync(resolve("src/app/api"))).toBe(true);
     const routes = sourceFiles(resolve("src/app/api")).map((f) =>
       f.slice(resolve("src/app/api").length + 1),
     );
-    expect(routes).toEqual(["family/[...op]/route.ts"]);
+    expect(routes.sort()).toEqual([
+      "family/[...op]/route.ts",
+      "push/[...op]/route.ts",
+    ]);
   });
 
   it("el cliente de la familia solo llama a su propia ruta, y la base solo desde el servidor", () => {
@@ -52,12 +56,23 @@ describe("sin IA en la nube (regla dura 5)", () => {
       "utf8",
     );
     expect(upstash).not.toMatch(/^"use client"/m);
+    for (const f of ["upstash", "handler", "deps"]) {
+      const code = readFileSync(resolve(`src/lib/push/server/${f}.ts`), "utf8");
+      expect(code).not.toMatch(/^"use client"/m);
+    }
   });
 
-  it("ningún archivo de src/ importa un SDK de proveedor ni abre una vía de red (salvo los dos de la familia)", () => {
+  it("el cliente de avisos solo llama a su propia ruta y no tiene direcciones de internet", () => {
+    const client = readFileSync(resolve("src/lib/push/client.ts"), "utf8");
+    expect(client).toMatch(/PUSH_API = "\/api\/push"/);
+    expect(client).not.toMatch(/https?:\/\//);
+  });
+
+  it("ningún archivo de src/ importa un SDK de proveedor ni abre una vía de red (salvo los clientes de la familia y de avisos, y el almacén)", () => {
     const allowed = new Set([
       resolve("src/lib/family/client.ts"),
       resolve("src/lib/family/server/upstash.ts"),
+      resolve("src/lib/push/client.ts"),
     ]);
     const offenders = sourceFiles(resolve("src")).filter((f) => {
       const code = readFileSync(f, "utf8");

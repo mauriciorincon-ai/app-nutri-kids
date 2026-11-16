@@ -16,7 +16,8 @@ import { formatTime } from "@/lib/format";
 
 /**
  * Recordatorio determinista — "qué toca AHORA y qué sigue". Información en el
- * momento correcto, sin push ni permisos. Tono NO coercitivo: informa, jamás
+ * momento correcto, con la app abierta y sin pedir nada. Con los avisos prendidos
+ * en Ajustes (S8 · ADR-012), el teléfono además avisa con la app cerrada. Tono NO coercitivo: informa, jamás
  * reprocha (un suplemento pendiente se enuncia, no se recrimina).
  *
  * Calcula el recordatorio con la HORA real (useNow) DENTRO de la tarjeta: el

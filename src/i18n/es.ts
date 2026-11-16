@@ -357,11 +357,11 @@ export const es = {
     dietVersionInfo: "{title} · emitida el {date}",
     clearTitle: "Borrar datos",
     clearBody:
-      "Borra la dieta cargada y todo tu registro del día (marcas, horas y notas) y lo que anotaste en el perfil (notas y texturas) de este dispositivo, y sales de la familia si estabas en una. Lo que ya está compartido en internet se borra desde «Compartir con la familia». La app vuelve a la demo.",
+      "Borra la dieta cargada y todo tu registro del día (marcas, horas y notas) y lo que anotaste en el perfil (notas y texturas) de este dispositivo, dejas de recibir avisos y sales de la familia si estabas en una. Lo que ya está compartido en internet se borra desde «Compartir con la familia». La app vuelve a la demo.",
     clearButton: "Borrar mis datos",
     clearConfirmTitle: "¿Borrar todo?",
     clearConfirmBody:
-      "Se borrará la dieta cargada y todo el registro de días (marcas, horas y notas) y lo que anotaste en el perfil (notas y texturas), y saldrás de la familia. Esto no se puede deshacer.",
+      "Se borrará la dieta cargada y todo el registro de días (marcas, horas y notas) y lo que anotaste en el perfil (notas y texturas), dejarás de recibir avisos y saldrás de la familia. Esto no se puede deshacer.",
     clearAlsoShared:
       "También borrar lo compartido de internet. Los demás teléfonos de la familia conservan su copia.",
     clearConfirmYes: "Sí, borrar",
@@ -371,6 +371,93 @@ export const es = {
     aiTitle: "Cómo responde el chat",
     aiBody:
       "El chat responde con código, solo con lo que trae tu plan, aquí en el teléfono: no usa servicios de inteligencia artificial en internet y nada de lo que escribes sale del teléfono. Si tu navegador trae un modelo de lenguaje propio dentro del teléfono, se usa solo para redactar con otras palabras una respuesta que el código ya decidió. Nada de la conversación se guarda.",
+  },
+  push: {
+    title: "Avisos en este teléfono",
+    intro:
+      "Nutrikids puede avisarte a la hora de cada comida, del suplemento y del agua, aunque la app esté cerrada. Las horas salen de tu plan.",
+    privacy:
+      "El aviso se arma en tu teléfono. Lo único que sale de aquí es la dirección para despertarlo y las horas del día, sin etiqueta (y, si marcas algo antes de su hora, el día y el minuto de ese aviso, para no repetirlo); el servidor no sabe qué toca y manda un toque vacío. Nunca van nombres, alimentos, suplementos ni notas.",
+    askNote:
+      "Al tocar el botón, tu teléfono te pide permiso para mostrar avisos. Solo te lo pide esta vez.",
+    enable: "Activar avisos en este teléfono",
+    working: "Un momento…",
+    on: "✓ Avisos activos en este teléfono",
+    typesTitle: "Qué quieres que te avise",
+    supplements: "Suplementos",
+    supplementsHint: "A la hora de la primera comida, los días que tocan.",
+    meals: "Comidas y meriendas",
+    mealsHint: "A la hora de cada una.",
+    water: "Agua",
+    waterHint: "Repartida entre la primera y la última comida.",
+    family: "Avisos de la familia",
+    familyHint: "Cuando alguien de la familia te deja una nota.",
+    familyNeeds:
+      "Para recibir los avisos de la familia, este teléfono tiene que estar en una familia.",
+    hideTitle: "Ocultar el detalle con el teléfono bloqueado",
+    hideHint:
+      "Prendido, el aviso trae un mensaje genérico en vez del detalle, y el detalle se ve al abrir la app. Vale solo para este teléfono.",
+    off: "Dejar de recibir avisos",
+    offDone:
+      "Listo: este teléfono ya no recibe avisos y su dirección se borró del servidor.",
+    offDoneLocal:
+      "Listo: este teléfono ya no recibe avisos. Su dirección se borrará sola del servidor.",
+    denied:
+      "⚠ El permiso está bloqueado. Puedes cambiarlo en los ajustes del navegador o del teléfono y volver aquí.",
+    unavailable:
+      "ℹ Los avisos no están disponibles en este servicio. El resto de la app sigue igual.",
+    unsupported:
+      "ℹ Este navegador no puede mostrar avisos. Prueba con otro, o con la app instalada.",
+    installTitle: "Primero instala la app en tu iPhone",
+    installIntro:
+      "En iPhone los avisos funcionan desde iOS 16.4 y solo con la app instalada en la pantalla de inicio.",
+    install1: "Abre Nutrikids en Safari.",
+    install2: "Toca el botón Compartir.",
+    install3: "Elige «Añadir a pantalla de inicio».",
+    install4: "Abre la app desde su ícono y vuelve a Ajustes.",
+    lost: "El navegador quitó la suscripción de este teléfono. Actívalos de nuevo.",
+    errOffline: "Sin conexión. Inténtalo otra vez cuando vuelva la red.",
+    errUpdate:
+      "Hay una versión nueva de la app esperando. Actualízala con el aviso de versión (o cierra y abre la app) y vuelve aquí.",
+    errWorker:
+      "No se pudo preparar el servicio de avisos en este navegador. Recarga la página e inténtalo de nuevo.",
+    errDismissed:
+      "No diste el permiso, así que no se activó nada. Puedes intentarlo otra vez cuando quieras.",
+    errServer: "No se pudo guardar. Inténtalo en un rato.",
+    errFull:
+      "Ya hay muchos teléfonos de la familia con avisos. Quita uno e inténtalo de nuevo.",
+  },
+  pushNotify: {
+    supplementTitle: "Suplemento de hoy",
+    waterTitle: "Un vaso de agua",
+    waterBody: "Vaso {n} de {total}",
+    genericTitle: "Nutrikids",
+    genericBody: "Hay algo del plan para esta hora. Ábrelo para verlo.",
+    allDoneTitle: "Lo de esta hora ya está marcado",
+    allDoneBody: "No hace falta hacer nada más.",
+    many: "Toca varias cosas",
+    familyFrom: "Aviso de {name}",
+    familyGenericTitle: "Hay un aviso nuevo",
+    familyGenericBody: "Ábrelo para verlo.",
+  },
+  notices: {
+    title: "Avisos de la familia",
+    send: "Avisar a la familia",
+    hint: "Una nota corta que despierta a los demás teléfonos. Viaja cifrada: nadie más puede leerla.",
+    label: "Tu aviso",
+    placeholder: "Una nota corta para la familia",
+    count: "{n} de {max}",
+    submit: "Enviar aviso",
+    sending: "Enviando…",
+    sent: "✓ Aviso enviado.",
+    queued: "✓ Guardado. Se envía cuando vuelva la red.",
+    needName:
+      "Ponle nombre a este teléfono en Ajustes para que sepan quién avisa.",
+    errEmpty: "Escribe algo antes de enviar.",
+    errSend: "No se pudo enviar. Inténtalo otra vez.",
+    empty: "Hoy no hay avisos.",
+    mine: "Por ti",
+    at: "{time}",
   },
   family: {
     title: "Compartir con la familia",

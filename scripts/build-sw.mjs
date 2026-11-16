@@ -70,13 +70,23 @@ export function buildId() {
   return `${sha}-${Date.now().toString(36)}`;
 }
 
+/** El lado del trabajador de los avisos (S8 · ADR-012): se inserta tal cual. */
+export function pushModule() {
+  // En sw.js `NK_PUSH` sí se usa: la directiva para el archivo suelto sobra allí.
+  return readFileSync(join(root, "scripts/sw-push.js"), "utf8")
+    .replace(/^\/\/ eslint-disable-next-line .*\n/m, "")
+    .trim();
+}
+
 export function renderSw(
   template,
   id,
   routes = SHELL_ROUTES,
   pdfVersion = pdfJsVersion(),
+  push = pushModule(),
 ) {
   return template
+    .replace("/* __PUSH_MODULE__ */", () => push)
     .replace("__DETAIL_SHELL__", JSON.stringify(DETAIL_SHELL))
     .replace("__BUILD_ID__", id)
     .replace("__EXTRA_ASSETS__", JSON.stringify(PDFJS_ASSETS))

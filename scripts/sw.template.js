@@ -10,7 +10,9 @@
  *  - ESTÁTICOS inmutables (`/_next/static`, íconos, fuentes): caché primero.
  *  - VERSIÓN NUEVA: se instala en espera y la página avisa; solo se activa cuando
  *    la persona acepta (mensaje SKIP_WAITING). Nunca recarga a la fuerza.
- * Los datos de la dieta viven en localStorage, jamás aquí.
+ *  - AVISOS (S8 · ADR-012): el toque llega vacío; el aviso se arma aquí con la copia
+ *    mínima que la página deja en IndexedDB (`NK_PUSH`, de `scripts/sw-push.js`).
+ * Los datos de la dieta viven en localStorage; el trabajador solo lee esa copia.
  */
 const VERSION = "__BUILD_ID__";
 const CACHE = "nutrikids-shell-" + VERSION;
@@ -154,6 +156,34 @@ self.addEventListener("fetch", (event) => {
         const response = await fetch(request);
         if (response.ok) cache.put(request, response.clone());
         return response;
+      }),
+  );
+});
+
+// ---------------------------------------------------------------------------
+// Avisos que llegan (S8 · ADR-012)
+// ---------------------------------------------------------------------------
+
+/* __PUSH_MODULE__ */
+
+self.addEventListener("push", (event) => {
+  event.waitUntil(
+    NK_PUSH.onPush(new Date(), fetch)
+      .catch(() => ({ title: "Nutrikids", options: { tag: "nk-plan" } }))
+      .then((n) => self.registration.showNotification(n.title, n.options)),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = NK_PUSH.clickUrl(event.notification.data);
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((list) => {
+        const open = list.find((c) => "focus" in c);
+        if (open) return open.navigate(url).then((c) => (c || open).focus());
+        return self.clients.openWindow(url);
       }),
   );
 });

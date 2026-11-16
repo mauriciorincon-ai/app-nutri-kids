@@ -15,6 +15,7 @@ import {
   rotateFamily,
   type FamilyCtx,
 } from "@/lib/family/session";
+import type { NoticeShared } from "@/lib/family/records";
 import { freshFamilyState, type FamilyState } from "@/lib/family/state";
 import {
   collectShared,
@@ -77,6 +78,7 @@ function phone(id: string, name: string, now = { t: 1_000 }) {
     profile: { notes: {} } as ProfileRegs,
     plan: null as PlanSide | null,
     name,
+    notices: {} as Record<string, NoticeShared>,
   };
   let state: FamilyState | null = null;
   const local: LocalData = {
@@ -103,6 +105,12 @@ function phone(id: string, name: string, now = { t: 1_000 }) {
       const changed = JSON.stringify(next) !== JSON.stringify(data.profile);
       data.profile = next;
       return changed;
+    },
+    notices: () => data.notices,
+    mergeNotice(nid, n) {
+      if (data.notices[nid]) return false;
+      data.notices[nid] = n;
+      return true;
     },
     plan: () => data.plan,
     applyPlan(p) {
@@ -466,5 +474,54 @@ describe("sincronización entre dos teléfonos (contra el doble del servidor)", 
       ].sort(),
     );
     expect(JSON.stringify(all.value.items)).not.toMatch(/locale|theme|prefs/i);
+  });
+
+  it("un aviso de la familia: sube una vez, el otro teléfono lo recibe y la red no ve su texto ni su nombre", async () => {
+    const { net, a, b, ctxA, ctxB } = await setup();
+    const notice: NoticeShared = {
+      text: "SENTINEL-NOTICE-TEXT",
+      name: "SENTINEL-NAME Mamá",
+      by: a.id,
+      t: 20,
+      date: "2026-11-16",
+    };
+    a.local.mergeNotice("abc123def456", notice);
+    const first = await syncOnce(a.deps(net.api, ctxA));
+    expect(first.ok && first.noticesPushed).toBe(1);
+    // Una segunda pasada no vuelve a subir ni a despertar a nadie.
+    const second = await syncOnce(a.deps(net.api, ctxA));
+    expect(second.ok && second.noticesPushed).toBe(0);
+
+    const got = await syncOnce(b.deps(net.api, ctxB));
+    expect(got.ok && got.changed).toBe(true);
+    expect(b.data.notices["abc123def456"]).toEqual(notice);
+    // El eco vuelve a A sin duplicarse ni marcarse como cambio.
+    const echo = await syncOnce(a.deps(net.api, ctxA));
+    expect(echo.ok && echo.changed).toBe(false);
+    expect(Object.keys(a.data.notices)).toEqual(["abc123def456"]);
+    // B no lo re-sube: es de A.
+    const back = await syncOnce(b.deps(net.api, ctxB));
+    expect(back.ok && back.noticesPushed).toBe(0);
+
+    const wire = net.wire.join("\n");
+    expect(wire).not.toContain("SENTINEL-NOTICE-TEXT");
+    expect(wire).not.toContain("SENTINEL-NAME");
+    expect(wire).not.toContain("notice:");
+  });
+
+  it("sin red el aviso queda guardado y sube al volver", async () => {
+    const { net, a, ctxA } = await setup();
+    a.local.mergeNotice("zzz999yyy888", {
+      text: "pendiente",
+      name: "Mamá",
+      by: a.id,
+      t: 30,
+      date: "2026-11-16",
+    });
+    net.setOffline(true);
+    expect((await syncOnce(a.deps(net.api, ctxA))).ok).toBe(false);
+    net.setOffline(false);
+    const r = await syncOnce(a.deps(net.api, ctxA));
+    expect(r.ok && r.noticesPushed).toBe(1);
   });
 });
