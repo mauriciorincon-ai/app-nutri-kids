@@ -233,26 +233,26 @@
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 910,
+      "valor": 932,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-16 sobre la rama de los avisos que llegan (S8): 49 archivos, 910 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-16 sobre la rama de los avisos que llegan (S8): 51 archivos, 932 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 202,
+      "valor": 218,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-16 sobre la rama de los avisos que llegan (S8), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 202 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 200 en verde y 2 omitidas a propósito (el reloj firmado solo se prueba en el móvil, porque los dos proyectos comparten servidor); incluyen axe en los dos temas, el uso sin internet, los dos teléfonos con el centinela de texto en claro, el service worker real con el toque entregado por el protocolo del navegador y el reloj de 5 minutos con cinco firmas rechazadas."
+      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-16 sobre la rama de los avisos que llegan (S8), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 218 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 216 en verde y 2 omitidas a propósito (el reloj firmado solo se prueba en el móvil, porque los dos proyectos comparten servidor); incluyen axe en los dos temas, el uso sin internet, los dos teléfonos con el centinela de texto en claro, el service worker real con el toque entregado por el protocolo del navegador y el reloj de 5 minutos con cinco firmas rechazadas."
     },
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 97.6,
+      "valor": 97.7,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib el 2026-11-16 sobre la rama de los avisos que llegan (97,63 % de líneas en total; src/lib/family 97,24 % y su servidor 100 %; src/lib/push 96,47 % y su servidor 100 %), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
+      "detalle": "v8 sobre src/lib el 2026-11-16 sobre la rama de los avisos que llegan (97,66 % de líneas en total; src/lib/family 97,24 % y su servidor 100 %; src/lib/push 96,56 % y su servidor 100 %), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
     },
     {
       "clave": "decisiones_registradas",
