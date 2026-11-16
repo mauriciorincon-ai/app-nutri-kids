@@ -35,12 +35,15 @@ describe("sin IA en la nube (regla dura 5)", () => {
     expect(deps.filter((d) => CLOUD_SDK.test(d))).toEqual([]);
   });
 
-  it("la única ruta de servidor es la de la familia (ADR-011)", () => {
+  it("las únicas rutas de servidor son la de la familia (ADR-011) y la de avisos (ADR-012)", () => {
     expect(existsSync(resolve("src/app/api"))).toBe(true);
     const routes = sourceFiles(resolve("src/app/api")).map((f) =>
       f.slice(resolve("src/app/api").length + 1),
     );
-    expect(routes).toEqual(["family/[...op]/route.ts"]);
+    expect(routes.sort()).toEqual([
+      "family/[...op]/route.ts",
+      "push/[...op]/route.ts",
+    ]);
   });
 
   it("el cliente de la familia solo llama a su propia ruta, y la base solo desde el servidor", () => {
@@ -52,6 +55,10 @@ describe("sin IA en la nube (regla dura 5)", () => {
       "utf8",
     );
     expect(upstash).not.toMatch(/^"use client"/m);
+    for (const f of ["upstash", "handler", "deps"]) {
+      const code = readFileSync(resolve(`src/lib/push/server/${f}.ts`), "utf8");
+      expect(code).not.toMatch(/^"use client"/m);
+    }
   });
 
   it("ningún archivo de src/ importa un SDK de proveedor ni abre una vía de red (salvo los dos de la familia)", () => {
