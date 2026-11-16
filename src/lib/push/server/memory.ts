@@ -7,7 +7,7 @@ import type { AddOutcome, PushStore, PushSub } from "./store";
  */
 
 type State = {
-  subs: Map<string, PushSub>;
+  subs: Map<string, { sub: PushSub; until: number }>;
   flags: Map<string, number>;
   counters: Map<string, { n: number; until: number }>;
 };
@@ -24,8 +24,14 @@ export function createMemoryPushStore(
 ): PushStore {
   const state = options.isolated ? fresh() : (g.__nkPushMemory ??= fresh());
   const now = options.now ?? Date.now;
+  /** Las suscripciones vivas: las vencidas se borran al mirar, como un EXPIRE. */
+  const live = (): PushSub[] => {
+    for (const [id, e] of state.subs)
+      if (e.until <= now()) state.subs.delete(id);
+    return [...state.subs.values()].map((e) => e.sub);
+  };
   const inFamily = (family: string) =>
-    [...state.subs.values()].filter((s) => s.family === family);
+    live().filter((s) => s.family === family);
   const flag = (key: string) => {
     const until = state.flags.get(key);
     if (until !== undefined && until <= now()) state.flags.delete(key);
@@ -38,32 +44,36 @@ export function createMemoryPushStore(
 
   return {
     label: "memory",
-    async add(sub, maxTotal, maxPerFamily): Promise<AddOutcome> {
-      if (state.subs.size >= maxTotal) return "full";
+    async add(sub, maxTotal, maxPerFamily, ttl): Promise<AddOutcome> {
+      if (live().length >= maxTotal) return "full";
       if (sub.family && inFamily(sub.family).length >= maxPerFamily)
         return "family-full";
-      state.subs.set(sub.id, copy(sub));
+      state.subs.set(sub.id, { sub: copy(sub), until: now() + ttl * 1000 });
       return "ok";
     },
     async get(id) {
-      const s = state.subs.get(id);
+      const s = live().find((x) => x.id === id);
       return s ? copy(s) : null;
     },
-    async put(sub, prev, maxPerFamily): Promise<AddOutcome> {
+    async byEndpoint(endpoint) {
+      const s = live().find((x) => x.endpoint === endpoint);
+      return s ? copy(s) : null;
+    },
+    async put(sub, prev, maxPerFamily, ttl): Promise<AddOutcome> {
       if (
         sub.family &&
         sub.family !== prev.family &&
         inFamily(sub.family).length >= maxPerFamily
       )
         return "family-full";
-      state.subs.set(sub.id, copy(sub));
+      state.subs.set(sub.id, { sub: copy(sub), until: now() + ttl * 1000 });
       return "ok";
     },
     async remove(sub) {
       state.subs.delete(sub.id);
     },
     async all() {
-      return [...state.subs.values()].map(copy);
+      return live().map(copy);
     },
     async family(family) {
       return inFamily(family).map(copy);

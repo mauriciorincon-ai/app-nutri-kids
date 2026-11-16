@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import {
   decodeWakes,
   encodeWakes,
@@ -9,7 +11,8 @@ import {
 /**
  * El registro de avisos en el Upstash Redis del S7, por su API REST, sin dependencias.
  * Claves (prefijo propio, aparte de las de la familia):
- *   np:s:<id>            hash  ep (dirección) · th (huella del token) · tz · w («m:d,…») · fam
+ *   np:s:<id>            hash  ep (dirección) · th (huella del token) · tz · w («m:d,…») · fam · fth
+ *   np:e:<huella>        id    la suscripción de esa dirección de envío (una por dirección)
  *   np:all               set   ids de todas las suscripciones
  *   np:f:<familia>       set   ids que quieren los avisos de esa familia
  *   np:x:<id>:<fecha>:<m>      «enviado» (SET NX: el toque no se repite)
@@ -23,6 +26,8 @@ type Reply = string | number | null | Reply[];
 
 const subKey = (id: string) => `np:s:${id}`;
 const famKey = (family: string) => `np:f:${family}`;
+const epKey = (endpoint: string) =>
+  `np:e:${createHash("sha256").update(endpoint).digest("hex").slice(0, 32)}`;
 const ALL = "np:all";
 
 function fromHash(id: string, flat: Reply): PushSub | null {
@@ -38,6 +43,7 @@ function fromHash(id: string, flat: Reply): PushSub | null {
     tz: h.tz,
     wakes: decodeWakes(h.w ?? ""),
     family: h.fam ? h.fam : null,
+    famTh: h.fth ? h.fth : null,
   };
 }
 
@@ -99,15 +105,23 @@ export function createUpstashPushStore(
         encodeWakes(sub.wakes),
         "fam",
         sub.family ?? "",
+        "fth",
+        sub.famTh ?? "",
       ],
       ["EXPIRE", subKey(sub.id), ttl],
+      ["SET", epKey(sub.endpoint), sub.id, "EX", ttl],
       ["SADD", ALL, sub.id],
       ...(sub.family ? [["SADD", famKey(sub.family), sub.id]] : []),
     ];
   }
 
-  async function many(ids: string[]): Promise<PushSub[]> {
+  /**
+   * Las suscripciones de esos ids. Un hash vencido (EXPIRE) deja su id en los sets: aquí se
+   * quita, para que los topes no cuenten teléfonos que ya no existen.
+   */
+  async function many(ids: string[], setKey: string): Promise<PushSub[]> {
     const out: PushSub[] = [];
+    const dead: string[] = [];
     for (let i = 0; i < ids.length; i += 100) {
       const chunk = ids.slice(i, i + 100);
       const replies = await pipeline(
@@ -116,8 +130,14 @@ export function createUpstashPushStore(
       replies.forEach((r, k) => {
         const sub = fromHash(chunk[k], r);
         if (sub) out.push(sub);
+        else if (Array.isArray(r) && r.length === 0) dead.push(chunk[k]);
       });
     }
+    if (dead.length > 0)
+      await pipeline([
+        ...dead.map((id) => ["SREM", setKey, id]),
+        ...(setKey === ALL ? [] : dead.map((id) => ["SREM", ALL, id])),
+      ]);
     return out;
   }
 
@@ -126,29 +146,47 @@ export function createUpstashPushStore(
     return Array.isArray(r) ? r.map(String) : [];
   };
 
+  /** Cuántas hay de verdad en un set: lo vencido se quita antes de contar. */
+  async function liveCount(setKey: string): Promise<number> {
+    return (await many(await members(setKey), setKey)).length;
+  }
+  /** SCARD barato; solo si ya está en el tope se cuenta bien (lo vencido libera sitio). */
+  async function overCap(setKey: string, cap: number): Promise<boolean> {
+    if (Number(await call(["SCARD", setKey])) < cap) return false;
+    return (await liveCount(setKey)) >= cap;
+  }
+
   return {
     label: "real",
     async add(sub, maxTotal, maxPerFamily, ttl): Promise<AddOutcome> {
-      const [total, fam] = await pipeline([
-        ["SCARD", ALL],
-        ["SCARD", famKey(sub.family ?? "-")],
-      ]);
-      if (Number(total) >= maxTotal) return "full";
-      if (sub.family && Number(fam) >= maxPerFamily) return "family-full";
+      if (await overCap(ALL, maxTotal)) return "full";
+      if (sub.family && (await overCap(famKey(sub.family), maxPerFamily)))
+        return "family-full";
       await pipeline(writeSub(sub, ttl));
       return "ok";
     },
     async get(id) {
       return fromHash(id, await call(["HGETALL", subKey(id)]));
     },
+    async byEndpoint(endpoint) {
+      const id = await call(["GET", epKey(endpoint)]);
+      if (typeof id !== "string") return null;
+      const sub = fromHash(id, await call(["HGETALL", subKey(id)]));
+      return sub && sub.endpoint === endpoint ? sub : null;
+    },
     async put(sub, prev, maxPerFamily, ttl): Promise<AddOutcome> {
-      if (sub.family && sub.family !== prev.family) {
-        const n = Number(await call(["SCARD", famKey(sub.family)]));
-        if (n >= maxPerFamily) return "family-full";
-      }
+      if (
+        sub.family &&
+        sub.family !== prev.family &&
+        (await overCap(famKey(sub.family), maxPerFamily))
+      )
+        return "family-full";
       await pipeline([
         ...(prev.family && prev.family !== sub.family
           ? [["SREM", famKey(prev.family), sub.id]]
+          : []),
+        ...(prev.endpoint !== sub.endpoint
+          ? [["DEL", epKey(prev.endpoint)]]
           : []),
         ...writeSub(sub, ttl),
       ]);
@@ -157,15 +195,17 @@ export function createUpstashPushStore(
     async remove(sub) {
       await pipeline([
         ["DEL", subKey(sub.id)],
+        ["DEL", epKey(sub.endpoint)],
         ["SREM", ALL, sub.id],
         ...(sub.family ? [["SREM", famKey(sub.family), sub.id]] : []),
       ]);
     },
     async all() {
-      return many(await members(ALL));
+      return many(await members(ALL), ALL);
     },
     async family(family) {
-      const subs = await many(await members(famKey(family)));
+      const key = famKey(family);
+      const subs = await many(await members(key), key);
       return subs.filter((s) => s.family === family);
     },
     async setSkip(id, date, m, on, ttl) {

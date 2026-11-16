@@ -19,6 +19,12 @@ export type PushSub = {
   wakes: ServerWake[];
   /** Código de la familia, solo si este teléfono quiere los avisos de la familia. */
   family: string | null;
+  /**
+   * Huella (SHA-256) del token de la familia con el que este teléfono probó ser miembro. Si
+   * la familia cambia su token (sacar a alguien), el teléfono que no lo renovó ya no recibe
+   * los avisos de esa familia.
+   */
+  famTh: string | null;
 };
 
 export type AddOutcome = "ok" | "full" | "family-full";
@@ -33,6 +39,8 @@ export interface PushStore {
     ttl: number,
   ): Promise<AddOutcome>;
   get(id: string): Promise<PushSub | null>;
+  /** La suscripción que ya usa esa dirección de envío (para no tener dos del mismo teléfono). */
+  byEndpoint(endpoint: string): Promise<PushSub | null>;
   /** Reemplaza la suscripción (`prev` es la guardada: dice de qué familia salir). */
   put(
     sub: PushSub,

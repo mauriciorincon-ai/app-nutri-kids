@@ -44,5 +44,6 @@ export async function pushDeps(env: Env): Promise<PushDeps> {
       env.QSTASH_NEXT_SIGNING_KEY ?? "",
     ].filter(Boolean),
     sender: memory ? memorySender : fetchSender(),
+    ipSalt: env.VAPID_PRIVATE_KEY ?? "",
   };
 }

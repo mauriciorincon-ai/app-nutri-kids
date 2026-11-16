@@ -176,6 +176,7 @@ describe("suscribirse: solo dirección, horas sin etiqueta, zona y huella", () =
       tz: "America/Bogota",
       wakes: [{ m: SEVEN, d: 127 }],
       family: null,
+      famTh: null,
     });
     expect(JSON.stringify(saved)).not.toContain(TOKEN);
     const extra = await call("subscribe", {
@@ -258,6 +259,7 @@ describe("suscribirse: solo dirección, horas sin etiqueta, zona y huella", () =
           tz: "UTC",
           wakes: [],
           family: FAM,
+          famTh: tokenHash(FAM_TOKEN),
         },
         MAX_SUBS,
         MAX_PER_FAMILY,
@@ -283,13 +285,14 @@ describe("suscribirse: solo dirección, horas sin etiqueta, zona y huella", () =
           tz: "UTC",
           wakes: [],
           family: null,
+          famTh: null,
         },
         MAX_SUBS,
         MAX_PER_FAMILY,
         9,
       );
     const r2 = await full.call("subscribe", {
-      endpoint: EP(1),
+      endpoint: EP(MAX_SUBS + 5),
       token: TOKEN,
       tz: "UTC",
       wakes: [],
@@ -402,6 +405,7 @@ describe("con el token del teléfono: cambiar horas, saltar, dejar de recibir", 
           tz: "UTC",
           wakes: [],
           family: FAM,
+          famTh: tokenHash(FAM_TOKEN),
         },
         MAX_SUBS,
         MAX_PER_FAMILY,
@@ -561,6 +565,162 @@ describe("avisar a la familia", () => {
   });
 });
 
+describe("lo que el auditor del S8 pidió cerrar en el servidor", () => {
+  it("un teléfono, una dirección: suscribirse otra vez con la misma retira el registro viejo y manda UN toque", async () => {
+    const { store, subscribe, tick, sent } = await setup();
+    const first = await subscribe(1);
+    const second = await subscribe(1); // estado local perdido, suscripción del navegador viva
+    expect(second).not.toBe(first);
+    expect(await store.get(first)).toBeNull();
+    expect((await store.all()).map((x) => x.id)).toEqual([second]);
+    await tick();
+    expect(sent).toHaveLength(1);
+  });
+
+  it("update hacia una dirección que ya usa otro registro lo retira", async () => {
+    const { store, call, subscribe } = await setup();
+    const a = await subscribe(1, { token: TOKEN });
+    const b = await subscribe(2, { token: OTHER });
+    await call(
+      "update",
+      { id: b, endpoint: EP(1), tz: "UTC", wakes: [], family: null },
+      { authorization: `Bearer ${OTHER}` },
+    );
+    expect(await store.get(a)).toBeNull();
+    expect((await store.get(b))?.endpoint).toBe(EP(1));
+  });
+
+  it("update rechaza una dirección fuera de la lista de servicios de push", async () => {
+    const { call, subscribe } = await setup();
+    const id = await subscribe(1);
+    const r = await call(
+      "update",
+      {
+        id,
+        endpoint: "https://intranet.example/send",
+        tz: "UTC",
+        wakes: [],
+        family: null,
+      },
+      { authorization: `Bearer ${TOKEN}` },
+    );
+    expect(r).toEqual({ status: 400, json: { error: "shape" } });
+  });
+
+  it("quien salió de la familia por un token nuevo deja de recibir sus toques", async () => {
+    const { family, call, subscribe, sent } = await setup();
+    const me = await subscribe(1, { family: true });
+    await subscribe(2, { family: true });
+    // La familia saca a un teléfono: el token cambia (S7 · rotate) y el teléfono 2 no lo renovó.
+    const NEW = "N".repeat(43);
+    await family.rotate(FAM, 1, "t".repeat(22), tokenHash(NEW), 99);
+    const before = await call(
+      "family",
+      { family: FAM, from: me },
+      { authorization: `Bearer ${NEW}` },
+    );
+    expect(before).toEqual({ status: 200, json: { sent: 0 } });
+    expect(sent).toEqual([]);
+  });
+
+  it("un servicio que rechaza la dirección (400/401/403) 3 veces la purga; un 500 jamás", async () => {
+    for (const status of [400, 401, 403]) {
+      const bad = await setup(status);
+      const id = await bad.subscribe(1);
+      await bad.tick();
+      expect(await bad.store.get(id)).not.toBeNull();
+      for (const minute of [5, 10]) {
+        // Otro despertar: se agrega al teléfono para que el disparador lo vuelva a tocar.
+        const sub = (await bad.store.get(id))!;
+        await bad.store.put(
+          { ...sub, wakes: [{ m: SEVEN - minute, d: 127 }] },
+          sub,
+          9,
+          99,
+        );
+        await bad.tick(NOW - minute * 60_000);
+      }
+      expect(await bad.store.get(id)).toBeNull();
+    }
+    const down = await setup(500);
+    const id = await down.subscribe(1);
+    for (let i = 0; i < 5; i++) {
+      await down.store.put(
+        { ...(await down.store.get(id))!, wakes: [{ m: SEVEN - i, d: 127 }] },
+        (await down.store.get(id))!,
+        9,
+        99,
+      );
+      await down.tick(NOW - i * 60_000);
+    }
+    expect(await down.store.get(id)).not.toBeNull();
+  });
+
+  it("el hash de IP lleva la sal del servidor: otra sal, otra clave", async () => {
+    const a = await setup();
+    const b = await setup();
+    a.deps.ipSalt = "sal-a";
+    b.deps.ipSalt = "sal-b";
+    const body = JSON.stringify({ id: "x".repeat(22) });
+    const send = (d: PushDeps) =>
+      handlePush(
+        {
+          op: "unsubscribe",
+          method: "POST",
+          body,
+          authorization: null,
+          signature: null,
+          ip: "10.9.9.9",
+        },
+        d,
+        NOW,
+      );
+    // Con la MISMA IP y el mismo almacén, dos sales cuentan en cubos distintos.
+    for (let i = 0; i < REQUESTS_PER_IP_MIN; i++) await send(a.deps);
+    expect((await send(a.deps)).status).toBe(429);
+    const shared = { ...b.deps, store: a.deps.store };
+    expect((await send(shared)).status).not.toBe(429);
+  });
+
+  it("sin llaves de firma configuradas el disparador falla cerrado, aunque la firma esté bien hecha", async () => {
+    const { deps, subscribe, sent } = await setup();
+    await subscribe(1);
+    const signature = await signLikeQstash(
+      SIGNING,
+      `https://app.example${TICK_PATH}`,
+      "",
+      NOW,
+    );
+    const r = await handlePush(
+      {
+        op: "tick",
+        method: "POST",
+        body: "",
+        authorization: null,
+        signature,
+        ip: "10.0.0.1",
+      },
+      { ...deps, signingKeys: [] },
+      NOW,
+    );
+    expect(r).toEqual({ status: 401, json: { error: "signature" } });
+    expect(sent).toEqual([]);
+  });
+
+  it("un servicio de push que no contesta se da por perdido (tiempo límite): 0 y sin retener el lote", async () => {
+    const hang = fetchSender(
+      ((_url: string, init: RequestInit) =>
+        new Promise((_, reject) =>
+          (init.signal as AbortSignal).addEventListener("abort", () =>
+            reject(new Error("timeout")),
+          ),
+        )) as unknown as typeof fetch,
+      20,
+    );
+    expect(await hang(EP(1), "v")).toBe(0);
+  });
+});
+
 describe("el emisor real: POST vacío, sin seguir redirecciones", () => {
   it("manda solo VAPID, TTL y urgencia; sin cuerpo; sin red, 0", async () => {
     const calls: { url: string; init: RequestInit }[] = [];
@@ -686,6 +846,10 @@ function fakeRedis(now: () => number) {
         return 1;
       case "EXISTS":
         return live(key) === undefined ? 0 : 1;
+      case "GET": {
+        const v = live(key);
+        return v === undefined ? null : v;
+      }
       case "SET": {
         if (rest.includes("NX") && live(key) !== undefined) return null;
         data.set(key, rest[0]);
@@ -720,6 +884,7 @@ const SUB = (n: number, family: string | null = null): PushSub => ({
   tz: "America/Bogota",
   wakes: [{ m: SEVEN, d: 127 }],
   family,
+  famTh: family ? "t".repeat(64) : null,
 });
 
 describe.each([
@@ -762,6 +927,37 @@ describe.each([
     await s.remove(SUB(2, FAM));
     expect(await s.get(SUB(2).id)).toBeNull();
     expect(await s.family(FAM)).toEqual([]);
+  });
+
+  it("lo vencido libera sitio: los topes no cuentan teléfonos que ya no existen", async () => {
+    const s = store();
+    expect(await s.add(SUB(1, FAM), 1, 1, 60)).toBe("ok");
+    expect(await s.add(SUB(2, FAM), 1, 1, 60)).toBe("full");
+    t += 61_000; // el primero venció (EXPIRE en la base; vencimiento en el doble)
+    expect(await s.all()).toEqual([]);
+    expect(await s.add(SUB(3, FAM), 1, 1, 60)).toBe("ok");
+    expect((await s.family(FAM)).map((x) => x.id)).toEqual([SUB(3).id]);
+    t = NOW;
+  });
+
+  it("vencida una suscripción, el tope por familia también queda libre", async () => {
+    const s = store();
+    expect(await s.add(SUB(1, FAM), 9, 1, 60)).toBe("ok");
+    t += 61_000;
+    expect(await s.add(SUB(2, FAM), 9, 1, 60)).toBe("ok");
+    t = NOW;
+  });
+
+  it("por dirección: una sola; cambiar de dirección suelta la vieja", async () => {
+    const s = store();
+    await s.add(SUB(1), 9, 9, 99);
+    expect((await s.byEndpoint(EP(1)))?.id).toBe(SUB(1).id);
+    expect(await s.byEndpoint(EP(2))).toBeNull();
+    await s.put({ ...SUB(1), endpoint: EP(2) }, SUB(1), 9, 99);
+    expect(await s.byEndpoint(EP(1))).toBeNull();
+    expect((await s.byEndpoint(EP(2)))?.id).toBe(SUB(1).id);
+    await s.remove({ ...SUB(1), endpoint: EP(2) });
+    expect(await s.byEndpoint(EP(2))).toBeNull();
   });
 
   it("«enviado» vale una vez por fecha y minuto, y vence", async () => {
@@ -822,6 +1018,8 @@ describe("la base real por REST", () => {
       "420:127",
       "fam",
       FAM,
+      "fth",
+      "t".repeat(64),
     ]);
   });
 

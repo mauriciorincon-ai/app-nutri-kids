@@ -48,6 +48,8 @@ export type PushDeps = {
   vapid: VapidKeys | null;
   signingKeys: string[];
   sender: Sender;
+  /** Sal del hash de IP (un secreto del servidor): sin ella, la IP se recuperaría por fuerza bruta. */
+  ipSalt?: string;
 };
 
 export const TICK_PATH = "/api/push/tick";
@@ -56,8 +58,14 @@ const fail = (status: number, error: string): Outgoing => ({
   status,
   json: { error },
 });
-const ipKey = (ip: string) =>
-  createHash("sha256").update(`np|ip|${ip}`).digest("hex").slice(0, 16);
+const ipKey = (ip: string, salt: string) =>
+  createHash("sha256").update(`np|ip|${salt}|${ip}`).digest("hex").slice(0, 16);
+
+/** Un servicio de push que no contesta no retiene un lote: a los 5 s se da por perdido. */
+const SEND_TIMEOUT_MS = 5000;
+/** Respuestas que dicen «esta dirección no sirve» (inventada o de otra llave): se purga a las 3. */
+const BAD_STATUS = new Set([400, 401, 403]);
+const BAD_STRIKES = 3;
 
 function bearer(header: string | null): string | null {
   const m = header ? /^Bearer ([A-Za-z0-9_-]{43})$/.exec(header) : null;
@@ -65,7 +73,10 @@ function bearer(header: string | null): string | null {
 }
 
 /** El toque: POST sin cuerpo, con VAPID. Ni texto, ni tema, ni nada que diga qué toca. */
-export function fetchSender(fetcher: typeof fetch = fetch): Sender {
+export function fetchSender(
+  fetcher: typeof fetch = fetch,
+  timeoutMs: number = SEND_TIMEOUT_MS,
+): Sender {
   return async (endpoint, authorization) => {
     try {
       const res = await fetcher(endpoint, {
@@ -78,6 +89,7 @@ export function fetchSender(fetcher: typeof fetch = fetch): Sender {
         },
         redirect: "manual",
         cache: "no-store",
+        signal: AbortSignal.timeout(timeoutMs),
       });
       return res.status;
     } catch {
@@ -112,6 +124,14 @@ async function touch(
     // El teléfono ya no existe para el servicio: se borra su suscripción.
     await deps.store.remove(sub);
     tally.gone++;
+  } else if (BAD_STATUS.has(status)) {
+    // Una dirección que el servicio rechaza una y otra vez no es un teléfono: se purga, para
+    // que direcciones inventadas no llenen el tope. Un fallo suelto (red, 5xx) no cuenta.
+    const strikes = await deps.store.count(`b:${sub.id}`, FLAG_TTL_SECONDS);
+    if (strikes >= BAD_STRIKES) {
+      await deps.store.remove(sub);
+      tally.gone++;
+    } else tally.failed++;
   } else tally.failed++;
 }
 
@@ -177,7 +197,7 @@ export async function handlePush(
   }
   if (!Object.hasOwn(bodies, req.op)) return fail(404, "op");
 
-  const ip = ipKey(req.ip);
+  const ip = ipKey(req.ip, deps.ipSalt ?? "");
   const minute = Math.floor(now / 60_000);
   if ((await store.count(`m:${ip}:${minute}`, 60)) > REQUESTS_PER_IP_MIN) {
     return fail(429, "slow-down");
@@ -195,7 +215,14 @@ export async function handlePush(
   /** ¿Prueba ser de esa familia? Huella del token del S7, en tiempo constante. */
   const member = async (code: string, token: string | null) => {
     const meta = deps.family ? await deps.family.meta(code) : null;
-    return tokenMatches(token, meta?.tokenHash ?? null) && meta !== null;
+    return tokenMatches(token, meta?.tokenHash ?? null) && meta !== null
+      ? meta
+      : null;
+  };
+  /** Un teléfono, una dirección: si otro registro ya usa esa dirección, se retira. */
+  const dropDuplicate = async (endpoint: string, keep: string | null) => {
+    const dup = await store.byEndpoint(endpoint);
+    if (dup && dup.id !== keep) await store.remove(dup);
   };
 
   if (op === "subscribe") {
@@ -205,6 +232,7 @@ export async function handlePush(
     if (b.family && !(await member(b.family.code, b.family.token)))
       return fail(403, "denied");
     const id = randomBytes(16).toString("base64url");
+    await dropDuplicate(b.endpoint, null);
     const out = await store.add(
       {
         id,
@@ -213,6 +241,7 @@ export async function handlePush(
         tz: b.tz,
         wakes: b.wakes,
         family: b.family?.code ?? null,
+        famTh: b.family ? tokenHash(b.family.token) : null,
       },
       MAX_SUBS,
       MAX_PER_FAMILY,
@@ -231,8 +260,11 @@ export async function handlePush(
       (await store.count(`f:${b.family}:${day}`, 86_400)) > FAMILY_WAKES_PER_DAY
     )
       return fail(429, "slow-down");
+    // Solo los teléfonos que probaron el token VIGENTE de la familia: quien fue sacado y no
+    // lo renovó deja de recibir toques.
+    const meta = await deps.family?.meta(b.family);
     const others = (await store.family(b.family)).filter(
-      (s) => s.id !== b.from,
+      (s) => s.id !== b.from && meta && s.famTh === meta.tokenHash,
     );
     const tally: Tally = { sent: 0, gone: 0, failed: 0 };
     await inBatches(others, (sub) => touch(sub, ready, now, tally));
@@ -249,6 +281,7 @@ export async function handlePush(
     const b = bodies.update.parse(raw);
     if (b.family && !(await member(b.family.code, b.family.token)))
       return fail(403, "denied");
+    await dropDuplicate(b.endpoint, sub.id);
     const out = await store.put(
       {
         ...sub,
@@ -256,6 +289,7 @@ export async function handlePush(
         tz: b.tz,
         wakes: b.wakes,
         family: b.family?.code ?? null,
+        famTh: b.family ? tokenHash(b.family.token) : null,
       },
       sub,
       MAX_PER_FAMILY,
