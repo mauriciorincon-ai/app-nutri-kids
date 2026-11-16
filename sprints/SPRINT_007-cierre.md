@@ -5,7 +5,7 @@ hito: H-2
 opened: 2026-11-15
 closed: 2026-11-16
 branch: sprint-007/familia-cifrada
-pr: (se llena al abrirlo)
+pr: 11
 ---
 
 # S7 · La familia, cifrada
