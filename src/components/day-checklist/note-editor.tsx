@@ -21,7 +21,8 @@ import { cn } from "@/lib/utils";
 /**
  * Nota corta de una comida: chips (rechazó/dolor/antojo/otro) + texto libre
  * breve. SIN culpa por diseño — describe lo que pasó, no lo califica. El texto
- * es dato de salud del menor: vive solo en el dispositivo (ADR-007). Los chips
+ * es dato de salud del menor: vive en el dispositivo y solo viaja, cifrado, si la familia
+ * comparte (ADR-007, ADR-011). Los chips
  * son botones de alternar accesibles por teclado (`aria-pressed`).
  *
  * Foco gestionado: al abrir enfoca el primer chip; al cerrar (guardar/cancelar/
@@ -30,10 +31,13 @@ import { cn } from "@/lib/utils";
 export function NoteEditor({
   mealName,
   note,
+  by,
   onSave,
 }: {
   mealName: string;
   note: DayNote | null;
+  /** «Por Mamá»: quién escribió la nota (solo con familia). */
+  by?: string;
   onSave: (note: DayNote | null) => void;
 }) {
   const { t } = useI18n();
@@ -96,6 +100,12 @@ export function NoteEditor({
         {note && (note.chips.length > 0 || note.text) && (
           <p className="mt-0.5 text-sm text-muted-foreground">
             <NoteSummary note={note} />
+            {by && (
+              <span className="font-semibold" data-testid="note-by">
+                {" · "}
+                {by}
+              </span>
+            )}
           </p>
         )}
       </div>

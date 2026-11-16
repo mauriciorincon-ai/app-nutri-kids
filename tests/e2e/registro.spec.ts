@@ -177,7 +177,7 @@ test("migración v1→v2: el estado de un usuario S1/S2 no pierde marcas", async
   await page.addInitScript(() => {
     // Guard: no re-sembrar la v1 si ya migramos (si el test añadiera un reload,
     // la v1 no debe renacer sobre la v2 ya escrita).
-    if (window.localStorage.getItem("nutrikids.daylog.v2")) return;
+    if (window.localStorage.getItem("nutrikids.daylog.v3")) return;
     window.localStorage.setItem(
       "nutrikids.daylog.v1",
       JSON.stringify({
@@ -191,13 +191,13 @@ test("migración v1→v2: el estado de un usuario S1/S2 no pierde marcas", async
   await expect(page.getByText("Ya hiciste 2 de 10")).toBeVisible();
   await expect(page.getByRole("checkbox", { name: /Desayuno/i })).toBeChecked();
 
-  // La v1 se eliminó (una sola fuente de verdad) y la v2 quedó escrita.
+  // La v1 se eliminó (una sola fuente de verdad) y la v3 (con quién y cuándo marcó) quedó escrita.
   const keys = await page.evaluate(() => ({
     v1: window.localStorage.getItem("nutrikids.daylog.v1"),
-    v2: window.localStorage.getItem("nutrikids.daylog.v2"),
+    v3: window.localStorage.getItem("nutrikids.daylog.v3"),
   }));
   expect(keys.v1).toBeNull();
-  expect(keys.v2).not.toBeNull();
+  expect(keys.v3).not.toBeNull();
 
   // Y se puede seguir marcando encima de lo migrado (con hora nueva).
   await page.getByRole("checkbox", { name: /Vaso 1/ }).click();

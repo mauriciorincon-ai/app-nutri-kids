@@ -21,7 +21,7 @@ Sentry.init({
   tracesSampleRate: 0.1,
   // Regla dura de la app: jamás datos del niño ni contenido de la dieta en eventos.
   sendDefaultPii: false,
-  // Perfil y anotaciones de quien cuida jamás viajan (regla dura 6, ADR-009).
+  // Perfil y anotaciones de quien cuida jamás viajan en claro (regla dura 6, ADR-009, ADR-011).
   beforeSend: (event) => scrubSentryEvent(event, termsOnThisDevice()),
   beforeSendTransaction: (event) =>
     scrubSentryTransaction(event, termsOnThisDevice()),

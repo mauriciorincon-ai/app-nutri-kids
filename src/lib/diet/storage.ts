@@ -1,4 +1,7 @@
 import demoRaw from "../../../data/demo-diet.json";
+import { clearDevice, getDeviceId } from "../device";
+import { clearKeys } from "../family/keystore";
+import { clearFamilyLocal } from "../family/state";
 import { log } from "../log";
 import {
   dietCounts,
@@ -14,7 +17,7 @@ import { rebaseDemoWindow } from "./demo";
 
 /**
  * Almacenamiento local (ADR: localStorage con claves versionadas).
- * La dieta real vive SOLO en el dispositivo; el repo solo conoce la demo.
+ * La dieta real vive en el dispositivo; el repo solo conoce la demo. Si la familia elige compartir, sale únicamente cifrada de punta a punta (ADR-011).
  * Fail-safe: dato guardado corrupto ⇒ se descarta y se vuelve a demo.
  */
 
@@ -22,6 +25,8 @@ export const STORAGE_KEYS = {
   diet: "nutrikids.diet.v1",
   source: "nutrikids.source.v1",
   prefs: "nutrikids.prefs.v1",
+  /** Sello del plan real {t, by}: cuándo y qué teléfono lo cargó (S7, para mezclar con la familia). */
+  planMeta: "nutrikids.plan-meta.v1",
 } as const;
 
 export type DietSource = "demo" | "real";
@@ -110,14 +115,21 @@ export function storeDiet(
   const s = storage();
   if (!s) return { ok: false, error: "no-storage" };
   const previous = s.getItem(STORAGE_KEYS.diet);
+  const previousMeta = s.getItem(STORAGE_KEYS.planMeta);
   try {
     s.setItem(STORAGE_KEYS.diet, JSON.stringify(diet));
     s.setItem(STORAGE_KEYS.source, "real");
+    s.setItem(
+      STORAGE_KEYS.planMeta,
+      JSON.stringify({ t: Date.now(), by: getDeviceId() }),
+    );
   } catch {
     // Cuota llena o modo privado: no queda a medias (se devuelve lo que había).
     try {
       if (previous === null) s.removeItem(STORAGE_KEYS.diet);
       else s.setItem(STORAGE_KEYS.diet, previous);
+      if (previousMeta === null) s.removeItem(STORAGE_KEYS.planMeta);
+      else s.setItem(STORAGE_KEYS.planMeta, previousMeta);
     } catch {
       /* sin más que hacer */
     }
@@ -144,9 +156,88 @@ export function hasStoredRealDiet(): boolean {
   return storage()?.getItem(STORAGE_KEYS.diet) != null;
 }
 
+// ---------------------------------------------------------------------------
+// El plan real, para compartirlo con la familia (S7 · ADR-011). Aquí no hay red: solo se
+// lee el plan guardado con su sello y se aplica el que llegó (ya descifrado y validado).
+// ---------------------------------------------------------------------------
+
+export type SharedPlan = { t: number; by: string; diet: DietPlan };
+
+function readPlanMeta(): { t: number; by: string } {
+  try {
+    const raw = storage()?.getItem(STORAGE_KEYS.planMeta);
+    const p = raw ? (JSON.parse(raw) as { t?: unknown; by?: unknown }) : null;
+    if (
+      p &&
+      typeof p.t === "number" &&
+      Number.isInteger(p.t) &&
+      p.t >= 0 &&
+      typeof p.by === "string" &&
+      p.by.length > 0 &&
+      p.by.length <= 24
+    )
+      return { t: p.t, by: p.by };
+  } catch {
+    /* sello ilegible: se trata como plan anterior al S7 */
+  }
+  // Un plan cargado antes del S7 no tiene sello: es «anterior a todo» (t = 0).
+  return { t: 0, by: getDeviceId() };
+}
+
+/** El plan REAL guardado (nunca la demo) con su sello; null si no hay o no valida. */
+export function readSharedPlan(): SharedPlan | null {
+  const raw = storage()?.getItem(STORAGE_KEYS.diet);
+  if (!raw) return null;
+  const parsed = parseDietJson(raw);
+  return parsed.ok ? { ...readPlanMeta(), diet: parsed.diet } : null;
+}
+
+/**
+ * Aplica el plan que llegó de la familia: se valida con el schema de la dieta (regla 4) y,
+ * si no encaja, no se toca nada (false). Queda como el plan real, con SU sello.
+ */
+export function applyRemotePlan(plan: {
+  t: number;
+  by: string;
+  diet: unknown;
+}): boolean {
+  const s = storage();
+  if (!s) return false;
+  const parsed = parseDietJson(JSON.stringify(plan.diet));
+  if (!parsed.ok) return false;
+  const previous = s.getItem(STORAGE_KEYS.diet);
+  const previousSource = s.getItem(STORAGE_KEYS.source);
+  const previousMeta = s.getItem(STORAGE_KEYS.planMeta);
+  try {
+    s.setItem(STORAGE_KEYS.diet, JSON.stringify(parsed.diet));
+    s.setItem(STORAGE_KEYS.source, "real");
+    s.setItem(
+      STORAGE_KEYS.planMeta,
+      JSON.stringify({ t: plan.t, by: plan.by }),
+    );
+  } catch {
+    try {
+      for (const [key, old] of [
+        [STORAGE_KEYS.diet, previous],
+        [STORAGE_KEYS.source, previousSource],
+        [STORAGE_KEYS.planMeta, previousMeta],
+      ] as const) {
+        if (old === null) s.removeItem(key);
+        else s.setItem(key, old);
+      }
+    } catch {
+      /* sin más que hacer */
+    }
+    return false;
+  }
+  log.info({ event: "diet-synced", ...dietCounts(parsed.diet) });
+  return true;
+}
+
 /**
  * "Borrar datos": elimina dieta importada + checklist del día (day-log) + lo que
- * quien cuida anotó del niño (profile-notes) + la revisión a medias de un PDF (plan-draft) y vuelve a demo.
+ * quien cuida anotó del niño (profile-notes) + la revisión a medias de un PDF (plan-draft)
+ * + la unión a la familia (claves y estado) y vuelve a demo.
  * Conserva la preferencia de idioma (no es dato del niño).
  */
 export function clearAllData(): void {
@@ -154,9 +245,15 @@ export function clearAllData(): void {
   if (!s) return;
   s.removeItem(STORAGE_KEYS.diet);
   s.removeItem(STORAGE_KEYS.source);
+  s.removeItem(STORAGE_KEYS.planMeta);
   clearDayLog();
   clearProfileNotes();
   clearPlanDraft();
+  // Sale de la familia (las claves y el estado se van de este teléfono; lo compartido en el
+  // servidor lo borra «Borrar lo compartido» en Ajustes) y olvida quién es este teléfono.
+  clearFamilyLocal();
+  void clearKeys();
+  clearDevice();
   log.info({ event: "data-cleared" });
 }
 

@@ -62,12 +62,12 @@
 <body>
 <main>
   <h1>Nutrikids — Blueprint de infraestructura <span class="badge">as-built</span></h1>
-  <p class="meta">Ciclo: <strong>H-2 Producto completo (en curso)</strong> · Sprints: <strong>S1–S3</strong> (H-1) y <strong>S4</strong> (la dieta responde sin internet) · Última actualización: <strong>2026-11-15</strong> (Sprint 004)</p>
-  <p class="nota"><strong>Entregable del CIERRE DE CICLO</strong> (método v2.3.0 · kit v2.4.0): el mapa real de TODA la infraestructura que soporta la app, escrito con lo <strong>DESPLEGADO de verdad</strong>. Rasgo definitorio de Nutrikids: es <strong>local-first sin backend</strong> — los datos del niño viven SOLO en el dispositivo (ADR-001, ratificado por ADR-007); <strong>desde el S4 el chat responde con código sobre el plan cargado y no manda nada a la red</strong> (ADR-008): ya no hay proveedor de IA, ni endpoint de chat, ni secreto. Vivo y acumulativo entre ciclos. HTML autocontenido con SVG embebido — cero CDNs.</p>
+  <p class="meta">Ciclo: <strong>H-2 Producto completo (en curso)</strong> · Sprints: <strong>S1–S3</strong> (H-1), <strong>S4</strong> (la dieta responde sin internet) y <strong>S7</strong> (la familia comparte, cifrado) · Última actualización: <strong>2026-11-16</strong> (Sprint 007)</p>
+  <p class="nota"><strong>Entregable del CIERRE DE CICLO</strong> (método v2.3.0 · kit v2.4.0): el mapa real de TODA la infraestructura que soporta la app, escrito con lo <strong>DESPLEGADO de verdad</strong>. Rasgo definitorio de Nutrikids: es <strong>local-first</strong> — los datos del niño viven en el dispositivo (ADR-001, ratificado por ADR-007) y <strong>solo viajan, cifrados de punta a punta en el aparato, si la familia decide compartir (S7, ADR-011)</strong>: el único servidor guarda datos ilegibles; <strong>desde el S4 el chat responde con código sobre el plan cargado y no manda nada a la red</strong> (ADR-008): ya no hay proveedor de IA, ni endpoint de chat, ni secreto. Vivo y acumulativo entre ciclos. HTML autocontenido con SVG embebido — cero CDNs.</p>
 
   <h2>Diagrama</h2>
   <div class="diagrama">
-  <svg viewBox="0 0 960 450" role="img" aria-label="Diagrama de infraestructura de Nutrikids: local-first con service worker, Vercel que solo sirve la app, modelo del navegador opcional">
+  <svg viewBox="0 0 960 450" role="img" aria-label="Diagrama de infraestructura de Nutrikids: local-first con service worker, Vercel que sirve la app y una ruta mínima de la familia, Upstash Redis que guarda solo datos cifrados">
     <defs>
       <marker id="punta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
         <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" opacity="0.65"/>
@@ -86,7 +86,7 @@
     <text class="detalle-caja" x="112" y="344" text-anchor="middle">localStorage del dispositivo</text>
     <text class="detalle-caja" x="112" y="360" text-anchor="middle">dieta · registro del día</text>
     <text class="detalle-caja" x="112" y="376" text-anchor="middle">(marcas · horas · notas)</text>
-    <text class="detalle-caja" x="112" y="395" text-anchor="middle" style="fill:var(--acento);font-weight:700">nunca sale del dispositivo</text>
+    <text class="detalle-caja" x="112" y="395" text-anchor="middle" style="fill:var(--acento);font-weight:700">solo sale cifrado, si compartes</text>
 
     <!-- Hosting Vercel -->
     <rect class="caja caja-principal" x="315" y="140" width="245" height="120" rx="10"/>
@@ -115,11 +115,11 @@
     <text class="detalle-caja" x="437" y="376" text-anchor="middle">ruleset main-protegida</text>
     <text class="detalle-caja" x="437" y="393" text-anchor="middle">CI: quality · e2e · lighthouse · un-pr-vivo</text>
 
-    <!-- Futuro: Supabase -->
-    <rect class="caja-futuro" x="665" y="190" width="275" height="86" rx="10"/>
-    <text class="titulo-caja detalle-futuro" x="802" y="216" text-anchor="middle">(futuro · fase 2)</text>
-    <text class="detalle-caja detalle-futuro" x="802" y="234" text-anchor="middle">Supabase — estado compartido</text>
-    <text class="detalle-caja detalle-futuro" x="802" y="251" text-anchor="middle">multi-cuidador + RLS · lo abre un F0</text>
+    <!-- Servicio de la familia (S7) -->
+    <rect class="caja" x="665" y="190" width="275" height="86" rx="10"/>
+    <text class="titulo-caja" x="802" y="216" text-anchor="middle">Upstash Redis Free (S7)</text>
+    <text class="detalle-caja" x="802" y="234" text-anchor="middle">solo datos cifrados de la familia</text>
+    <text class="detalle-caja" x="802" y="251" text-anchor="middle">ruta /api/family · sin claves ni texto</text>
 
     <!-- Flechas -->
     <path class="flecha" d="M 205 185 L 310 190"/>
@@ -129,7 +129,7 @@
     <text class="etiqueta-flecha" x="120" y="270">lee/escribe local</text>
 
     <path class="flecha" d="M 205 165 C 330 60 520 40 660 90"/>
-    <text class="etiqueta-flecha" x="430" y="52" text-anchor="middle">en el teléfono · nada viaja</text>
+    <text class="etiqueta-flecha" x="430" y="52" text-anchor="middle">cifrado en el teléfono antes de salir</text>
 
     <path class="flecha" d="M 560 210 L 660 330"/>
     <text class="etiqueta-flecha" x="628" y="270" text-anchor="middle">logs (metadatos)</text>
@@ -137,8 +137,8 @@
     <path class="flecha" d="M 437 330 L 437 262"/>
     <text class="etiqueta-flecha" x="445" y="300">CI/CD → deploy</text>
 
-    <path class="flecha flecha-futura" d="M 205 340 C 420 430 560 300 663 250"/>
-    <text class="etiqueta-flecha detalle-futuro" x="470" y="410" text-anchor="middle">(sync multi-cuidador — fase 2)</text>
+    <path class="flecha" d="M 205 340 C 420 430 560 300 663 250"/>
+    <text class="etiqueta-flecha" x="470" y="410" text-anchor="middle">(sincroniza la familia · cifrado)</text>
   </svg>
   </div>
 
@@ -149,19 +149,19 @@
     <tbody>
       <tr><td>Código / versionamiento</td><td>GitHub <code>mauriciorincon-ai/app-nutri-kids</code> (público)</td><td>ruleset <code>main-protegida</code>; checks requeridos <code>quality</code>/<code>e2e</code>/<code>lighthouse</code> (y <code>un-pr-vivo</code>); jamás datos del niño en el repo</td></tr>
       <tr><td>CI/CD</td><td>GitHub Actions</td><td>install + typecheck + lint + unit + build + cero enlaces + dependencias agrupadas (quality) · Playwright móvil+desktop sobre el build de producción, incluida la prueba sin internet (e2e) · Lighthouse vs <code>perf-budget.json</code> (lighthouse) · un solo PR vivo (un-pr-vivo)</td></tr>
-      <tr><td>Hosting / publicación</td><td>Vercel Hobby (free)</td><td>Next.js PWA; preview por PR, prod desde <code>main</code>; subdominio de Vercel; uso personal/familiar (no comercial). Sirve la app y nada más: <strong>sin rutas de API ni funciones propias</strong> desde el S4. El service worker (<code>public/sw.js</code>, estampado en cada build) guarda el cascarón de las 9 pantallas para abrir sin señal</td></tr>
-      <tr><td>Base de datos</td><td><strong>SIN BD — local-first</strong></td><td>Toda la data (dieta importada + registro del día) vive en <code>localStorage</code> del dispositivo, claves versionadas (<code>nutrikids.diet.v1</code>, <code>nutrikids.daylog.v2</code>, <code>nutrikids.prefs.v1</code>, <code>nutrikids.profile-notes.v1</code>). El plan guardado es <strong>schema v2</strong> (perfil, objetivos y textura por opción): un plan v1 se migra al leer, y solo se reescribe tras validar la v2. Lo que anota quien cuida (texturas que acepta y notas) vive en su propia clave, aparte del plan, y jamás sale del aparato (ADR-009). Decisión: ADR-001, ratificada por ADR-007 (privacidad de menor). Sin región, sin RLS: no hay servidor de datos</td></tr>
-      <tr><td>Auth</td><td>No aplica</td><td>Un dispositivo, un cuidador; sin cuentas ni login. La multi-cuidadoría con auth es fase 2</td></tr>
+      <tr><td>Hosting / publicación</td><td>Vercel Hobby (free)</td><td>Next.js PWA; preview por PR, prod desde <code>main</code>; subdominio de Vercel; uso personal/familiar (no comercial). Sirve la app y, desde el S7, <strong>una sola ruta de servidor</strong> (<code>/api/family/*</code>, ADR-011) que guarda lo que la familia comparte ya cifrado: no registra cuerpos, encabezados ni códigos; sin la familia, nada la llama. Desde el S4 no hay ruta de chat ni funciones de IA. El service worker (<code>public/sw.js</code>, estampado en cada build) guarda el cascarón de las 9 pantallas para abrir sin señal</td></tr>
+      <tr><td>Base de datos</td><td><strong>Local-first + Upstash Redis Free (S7, solo si la familia comparte)</strong></td><td>La data vive en <code>localStorage</code> del dispositivo, claves versionadas (<code>nutrikids.diet.v1</code>, <code>nutrikids.daylog.v3</code>, <code>nutrikids.prefs.v1</code>, <code>nutrikids.profile-notes.v1</code>). El plan guardado es <strong>schema v2</strong> (perfil, objetivos y textura por opción): un plan v1 se migra al leer, y solo se reescribe tras validar la v2. Lo que anota quien cuida (texturas que acepta y notas) vive en su propia clave, aparte del plan, y sale del aparato solo si la familia lo comparte, cifrada (ADR-009, ADR-011). <strong>Compartir (S7):</strong> Upstash Redis Free por REST, detrás de <code>/api/family</code>; guarda registros AES-GCM con IV nuevo por registro, rellenados a 256 bytes, con tope de 64 KB (256 KB el plan) y vencimiento a los 400 días sin uso; el servidor jamás ve texto en claro, nombres, la frase ni la clave. Las claves del teléfono son CryptoKey no exportables en IndexedDB. CI y e2e usan el doble en memoria (<code>FAMILY_STORE=memory</code>), jamás la base real. Decisión: ADR-001 (revisada), ADR-007 (revisada) y ADR-011</td></tr>
+      <tr><td>Auth</td><td>No aplica</td><td>Sin cuentas ni login. La familia es un código más una frase: la frase deriva las claves en el teléfono y el servidor solo guarda una huella del permiso de escribir (comparada en tiempo constante); sacar a un teléfono = cambiar la frase</td></tr>
       <tr><td>Protección de deployment</td><td>Vercel — producción <strong>pública</strong>, sin Deployment Protection</td><td>Verificado desde afuera y SIN sesión (incógnito/<code>curl</code>): la app y la ruta <code>/conoce</code> responden <code>200</code> a cualquier visitante. Es la "última milla" del método: una preview tras el login de Vercel se ve igual de verde en CI y nadie de afuera puede abrirla</td></tr>
       <tr><td>Almacenamiento de archivos</td><td>No aplica</td><td>El plan se carga desde el PDF del profesional o como JSON (file picker o pegado). El PDF se lee en el aparato con <code>pdfjs-dist</code> fijado (servido por la propia app y precacheado, ADR-010) y <strong>no se guarda</strong>: solo queda el plan estructurado, con la página de cada dato, en <code>localStorage</code> (borrador en <code>nutrikids.plan-draft.v1</code> hasta guardar); no hay bucket</td></tr>
       <tr><td>Email / notificaciones</td><td>No aplica</td><td>Los recordatorios son deterministas y locales (información visible al abrir la app); sin push ni permisos del sistema — push queda fase 2 si el uso lo pide</td></tr>
       <tr><td>IA embebida</td><td><strong>Ninguna en la nube</strong> · modelo del navegador, opcional</td><td>Chat "habla con tu dieta" <strong>code-first</strong> (ADR-008, reemplaza a ADR-004/005): el motor <code>answerOpen</code> contesta «no tengo X», «no quiso X», «¿qué le doy ahora?» y «¿cuánta agua?» con el plan cargado; lo que el plan no dice, se dice que no lo dice. Sin proveedor, sin API de pago ni de terceros, sin <code>/api/chat</code>, sin SDK (un test lo exige). Opcional: si el navegador ya trae su modelo de lenguaje (Prompt API), re-redacta UNA frase que el código ya decidió; sin descargar nada, la salida pasa por un esquema y, si no encaja, se muestra la del código. El registro del día JAMÁS entra (ADR-006/007)</td></tr>
       <tr><td>Observabilidad</td><td>Pino + Sentry (free)</td><td>Pino: logs estructurados <strong>solo-metadatos</strong> (versión de schema, conteos, outcome — jamás contenido de dieta ni registro). Sentry client-only, inerte sin <code>NEXT_PUBLIC_SENTRY_DSN</code></td></tr>
       <tr><td>Crons / keep-alives</td><td>NINGUNO</td><td>Sin backend que mantener despierto; la app estática no los necesita</td></tr>
-      <tr><td>Secretos</td><td>Vercel env vars + <code>.env.local</code> (gitignored)</td><td><strong>Ninguno de runtime</strong>: la única variable es <code>NEXT_PUBLIC_SENTRY_DSN</code> (pública, opcional). Doble gate gitleaks (hook pre-commit + PreToolUse)</td></tr>
+      <tr><td>Secretos</td><td>Vercel env vars + <code>.env.local</code> (gitignored)</td><td><strong>Solo las de la base de la familia</strong>: <code>KV_REST_API_URL</code> y <code>KV_REST_API_TOKEN</code> (las pone la integración de Vercel; jamás en el repo) y <code>NEXT_PUBLIC_SENTRY_DSN</code> (pública, opcional). Doble gate gitleaks (hook pre-commit + PreToolUse)</td></tr>
       <tr><td>Dominio</td><td>Subdominio de Vercel (asignado por la plataforma)</td><td>Administrado en Vercel; sin dominio propio en fase 1. La URL NO se versiona en el repo (regla 17 — cero enlaces); el campo <code>homepage</code> del repo apunta al propio repo (Vercel solo rellena un campo vacío: jamás se deja vacío) y <code>cero-enlaces</code> lo vigila en la CI</td></tr>
       <tr class="critica"><td>Costo real / mes</td><td><strong>US$0</strong></td><td>Vercel Hobby (100 GB-h, uso mínimo) · GitHub Free (2000 min CI/mes) · Sentry free · <strong>cero servicios de IA</strong> (el chat ya no consume cuota de nadie). Presupuesto techo declarado: ≤US$10/mes; el real no lo usa</td></tr>
-      <tr class="critica"><td>Punto único de falla</td><td><strong>El dispositivo del usuario</strong></td><td>Los datos del niño viven SOLO en el teléfono, sin respaldo en la nube (decisión de privacidad, no descuido). Mitigación: la dieta se re-importa desde su archivo original; el registro del día es local y aceptado como fase-1 (sync multi-dispositivo = fase 2). "Borrar datos" es intencional y confirmado. Secundario: Vercel como host — ya no es punto de falla del día a día: tras una visita con señal, TODAS las pantallas y el chat abren sin internet (service worker, ADR-003 revisado en el S4)</td></tr>
+      <tr class="critica"><td>Punto único de falla</td><td><strong>El dispositivo del usuario</strong> (y, si comparten, la frase de la familia)</td><td>Sin familia, los datos del niño viven SOLO en el teléfono, sin respaldo en la nube (decisión de privacidad, no descuido). Con familia, otros teléfonos conservan su copia cifrada; si se pierde la frase y ningún teléfono sigue dentro, lo compartido es ilegible para todos (nadie puede abrirlo) y se crea otra familia. Mitigación: la dieta se re-importa desde su archivo original. "Borrar datos" es intencional y confirmado. Secundario: Vercel como host — ya no es punto de falla del día a día: tras una visita con señal, TODAS las pantallas y el chat abren sin internet (service worker, ADR-003 revisado en el S4)</td></tr>
       <tr><td>2026-11-15</td><td>H-2 · S5</td><td>Perfil en el aparato (ADR-009): schema v2 con migración al leer, pantalla <code>/perfil</code> (novena del cascarón sin señal), notas de quien cuida en <code>nutrikids.profile-notes.v1</code>, opciones ordenadas por textura y chat con sueño, actividad, alergias y medicamentos. El filtro de Sentry también descarta perfil y notas. Sin servicios nuevos ni red nueva. Costo: US$0. Servidores locales en 127.0.0.1:3600. BD: ninguna (ratificada).</td></tr>
     </tbody>
   </table>
@@ -174,6 +174,7 @@
     <tbody>
       <tr><td>2026-07-20</td><td>Fase 1 (S1–S3)</td><td>Versión inicial (as-built retroactivo al cierre del ciclo fase 1). Recoge: S1 dieta viva local-first (localStorage, PWA, Vercel, CI con 3 checks), S2 chat con adapter Groq + grounding anonimizado + fallback local, S3 registro del día v2 (hora + nota + historial) con minimización ADR-007. BD: ninguna (ratificada). Costo: US$0. SPOF: el dispositivo (por diseño de privacidad).</td></tr>
       <tr><td>2026-11-15</td><td>H-2 · S4</td><td>Chat code-first sin nube (ADR-008): sale Groq, el adapter multi-proveedor, <code>/api/chat</code>, el rate limit y <code>GROQ_API_KEY</code>; entra el modelo del navegador como acento opcional. Service worker con precache de las 8 pantallas y aviso de versión nueva (ADR-003 revisado). CI: cero enlaces, dependencias agrupadas y <code>un-pr-vivo</code>. Costo: US$0, sin ningún servicio de IA. Servidores locales en 127.0.0.1:3600. BD: ninguna (ratificada).</td></tr>
+      <tr><td>2026-11-16</td><td>H-2 · S7</td><td>Compartir con la familia (ADR-011): ruta <code>/api/family</code> + Upstash Redis Free (solo datos cifrados), cifrado de punta a punta en el aparato, el doble en memoria para CI y e2e. Sale «fase 2 · Supabase»: el estado compartido se resolvió sin cuentas.</td></tr>
     </tbody>
   </table>
   </div>

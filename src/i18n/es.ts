@@ -175,8 +175,8 @@ export const es = {
       "Anotaste {food} como alergia (no viene de tu plan). Cualquier duda, con tu profesional.",
     intoleranceNotedYes:
       "Anotaste {food} como intolerancia (no viene de tu plan): pregúntale a tu profesional.",
-    notedList: "Tú anotaste: {list}.",
-    medicationNoted: "Anotado por ti: {name}",
+    notedList: "Quien cuida anotó: {list}.",
+    medicationNoted: "Anotado por quien cuida: {name}",
     intoleranceYes:
       "Tu plan anota {food} como intolerancia: pregúntale a tu profesional cuánto y cuándo.",
     allergyList: "Tu plan anota estas alergias: {list}.",
@@ -357,11 +357,13 @@ export const es = {
     dietVersionInfo: "{title} · emitida el {date}",
     clearTitle: "Borrar datos",
     clearBody:
-      "Borra la dieta cargada y todo tu registro del día (marcas, horas y notas) y lo que anotaste en el perfil (notas y texturas) de este dispositivo. La app vuelve a la demo.",
+      "Borra la dieta cargada y todo tu registro del día (marcas, horas y notas) y lo que anotaste en el perfil (notas y texturas) de este dispositivo, y sales de la familia si estabas en una. Lo que ya está compartido en internet se borra desde «Compartir con la familia». La app vuelve a la demo.",
     clearButton: "Borrar mis datos",
     clearConfirmTitle: "¿Borrar todo?",
     clearConfirmBody:
-      "Se borrará la dieta cargada y todo el registro de días (marcas, horas y notas) y lo que anotaste en el perfil (notas y texturas). Esto no se puede deshacer.",
+      "Se borrará la dieta cargada y todo el registro de días (marcas, horas y notas) y lo que anotaste en el perfil (notas y texturas), y saldrás de la familia. Esto no se puede deshacer.",
+    clearAlsoShared:
+      "También borrar lo compartido de internet. Los demás teléfonos de la familia conservan su copia.",
     clearConfirmYes: "Sí, borrar",
     clearConfirmNo: "Cancelar",
     clearedToast: "Datos borrados. Volviste a la dieta demo.",
@@ -369,6 +371,132 @@ export const es = {
     aiTitle: "Cómo responde el chat",
     aiBody:
       "El chat responde con código, solo con lo que trae tu plan, aquí en el teléfono: no usa servicios de inteligencia artificial en internet y nada de lo que escribes sale del teléfono. Si tu navegador trae un modelo de lenguaje propio dentro del teléfono, se usa solo para redactar con otras palabras una respuesta que el código ya decidió. Nada de la conversación se guarda.",
+  },
+  family: {
+    title: "Compartir con la familia",
+    intro:
+      "Para que todos los que cuidan a tu peque vean lo mismo: el plan, lo marcado del día y lo que cada uno anotó.",
+    travelsTitle: "Qué se comparte",
+    travels:
+      "El plan, el día (marcas, horas y notas) y el perfil con sus notas, alergias y medicamentos. Cada teléfono comparte también su nombre, para decir «Por Mamá».",
+    staysTitle: "Qué se queda en cada teléfono",
+    stays: "El idioma, el tema y los ajustes de cada teléfono.",
+    privacy:
+      "Todo se cifra en tu teléfono antes de salir. En internet solo quedan datos ilegibles: sin la frase de la familia nadie puede abrirlos, ni nosotros.",
+    createButton: "Crear una familia",
+    joinButton: "Entrar con un código",
+    unavailable:
+      "Compartir no responde en este momento. Tu app sigue completa en este teléfono.",
+    offlineHome:
+      "Sin conexión: para crear una familia o entrar a una hace falta internet.",
+    checking: "Comprobando…",
+    consentTitle: "Antes de compartir",
+    consentBody:
+      "Vas a compartir con otros teléfonos datos de salud de tu peque: el plan, lo marcado y lo anotado, incluidas alergias y medicamentos. Viaja cifrado y solo se abre con la frase de la familia.",
+    consentLost:
+      "Si se pierde la frase y ningún teléfono sigue dentro, lo compartido no se puede recuperar: nadie, ni nosotros, puede abrirlo.",
+    consentLeave:
+      "Puedes salir cuando quieras: «Salir de la familia» conserva los datos de este teléfono y «Borrar lo compartido» borra la copia de internet.",
+    consentCheck: "Entiendo qué se comparte y quiero hacerlo",
+    nameLabel: "Nombre de este teléfono",
+    nameHint: "Así te verán los demás: «Por Mamá». Hasta 30 letras.",
+    createSubmit: "Crear la familia",
+    creating: "Creando…",
+    cancel: "Cancelar",
+    secretsTitle: "Anota el código y la frase",
+    secretsBody:
+      "Con los dos entra otro teléfono. La frase se muestra solo ahora y no se guarda: si se pierde, se cambia por una nueva.",
+    codeLabel: "Código de la familia",
+    phraseLabel: "Frase de la familia",
+    savedCheck: "Ya los anoté en un lugar seguro",
+    secretsDone: "Listo",
+    joinTitle: "Entrar a una familia",
+    joinBody: "Pídele el código y la frase a quien creó la familia.",
+    joinCode: "Código",
+    joinPhrase: "Frase",
+    joinSubmit: "Entrar",
+    joining: "Entrando…",
+    errWrongCode: "No encontramos una familia con ese código.",
+    errWrongPhrase: "Esa frase no es la de la familia.",
+    errOffline: "Sin conexión. Inténtalo cuando vuelva internet.",
+    errUnavailable: "Compartir no responde en este momento.",
+    errBusy: "Fueron muchos intentos seguidos. Espera un minuto.",
+    errFull: "Compartir llegó a su límite.",
+    errError: "Algo no salió bien. Inténtalo otra vez.",
+    errNoName: "Escribe el nombre de este teléfono.",
+    statusIdle: "Al día",
+    statusSyncing: "Sincronizando",
+    statusOffline: "Sin conexión",
+    statusLocked: "Frase cambiada",
+    statusUnavailable: "No responde",
+    statusFull: "Sin espacio",
+    statusError: "No se pudo sincronizar",
+    bodyIdle: "Todo lo compartido está al día.",
+    bodySyncing: "Subiendo y bajando cambios…",
+    bodyOffline:
+      "Tus cambios se guardan aquí y se suben cuando vuelva internet.",
+    bodyLocked:
+      "Este teléfono ya no puede entrar a la familia: la frase cambió, lo sacaron o la familia se borró. Entra con la frase nueva o sal de la familia.",
+    bodyUnavailable:
+      "El servicio de compartir no responde. Tus datos siguen aquí y se reintenta solo.",
+    bodyFull: "La familia llegó al límite de lo que se puede compartir.",
+    bodyError: "Algo falló. Se reintenta solo.",
+    lastSync: "Última sincronía: {when}",
+    neverSynced: "Primera sincronía pendiente",
+    pending: "Cambios por subir: {n}",
+    codeShown: "Código de la familia: {code}",
+    phonesTitle: "Teléfonos de la familia",
+    youTag: "Este teléfono",
+    seenAt: "Visto {when}",
+    renameSave: "Guardar nombre",
+    renamed: "Nombre guardado.",
+    removeButton: "Sacar a {name}",
+    removeTitle: "¿Sacar a {name}?",
+    removeBody:
+      "Se cambia la frase de la familia: {name} queda sin acceso y los demás teléfonos entran otra vez con la frase nueva. Lo que {name} ya tiene en su teléfono se queda ahí.",
+    removeYes: "Cambiar la frase y sacar",
+    rotateTitle: "Cambiar la frase",
+    rotateBody:
+      "Úsalo si perdiste la frase o quieres sacar a alguien. Los demás teléfonos entran otra vez con la frase nueva.",
+    rotateButton: "Cambiar la frase",
+    rotateConfirmTitle: "¿Cambiar la frase?",
+    rotateConfirmBody:
+      "La frase anterior deja de servir. Los demás teléfonos tendrán que entrar con la nueva.",
+    rotateYes: "Sí, cambiarla",
+    newPhraseTitle: "Frase nueva",
+    newPhraseBody:
+      "Anótala y pásasela a los teléfonos que se quedan. La anterior ya no sirve.",
+    leaveButton: "Salir de la familia",
+    leaveConfirmTitle: "¿Salir de la familia?",
+    leaveConfirmBody:
+      "Este teléfono deja de compartir y se queda con sus datos. Los demás siguen. Para volver, entra con el código y la frase.",
+    leaveYes: "Sí, salir",
+    destroyButton: "Borrar lo compartido",
+    destroyBody:
+      "Borra de internet todo lo que la familia compartió y disuelve el grupo. Cada teléfono conserva su copia.",
+    destroyConfirmTitle: "¿Borrar lo compartido?",
+    destroyConfirmBody:
+      "Se borra de internet todo lo compartido y el grupo se disuelve. Cada teléfono conserva su copia. Esto no se puede deshacer.",
+    destroyYes: "Sí, borrar lo compartido",
+    left: "Saliste de la familia. Tus datos siguen en este teléfono.",
+    destroyed: "Se borró lo compartido. Tus datos siguen en este teléfono.",
+    planNoticeTheirs:
+      "Dos teléfonos cambiaron el plan. Quedó el más reciente, el del otro teléfono.",
+    planNoticeMine:
+      "Dos teléfonos cambiaron el plan. Quedó el más reciente, el de este teléfono.",
+    planNoticeOk: "Entendido",
+    keysNotSaved:
+      "No se pudo guardar la clave en este teléfono (¿navegación privada?). Funciona mientras la app esté abierta; al cerrarla tendrás que entrar de nuevo con la frase.",
+    oversize:
+      "{n} registro(s) no caben en lo compartido y se quedan solo en este teléfono.",
+    planTooBig:
+      "Tu plan es demasiado grande para compartirlo: se queda solo en este teléfono.",
+    unreadable:
+      "{n} registros no se pudieron abrir en este teléfono y se dejaron como estaban.",
+    lockedTitle: "Entra otra vez",
+    lockedBody:
+      "Pídele a quien cambió la frase la frase nueva. El código es el mismo.",
+    by: "Por {name}",
   },
   a11y: {
     mainNav: "Navegación principal",
@@ -388,9 +516,9 @@ export const es = {
   profile: {
     title: "Perfil de tu peque",
     intro:
-      "Lo que dice tu plan y lo que tú anotas en este teléfono, cada cosa con su origen. Nada de esto sale del teléfono.",
+      "Lo que dice tu plan y lo que tú anotas en este teléfono, cada cosa con su origen. Se queda en el teléfono, y solo viaja a tu familia si decides compartir: siempre cifrado.",
     originPlan: "según tu plan",
-    originYou: "anotado por ti",
+    originYou: "anotado por quien cuida",
     notSaid: "Tu plan no lo dice.",
     goalsTitle: "Objetivos del profesional",
     groupsTitle: "Grupos de alimentos",
@@ -413,7 +541,7 @@ export const es = {
     medicationsTitle: "Medicamentos",
     mineTitle: "Lo que tú anotas",
     mineBody:
-      "Se guarda solo en este teléfono, aparte de tu plan: si cargas un plan nuevo, tus anotaciones se quedan.",
+      "Se guarda en este teléfono, aparte de tu plan (y se comparte con tu familia solo si decides compartir): si cargas un plan nuevo, tus anotaciones se quedan.",
     texturesTitle: "Texturas que hoy acepta",
     texturesHint:
       "Márcalas: las opciones con otra textura se muestran al final, marcadas, y nunca se ocultan.",

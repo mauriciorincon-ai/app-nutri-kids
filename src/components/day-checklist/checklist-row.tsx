@@ -15,6 +15,7 @@ export function ChecklistRow({
   title,
   detail,
   time,
+  by,
   ariaLabel,
 }: {
   done: boolean;
@@ -22,6 +23,8 @@ export function ChecklistRow({
   title: string;
   detail?: string;
   time?: string;
+  /** «Por Mamá»: quién la marcó (solo si hay familia). */
+  by?: string;
   ariaLabel: string;
 }) {
   const id = useId();
@@ -42,8 +45,8 @@ export function ChecklistRow({
       />
       <span
         className={cn(
-          "min-w-0 flex-1 transition-opacity",
-          done && "opacity-55",
+          "min-w-0 flex-1 transition-colors",
+          done && "text-muted-foreground",
         )}
       >
         <span className="flex items-baseline justify-between gap-2">
@@ -60,6 +63,14 @@ export function ChecklistRow({
         {detail && (
           <span className="mt-0.5 block text-sm leading-snug text-muted-foreground">
             {detail}
+          </span>
+        )}
+        {done && by && (
+          <span
+            className="mt-0.5 block text-sm font-semibold text-muted-foreground"
+            data-testid="checklist-by"
+          >
+            {by}
           </span>
         )}
       </span>

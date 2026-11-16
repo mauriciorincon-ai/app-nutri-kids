@@ -26,7 +26,7 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
 
 ### Cargar tu dieta · desde Sprint 001 (con el PDF, desde Sprint 006)
 
-- **Qué hace:** guarda el plan de tu peque EN TU TELÉFONO (no viaja a ningún servidor) y la app
+- **Qué hace:** guarda el plan de tu peque EN TU TELÉFONO (solo viaja a tu familia, cifrado, si activas «Compartir con la familia») y la app
   entera pasa a responder con ese plan. Puedes cargarlo **desde el PDF que te dio tu profesional**
   o desde un archivo `.json`.
 - **Cómo se usa con el PDF:**
@@ -54,7 +54,7 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
   o "no pudimos abrirlo": elige otro PDF o carga el archivo `.json`.
 - **Lo que anotaste en el Perfil** (notas y texturas) **se queda** al cargar un plan nuevo.
 - **Limitaciones conocidas:** el PDF debe traer texto (uno escaneado como foto no se puede leer);
-  el plan queda solo en ese teléfono (cada cuidador lo carga en el suyo).
+  el plan queda en ese teléfono; si no usas «Compartir con la familia», cada cuidador lo carga en el suyo.
 
 **In English — Load your plan (from the PDF, since Sprint 006).** Go to **Load** → **"Choose PDF"**
 and pick the PDF your professional gave you. The app reads it **on your phone, with no internet**;
@@ -98,8 +98,9 @@ Profile stays.
   momento** y **qué sigue** (la comida de la franja, el suplemento del día si falta, y los vasos de
   agua). No manda notificaciones ni pide permisos: es simplemente la información correcta cuando
   abres la app. Nunca te reprocha nada — solo informa.
-- **Limitaciones conocidas:** las marcas, las horas y las notas viven en ese teléfono; todavía no
-  se comparten entre cuidadores (eso viene en una versión futura).
+- **Limitaciones conocidas:** las marcas, las horas y las notas viven en tu teléfono; si activas
+  **«Compartir con la familia»** (en Ajustes), los demás teléfonos las ven y cada marca dice quién la hizo
+  («Por Mamá»). Si dos personas marcan lo mismo a la vez, gana el último cambio.
 
 ### Días anteriores · desde Sprint 003
 
@@ -107,8 +108,8 @@ Profile stays.
   para que puedas repasarlo (por ejemplo, antes de una cita con el pediatra).
 - **Cómo se usa:** en **Hoy**, abajo del todo, toca **"Ver días anteriores"**. Verás la lista por
   fecha, del más reciente al más antiguo. Es **solo para consultar**: no se edita desde ahí.
-- **Limitaciones conocidas:** vive solo en ese teléfono; **"Borrar mis datos"** en Ajustes lo borra
-  todo (incluidas horas y notas).
+- **Limitaciones conocidas:** vive en tu teléfono y, con la familia activada, también en los de ella; **"Borrar mis datos"** en Ajustes lo borra
+  de este teléfono (incluidas horas y notas).
 
 ### Pregúntale a la dieta (Chat) · desde Sprint 002 (reescrito en Sprint 004)
 
@@ -122,7 +123,7 @@ Profile stays.
   - **"¿Cuánta agua?"** → la meta de agua que dice tu plan.
   - **"¿Cuántas horas duerme?"** o **"¿qué actividad le toca?"** → lo que dice el plan en sus
     objetivos de sueño y de actividad.
-  - **"¿Es alérgico a los mariscos?"** → las alergias e intolerancias que **anota tu plan** (y, aparte, las que tú anotaste en el Perfil, dichas como «anotado por ti»). Si preguntas
+  - **"¿Es alérgico a los mariscos?"** → las alergias e intolerancias que **anota tu plan** (y, aparte, las que anotó quien cuida en el Perfil, dichas como «anotado por quien cuida»). Si preguntas
     por algo que el plan no lista, no te dice "no": te muestra lo que sí anota y que lo demás
     **tu plan no lo dice**.
   - **"¿Qué medicamentos toma?"** → los que tu plan lista, con su dosis y su momento, tal cual; los que tú anotaste salen aparte.
@@ -138,7 +139,7 @@ Profile stays.
     pediatra o nutricionista — no responde eso.
   - **La conversación no se guarda.** Al cerrar o recargar, el chat queda en blanco. Es a propósito
     (privacidad de los datos del peque).
-  - **Nada sale del teléfono.** No hay asistente en la nube, ni servicio de terceros, ni cuenta.
+  - **El chat nunca envía nada a internet.** No hay asistente en la nube ni servicio de terceros. (Lo que compartes con tu familia, si lo activas, viaja cifrado: eso no es del chat.)
   - **Si tu teléfono ya trae un modelo de lenguaje propio** (algunos Chrome recientes), el chat
     puede usarlo, **sin descargar nada y sin internet**, solo para decir la misma respuesta con
     otras palabras. Se nota con la etiqueta **"Desde tu plan · redactado en tu teléfono"**. Si no lo trae, o si lo
@@ -153,7 +154,7 @@ Profile stays.
     hidratación, actividad y sueño), las restricciones vigentes, los suplementos y lo que el plan
     trae del peque (condición, alergias, intolerancias y medicamentos). Lo que el plan no trae
     dice **"Tu plan no lo dice."**; nunca se inventa.
-  - **«anotado por ti»**: las **texturas que hoy acepta** (líquida, puré, machacada, blanda,
+  - **«anotado por quien cuida»**: las **texturas que hoy acepta** (líquida, puré, machacada, blanda,
     picada, crujiente) y tus **notas** (hasta 140 letras, con un tipo: condición, alergia,
     intolerancia, medicamento u otra).
 - **Cómo se usa:** toca **«Perfil de tu peque»** en **Hoy** o en **Ajustes** (no está en la barra
@@ -167,8 +168,9 @@ Profile stays.
 - **Cosas importantes:**
   - **Tus notas viven aparte del plan.** Si cargas un plan nuevo, se quedan. «Borrar mis datos» las
     quita.
-  - **Nada sale del teléfono:** ni la condición, ni las alergias, ni los medicamentos, ni tus
-    notas viajan por internet, ni se registran, ni se envían a ningún servicio.
+  - **Solo viaja si compartes con tu familia:** la condición, las alergias, los medicamentos y las
+    notas salen del teléfono únicamente si activas «Compartir con la familia», y siempre cifrados. Nunca se
+    registran ni se envían a ningún otro servicio.
   - **Un plan anterior sigue funcionando.** Si guardaste tu dieta antes de esta versión, se lee y
     se actualiza sola sin perder nada; solo le faltarán los datos nuevos ("Tu plan no lo dice.")
     hasta que cargues un plan que los traiga.
@@ -188,7 +190,7 @@ Profile stays.
   cuando te convenga (la app se recarga una vez) o **"Ahora no"** para seguir con lo que estás
   haciendo. **Nunca se actualiza sola mientras la usas.**
 - **Limitaciones conocidas:** la primera vez necesita señal. Si cambias de teléfono, la dieta no
-  viaja sola: vuelve a cargar tu PDF o el archivo.
+  viaja sola —salvo que entres a tu familia con el código y la frase—: vuelve a cargar tu PDF o el archivo.
 
 ### Suplementos de la semana · desde Sprint 001
 
@@ -196,24 +198,65 @@ Profile stays.
   desayuno"). El día de hoy sale resaltado y ahí mismo puedes marcar "ya lo tomó".
 - **Cómo se usa:** **Suplementos** (abajo). La marca de hoy es la misma del checklist de "Hoy".
 
+### Compartir con la familia · desde Sprint 007
+
+- **Qué hace:** para que todos los que cuidan a tu peque vean lo mismo. Comparte el **plan**, el **día**
+  (marcas, horas, notas y quién las hizo) y el **perfil** con sus notas, alergias y medicamentos. El
+  idioma, el tema y los ajustes de cada teléfono se quedan en cada teléfono.
+- **Es privado de punta a punta:** todo se cifra en tu teléfono antes de salir, con una **frase de la
+  familia** que solo conocen ustedes. En internet solo quedan datos ilegibles: ni siquiera nosotros
+  podemos abrirlos. Mientras no elijas crear una familia o entrar a una, la app no hace ninguna petición.
+- **Cómo se usa:**
+  1. **Ajustes → Compartir con la familia → «Crear una familia».** Lee qué se comparte (y que, si se
+     pierde la frase y ningún teléfono sigue dentro, nadie puede recuperarlo), escribe el nombre de este
+     teléfono («Mamá») y marca que lo entiendes.
+  2. Te muestra el **código** y la **frase** una sola vez: anótalos en un lugar seguro. La frase no se guarda en el teléfono; si el teléfono no pudiera guardar las claves, la pantalla lo avisa.
+  3. En otro teléfono: **«Entrar con un código»**, con el código, la frase y su nombre.
+  4. Desde ahí todo se sincroniza solo: al abrir la app, al volver la señal, tras cada cambio y cada
+     30 segundos. En **Hoy**, **Días anteriores** y **Perfil** cada dato dice quién lo hizo.
+  5. Para **sacar a un teléfono** (o si se perdió la frase): **«Cambiar la frase»** o **«Sacar a …»**.
+     La frase cambia, ese teléfono queda fuera y los demás entran con la frase nueva (solo la frase).
+  6. **«Salir de la familia»** quita las claves de este teléfono y conserva sus datos.
+     **«Borrar lo compartido»** borra de internet todo lo compartido y disuelve el grupo; cada teléfono conserva su copia.
+- **Sin internet:** lo que marcas se guarda aquí, la pantalla dice cuántos cambios faltan por subir y
+  se suben solos al volver. Los estados se dicen con símbolo y texto: «Al día», «Sincronizando», «Sin conexión», «Frase cambiada»…
+- **Limitaciones conocidas:** si dos teléfonos cambian lo mismo a la vez, gana el último cambio; si
+  dos teléfonos cargan un plan distinto, gana el último y el otro teléfono lo avisa. El plan se
+  comparte si cabe en 180 000 caracteres (si no, la pantalla lo dice y el resto sí se comparte); una nota o marca demasiado grande se avisa igual y no frena lo demás. Una
+  familia sin uso se borra sola a los 400 días.
+
+**In English — Share with the family (since Sprint 007).** Go to **Settings → Share with the family**
+to see the same plan, day and profile on every caregiver's phone. What is shared: the **plan**, the
+**day** (marks, times, notes and who made them) and the **profile** with its notes, allergies and
+medications. Language, theme and per-phone settings stay on each phone. Everything is **encrypted on
+your phone** with a family phrase only you know; the internet only holds unreadable data, and the app
+makes no request until you create or join a family. **Create a family**, write down the code and the
+phrase (shown once), and on another phone choose **Join with a code**. Offline changes wait and upload
+when the connection returns. To remove a phone or if the phrase is lost, **Change the phrase**: the
+other phones join again with the new phrase. **Leave the family** keeps this phone's data; **Delete
+what's shared** erases it from the internet and each phone keeps its copy.
+
 ### Idioma y borrar datos · desde Sprint 001
 
 - **Qué hace:** cambia la app entre español e inglés, muestra qué dieta está cargada, y permite
   **borrar todos los datos** del teléfono.
 - **Cómo se usa:** **Ajustes** (abajo). Para borrar: **"Borrar mis datos"** → confirma. Se borra
-  la dieta cargada y **todo tu registro del día (marcas, horas y notas)** y **lo que anotaste en el perfil (notas y texturas)**; la app vuelve a la demo.
-  Esto no se puede deshacer.
+  la dieta cargada y **todo tu registro del día (marcas, horas y notas)** y **lo que anotaste en el perfil (notas y texturas)**, y este teléfono sale de la familia; la app vuelve a la demo.
+  Esto no se puede deshacer. Si estás en una familia, el cuadro trae la casilla **«También borrar lo compartido de internet»**: con ella marcada se borra también la copia cifrada (los demás teléfonos conservan la suya); sin marcar, solo sales de la familia. También puedes borrarla antes desde **«Borrar lo compartido»** en Compartir con la familia.
 
 ## Preguntas frecuentes
 
 - **¿El PDF que cargo se sube o se guarda?** No. Se lee en tu teléfono, sin internet, y al terminar se
   suelta de la memoria: solo queda el plan ya revisado por ti. Las medidas del cuerpo, el nombre
   y el contacto que traiga el PDF se descartan: no entran al plan ni se guardan.
-- **¿Mis datos van a internet?** No. La dieta, las marcas, las horas y las notas viven solo en tu
-  teléfono. Por eso mismo, si cambias de teléfono, vuelve a cargar tu PDF (o el archivo de la dieta). Las notas
-  del día (lo que escribes en "Agregar nota") **nunca** salen del teléfono: el chat ni las lee. Lo que
-  anotas en el **Perfil** tampoco sale: solo el chat de tu propio teléfono lo usa, para contestarte
-  con eso marcado como «anotado por ti».
+- **¿Mis datos van a internet?** Solo si activas «Compartir con la familia»: entonces el plan, el
+  día (marcas, horas y notas) y el perfil (notas, alergias y medicamentos) viajan **cifrados desde tu
+  teléfono**, y en internet solo quedan datos ilegibles. Sin familia, nada sale del teléfono. El chat
+  **nunca** envía nada: solo el de tu propio teléfono usa lo que anotaste, para contestarte con eso
+  marcado como «anotado por quien cuida».
+- **¿Y si pierdo la frase de la familia?** Con otro teléfono que ya esté dentro, **«Cambiar la frase»**
+  crea una nueva; los demás teléfonos entran con ella. Sin ningún teléfono dentro, la familia no se
+  puede abrir: se crea otra (nadie, ni nosotros, puede leerla).
 - **¿Por qué veo "Dieta demo"?** Aún no has cargado la dieta real (o la borraste). Ve a
   **Cargar**.
 - **¿La app cuenta calorías o pesa al niño?** No, y no lo hará: el enfoque es qué alimentos sí y
@@ -227,11 +270,12 @@ Profile stays.
 
 ## Historial
 
-| Sprint | Features añadidas a este manual                                                                                                                                                                                                                                                                                                                                               |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 001    | Cargar dieta (archivo + pegar) · semáforo con reemplazos · checklist "Hoy" · suplementos de la semana · idioma ES/EN · borrar datos · instalación como app                                                                                                                                                                                                                    |
-| 002    | Chat "Pregúntale a la dieta": consultas "¿se puede?" al instante sin internet + preguntas abiertas con asistente de IA anclado al plan · nota de transparencia IA _(la parte de IA en la nube se reemplazó en el 004)_                                                                                                                                                        |
-| 003    | Registro del día: hora real al marcar + nota corta por comida (etiquetas + texto) · recordatorio "Ahora mismo" (qué toca y qué sigue, sin notificaciones) · "Ver días anteriores" (historial local de solo lectura) · borrar datos ahora cubre horas y notas                                                                                                                  |
-| 004    | Chat nuevo que contesta con tu plan **sin internet y sin enviar nada** ("no tengo X", "no quiso X", "¿qué le doy ahora?", "¿cuánta agua?", "tu plan no lo dice") · todas las pantallas abren sin internet · aviso de versión nueva con "Actualizar" / "Ahora no"                                                                                                              |
-| 005    | Perfil de tu peque: lo del profesional **«según tu plan»** y lo tuyo **«anotado por ti»** (texturas que hoy acepta y notas) · opciones de reemplazo ordenadas por textura, con la marca «textura que hoy no acepta» · el chat contesta sueño, actividad, alergias y medicamentos del plan · el plan guardado de antes se actualiza solo · la pantalla nueva abre sin internet |
-| 006    | **Tu PDF, vuelto app:** cargas el PDF de tu profesional, que se lee en tu teléfono sin internet y sin guardarse · «Revisa tu plan» parte por parte, con la página de cada dato («está bien», corregir o «mi plan no lo trae») · una revisión a medias se retoma · el JSON sigue funcionando y tus notas del Perfil se quedan |
+| Sprint | Features añadidas a este manual                                                                                                                                                                                                                                                                                                                                                   |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 001    | Cargar dieta (archivo + pegar) · semáforo con reemplazos · checklist "Hoy" · suplementos de la semana · idioma ES/EN · borrar datos · instalación como app                                                                                                                                                                                                                        |
+| 002    | Chat "Pregúntale a la dieta": consultas "¿se puede?" al instante sin internet + preguntas abiertas con asistente de IA anclado al plan · nota de transparencia IA _(la parte de IA en la nube se reemplazó en el 004)_                                                                                                                                                            |
+| 003    | Registro del día: hora real al marcar + nota corta por comida (etiquetas + texto) · recordatorio "Ahora mismo" (qué toca y qué sigue, sin notificaciones) · "Ver días anteriores" (historial local de solo lectura) · borrar datos ahora cubre horas y notas                                                                                                                      |
+| 004    | Chat nuevo que contesta con tu plan **sin internet y sin enviar nada** ("no tengo X", "no quiso X", "¿qué le doy ahora?", "¿cuánta agua?", "tu plan no lo dice") · todas las pantallas abren sin internet · aviso de versión nueva con "Actualizar" / "Ahora no"                                                                                                                  |
+| 005    | Perfil de tu peque: lo del profesional **«según tu plan»** y lo anotado **«por quien cuida»** (texturas que hoy acepta y notas) · opciones de reemplazo ordenadas por textura, con la marca «textura que hoy no acepta» · el chat contesta sueño, actividad, alergias y medicamentos del plan · el plan guardado de antes se actualiza solo · la pantalla nueva abre sin internet |
+| 006    | **Tu PDF, vuelto app:** cargas el PDF de tu profesional, que se lee en tu teléfono sin internet y sin guardarse · «Revisa tu plan» parte por parte, con la página de cada dato («está bien», corregir o «mi plan no lo trae») · una revisión a medias se retoma · el JSON sigue funcionando y tus notas del Perfil se quedan                                                      |
+| 007    | **Compartir con la familia:** el plan, el día (marcas, horas y notas) y el perfil en todos los teléfonos de quienes cuidan, **cifrados de punta a punta** · cada dato dice quién lo hizo («Por Mamá») · funciona sin internet y sube al volver · cambiar la frase para sacar a un teléfono · salir y borrar lo compartido                                                         |

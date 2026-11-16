@@ -12,7 +12,7 @@
     "enlaces.produccion": "null cuando la app no tiene URL pública. `razon` explica por qué, y es lo que la vitrina muestra en lugar del enlace. Nunca se rellena con un enlace de repositorio ni con una promesa."
   },
   "schema_version": "1.0.0",
-  "actualizado": "2026-11-15",
+  "actualizado": "2026-11-16",
   "app": {
     "slug": "nutri-kids",
     "nombre": "Nutrikids",
@@ -26,10 +26,10 @@
     "tagline": "¿Esto se puede? La dieta de tu hijo te responde en segundos.",
     "intro": "Nutrikids pone en tu teléfono el plan de alimentación que el profesional le hizo a tu hijo, ese documento largo que nadie relee a la hora de la merienda. Lo vuelve una guía viva: qué se puede y qué no, con qué reemplazar lo que falta, qué toca ahora y cómo fue el día.",
     "para_quien": "Para la familia que cuida a un niño con una dieta médica estricta: la mamá, el papá o quien lo tenga a cargo ese día, que necesita saber qué darle sin abrir el documento y sin improvisar.",
-    "diferencial": "No califica al niño: sin calorías, peso, IMC ni percentiles, y sin convertir el «cumplimiento» en una nota. El chat contesta con tu plan dentro del teléfono y sin internet: lo que anotas del día, las horas y las notas sobre tu hijo, no sale del teléfono, ni siquiera para hacerle una pregunta al chat."
+    "diferencial": "No califica al niño: sin calorías, peso, IMC ni percentiles, y sin convertir el «cumplimiento» en una nota. El chat contesta con tu plan dentro del teléfono y sin internet: no manda nada a ningún lado, ni siquiera para hacerle una pregunta. Lo que anotas del día, las horas y las notas sobre tu hijo solo viaja a tu familia si tú lo decides, y siempre cifrado desde el teléfono."
   },
   "funcionalidades": {
-    "total": 21,
+    "total": 22,
     "fuente_del_conteo": "docs/MANUAL-DE-USO.md",
     "descartadas": [],
     "grupos": [
@@ -164,8 +164,8 @@
       {
         "orden": 5,
         "estrella": false,
-        "nombre": "Tuya y privada, en tu teléfono",
-        "linea": "Se instala como app, cambia entre español e inglés y lo borra todo cuando tú decidas",
+        "nombre": "Tuya y privada: la compartes si quieres",
+        "linea": "La compartes con tu familia, cifrada, si quieres; se instala como app, cambia entre español e inglés y la borras cuando tú decidas",
         "features": [
           {
             "id": "F20",
@@ -175,9 +175,15 @@
           },
           {
             "id": "F21",
-            "nombre": "Texturas y notas, solo tuyas",
-            "que_hace": "Marcas las texturas que hoy acepta tu peque y escribes notas cortas, marcadas «anotado por ti». Los reemplazos con otra textura pasan al final y dicen «textura que hoy no acepta», pero nunca se esconden. Se quedan al cargar un plan nuevo y no salen del teléfono.",
+            "nombre": "Texturas y notas, de quien cuida",
+            "que_hace": "Marcas las texturas que hoy acepta tu peque y escribes notas cortas, marcadas «anotado por quien cuida». Los reemplazos con otra textura pasan al final y dicen «textura que hoy no acepta», pero nunca se esconden. Se quedan al cargar un plan nuevo y solo salen del teléfono si las compartes con tu familia, cifradas.",
             "seccion_manual": "Perfil de tu peque"
+          },
+          {
+            "id": "F22",
+            "nombre": "Compartir con la familia, cifrado",
+            "que_hace": "Creas una familia y anotas su código y su frase; otro teléfono entra con los dos y todos ven lo mismo: el plan, lo marcado del día y lo anotado, cada cosa con quién la hizo («Por Mamá»). Todo se cifra en tu teléfono antes de salir: en internet solo quedan datos ilegibles. Sin internet, tus cambios esperan y suben al volver. Para sacar a un teléfono, cambias la frase.",
+            "seccion_manual": "Compartir con la familia"
           },
           {
             "id": "F17",
@@ -194,7 +200,7 @@
           {
             "id": "F19",
             "nombre": "Borrar mis datos",
-            "que_hace": "Tú decides cuándo no queda rastro en el teléfono. Un botón borra la dieta cargada y todo el registro, con sus marcas, horas y notas, y deja la app otra vez en la demo. Pide confirmación, porque no se puede deshacer.",
+            "que_hace": "Tú decides cuándo no queda rastro en el teléfono. Un botón borra la dieta cargada y todo el registro, con sus marcas, horas y notas, saca este teléfono de la familia y deja la app otra vez en la demo. Pide confirmación, porque no se puede deshacer. Lo ya compartido se borra de internet con «Borrar lo compartido».",
             "seccion_manual": "Idioma y borrar datos"
           }
         ]
@@ -205,7 +211,7 @@
     {
       "clave": "funcionalidades",
       "etiqueta": "Funcionalidades del MVP",
-      "valor": 21,
+      "valor": 22,
       "unidad": "funcionalidades",
       "fuente": "medido",
       "detalle": "Contadas contra docs/MANUAL-DE-USO.md y verificadas por un test que compara el total con los bloques .feature del brochure. El marco no-médico (nota de primer uso y disclaimer permanente) no cuenta: es el encuadre de la app, no una funcionalidad."
@@ -221,34 +227,34 @@
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 654,
+      "valor": 785,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-15 sobre la rama del lector contra la forma real del PDF, segunda vuelta (S6): 28 archivos, 654 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-16 sobre la rama de la familia cifrada (S7): 41 archivos, 785 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 166,
+      "valor": 180,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-15 sobre la rama del lector contra la forma real del PDF, segunda vuelta (S6), contra un build de producción: 166 pruebas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe y las de uso sin internet, todas en verde."
+      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-16 sobre la rama de la familia cifrada (S7), contra un build de producción y el doble en memoria del servicio de la familia (jamás la base real): 180 pruebas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe en los dos temas, las de uso sin internet y las de dos teléfonos con el centinela de texto en claro, todas en verde."
     },
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 98.67,
+      "valor": 97.6,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib/diet, src/lib/ia, src/lib/pdf y src/lib/privacy el 2026-11-15 sobre la rama del lector contra la forma real del PDF, segunda vuelta (98,67 % de líneas; pdf-reader.ts 98,16 %), con umbrales del 80 % en vitest.config.ts."
+      "detalle": "v8 sobre src/lib/diet, src/lib/ia, src/lib/pdf, src/lib/privacy y src/lib/family el 2026-11-16 sobre la rama de la familia cifrada (97,6 % de líneas en total; src/lib/family 97,23 % y su servidor 100 %), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family."
     },
     {
       "clave": "decisiones_registradas",
       "etiqueta": "Decisiones de arquitectura registradas",
-      "valor": 10,
+      "valor": 11,
       "unidad": "ADR",
       "fuente": "medido",
-      "detalle": "Archivos de decisions/ el 2026-11-15; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, y la 010 fija que el PDF se lee en el aparato y se revisa parte por parte."
+      "detalle": "Archivos de decisions/ el 2026-11-16; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, y la 010 fija que el PDF se lee en el aparato y se revisa parte por parte."
     },
     {
       "clave": "dependencias_runtime",
@@ -256,7 +262,7 @@
       "valor": 14,
       "unidad": "paquetes",
       "fuente": "medido",
-      "detalle": "Campo `dependencies` de package.json el 2026-11-15 sobre la rama del S6: suma pdfjs-dist, fijado y servido por la propia app (ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
+      "detalle": "Campo `dependencies` de package.json el 2026-11-16 sobre la rama del S7: sin dependencias nuevas (el cifrado es WebCrypto; el almacén se llama con fetch); sigue incluyendo pdfjs-dist, fijado y servido por la propia app (ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
     },
     {
       "clave": "requests_del_registro",
@@ -272,21 +278,21 @@
       "valor": 0,
       "unidad": "USD",
       "fuente": "calculada",
-      "detalle": "Suma de los servicios contratados: Vercel Hobby (free) + GitHub Free + Sentry free. Ningún servicio de IA ni de pago por uso. Sin base de datos ni servidor propio que facturar. Techo declarado del proyecto: 10 USD/mes."
+      "detalle": "Suma de los servicios contratados: Vercel Hobby (free) + GitHub Free + Sentry free + Upstash Redis Free (solo lo compartido, ya cifrado). Ningún servicio de IA ni de pago por uso. Sin servidor propio que facturar: la única ruta de servidor cabe en el plan gratuito. Techo declarado del proyecto: 10 USD/mes."
     },
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 78061,
+      "valor": 79626,
       "unidad": "bytes",
       "fuente": "medido",
-      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-15 sobre la rama del S6. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."
+      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-16 sobre la rama del S7. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."
     }
   ],
   "stack": [
     {
       "nombre": "Next.js",
-      "papel": "la PWA móvil-primero, sin rutas de servidor propias: Vercel solo la sirve"
+      "papel": "la PWA móvil-primero; Vercel la sirve y aloja una sola ruta de servidor, la de la familia, que guarda datos ya cifrados"
     },
     {
       "nombre": "TypeScript",
@@ -297,8 +303,8 @@
       "papel": "la interfaz, sobre los tokens del design system propio"
     },
     {
-      "nombre": "localStorage",
-      "papel": "toda la persistencia: la dieta y el registro del día, versionados y migrables. No hay base de datos"
+      "nombre": "localStorage + Upstash Redis (opcional)",
+      "papel": "la persistencia vive en el teléfono, versionada y migrable; solo si la familia comparte, una copia ya cifrada vive en Upstash Redis Free, ilegible para el servidor"
     },
     {
       "nombre": "Zod",
@@ -318,12 +324,15 @@
     }
   ],
   "privacidad": {
-    "datos_del_menor_solo_en_dispositivo": true,
-    "registro_del_dia_sale_del_dispositivo": false,
+    "datos_del_menor_solo_en_dispositivo": false,
+    "registro_del_dia_sale_del_dispositivo": true,
+    "sale_solo_si_la_familia_lo_activa": true,
+    "sale_cifrado_de_punta_a_punta": true,
+    "servidor_ve_texto_en_claro": false,
     "conversacion_persistida": false,
-    "red_saliente": false,
+    "red_saliente": true,
     "usa_ia": false,
-    "detalle": "La dieta, las marcas, las horas y las notas viven solo en el teléfono: no hay servidor de datos, ni cuenta, ni nube. El chat no manda nada a internet: contesta con programación sobre el plan cargado, dentro del teléfono y también sin señal, y un test de punta a punta registra todas las peticiones y exige cero al preguntar. No hay proveedor de inteligencia artificial: si el navegador del teléfono trae su propio modelo, el chat puede usarlo para decir con otras palabras una respuesta que el código ya decidió, sin descargar nada. El registro del día no está al alcance del chat, y pruebas automáticas con un dato centinela fallan si alguien lo intentara. La conversación no se guarda y los registros técnicos llevan solo datos de funcionamiento, nunca contenido. «Borrar mis datos» elimina la dieta y todo el registro, incluidas las copias que dejaron versiones anteriores de la app."
+    "detalle": "Sin familia, la dieta, las marcas, las horas y las notas viven solo en el teléfono y la app no hace ninguna petición. Si la familia decide compartir, el plan, el día y el perfil viajan cifrados desde el teléfono (AES-GCM, con una clave que nace de la frase de la familia y no sale del aparato): el servidor guarda datos ilegibles, jamás ve texto, nombres, la frase ni la clave, y un test de punta a punta revisa cada petición con un centinela. El chat no manda nada a internet: contesta con programación sobre el plan cargado, dentro del teléfono y también sin señal."
   },
   "enlaces": {
     "produccion": null,

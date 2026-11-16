@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { NoteEditor } from "@/components/day-checklist/note-editor";
 import { ChecklistRow } from "@/components/day-checklist/checklist-row";
 import { DaySummary } from "@/components/day-checklist/day-summary";
 import { ReminderCard } from "@/components/day-checklist/reminder-card";
@@ -28,6 +29,26 @@ describe("StatusChip (regla A11y: nunca solo color)", () => {
       expect(container.querySelector("svg")).not.toBeNull();
     },
   );
+});
+
+describe("NoteEditor", () => {
+  it("dice quién escribió la nota solo si se sabe", () => {
+    const note = { chips: [], text: "Nota de ejemplo" };
+    const { unmount } = withProviders(
+      <NoteEditor mealName="Desayuno" note={note} onSave={() => {}} />,
+    );
+    expect(screen.queryByTestId("note-by")).toBeNull();
+    unmount();
+    withProviders(
+      <NoteEditor
+        mealName="Desayuno"
+        note={note}
+        by="Por Mamá"
+        onSave={() => {}}
+      />,
+    );
+    expect(screen.getByTestId("note-by").textContent).toContain("Por Mamá");
+  });
 });
 
 describe("ChecklistRow", () => {
@@ -60,7 +81,7 @@ describe("ChecklistRow", () => {
       />,
     );
     expect(
-      screen.getByText("Desayuno").closest("span.opacity-55"),
+      screen.getByText("Desayuno").closest("span.text-muted-foreground"),
     ).not.toBeNull();
     expect(document.querySelector(".line-through")).toBeNull();
   });

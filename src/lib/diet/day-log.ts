@@ -1,3 +1,6 @@
+import { getDeviceId } from "@/lib/device";
+import { mergeMap, type Reg, type RegMap } from "@/lib/family/merge";
+
 import { clockLabel, dateKey } from "./logic";
 
 /**
@@ -8,14 +11,21 @@ import { clockLabel, dateKey } from "./logic";
  * cada comida puede llevar una NOTA corta (chips + texto). Ids de marca:
  * "meal:<id>" · "supplement:<id>" · "water:<n>" (ver logic.buildDayChecklist).
  *
- * PRIVACIDAD (regla dura 1 · ADR-007): el registro son datos de salud de un
- * menor — vive SOLO en el dispositivo. JAMÁS viaja a red, repo ni al grounding
- * del chat. "Borrar datos" lo incluye. Los logs de este módulo no existen: nada
- * del registro se loguea (la UI emite eventos solo-metadatos, jamás el texto).
+ * Sprint 007 — schema v3: cada marca y cada nota lleva su SELLO {t, by, v} (hora de
+ * escritura, teléfono, valor) y quitar algo deja una LÁPIDA (`v: null`), para que dos
+ * teléfonos de la familia puedan mezclar su día sin pisarse ni resucitar lo quitado
+ * (ADR-011). La lectura pública sigue siendo la misma de siempre, sin sellos, más `by`.
+ *
+ * PRIVACIDAD (regla dura 6 · ADR-007 · ADR-011): el registro son datos de salud de un
+ * menor. Vive en el dispositivo y jamás va al repo ni al grounding del chat. Solo sale
+ * si la familia lo comparte, y entonces únicamente CIFRADO en el aparato (src/lib/family):
+ * este módulo no toca la red. "Borrar datos" lo incluye. Nada del registro se loguea
+ * (la UI emite eventos solo-metadatos, jamás el texto).
  */
 
-/** Clave del store ACTIVO (v2). Los tests la usan; la migración lee la v1. */
-export const DAY_LOG_KEY = "nutrikids.daylog.v2";
+/** Clave del store ACTIVO (v3). Los tests la usan; la migración lee la v2 y la v1. */
+export const DAY_LOG_KEY = "nutrikids.daylog.v3";
+export const DAY_LOG_KEY_V2 = "nutrikids.daylog.v2";
 const DAY_LOG_KEY_V1 = "nutrikids.daylog.v1";
 
 /** Chips de nota — vocabulario cerrado, sin culpa (un registro nunca reprocha). */
@@ -29,15 +39,23 @@ export const NOTE_TEXT_MAX = 140;
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/; // "HH:MM" 24h
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/; // clave de día YYYY-MM-DD
 
-export type DayNote = { chips: NoteChip[]; text: string };
+/** `by`: teléfono que la escribió (solo al leer; puede faltar). */
+export type DayNote = { chips: NoteChip[]; text: string; by?: string };
 /** `at`: hora local "HH:MM" a la que se marcó; null = hora desconocida (migrada de v1). */
-export type DayMark = { at: string | null };
+export type MarkValue = { at: string | null };
+/** Lo que se lee: la marca y quién la hizo (`by` = id del teléfono; puede faltar). */
+export type DayMark = { at: string | null; by?: string };
 export type DayRecord = {
   marks: Record<string, DayMark>;
   notes: Record<string, DayNote>;
 };
 
-type DayLogStore = Record<string, DayRecord>;
+/** Lo que se guarda y se comparte: marcas y notas con sello y lápidas. */
+export type DayRegs = {
+  marks: RegMap<MarkValue>;
+  notes: RegMap<DayNote>;
+};
+type DayLogStore = Record<string, DayRegs>;
 
 function storage(): Storage | null {
   // El getter `window.localStorage` LANZA si el almacenamiento está bloqueado
@@ -49,7 +67,7 @@ function storage(): Storage | null {
   }
 }
 
-function emptyRecord(): DayRecord {
+function emptyRegs(): DayRegs {
   return { marks: {}, notes: {} };
 }
 
@@ -57,58 +75,108 @@ function isChip(v: unknown): v is NoteChip {
   return typeof v === "string" && (NOTE_CHIPS as readonly string[]).includes(v);
 }
 
-/** Normaliza un valor desconocido a DayRecord (fail-safe ante datos corruptos). */
-function coerceRecord(value: unknown): DayRecord {
-  const record = emptyRecord();
-  if (value === null || typeof value !== "object") return record;
-  const obj = value as Record<string, unknown>;
+const obj = (v: unknown): v is Record<string, unknown> =>
+  v !== null && typeof v === "object" && !Array.isArray(v);
 
-  const marks = obj.marks;
-  if (marks && typeof marks === "object" && !Array.isArray(marks)) {
-    for (const [checkId, mark] of Object.entries(marks)) {
-      const rawAt =
-        mark &&
-        typeof mark === "object" &&
-        typeof (mark as DayMark).at === "string"
-          ? (mark as DayMark).at
-          : null;
-      // Un `at` con formato basura degrada a null (hora desconocida), jamás llega
-      // a Intl.format — sigue siendo una marca válida, solo sin hora fiable.
-      const at = rawAt && TIME_RE.test(rawAt) ? rawAt : null;
-      record.marks[checkId] = { at };
+function coerceMarkValue(raw: unknown): MarkValue {
+  const rawAt =
+    obj(raw) && typeof raw.at === "string" ? (raw.at as string) : null;
+  // Un `at` con formato basura degrada a null (hora desconocida), jamás llega
+  // a Intl.format — sigue siendo una marca válida, solo sin hora fiable.
+  return { at: rawAt && TIME_RE.test(rawAt) ? rawAt : null };
+}
+
+/** null = no es una nota (vacía o de otra forma): se descarta. */
+function coerceNoteValue(raw: unknown): DayNote | null {
+  if (!obj(raw)) return null;
+  const chips = Array.isArray(raw.chips) ? raw.chips.filter(isChip) : [];
+  // Re-truncamos al LEER: un store manipulado con megabytes no revienta la UI.
+  const text = (typeof raw.text === "string" ? raw.text : "").slice(
+    0,
+    NOTE_TEXT_MAX,
+  );
+  return chips.length || text ? { chips, text } : null;
+}
+
+/** Sello válido de un registro leído, o null si no lo es. */
+function coerceStamp(raw: unknown): { t: number; by: string } | null {
+  if (!obj(raw)) return null;
+  const { t, by } = raw;
+  if (typeof t !== "number" || !Number.isInteger(t) || t < 0) return null;
+  if (typeof by !== "string" || by.length < 1 || by.length > 24) return null;
+  return { t, by };
+}
+
+function coerceRegs(value: unknown): DayRegs {
+  const regs = emptyRegs();
+  if (!obj(value)) return regs;
+  if (obj(value.marks)) {
+    for (const [checkId, raw] of Object.entries(value.marks)) {
+      const st = coerceStamp(raw);
+      if (!st) continue;
+      const v = (raw as { v?: unknown }).v;
+      regs.marks[checkId] = {
+        ...st,
+        v: v === null || v === undefined ? null : coerceMarkValue(v),
+      };
     }
   }
-
-  const notes = obj.notes;
-  if (notes && typeof notes === "object" && !Array.isArray(notes)) {
-    for (const [checkId, note] of Object.entries(notes)) {
-      if (!note || typeof note !== "object") continue;
-      const n = note as Partial<DayNote>;
-      const chips = Array.isArray(n.chips) ? n.chips.filter(isChip) : [];
-      // Re-truncamos al LEER: un store manipulado con megabytes no revienta la UI.
-      const text = (typeof n.text === "string" ? n.text : "").slice(
-        0,
-        NOTE_TEXT_MAX,
-      );
-      if (chips.length || text) record.notes[checkId] = { chips, text };
+  if (obj(value.notes)) {
+    for (const [checkId, raw] of Object.entries(value.notes)) {
+      const st = coerceStamp(raw);
+      if (!st) continue;
+      const v = (raw as { v?: unknown }).v;
+      const note = v === null || v === undefined ? null : coerceNoteValue(v);
+      regs.notes[checkId] = { ...st, v: note };
     }
   }
-  return record;
+  return regs;
 }
 
 function coerceStore(parsed: unknown): DayLogStore {
-  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed))
-    return {};
+  if (!obj(parsed)) return {};
   const store: DayLogStore = {};
   for (const [key, value] of Object.entries(parsed)) {
     // Descarta claves de día basura: `formatShortDate` haría Invalid Date → Intl lanza.
     if (!DATE_RE.test(key)) continue;
-    store[key] = coerceRecord(value);
+    store[key] = coerceRegs(value);
   }
   return store;
 }
 
-/** Migra el store v1 (`Record<fecha, string[]>`) a v2: marcas con hora desconocida. */
+/**
+ * Migra la v2 (`Record<fecha, {marks, notes}>` sin sellos) a v3: todo lo que ya había queda
+ * sellado con t = 0 y ESTE teléfono, así cualquier cambio posterior de cualquiera le gana.
+ */
+function migrateV2(raw: string): DayLogStore {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return {};
+  }
+  if (!obj(parsed)) return {};
+  const by = getDeviceId();
+  const store: DayLogStore = {};
+  for (const [key, value] of Object.entries(parsed)) {
+    if (!DATE_RE.test(key)) continue;
+    const regs = emptyRegs();
+    if (obj(value)) {
+      if (obj(value.marks))
+        for (const [checkId, mark] of Object.entries(value.marks))
+          regs.marks[checkId] = { t: 0, by, v: coerceMarkValue(mark) };
+      if (obj(value.notes))
+        for (const [checkId, raw] of Object.entries(value.notes)) {
+          const note = coerceNoteValue(raw);
+          if (note) regs.notes[checkId] = { t: 0, by, v: note };
+        }
+    }
+    store[key] = regs;
+  }
+  return store;
+}
+
+/** Migra el store v1 (`Record<fecha, string[]>`): marcas con hora desconocida, ya en v3. */
 function migrateV1(raw: string): DayLogStore {
   let parsed: unknown;
   try {
@@ -116,46 +184,54 @@ function migrateV1(raw: string): DayLogStore {
   } catch {
     return {}; // v1 corrupto ⇒ empezar fresco (el historial no es crítico)
   }
-  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed))
-    return {};
+  if (!obj(parsed)) return {};
+  const by = getDeviceId();
   const store: DayLogStore = {};
   for (const [key, value] of Object.entries(parsed)) {
     if (!DATE_RE.test(key)) continue; // clave de día basura → se descarta
-    const record = emptyRecord();
+    const regs = emptyRegs();
     if (Array.isArray(value)) {
       for (const checkId of value) {
-        if (typeof checkId === "string") record.marks[checkId] = { at: null };
+        if (typeof checkId === "string")
+          regs.marks[checkId] = { t: 0, by, v: { at: null } };
       }
     }
-    store[key] = record;
+    store[key] = regs;
   }
   return store;
 }
 
 /**
- * Lee el store. Si solo existe la v1, la MIGRA a v2 (marcas con `at: null`),
- * escribe la v2 y elimina la v1 — una sola fuente de verdad tras la migración.
+ * Lee el store. Si solo existe una versión vieja (v2, o la v1), la MIGRA a v3, escribe la v3 y
+ * elimina la vieja — una sola fuente de verdad tras la migración. Si la v3 existe, manda ella.
  */
 function readStore(): DayLogStore {
   const s = storage();
   if (!s) return {};
 
-  const rawV2 = s.getItem(DAY_LOG_KEY);
-  if (rawV2 != null) {
+  const rawV3 = s.getItem(DAY_LOG_KEY);
+  if (rawV3 != null) {
     try {
-      return coerceStore(JSON.parse(rawV2));
+      return coerceStore(JSON.parse(rawV3));
     } catch {
-      return {}; // v2 corrupto ⇒ fresco (fail-safe, consistente con la dieta)
+      return {}; // v3 corrupto ⇒ fresco (fail-safe, consistente con la dieta)
     }
   }
 
-  const rawV1 = s.getItem(DAY_LOG_KEY_V1);
-  if (rawV1 != null) {
-    const migrated = migrateV1(rawV1);
-    // Solo borramos la v1 si la v2 QUEDÓ escrita. Si el storage está lleno
-    // (QuotaExceededError), devolvemos la v2 en memoria y dejamos la v1 intacta
+  for (const [key, migrate] of [
+    [DAY_LOG_KEY_V2, migrateV2],
+    [DAY_LOG_KEY_V1, migrateV1],
+  ] as const) {
+    const raw = s.getItem(key);
+    if (raw == null) continue;
+    const migrated = migrate(raw);
+    // Solo borramos lo viejo si la v3 QUEDÓ escrita. Si el storage está lleno
+    // (QuotaExceededError), devolvemos la v3 en memoria y dejamos lo viejo intacto
     // para reintentar — jamás lanzamos: readStore corre dentro del render.
-    if (writeStore(migrated)) s.removeItem(DAY_LOG_KEY_V1);
+    if (writeStore(migrated)) {
+      s.removeItem(DAY_LOG_KEY_V2);
+      s.removeItem(DAY_LOG_KEY_V1);
+    }
     return migrated;
   }
 
@@ -174,13 +250,24 @@ function writeStore(store: DayLogStore): boolean {
   }
 }
 
+/** Lo vivo de un día, sin lápidas ni sellos (con `by` para decir «por quién»). */
+function toRecord(regs: DayRegs): DayRecord {
+  const record: DayRecord = { marks: {}, notes: {} };
+  for (const [id, r] of Object.entries(regs.marks))
+    if (r.v) record.marks[id] = { at: r.v.at, by: r.by };
+  for (const [id, r] of Object.entries(regs.notes))
+    if (r.v) record.notes[id] = { chips: r.v.chips, text: r.v.text, by: r.by };
+  return record;
+}
+
 // ---------------------------------------------------------------------------
 // Lectura
 // ---------------------------------------------------------------------------
 
 /** Registro completo del día (marcas con hora + notas). Amanece vacío. */
 export function getDayRecord(date: Date): DayRecord {
-  return readStore()[dateKey(date)] ?? emptyRecord();
+  const regs = readStore()[dateKey(date)];
+  return regs ? toRecord(regs) : { marks: {}, notes: {} };
 }
 
 /** Marcas hechas del día (checkIds) — compatibilidad con logic.buildDayChecklist. */
@@ -201,18 +288,18 @@ export function getNote(date: Date, checkId: string): DayNote | null {
 export type RecordedDay = { day: string; record: DayRecord };
 
 /**
- * Días con algún registro (marca o nota), del más reciente al más antiguo,
+ * Días con algún registro (marca o nota) vivo, del más reciente al más antiguo,
  * leyendo el store UNA sola vez. La usa el historial: evita reparsear el store
  * completo por cada día en el render (O(días) en vez de O(días²)).
  */
 export function listRecordedEntries(): RecordedDay[] {
   const store = readStore();
   return Object.entries(store)
+    .map(([day, regs]) => ({ day, record: toRecord(regs) }))
     .filter(
-      ([, r]) =>
+      ({ record: r }) =>
         Object.keys(r.marks).length > 0 || Object.keys(r.notes).length > 0,
     )
-    .map(([day, record]) => ({ day, record }))
     .sort((a, b) => (a.day < b.day ? 1 : a.day > b.day ? -1 : 0));
 }
 
@@ -227,6 +314,8 @@ export type DayEntry = {
   at: string | null;
   marked: boolean;
   note: DayNote | null;
+  /** Teléfono que hizo la marca. */
+  by?: string;
 };
 
 /**
@@ -244,6 +333,7 @@ export function listDayEntries(record: DayRecord): DayEntry[] {
       at: record.marks[checkId]?.at ?? null,
       marked: checkId in record.marks,
       note: record.notes[checkId] ?? null,
+      by: record.marks[checkId]?.by,
     }))
     .sort((a, b) => {
       if (a.at === b.at) return 0;
@@ -254,17 +344,48 @@ export function listDayEntries(record: DayRecord): DayEntry[] {
 }
 
 // ---------------------------------------------------------------------------
+// Para la familia (sincronización): leer y mezclar los registros con sello
+// ---------------------------------------------------------------------------
+
+/** Todos los días con sus registros sellados (incluye lápidas). Solo lo usa la sincronización. */
+export function readDayRegs(): DayLogStore {
+  return readStore();
+}
+
+/**
+ * Mezcla un día que llegó de otro teléfono con el de este (gana el sello más reciente en
+ * cada marca y cada nota). Devuelve true si algo cambió aquí.
+ */
+export function mergeRemoteDay(day: string, remote: DayRegs): boolean {
+  if (!DATE_RE.test(day)) return false;
+  const store = readStore();
+  const local = store[day] ?? emptyRegs();
+  const merged: DayRegs = {
+    marks: mergeMap(local.marks, remote.marks),
+    notes: mergeMap(local.notes, remote.notes),
+  };
+  if (JSON.stringify(merged) === JSON.stringify(local)) return false;
+  store[day] = merged;
+  return writeStore(store);
+}
+
+// ---------------------------------------------------------------------------
 // Escritura
 // ---------------------------------------------------------------------------
 
-function mutateDay(date: Date, fn: (r: DayRecord) => void): DayRecord {
+/** Hora de escritura de un registro: nunca menor ni igual que la del anterior (aunque el reloj retroceda). */
+function nextStamp<T>(prev: Reg<T> | undefined): { t: number; by: string } {
+  return { t: Math.max(Date.now(), (prev?.t ?? 0) + 1), by: getDeviceId() };
+}
+
+function mutateDay(date: Date, fn: (r: DayRegs) => void): DayRecord {
   const store = readStore();
   const key = dateKey(date);
-  const record = store[key] ?? emptyRecord();
-  fn(record);
-  store[key] = record;
+  const regs = store[key] ?? emptyRegs();
+  fn(regs);
+  store[key] = regs;
   writeStore(store);
-  return record;
+  return toRecord(regs);
 }
 
 /** Marca un ítem con la hora indicada ("HH:MM" o null). Idempotente. */
@@ -274,15 +395,17 @@ export function markDone(
   at: string | null,
 ): string[] {
   const record = mutateDay(date, (r) => {
-    r.marks[checkId] = { at };
+    r.marks[checkId] = { ...nextStamp(r.marks[checkId]), v: { at } };
   });
   return Object.keys(record.marks);
 }
 
-/** Desmarca un ítem (conserva su nota, por si fue un toque accidental). */
+/** Desmarca un ítem (lápida; conserva su nota, por si fue un toque accidental). */
 export function unmark(date: Date, checkId: string): string[] {
   const record = mutateDay(date, (r) => {
-    delete r.marks[checkId];
+    // Sin marca previa no hay nada que quitar: no se crea una lápida suelta.
+    if (r.marks[checkId])
+      r.marks[checkId] = { ...nextStamp(r.marks[checkId]), v: null };
   });
   return Object.keys(record.marks);
 }
@@ -310,21 +433,26 @@ export function setNote(
   note: DayNote | null,
 ): void {
   mutateDay(date, (r) => {
+    const prev = r.notes[checkId];
     if (note === null || (note.chips.length === 0 && note.text.trim() === "")) {
-      delete r.notes[checkId];
+      if (prev) r.notes[checkId] = { ...nextStamp(prev), v: null };
       return;
     }
     r.notes[checkId] = {
-      chips: note.chips.filter(isChip),
-      text: note.text.trim().slice(0, NOTE_TEXT_MAX),
+      ...nextStamp(prev),
+      v: {
+        chips: note.chips.filter(isChip),
+        text: note.text.trim().slice(0, NOTE_TEXT_MAX),
+      },
     };
   });
 }
 
-/** Limpieza total (la usa "borrar datos"): borra el store activo y cualquier v1 remanente. */
+/** Limpieza total (la usa "borrar datos"): borra el store activo y cualquier versión vieja. */
 export function clearDayLog(): void {
   const s = storage();
   if (!s) return;
   s.removeItem(DAY_LOG_KEY);
+  s.removeItem(DAY_LOG_KEY_V2);
   s.removeItem(DAY_LOG_KEY_V1);
 }

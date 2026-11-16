@@ -391,7 +391,7 @@ export type OpenAnswer =
       } | null;
       allergies: LocalizedText[];
       intolerances: LocalizedText[];
-      /** Anotado por quien cuida («anotado por ti»), aparte de lo que dice el plan. */
+      /** Anotado por quien cuida («anotado por quien cuida»), aparte de lo que dice el plan. */
       notedAllergies: LocalizedText[];
       notedIntolerances: LocalizedText[];
     }

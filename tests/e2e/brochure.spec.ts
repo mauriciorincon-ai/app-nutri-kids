@@ -433,7 +433,7 @@ test.describe("brochure /conoce", () => {
     expect(await arbol()).toContain("El checklist del día");
   });
 
-  test("el pie declara las 21 funcionalidades y el clímax es texto visible", async ({
+  test("el pie declara las 22 funcionalidades y el clímax es texto visible", async ({
     page,
   }) => {
     await page.goto("/conoce");
@@ -444,8 +444,8 @@ test.describe("brochure /conoce", () => {
     ).toBeVisible();
     await expect(page.getByText(/Marcar el día no es un examen/)).toBeVisible();
 
-    await expect(page.locator("#conteo-cifra")).toHaveText("21");
-    await expect(page.locator(".feature")).toHaveCount(21);
+    await expect(page.locator("#conteo-cifra")).toHaveText("22");
+    await expect(page.locator(".feature")).toHaveCount(22);
   });
 
   test("todas las rutas del mapa existen de verdad", async ({
@@ -542,7 +542,7 @@ test.describe("brochure con prefers-reduced-motion", () => {
 
     // Los números llegan en su valor final: no se cuentan solos.
     await expect(page.locator("#marcador-cifra")).toHaveText("7");
-    await expect(page.locator("#conteo-cifra")).toHaveText("21");
+    await expect(page.locator("#conteo-cifra")).toHaveText("22");
 
     // Los iconos de trazo están dibujados enteros (no a medio dibujar).
     const sinDibujar = await page

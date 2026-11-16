@@ -6,7 +6,7 @@
 <title>Guía de prueba — Nutrikids</title>
 <!--
   GUÍA DE PRUEBA VIVA Y ACUMULATIVA de Nutrikids. PRIMERA guía de la app (v1), pero ACUMULATIVA:
-  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil) y S6 (PDF). Autocontenida
+  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil), S6 (PDF) y S7 (familia). Autocontenida
   (cero CDNs). Origen por línea (S1/S2 heredadas ⇒ regresión · Nuevo/Mejorado · S3). Gate mínimo ⭐
   = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s4.
 -->
@@ -102,11 +102,10 @@
 <body>
 <div class="pagina">
   <header>
-    <p class="eyebrow">Nutrikids · Guía de prueba viva y acumulativa · Sprint 5 · 2026-11-15</p>
+    <p class="eyebrow">Nutrikids · Guía de prueba viva y acumulativa · Sprint 7 · 2026-11-16</p>
     <h1>Guía de prueba</h1>
-    <p class="suave">Todas las pruebas vigentes de la app: las nuevas del S5 (el perfil de tu peque, las
-      texturas y lo que el chat contesta del plan) y del S4 (el chat sin internet, usar la app sin señal,
-      el aviso de versión nueva), y las heredadas de S1 a S3 —
+    <p class="suave">Todas las pruebas vigentes de la app: las nuevas del S7 (compartir con la familia, cifrado), del S6 (leer el PDF) y del S5 (el perfil de tu
+      peque, las texturas y lo que el chat contesta del plan), y las heredadas de S1 a S4 —
       que corren como <strong>regresión</strong>. Filtra por origen para correr todo o solo
       lo que cambió. Las casillas se guardan solas en este navegador.</p>
     <p class="chica"><strong>Gate mínimo ⭐: 6 pruebas · ~30 min.</strong> Es lo que ninguna
@@ -115,7 +114,7 @@
       (unit, e2e, axe, budgets) lo respalda la CI y se corre en pases completos.</p>
     <div class="url-caja">
       <p class="eyebrow" style="margin:0 0 6px">URL de prueba</p>
-      <code>Preview de la rama <strong>sprint-004/dieta-sin-internet</strong> — se pega aquí al abrir el PR (Vercel la genera).</code>
+      <code>Preview de la rama <strong>sprint-007/familia-cifrada</strong> — se pega aquí al abrir el PR (Vercel la genera).</code>
       <p class="chica suave" style="margin:8px 0 0">Dirección estable de la rama: no cambia aunque se
         suban correcciones. Si pide login de Vercel: Settings → Deployment Protection → Vercel
         Authentication → Disabled.</p>
@@ -129,7 +128,7 @@
     </div>
     <div class="filtros" role="group" aria-label="Filtrar pruebas por origen">
       <button type="button" data-filtro="todo" class="activo">Todo</button>
-      <button type="button" data-filtro="cambios">Lo que cambió (S4 y S5)</button>
+      <button type="button" data-filtro="cambios">Lo que cambió (S5, S6 y S7)</button>
       <button type="button" data-filtro="minimo">Gate mínimo ⭐</button>
     </div>
   </div>
@@ -137,7 +136,7 @@
   <!-- ============================ A · CARGAR ============================ -->
   <section class="bloque">
     <div class="bloque-cabeza"><span class="letra">A</span><h2>Cargar tu dieta</h2></div>
-    <p class="meta-bloque chica suave">~5 min · pantalla <strong>Cargar</strong> · que la dieta entre y viva solo en el dispositivo.</p>
+    <p class="meta-bloque chica suave">~5 min · pantalla <strong>Cargar</strong> · que la dieta entre y viva en el dispositivo; solo viaja si la familia la comparte, cifrada.</p>
     <ul class="pasos">
       <li data-origen="heredada"><input type="checkbox" id="a1"><label for="a1">Con la demo activa,
         el letrero de arriba dice <strong>«Dieta demo»</strong>. La app funciona completa sin cargar nada.
@@ -303,7 +302,7 @@
   <!-- ============================ K · PERFIL ============================ -->
   <section class="bloque">
     <div class="bloque-cabeza"><span class="letra">K</span><h2>Perfil de tu peque</h2></div>
-    <p class="meta-bloque chica suave">~6 min · pantalla <strong>Perfil</strong> (desde Hoy o Ajustes) · cada dato con su origen · nada sale del teléfono.</p>
+    <p class="meta-bloque chica suave">~6 min · pantalla <strong>Perfil</strong> (desde Hoy o Ajustes) · cada dato con su origen · qué se queda en el teléfono y qué viaja con la familia, cifrado.</p>
     <ul class="pasos">
       <li data-origen="nuevo"><input type="checkbox" id="k1"><label for="k1">En <strong>Hoy</strong> toca
         <strong>«Perfil de tu peque»</strong> → ves los objetivos del profesional (grupos, horarios, agua,
@@ -326,7 +325,7 @@
         <span class="origen origen-nuevo">Nuevo · S5</span></label></li>
       <li data-origen="nuevo"><input type="checkbox" id="k5"><label for="k5">Anota una nota (tipo y texto),
         luego en <strong>Cargar</strong> carga el archivo de otra dieta → la nota
-        <strong>sigue ahí</strong>, marcada «anotado por ti»; quítala con su botón.
+        <strong>sigue ahí</strong>, marcada «anotado por quien cuida»; quítala con su botón.
         <span class="origen origen-nuevo">Nuevo · S5</span></label></li>
       <li data-origen="nuevo"><input type="checkbox" id="k6"><label for="k6">Si ya usabas la app, abre
         <strong>Perfil</strong> sin cargar nada → tu dieta sigue ahí y solo faltan los datos nuevos
@@ -335,6 +334,43 @@
     </ul>
     <div class="reportame"><p><strong>Repórtame sí o sí:</strong> un dato del perfil sin su origen, una
       opción que desaparece por su textura, o un «no es alérgico» que el plan no dijo.</p></div>
+  </section>
+
+  <!-- ============================ L · FAMILIA ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">L</span><h2>Compartir con la familia</h2></div>
+    <p class="meta-bloque chica suave">~10 min · <strong>dos teléfonos</strong> · pantalla <strong>Ajustes</strong> · lo compartido viaja cifrado; en internet solo hay datos ilegibles.</p>
+    <ul class="pasos">
+      <li data-origen="nuevo"><input type="checkbox" id="l1"><label for="l1">En el teléfono A abre
+        <strong>Ajustes → Compartir con la familia</strong> → dice qué se comparte y qué se queda, y que va
+        cifrado. Toca <strong>«Crear una familia»</strong>, escribe «Mamá», marca que lo entiendes → te
+        muestra el <strong>código</strong> y la <strong>frase</strong> una sola vez. Anótalos.
+        <span class="origen origen-nuevo">Nuevo · S7</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="l2"><label for="l2">En el teléfono B toca
+        <strong>«Entrar con un código»</strong> con el código, la frase y «Papá» → entra y dice
+        <strong>«Al día»</strong>.
+        <span class="origen origen-nuevo">Nuevo · S7</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="l3"><label for="l3">En A marca el desayuno y
+        agrega una nota → en B (ábrela o espera unos segundos) aparece la marca y la nota con
+        <strong>«Por Mamá»</strong>, también en <strong>Días anteriores</strong>.
+        <span class="origen origen-nuevo">Nuevo · S7</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="l4"><label for="l4">Pon A en modo avión y marca otra
+        comida → en Ajustes dice <strong>«Sin conexión»</strong> y cuántos cambios faltan; al volver la
+        señal sube sola y B la ve.
+        <span class="origen origen-nuevo">Nuevo · S7</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="l5"><label for="l5">En A toca
+        <strong>«Sacar a Papá»</strong> → confirma → aparece una <strong>frase nueva</strong>. B queda en
+        <strong>«Frase cambiada»</strong> y no ve nada nuevo; entra con la frase nueva y vuelve a
+        <strong>«Al día»</strong>.
+        <span class="origen origen-nuevo">Nuevo · S7</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="l6"><label for="l6">En B toca
+        <strong>«Salir de la familia»</strong> → sus datos siguen ahí. En A toca
+        <strong>«Borrar lo compartido»</strong> → lo compartido se borra de internet y cada teléfono
+        conserva su copia.
+        <span class="origen origen-nuevo">Nuevo · S7</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> cualquier dato que parezca salir sin que hayas
+      creado una familia; un estado que se diga solo con color; una frase que no entiendas.</p></div>
   </section>
 
   <!-- ============================ J · SIN INTERNET ============================ -->
@@ -370,7 +406,7 @@
         Tu <strong>nota escrita a mano NO se traduce</strong> (es tuya). <span class="origen origen-heredada">S1</span></label></li>
       <li data-origen="heredada"><input type="checkbox" id="g2"><label for="g2"><strong>«Borrar mis
         datos»</strong> → confirma → se borra la dieta cargada <strong>y todo el registro (marcas, horas
-        y notas)</strong>; la app vuelve a la demo. El copy ahora nombra horas y notas.
+        y notas)</strong>; este teléfono sale de la familia y la app vuelve a la demo. Lo ya compartido en internet no se borra aquí (para eso está «Borrar lo compartido», bloque L). El copy nombra horas y notas.
         <span class="origen origen-heredada">S3</span></label></li>
     </ul>
     <div class="reportame"><p><strong>Repórtame sí o sí:</strong> que tras «Borrar mis datos» quede alguna
@@ -408,7 +444,7 @@
         <span class="origen origen-heredada">S3</span><span class="minimo">⭐ mínimo · aprobación visual</span></label></li>
     </ul>
     <div class="reportame"><p><strong>Repórtame sí o sí:</strong> cualquier cosa que se sienta clínica,
-      culpígena o confusa; cualquier dato del niño que parezca salir del teléfono; cualquier pantalla que
+      culpígena o confusa; cualquier dato del niño que salga del teléfono sin que la familia lo haya activado, o que se vea sin cifrar; cualquier pantalla que
       se vea rota en su modelo de teléfono.</p></div>
   </section>
 
@@ -420,6 +456,10 @@
     <details class="chica">
       <summary>Historial de la guía</summary>
       <ul>
+        <li><strong>S7 · 2026-11-16 (v5):</strong> nace el bloque L (compartir con la familia, con dos teléfonos: crear, entrar,
+          ver lo del otro, sin conexión, sacar a un teléfono, salir y borrar lo compartido). Mejorado: A y K
+          (el dato puede viajar con la familia, cifrado), G (borrar saca de la familia) e I (el «repórtame»
+          vigila lo que salga sin cifrar). Ninguna prueba eliminada.</li>
         <li><strong>S6 · 2026-11-15 (v4):</strong> el bloque A suma a4–a7 (cargar el PDF, «Revisa tu plan», revisión
           a medias, sin internet). Ninguna prueba eliminada.</li>
         <li><strong>S5 · 2026-11-15 (v3):</strong> nace el bloque K (perfil de tu peque: origen de cada dato,
@@ -444,9 +484,9 @@
 
 <script>
   (function () {
-    // NS VERSIONADO POR SPRINT (regla dura): s4. Una regresión sin correr no aparece marcada por
+    // NS VERSIONADO POR SPRINT (regla dura): s7. Una regresión sin correr no aparece marcada por
     // una versión anterior de la guía.
-    var NS = "guia-nutri-kids:s4:";
+    var NS = "guia-nutri-kids:s7:";
     var casillas = Array.prototype.slice.call(document.querySelectorAll('input[type="checkbox"]'));
     var barra = document.getElementById("barra-avance");
     var contador = document.getElementById("contador");

@@ -19,12 +19,20 @@ export default defineConfig({
         "src/lib/ia/**",
         "src/lib/pdf/**",
         "src/lib/privacy/**",
+        "src/lib/family/**",
       ],
       thresholds: {
         lines: 80,
         functions: 80,
         branches: 80,
         statements: 80,
+        // S7: el cifrado y la sincronía de la familia, al 90 % o más.
+        "src/lib/family/**": {
+          lines: 90,
+          functions: 90,
+          branches: 90,
+          statements: 90,
+        },
       },
     },
   },

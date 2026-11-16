@@ -9,6 +9,7 @@ import { NoteEditor } from "@/components/day-checklist/note-editor";
 import { ReminderCard } from "@/components/day-checklist/reminder-card";
 import { useDayLog, useToday } from "@/components/day-checklist/use-today";
 import { useDiet } from "@/components/diet-provider";
+import { useWho } from "@/components/family/use-family";
 import { fmt, useI18n } from "@/i18n";
 import {
   buildDayChecklist,
@@ -31,6 +32,7 @@ type Row = ChecklistItem & { done: boolean };
 export default function TodayPage() {
   const { diet } = useDiet();
   const { t, l, locale } = useI18n();
+  const who = useWho();
   const today = useToday();
   const { record, doneIds, toggle, saveNote } = useDayLog(today);
 
@@ -95,6 +97,7 @@ export default function TodayPage() {
           title={l(item.meal.name)}
           detail={l(item.meal.content)}
           time={time}
+          by={who(record.marks[item.checkId]?.by)}
           ariaLabel={fmt(done ? t.today.markUndone : t.today.markDone, {
             item: l(item.meal.name),
           })}
@@ -108,6 +111,7 @@ export default function TodayPage() {
           key={today ? dateKey(today) : "static"}
           mealName={l(item.meal.name)}
           note={record.notes[item.checkId] ?? null}
+          by={who(record.notes[item.checkId]?.by)}
           onSave={(note) => saveNote(item.checkId, note)}
         />
       </div>
@@ -122,6 +126,7 @@ export default function TodayPage() {
       title={l(item.supplement.name)}
       detail={`${l(item.supplement.dose)} · ${l(item.supplement.when)}`}
       time={doneTimeLabel(item.checkId, item.done)}
+      by={who(record.marks[item.checkId]?.by)}
       ariaLabel={fmt(item.done ? t.today.markUndone : t.today.markDone, {
         item: l(item.supplement.name),
       })}
@@ -134,6 +139,7 @@ export default function TodayPage() {
       done={item.done}
       onToggle={() => toggle(item.checkId)}
       title={fmt(t.today.waterGlass, { n: item.index })}
+      by={who(record.marks[item.checkId]?.by)}
       ariaLabel={fmt(item.done ? t.today.markUndone : t.today.markDone, {
         item: fmt(t.today.waterGlass, { n: item.index }),
       })}

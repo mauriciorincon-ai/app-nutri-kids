@@ -226,7 +226,7 @@ describe("auditoría S5: anotaciones de quien cuida y nombres de varias palabras
     );
     if (a.kind !== "open" || a.answer.kind !== "allergy") throw new Error();
     const c = composeAnswer(a.answer, TEXT.es, "es");
-    expect(c.lead).toContain("Tú anotaste: Kiwi");
+    expect(c.lead).toContain("Quien cuida anotó: Kiwi");
     expect(c.lead).toContain("tu plan no lo dice");
     expect(c.required).toContain("kiwi");
   });
@@ -243,7 +243,7 @@ describe("auditoría S5: anotaciones de quien cuida y nombres de varias palabras
     if (a.kind !== "open" || a.answer.kind !== "medication") throw new Error();
     const c = composeAnswer(a.answer, TEXT.es, "es");
     expect(c.items.map((i) => i.text)).toContain(
-      "Anotado por ti: Gotas de ejemplo",
+      "Anotado por quien cuida: Gotas de ejemplo",
     );
   });
 

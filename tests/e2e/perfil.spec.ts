@@ -6,7 +6,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 /**
  * Perfil (S5, ADR-009): lo del profesional «según tu plan», lo de quien cuida
- * «anotado por ti», el orden por textura y el chat con sueño, actividad, alergias
+ * «anotado por quien cuida», el orden por textura y el chat con sueño, actividad, alergias
  * y medicamentos. Todo con la dieta demo inventada; cero peticiones de red.
  */
 
@@ -57,7 +57,7 @@ test("el perfil muestra el origen de cada dato y dice lo que el plan no dice", a
     "según tu plan",
   );
   await expect(page.locator('[data-origin="you"]').first()).toHaveText(
-    "anotado por ti",
+    "anotado por quien cuida",
   );
   await expect(page.getByText("Dormir entre 10 y 11 horas")).toBeVisible();
   await expect(page.getByText("Mariscos", { exact: true })).toBeVisible();
