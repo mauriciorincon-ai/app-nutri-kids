@@ -7,7 +7,7 @@ import { getDayRecord, markDone, unmark } from "@/lib/diet/day-log";
 import { addProfileNote, loadProfileNotes } from "@/lib/diet/profile-notes";
 import { clearAllData, importDiet } from "@/lib/diet/storage";
 import { familyApi } from "@/lib/family/client";
-import { createController } from "@/lib/family/controller";
+import { createController, type ControllerDeps } from "@/lib/family/controller";
 import { clearKeys, loadKeys, saveKeys } from "@/lib/family/keystore";
 import { browserLocal } from "@/lib/family/local";
 import { handle } from "@/lib/family/server/handler";
@@ -42,7 +42,7 @@ function setup() {
     return new Response(JSON.stringify(out.json), { status: out.status });
   }) as unknown as typeof fetch;
   const notify = vi.fn();
-  const controller = () =>
+  const controller = (over: Partial<ControllerDeps> = {}) =>
     createController({
       api: familyApi(fetcher),
       local: browserLocal(),
@@ -60,6 +60,7 @@ function setup() {
       online: () => !offline,
       notify,
       today: () => "2026-11-16",
+      ...over,
     });
   return {
     store,
@@ -212,5 +213,203 @@ describe("el director de la familia en un teléfono", () => {
     await vi.waitFor(async () => {
       expect(await loadKeys("ABCDEFGHJK")).toBeNull();
     });
+  });
+});
+
+/** Deja correr lo pendiente sin iniciar nada nuevo (setImmediate no está simulado). */
+async function flush() {
+  for (let i = 0; i < 30; i++) await new Promise((r) => setImmediate(r));
+}
+
+describe("el director: disparadores y bordes", () => {
+  async function made() {
+    const env = setup();
+    const pull = vi.fn();
+    const base = familyApi((async (url: string, init: RequestInit) => {
+      const headers = init.headers as Record<string, string>;
+      const out = await handle(
+        {
+          op: url.replace("/api/family/", ""),
+          method: "POST",
+          body: String(init.body ?? ""),
+          authorization: headers.authorization ?? null,
+          ip: "203.0.113.5",
+        },
+        env.store,
+      );
+      return new Response(JSON.stringify(out.json), { status: out.status });
+    }) as unknown as typeof fetch);
+    const api = {
+      ...base,
+      pull: (...a: Parameters<typeof base.pull>) => {
+        pull();
+        return base.pull(...a);
+      },
+    };
+    const c = env.controller({ api });
+    const r = await c.create("Mamá");
+    if (!r.ok) throw new Error("create");
+    pull.mockClear();
+    return { ...env, c, pull };
+  }
+
+  it("health: listo, sin servicio y sin red", async () => {
+    const { controller } = setup();
+    const ready = controller({
+      api: {
+        ...familyApi(),
+        health: async () => ({
+          ok: true,
+          status: 200,
+          data: { available: true, store: "memory" },
+        }),
+      },
+    });
+    expect(await ready.health()).toBe("ready");
+    const none = controller({
+      api: {
+        ...familyApi(),
+        health: async () => ({
+          ok: true,
+          status: 200,
+          data: { available: false, store: "none" },
+        }),
+      },
+    });
+    expect(await none.health()).toBe("unavailable");
+    const down = controller({
+      api: {
+        ...familyApi(),
+        health: async () => ({ ok: false, status: 503, error: "x" }),
+      },
+    });
+    expect(await down.health()).toBe("unavailable");
+    const off = controller({
+      api: {
+        ...familyApi(),
+        health: async () => ({ ok: false, status: 0, error: "offline" }),
+      },
+    });
+    expect(await off.health()).toBe("offline");
+  });
+
+  it("sin nombre no crea, no entra ni renombra", async () => {
+    const { controller } = setup();
+    const c = controller();
+    expect(await c.create("  ")).toEqual({ ok: false, reason: "no-name" });
+    expect(await c.join("AAAAA-AAAAA", "x", "")).toEqual({
+      ok: false,
+      reason: "no-name",
+    });
+    expect(await c.rename(" ")).toEqual({ ok: false, reason: "no-name" });
+  });
+
+  it("sin familia: cambiar la frase y borrar lo compartido dicen «no-family»", async () => {
+    const { controller } = setup();
+    const c = controller();
+    expect(await c.rotate()).toEqual({ ok: false, reason: "no-family" });
+    expect(await c.destroy()).toEqual({ ok: false, reason: "no-family" });
+    await c.dismissNotice(); // sin estado: no hace nada
+    c.changed(); // sin familia: no programa nada
+    expect(c.getView().phase).toBe("off");
+  });
+
+  it("renombrar el teléfono se ve de inmediato en la lista", async () => {
+    const { c } = await made();
+    expect(await c.rename("Mamá Ana")).toEqual({ ok: true });
+    expect(c.getView().ownName).toBe("Mamá Ana");
+    expect(c.getView().phones[0]).toMatchObject({
+      self: true,
+      name: "Mamá Ana",
+    });
+  });
+
+  it("el aviso del plan se descarta y no vuelve", async () => {
+    const { c } = await made();
+    const st = loadFamilyState()!;
+    saveFamilyState({ ...st, planNotice: "theirs" });
+    await c.sync();
+    expect(c.getView().planNotice).toBe("theirs");
+    await c.dismissNotice();
+    expect(c.getView().planNotice).toBeNull();
+    expect(loadFamilyState()!.planNotice).toBeNull();
+  });
+
+  it("sin las claves en este teléfono: «locked» y no sube nada", async () => {
+    const { c, controller } = await made();
+    await clearKeys();
+    const fresh = controller(); // un director nuevo no trae las claves en memoria
+    await fresh.sync();
+    expect(fresh.getView().phase).toBe("locked");
+    expect(c.getView().phase).toBe("idle");
+  });
+
+  it("start: sincroniza al abrir, al volver a verse, al volver internet y cada 30 s; stop lo quita todo", async () => {
+    const { c, pull } = await made();
+    const visible = vi.spyOn(document, "visibilityState", "get");
+    visible.mockReturnValue("visible");
+    vi.useFakeTimers({
+      toFake: ["setTimeout", "setInterval", "clearTimeout", "clearInterval"],
+    });
+    const stop = c.start();
+    await vi.advanceTimersByTimeAsync(0);
+    await c.sync();
+    expect(pull).toHaveBeenCalledTimes(1); // al abrir
+
+    document.dispatchEvent(new Event("visibilitychange"));
+    await c.sync();
+    expect(pull).toHaveBeenCalledTimes(2); // al volver a verse
+
+    visible.mockReturnValue("hidden");
+    document.dispatchEvent(new Event("visibilitychange"));
+    await vi.advanceTimersByTimeAsync(30_000);
+    await flush();
+    expect(pull).toHaveBeenCalledTimes(2); // oculta: ni evento ni turno suben
+
+    visible.mockReturnValue("visible");
+    await vi.advanceTimersByTimeAsync(30_000);
+    await c.sync();
+    expect(pull).toHaveBeenCalledTimes(3); // el turno de 30 s
+
+    window.dispatchEvent(new Event("online"));
+    await c.sync();
+    expect(pull).toHaveBeenCalledTimes(4); // volvió internet
+
+    window.dispatchEvent(new Event("offline")); // solo relee: no sube
+    await flush();
+    expect(pull).toHaveBeenCalledTimes(4);
+    stop();
+    const after = pull.mock.calls.length;
+    window.dispatchEvent(new Event("online"));
+    await vi.advanceTimersByTimeAsync(60_000);
+    await flush();
+    expect(pull.mock.calls.length).toBe(after);
+    visible.mockRestore();
+  });
+
+  it("changed: un cambio propio sube a los 1,5 s, y varios seguidos suben una vez", async () => {
+    const { c, pull } = await made();
+    markDone(DAY, "meal:almuerzo", "12:00");
+    vi.useFakeTimers({
+      toFake: ["setTimeout", "setInterval", "clearTimeout", "clearInterval"],
+    });
+    c.changed();
+    c.changed();
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(pull).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(600);
+    await c.sync();
+    expect(pull).toHaveBeenCalledTimes(1);
+    expect(c.getView().pending).toBe(0);
+  });
+
+  it("salir mientras se sincroniza espera a que acabe: el estado no resucita", async () => {
+    const { c } = await made();
+    const running = c.sync();
+    const left = c.leave();
+    await Promise.all([running, left]);
+    expect(loadFamilyState()).toBeNull();
+    expect(c.getView().phase).toBe("off");
+    expect(await loadKeys("ZZZZZZZZZZ")).toBeNull();
   });
 });

@@ -88,7 +88,7 @@ export type ControllerDeps = {
 export type ActionResult<T = object> =
   ({ ok: true } & T) | { ok: false; reason: Failure | "no-family" | "no-name" };
 
-const OFF: FamilyView = {
+export const OFF_VIEW: FamilyView = {
   phase: "off",
   code: null,
   lastSync: 0,
@@ -111,7 +111,7 @@ function phaseOf(reason: Failure): FamilyPhase {
 
 export function createController(deps: ControllerDeps) {
   let ctx: FamilyCtx | null = null;
-  let view: FamilyView = OFF;
+  let view: FamilyView = OFF_VIEW;
   let phase: FamilyPhase = "off";
   let running: Promise<void> | null = null;
   const listeners = new Set<() => void>();
@@ -119,7 +119,7 @@ export function createController(deps: ControllerDeps) {
   async function render(): Promise<void> {
     const st = deps.state.load();
     if (!st) {
-      view = OFF;
+      view = OFF_VIEW;
     } else {
       const own = { id: deps.local.deviceId(), name: deps.local.deviceName() };
       const phones: PhoneRow[] = [
@@ -215,6 +215,13 @@ export function createController(deps: ControllerDeps) {
     getView: () => view,
     sync,
 
+    /** ¿Responde el servicio de compartir? (para no ofrecer crear una familia que no se puede crear). */
+    async health(): Promise<"ready" | "unavailable" | "offline"> {
+      const r = await deps.api.health();
+      if (!r.ok) return r.status === 0 ? "offline" : "unavailable";
+      return r.data.available ? "ready" : "unavailable";
+    },
+
     async create(
       name: string,
     ): Promise<ActionResult<{ phrase: string; code: string }>> {
@@ -280,6 +287,10 @@ export function createController(deps: ControllerDeps) {
 
     /** Salir de la familia en este teléfono: sus datos se quedan, las claves se van. */
     async leave(): Promise<ActionResult> {
+      // Un sync en curso terminaría después y reescribiría el estado de una familia que
+      // ya no es nuestra: primero se espera a que acabe y se cancela el turno pendiente.
+      clearTimeout(changeTimer);
+      if (running) await running.catch(() => undefined);
       ctx = null;
       deps.state.clear();
       await deps.keys.clear();

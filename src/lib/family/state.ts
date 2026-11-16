@@ -87,20 +87,24 @@ export function loadFamilyState(): FamilyState | null {
 
 export function saveFamilyState(state: FamilyState): boolean {
   try {
-    storage()?.setItem(FAMILY_STATE_ITEM, JSON.stringify(state));
+    const s = storage();
+    if (!s) return false;
+    s.setItem(FAMILY_STATE_ITEM, JSON.stringify(state));
     return true;
   } catch {
     return false;
   }
 }
 
-/** Sale de la familia en este teléfono: el estado y las claves se van; los datos se quedan. */
+/**
+ * Olvida el estado de la familia en este teléfono. Las claves (IndexedDB) las borra quien llama
+ * con `clearKeys()`, EN ORDEN: un borrado suelto en segundo plano podía caer sobre las claves de
+ * una familia nueva.
+ */
 export function clearFamilyLocal(): void {
   try {
     storage()?.removeItem(FAMILY_STATE_ITEM);
   } catch {
     /* nada */
   }
-  // Las claves viven en IndexedDB; se borran aparte, sin esperar (jamás lanza).
-  void import("./keystore").then((k) => k.clearKeys()).catch(() => undefined);
 }

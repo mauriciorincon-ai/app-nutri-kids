@@ -63,11 +63,12 @@ export async function saveKeys(
 /** Las claves de esa familia, o null si no hay (o son de otra familia, o no se pueden abrir). */
 export async function loadKeys(
   family: string,
-  idb: IDBFactory = defaultIdb(),
+  idb?: IDBFactory,
 ): Promise<FamilyKeys | null> {
   try {
-    const row = (await run(idb, "readonly", (s) => s.get(ROW))) as
-      Row | undefined;
+    const row = (await run(idb ?? defaultIdb(), "readonly", (s) =>
+      s.get(ROW),
+    )) as Row | undefined;
     if (!row || row.family !== family) return null;
     const token = await open(row.enc, row.token, aad(family));
     if (typeof token !== "string") return null;
@@ -78,9 +79,9 @@ export async function loadKeys(
   }
 }
 
-export async function clearKeys(idb: IDBFactory = defaultIdb()): Promise<void> {
+export async function clearKeys(idb?: IDBFactory): Promise<void> {
   try {
-    await run(idb, "readwrite", (s) => s.delete(ROW));
+    await run(idb ?? defaultIdb(), "readwrite", (s) => s.delete(ROW));
   } catch {
     /* sin IndexedDB: no hay nada guardado que borrar */
   }
