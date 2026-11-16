@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { NOTE_CHIPS, NOTE_TEXT_MAX } from "@/lib/diet/day-log";
+import { DEVICE_NAME_MAX } from "@/lib/device";
 import { NOTE_KINDS, PROFILE_NOTE_MAX } from "@/lib/diet/profile-notes";
 import { textureSchema } from "@/lib/diet/schema";
 
@@ -17,7 +18,7 @@ import { aadFor, open, recordId, seal, type FamilyKeys } from "./crypto";
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
-export const DEVICE_NAME_MAX = 30;
+export { DEVICE_NAME_MAX };
 
 const stamp = {
   t: z.number().int().nonnegative(),

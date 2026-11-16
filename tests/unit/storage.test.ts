@@ -15,6 +15,7 @@ import {
   unmark,
   clearDayLog,
   DAY_LOG_KEY,
+  DAY_LOG_KEY_V2,
 } from "@/lib/diet/day-log";
 import {
   STORAGE_KEYS,
@@ -233,7 +234,7 @@ describe("day-log v2: migración desde el estado real de un usuario S1/S2", () =
       JSON.stringify({ "2026-07-06": ["meal:cena"] }),
     );
     window.localStorage.setItem(
-      DAY_LOG_KEY,
+      DAY_LOG_KEY_V2,
       JSON.stringify({
         "2026-07-06": {
           marks: { "meal:desayuno": { at: "07:00" } },
@@ -243,8 +244,10 @@ describe("day-log v2: migración desde el estado real de un usuario S1/S2", () =
     );
     // La v2 manda; la marca "meal:cena" de la v1 NUNCA pisa a la v2.
     expect(getDoneIds(day1)).toEqual(["meal:desayuno"]);
-    // Y la v1 queda intacta (solo la migración —que aquí no corrió— la borra).
-    expect(window.localStorage.getItem("nutrikids.daylog.v1")).not.toBeNull();
+    // La v3 queda escrita y las dos viejas se van (una sola fuente de verdad).
+    expect(window.localStorage.getItem(DAY_LOG_KEY)).not.toBeNull();
+    expect(window.localStorage.getItem(DAY_LOG_KEY_V2)).toBeNull();
+    expect(window.localStorage.getItem("nutrikids.daylog.v1")).toBeNull();
   });
 });
 
@@ -310,8 +313,10 @@ describe("day-log v2: hora por defecto = reloj del sistema (mockeable)", () => {
 
 describe("day-log v2: coerción fail-safe ante JSON válido con forma inválida", () => {
   it.each([
-    ["v2 es un array", DAY_LOG_KEY, "[]"],
-    ["v2 es un número", DAY_LOG_KEY, "42"],
+    ["v3 es un array", DAY_LOG_KEY, "[]"],
+    ["v3 es un número", DAY_LOG_KEY, "42"],
+    ["v2 es un array", DAY_LOG_KEY_V2, "[]"],
+    ["v2 es un número", DAY_LOG_KEY_V2, "42"],
     ["v1 es un array", "nutrikids.daylog.v1", "[1,2]"],
     ["v1 con día no-array", "nutrikids.daylog.v1", '{"2026-07-06":"meal:x"}'],
   ])("%s → registro vacío, sin lanzar", (_label, key, raw) => {
@@ -322,7 +327,7 @@ describe("day-log v2: coerción fail-safe ante JSON válido con forma inválida"
 
   it("descarta claves de día basura y `at`/chips inválidos, conserva lo válido", () => {
     window.localStorage.setItem(
-      DAY_LOG_KEY,
+      DAY_LOG_KEY_V2,
       JSON.stringify({
         "no-fecha": { marks: { "meal:x": { at: "07:00" } }, notes: {} },
         "2026-07-06": {
@@ -348,7 +353,7 @@ describe("day-log v2: coerción fail-safe ante JSON válido con forma inválida"
 
   it("re-trunca al LEER una nota gigante del store (no solo en setNote)", () => {
     window.localStorage.setItem(
-      DAY_LOG_KEY,
+      DAY_LOG_KEY_V2,
       JSON.stringify({
         "2026-07-06": {
           marks: {},
@@ -400,7 +405,7 @@ describe("listDayEntries / listRecordedEntries (historial)", () => {
     markDone(day2, "meal:cena", "18:40");
     const entries = listRecordedEntries();
     expect(entries.map((e) => e.day)).toEqual(["2026-07-07", "2026-07-06"]);
-    expect(entries[0].record.marks["meal:cena"]).toEqual({ at: "18:40" });
+    expect(entries[0].record.marks["meal:cena"]).toMatchObject({ at: "18:40" });
   });
 
   it("listRecordedDays con store vacío es []", () => {

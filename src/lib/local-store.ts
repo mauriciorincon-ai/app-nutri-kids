@@ -26,7 +26,7 @@ if (typeof window !== "undefined") {
   window.addEventListener("storage", () => notifyLocalStore());
 }
 
-function subscribe(listener: () => void): () => void {
+export function subscribe(listener: () => void): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
 }
