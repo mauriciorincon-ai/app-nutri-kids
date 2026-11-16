@@ -10,7 +10,7 @@ pr: 9 · 10
 
 # S6 · Tu PDF, vuelto app
 
-**Objetivo/resultado:** quien cuida carga el PDF del profesional; se lee en el teléfono sin red y sin guardarse, se revisa parte por parte (12, con la página de cada dato) y solo queda el plan. JSON y notas del S5 siguen. **Estado:** construido y auditado en dos PR (#9 mergeado; #10 abierto, checks en verde, espera la medición de la planeadora contra el PDF real).
+**Objetivo/resultado:** quien cuida carga el PDF del profesional; se lee en el teléfono sin red y sin guardarse, se revisa parte por parte (12, con la página de cada dato) y solo queda el plan. JSON y notas del S5 siguen. **Estado:** construido y auditado en dos PR (#9 mergeado; #10 mergeado tras la medición de la planeadora contra el PDF real).
 **Tiempo** (`node scripts/horas-sprint.mjs`): PR #9 12 commits · **2,4 h** (F1 0,7 · F2 0,4 · F3 1,2) + PR #10 (dos vueltas) 10 commits · **1,7 h** (F1) = **4,1 h**. **Diferencia vs 3,5 h + 1,5 h + 1 h = 6 h: −1,9 h (−32 %).** Ninguna fase pasó el 50 %.
 **Pruebas:** unit 27 archivos / 605 de 605 (98,68 % líneas) · e2e 164 de 164 con `CI=1` (mobile+desktop, offline incluido) · tsc y eslint limpios · Lighthouse 6 de 6 URL dentro de `perf-budget.json`, `/cargar` incluida.
 **Entregables:** lector puro (`src/lib/diet/pdf-*.ts`, `plan-assemble.ts`) · revisión (`plan-review.ts`, `components/plan-review/`) · `/cargar` con «Elegir PDF» · pdf.js propio y precacheado en caché aparte · ADR-010 · e2e `cargar-pdf.spec.ts` · manual es+en, guía, BLUEPRINT, brochure+export, design-system.
@@ -26,6 +26,6 @@ pr: 9 · 10
   **Defaults técnicos:** rojo fijo a mano · lista roja del PDF → `restrictions.foods` con la aclaración en la nota · plan en es=en, textos de la app en ambos · mínimos relajados (restricted, yellow, supplements) y verde, menú, hidratación requeridos · plazo 90 d si el PDF no lo dice · título «Tu plan» / «tu peque» · «Elegir JSON» · una revisión nueva reemplaza el borrador (avisado en la tarjeta) · una equivalencia por alimento · pdf.js en `nutrikids-pdfjs-<versión>` · tema oscuro: el sistema es solo claro, e2e con `colorScheme` como el resto · brochure sigue en 21 bloques.
   **Modelo por fase y desvío:** F1 Opus 5.5 · F2 Sonnet 5.5 · F3 Sonnet 5.5, todos como se requerían; cierre escrito con Sonnet (se pedía Haiku): sin desvío de calidad. **Relevos:** 0. **/compact pedidos:** 2.
   **Desviaciones:** (1) «mi plan no lo trae» no aplica a 3 partes; (2) el plazo y el rojo fijo no salen del PDF. **Deuda:** ninguna.
-  **Recomendación:** la planeadora vuelve a medir esta rama contra el PDF real antes del merge y suma a su lista de palabras de forma «el», «la» e «incluye» (§2.5 a), que el lector declara como palabras de valor.
+  **Recomendación:** (hecho: la planeadora midió y #10 se mergeó) la planeadora suma a su lista de palabras de forma «el», «la» e «incluye» (§2.5 a), que el lector declara como palabras de valor.
   **Servidores:** `lsof` LISTEN en este repo: 0 (solo el test-server de Playwright de VS Code y la propia sesión de Claude Code, que no cuentan).
   **Para mergear: squash y borrar la rama; después `/cierre-sprint nutri-kids`.**
