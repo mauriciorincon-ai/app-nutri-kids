@@ -1,7 +1,8 @@
 // @vitest-environment node
 // Regla dura 5 · ADR-008: el chat contesta con código; ningún SDK de IA en la nube
-// ni ruta de servidor vuelve a entrar sin un ADR nuevo. La ÚNICA excepción es la de la
-// familia (S7 · ADR-011): guarda cifrados, y solo dos archivos abren la red.
+// ni ruta de servidor vuelve a entrar sin un ADR nuevo. Las ÚNICAS excepciones son las de la
+// familia (S7 · ADR-011: guarda cifrados) y las de los avisos (S8 · ADR-012: toques vacíos y
+// horas sin etiqueta); solo los clientes y los almacenes de esas dos rutas abren la red.
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";

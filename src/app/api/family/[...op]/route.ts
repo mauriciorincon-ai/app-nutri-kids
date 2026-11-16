@@ -3,7 +3,7 @@ import { MAX_BODY } from "@/lib/family/server/limits";
 import { selectStore } from "@/lib/family/server/store";
 
 /**
- * La única ruta de servidor de la app (S7 · ADR-011): guarda lo que la familia comparte,
+ * Una de las dos rutas de servidor de la app (la otra: /api/push, S8 · ADR-012) (S7 · ADR-011): guarda lo que la familia comparte,
  * ya cifrado en el aparato. Nada de esta ruta se registra: ni cuerpos, ni encabezados, ni
  * códigos. Todo va por POST con el código en el cuerpo, para que no quede en una URL.
  */

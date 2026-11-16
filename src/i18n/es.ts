@@ -377,7 +377,7 @@ export const es = {
     intro:
       "Nutrikids puede avisarte a la hora de cada comida, del suplemento y del agua, aunque la app esté cerrada. Las horas salen de tu plan.",
     privacy:
-      "El aviso se arma en tu teléfono. Lo único que sale de aquí es la dirección para despertarlo y las horas del día, sin etiqueta; el servidor no sabe qué toca y manda un toque vacío. Nunca van nombres, alimentos, suplementos ni notas.",
+      "El aviso se arma en tu teléfono. Lo único que sale de aquí es la dirección para despertarlo y las horas del día, sin etiqueta (y, si marcas algo antes de su hora, el día y el minuto de ese aviso, para no repetirlo); el servidor no sabe qué toca y manda un toque vacío. Nunca van nombres, alimentos, suplementos ni notas.",
     askNote:
       "Al tocar el botón, tu teléfono te pide permiso para mostrar avisos. Solo te lo pide esta vez.",
     enable: "Activar avisos en este teléfono",
@@ -396,7 +396,7 @@ export const es = {
       "Para recibir los avisos de la familia, este teléfono tiene que estar en una familia.",
     hideTitle: "Ocultar el detalle con el teléfono bloqueado",
     hideHint:
-      "Prendido, el aviso dice solo «Nutrikids» y el detalle se ve al abrir la app. Vale solo para este teléfono.",
+      "Prendido, el aviso trae un mensaje genérico en vez del detalle, y el detalle se ve al abrir la app. Vale solo para este teléfono.",
     off: "Dejar de recibir avisos",
     offDone:
       "Listo: este teléfono ya no recibe avisos y su dirección se borró del servidor.",

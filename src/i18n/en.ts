@@ -375,7 +375,7 @@ export const en: Dictionary = {
     intro:
       "Nutrikids can notify you at each meal, supplement and water time, even with the app closed. The times come from your plan.",
     privacy:
-      "The notice is built on your phone. The only things that leave it are the address to wake it and the times of day, without a label; the server doesn't know what is due and sends an empty tap. No names, foods, supplements or notes ever go.",
+      "The notice is built on your phone. The only things that leave it are the address to wake it and the times of day, without a label (and, if you mark something before its time, the day and minute of that notice, so it isn't repeated); the server doesn't know what is due and sends an empty tap. No names, foods, supplements or notes ever go.",
     askNote:
       "When you tap the button, your phone asks for permission to show notices. It asks only this once.",
     enable: "Turn on notices on this phone",
@@ -393,7 +393,7 @@ export const en: Dictionary = {
     familyNeeds: "To receive family notices, this phone has to be in a family.",
     hideTitle: "Hide the detail while the phone is locked",
     hideHint:
-      "When on, the notice only says “Nutrikids” and the detail shows once you open the app. It applies to this phone only.",
+      "When on, the notice shows a generic message instead of the detail, and the detail shows once you open the app. It applies to this phone only.",
     off: "Stop receiving notices",
     offDone:
       "Done: this phone no longer receives notices and its address was deleted from the server.",
