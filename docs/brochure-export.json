@@ -221,10 +221,10 @@
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 618,
+      "valor": 636,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-15 sobre la rama del lector contra la forma real del PDF (S6): 28 archivos, 618 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-15 sobre la rama del lector contra la forma real del PDF (S6): 28 archivos, 636 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
@@ -237,10 +237,10 @@
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 98.68,
+      "valor": 98.52,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib/diet, src/lib/ia, src/lib/pdf y src/lib/privacy el 2026-11-15 sobre la rama del S6 (98,68 % de líneas, ahora con src/lib/pdf), con umbrales del 80 % en vitest.config.ts."
+      "detalle": "v8 sobre src/lib/diet, src/lib/ia, src/lib/pdf y src/lib/privacy el 2026-11-15 sobre la rama del lector contra la forma real del PDF (98,52 % de líneas; pdf-reader.ts 97,7 %), con umbrales del 80 % en vitest.config.ts."
     },
     {
       "clave": "decisiones_registradas",

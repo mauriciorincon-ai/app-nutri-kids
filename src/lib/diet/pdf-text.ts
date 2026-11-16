@@ -105,8 +105,13 @@ const CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
 
 /** Agrupa los ítems de una página en líneas y segmentos (puro). Limpia los caracteres de control ANTES de unir. */
 export function toLines(page: PdfPage): Line[] {
+  // NFC (una tilde descompuesta se recompone) y sin controles; un ítem que solo era un
+  // control queda como blanco, para que no pegue las palabras de los lados.
   const sorted = page.items
-    .map((it) => ({ ...it, str: it.str.replace(CONTROL, "") }))
+    .map((it) => {
+      const str = it.str.normalize("NFC").replace(CONTROL, "");
+      return { ...it, str: str === "" && it.str !== "" ? " " : str };
+    })
     .filter((it) => it.str !== "")
     .sort((a, b) => a.y - b.y || a.x - b.x);
   const rows: PdfItem[][] = [];

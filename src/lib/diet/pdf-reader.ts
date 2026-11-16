@@ -152,6 +152,7 @@ export const VALUE_WORDS = [
   "fl",
   "oz",
   "ml",
+  "si",
   "crujiente",
   "pure",
   "liquid",
@@ -477,6 +478,7 @@ function readTable(
       if (
         last &&
         last.line.segs.length === 1 &&
+        last.prevY !== -Infinity &&
         last.line.y - last.prevY > 14 &&
         !opts.isRowStart(last.line.segs[0].text)
       ) {
@@ -539,13 +541,17 @@ export function readPlanText(pdfPages: PdfPage[]): PlanReading {
     .flatMap((p) => p.lines)
     .filter((l) => !FORBIDDEN_LINE.some((re) => re.test(fold(l.text))));
 
-  // 2.1 La fecha del plan: la primera fecha completa de las páginas permitidas (la portada).
+  // 2.1 La fecha del plan: solo en una página sin encabezado (la portada), la ÚLTIMA fecha
+  // completa de la primera que traiga alguna (otra fecha anterior en la portada no gana).
   // Se busca antes del filtro de líneas (una fecha DD.MM.AAAA parece un teléfono) y solo se toma la fecha.
-  for (const l of allowed.flatMap((p) => p.lines)) {
-    const hit = FULL_DATE.exec(l.text);
+  for (const p of allowed.filter((p) => p.kind === "none")) {
+    const hits = p.lines
+      .map((l) => FULL_DATE.exec(l.text))
+      .filter((m): m is RegExpExecArray => !!m);
+    const hit = hits.at(-1);
     if (hit) {
       draft.issuedAt = `${hit[3]}-${hit[2]}-${hit[1]}`;
-      pagesMap.validity = l.page;
+      pagesMap.validity = p.n;
       break;
     }
   }
@@ -556,7 +562,8 @@ export function readPlanText(pdfPages: PdfPage[]): PlanReading {
   };
   readRestricted(lines, draft, pagesMap);
   const additivesEnd = readAdditives(lines, draft, pagesMap, skip);
-  readAlsoAvoid(lines, additivesEnd, draft, pagesMap);
+  // «Otros que evitar» va bajo la rejilla de aditivos, en su misma página: sin rejilla, no se busca.
+  if (additivesEnd > 0) readAlsoAvoid(lines, additivesEnd, draft, pagesMap);
   readGreen(lines, draft, pagesMap, skip);
   readPillars(lines, draft, pagesMap);
   readSupplements(lines, draft, pagesMap, skip);
@@ -787,7 +794,7 @@ function readAlsoAvoid(
       !SPAN.test(fold(l.text)),
     from,
   );
-  if (start < 0) return;
+  if (start < 0 || lines[start].page !== lines[from - 1]?.page) return;
   let blockX: number | undefined;
   for (let i = start + 1; i < lines.length; i++) {
     const l = lines[i];
@@ -924,7 +931,14 @@ function readPillars(
       break;
     }
   }
-  if (colX === undefined) return;
+  // Respaldo: si la meta de minutos se escribe distinto, la columna es la de las viñetas «→».
+  if (colX === undefined) {
+    const arrow = lines.find((l) => l.segs.some((s) => /^→/.test(s.text)));
+    const seg = arrow?.segs.find((s) => /^→/.test(s.text));
+    if (!arrow || !seg) return;
+    colX = seg.x;
+    page = arrow.page;
+  }
   const right = lines
     .filter((l) => l.page === page || l.page === page + 1)
     .map((l) => ({
@@ -970,6 +984,9 @@ function readPillars(
     if (!shape) continue;
     const list = /^([^.→]+)\./.exec(joinCell([e.text]));
     if (!list) continue;
+    // «<persona>: si tiene …, reemplazar por …» nombra a alguien de la familia: no se lee.
+    if (/^\s*si\b/.test(fold(list[1])) || /\bsi\b[^,]*,/.test(fold(list[1])))
+      continue;
     const use = splitList(list[1]);
     if (use.length < 2) continue;
     const key = fold(shape[2]) === "del" ? shape[3] : shape[1];
@@ -985,7 +1002,7 @@ function readPillars(
     pages.goals = pages["goals.activity"] ?? pages["goals.sleep"];
 }
 
-/** La presentación del frasco («4 fl oz 118 ml», «(30 ml)») sale del nombre del suplemento; la marca se queda. */
+/** La presentación del frasco («4 fl oz 120 ml», «(30 ml)») sale del nombre del suplemento; la marca se queda. */
 function dropPresentation(name: string): string {
   const f = fold(name);
   const re = /\(?(?:\s*\/?\s*\d+(?:[.,]\d+)?(?:\s*(?:fl|oz|ml)\b\.?)+)+\s*\)?/g;
@@ -1082,7 +1099,11 @@ function readMenuAndHydration(
       !startsWithIcon(l.text) &&
       lines
         .slice(i + 1, i + 3)
-        .some((n) => n.page === l.page && startsWithIcon(n.text)),
+        .some((n) => n.page === l.page && startsWithIcon(n.text)) &&
+      // …y unas líneas más abajo, una hora: es el menú, no una mención suelta.
+      lines
+        .slice(i + 1, i + 8)
+        .some((n) => n.page === l.page && /\d{1,2}:\d{2}/.test(n.text)),
   );
   const hydr = findIdx(lines, (l) => has(l.text, "hidratacion"), start);
   if (start >= 0) {
@@ -1148,11 +1169,13 @@ function readMenuAndHydration(
       fold(text),
     );
   if (!meta) return;
-  // Hábito: desde «hábito:» hasta la próxima etiqueta («<Palabra>: …»). Los consejos que
+  // Hábito: desde «hábito:» hasta el fin de su oración o la próxima etiqueta («<Palabra>: …»). Los consejos que
   // siguen nombran a personas de la familia: NO se leen (se completan a mano).
   const at = /habito\s*:\s*/.exec(fold(text));
   const rest = at ? text.slice(at.index + at[0].length) : "";
-  const habit = rest.replace(/\s+\p{Lu}[^:.]{0,40}:.*$/u, "");
+  const habit = rest
+    .replace(/\.\s+\p{Lu}.*$/u, ".")
+    .replace(/\s+\p{Lu}[^:.]{0,40}:.*$/u, "");
   const glasses = habit
     .split(",")
     .map((p) => Number(/^\s*(\d+)\b/.exec(p)?.[1] ?? 0))

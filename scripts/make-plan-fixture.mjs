@@ -13,9 +13,9 @@
  *  - encabezado de la tabla de grupos en dos líneas y una fila partida entre páginas con el
  *    pie y el encabezado EN MEDIO;
  *  - etiqueta «<X> de reemplazo <adjetivo>:» que envuelve 5 líneas y termina a mitad de línea;
- *  - suplemento con la presentación del frasco («4 fl oz 118 ml») y una palabra cortada sin guion;
+ *  - suplemento con la presentación del frasco («4 fl oz 120 ml») y una palabra cortada sin guion;
  *  - un U+0000 dentro de un párrafo; la hora «12:15 – 1:15 pm»;
- *  - un consejo «<persona>: si tiene …, reemplazar por …» que NO se lee.
+ *  - dos consejos «<persona>: si tiene …, reemplazar por …» (uno con «de» en el sujeto) que NO se leen.
  * La página de identidad trae peso, talla, IMC, percentil y contacto A PROPÓSITO: es la carnada
  * del test que exige que el lector jamás los lea (regla dura 2).
  *
@@ -108,7 +108,13 @@ const GREEN_1 = [
   ],
 ];
 const GREEN_4_CONT = [
-  [[], ["(3-4 uds) · ✅ arepa de", "maíz"], ["sigue"], ["quinoa: 1/3 taza"], ["continúa"]],
+  [
+    [],
+    ["(3-4 uds) · ✅ arepa de", "maíz"],
+    ["sigue"],
+    ["quinoa: 1/3 taza"],
+    ["continúa"],
+  ],
 ];
 const GREEN_2 = [
   [
@@ -143,11 +149,26 @@ const GREEN_2 = [
 
 // Rejilla de aditivos: código (x ≈ 30 | 311) y nombre (x ≈ 68 | 349), dos segmentos por celda.
 const ADDITIVES = [
-  [["E 951", ["Tinte Simulado Uno"]], ["E 952", ["Brillo Simulado", "Doble (BSD)"]]],
-  [["E 953", ["Conserva Simulada"]], ["E 954", ["Espesor Simulado"]]],
-  [["E 955", ["Realce Simulado"]], ["E 956", ["Suelto Simulado"]]],
-  [["E 957", ["Mezcla Simulada"]], ["E 958", ["Ácido Simulado"]]],
-  [["E 959", ["Dulzor Simulado"]], ["E 960", ["Firmeza Simulada"]]],
+  [
+    ["E 951", ["Tinte Simulado Uno"]],
+    ["E 952", ["Brillo Simulado", "Doble (BSD)"]],
+  ],
+  [
+    ["E 953", ["Conserva Simulada"]],
+    ["E 954", ["Espesor Simulado"]],
+  ],
+  [
+    ["E 955", ["Realce Simulado"]],
+    ["E 956", ["Suelto Simulado"]],
+  ],
+  [
+    ["E 957", ["Mezcla Simulada"]],
+    ["E 958", ["Ácido Simulado"]],
+  ],
+  [
+    ["E 959", ["Dulzor Simulado"]],
+    ["E 960", ["Firmeza Simulada"]],
+  ],
 ];
 const grid = `<div class="grid">${ADDITIVES.map((row) =>
   row
@@ -243,6 +264,8 @@ const pages = [
             "con la luz apagada.",
             "Tazas de reemplazo: bebida de arroz,",
             "bebida de almendra.",
+            "Tía de Ana: si tiene hambre, reemplazar por",
+            "fruta, yogur de coco.",
           ],
         ],
       ],
@@ -282,12 +305,37 @@ const pages = [
     "Ajustes Simulados",
     table(
       [85, 64, 92, 180],
-      ["Aditivo simulado", "Clase", "Presente sobre todo en", "Comentario personal"],
       [
-        [["E951 – Tinte", "Simulado Uno"], ["Tinte"], ["gomitas, refrescos", "simulados"], ["texto personal que se ignora"]],
-        [["E952 – Brillo", "Simulado Doble /", "E953 – Conserva", "Simulada"], ["Varios"], ["embutidos, salsas"], ["texto personal"]],
-        [["E954 – Espesor", "Simulado"], ["Espesor"], ["postres de caja"], ["texto"]],
-        [["E955 – Realce", "Simulado"], ["Sabor"], ["sopas de sobre"], ["texto"]],
+        "Aditivo simulado",
+        "Clase",
+        "Presente sobre todo en",
+        "Comentario personal",
+      ],
+      [
+        [
+          ["E951 – Tinte", "Simulado Uno"],
+          ["Tinte"],
+          ["gomitas, refrescos", "simulados"],
+          ["texto personal que se ignora"],
+        ],
+        [
+          ["E952 – Brillo", "Simulado Doble /", "E953 – Conserva", "Simulada"],
+          ["Varios"],
+          ["embutidos, salsas"],
+          ["texto personal"],
+        ],
+        [
+          ["E954 – Espesor", "Simulado"],
+          ["Espesor"],
+          ["postres de caja"],
+          ["texto"],
+        ],
+        [
+          ["E955 – Realce", "Simulado"],
+          ["Sabor"],
+          ["sopas de sobre"],
+          ["texto"],
+        ],
       ],
     ) + lines(["⚠️ Recuadro simulado que se ignora."]),
     { footer: true },
@@ -323,9 +371,22 @@ const pages = [
   pageB(
     lines(["Un día cualquiera en la mesa: menú de muestra"]) +
       `<div class="menu">${[
-        [["🌅 Arranque", "6:45 – 7:15 am"], ["Arepa de maíz con aguacate", "Opción 2: avena con pera", "→ Gotas de sol si es Lunes, Miércoles o Viernes"]],
-        [["🍎 Recreo /", "Media", "9:50 am"], ["Fruta con semillas de girasol"]],
-        [["☀️ Mediodía", "12:15 – 1:15 pm"], ["Arroz, trucha y verduras", "Opción 2: lentejas con papa"]],
+        [
+          ["🌅 Arranque", "6:45 – 7:15 am"],
+          [
+            "Arepa de maíz con aguacate",
+            "Opción 2: avena con pera",
+            "→ Gotas de sol si es Lunes, Miércoles o Viernes",
+          ],
+        ],
+        [
+          ["🍎 Recreo /", "Media", "9:50 am"],
+          ["Fruta con semillas de girasol"],
+        ],
+        [
+          ["☀️ Mediodía", "12:15 – 1:15 pm"],
+          ["Arroz, trucha y verduras", "Opción 2: lentejas con papa"],
+        ],
         [["🍪 Tarde", "3:40 – 4:10 pm"], ["Maíz inflado casero"]],
         [["🌙 Noche", "6:20 – 6:50 pm"], ["Crema de ahuyama con pollo"]],
       ]
@@ -342,7 +403,11 @@ const pages = [
       ]),
   ),
   // p14 Informe Sección 03: listas por categoría (NO es semáforo)
-  pageA("03", "Listas Simuladas", lines(["Granos     Hojas     Raíces", "arroz     acelga     yuca"])),
+  pageA(
+    "03",
+    "Listas Simuladas",
+    lines(["Granos     Hojas     Raíces", "arroz     acelga     yuca"]),
+  ),
   // p15 Plan: suplementos (x ≈ 78 / 163 / 234 / 295 / 416) + calendario de verificación
   pageB(
     lines(["Lo que se suma: suplementos de la temporada"]) +
@@ -350,16 +415,60 @@ const pages = [
         [85, 71, 61, 121, 120],
         ["Suplemento", "Días", "Dosis", "Para qué (personal)", "Cómo darlo"],
         [
-          [["💊 Gotas de Sol", "Simuladas"], ["Lunes", "Miércoles", "Viernes"], ["2 gotas", "por dosis"], ["texto libre"], ["Darlas con el arranque.", "Agitar antes."]],
-          [["🫐 Gomitas Simu", "ladas Marca", "Lumen 4 fl oz", "118 ml"], ["Martes", "Jueves", "Sábado"], ["1 unidad", "(masticable)"], ["texto"], ["Darla con el mediodía."]],
-          [["🦠 Polvo Flora", "Simulada"], ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"], ["1 sobre"], ["texto"], ["Puede ir disuelto", "en agua fría."]],
+          [
+            ["💊 Gotas de Sol", "Simuladas"],
+            ["Lunes", "Miércoles", "Viernes"],
+            ["2 gotas", "por dosis"],
+            ["texto libre"],
+            ["Darlas con el arranque.", "Agitar antes."],
+          ],
+          [
+            ["🫐 Gomitas Simu", "ladas Marca", "Lumen 4 fl oz", "120 ml"],
+            ["Martes", "Jueves", "Sábado"],
+            ["1 unidad", "(masticable)"],
+            ["texto"],
+            ["Darla con el mediodía."],
+          ],
+          [
+            ["🦠 Polvo Flora", "Simulada"],
+            [
+              "Lunes",
+              "Martes",
+              "Miércoles",
+              "Jueves",
+              "Viernes",
+              "Sábado",
+              "Domingo",
+            ],
+            ["1 sobre"],
+            ["texto"],
+            ["Puede ir disuelto", "en agua fría."],
+          ],
         ],
       ) +
       lines(["La semana de un vistazo"]) +
       table(
         [62, 62, 62, 62, 62, 62, 62],
-        ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"],
-        [[["Gotas", "(2 gotas)"], ["Gomitas", "(1 unidad)"], ["Gotas"], ["Gomitas"], ["Gotas"], ["Gomitas"], ["Polvo"]]],
+        [
+          "Lunes",
+          "Martes",
+          "Miércoles",
+          "Jueves",
+          "Viernes",
+          "Sábado",
+          "Domingo",
+        ],
+        [
+          [
+            ["Gotas", "(2 gotas)"],
+            ["Gomitas", "(1 unidad)"],
+            ["Gotas"],
+            ["Gomitas"],
+            ["Gotas"],
+            ["Gomitas"],
+            ["Polvo"],
+          ],
+        ],
       ),
   ),
   // p16 Plan: notas tras un título con 📌 + aviso en dos columnas (derecha: profesional, se ignora)
@@ -426,16 +535,24 @@ function nulInToUnicode(buf) {
     } catch {
       continue;
     }
-    if (!/beginbfchar/.test(text) || !/<[0-9A-F]{4}> <00A6>/.test(text)) continue;
+    if (!/beginbfchar/.test(text) || !/<[0-9A-F]{4}> <00A6>/.test(text))
+      continue;
     const fixed = deflateSync(
-      Buffer.from(text.replace(/(<[0-9A-F]{4}>) <00A6>/g, "$1 <0000>"), "latin1"),
+      Buffer.from(
+        text.replace(/(<[0-9A-F]{4}>) <00A6>/g, "$1 <0000>"),
+        "latin1",
+      ),
     ).toString("latin1");
-    out += s.slice(last, m.index) + `/Length ${fixed.length}${m[2]}>>\nstream\n` + fixed;
+    out +=
+      s.slice(last, m.index) +
+      `/Length ${fixed.length}${m[2]}>>\nstream\n` +
+      fixed;
     last = start + len;
     re.lastIndex = start + len;
     patched++;
   }
-  if (patched === 0) throw new Error("no ToUnicode maps U+00A6: the NUL trap is missing");
+  if (patched === 0)
+    throw new Error("no ToUnicode maps U+00A6: the NUL trap is missing");
   s = out + s.slice(last);
   // xref nuevo con los desplazamientos reales.
   const xrefAt = s.lastIndexOf("\nxref\n") + 1;
@@ -449,8 +566,13 @@ function nulInToUnicode(buf) {
       ? "0000000000 65535 f \n"
       : `${String(o).padStart(10, "0")} 00000 n \n`,
   );
-  const tail = s.slice(trailerAt).replace(/startxref\n\d+/, `startxref\n${xrefAt}`);
-  return Buffer.from(`${s.slice(0, xrefAt)}xref\n0 ${size}\n${rows.join("")}${tail}`, "latin1");
+  const tail = s
+    .slice(trailerAt)
+    .replace(/startxref\n\d+/, `startxref\n${xrefAt}`);
+  return Buffer.from(
+    `${s.slice(0, xrefAt)}xref\n0 ${size}\n${rows.join("")}${tail}`,
+    "latin1",
+  );
 }
 
 const browser = await chromium.launch();
