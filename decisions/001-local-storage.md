@@ -13,7 +13,7 @@
   2. API síncrona = wrappers y tests triviales; IndexedDB exigiría async en toda la UI.
   3. Todo dato leído se re-valida con zod (fail-safe: corrupto ⇒ descartar y volver a demo),
      así que la debilidad de localStorage (strings sin esquema) queda cubierta.
-- **Migración futura:** si S3 (estado compartido) o el offline avanzado exigen IndexedDB/Supabase,
+- **Migración futura:** si el offline avanzado exige IndexedDB (la clave de la familia ya vive allí, ADR-011), o si el estado compartido necesitara otro almacén,
   la clave versionada permite migrar leyendo `*.v1` y escribiendo el formato nuevo; el wrapper es
   el único punto de cambio.
 - **Consecuencias:** "borrar datos" = remover claves (derecho de supresión simple). localStorage

@@ -39,7 +39,8 @@ export const NOTE_TEXT_MAX = 140;
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/; // "HH:MM" 24h
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/; // clave de día YYYY-MM-DD
 
-export type DayNote = { chips: NoteChip[]; text: string };
+/** `by`: teléfono que la escribió (solo al leer; puede faltar). */
+export type DayNote = { chips: NoteChip[]; text: string; by?: string };
 /** `at`: hora local "HH:MM" a la que se marcó; null = hora desconocida (migrada de v1). */
 export type MarkValue = { at: string | null };
 /** Lo que se lee: la marca y quién la hizo (`by` = id del teléfono; puede faltar). */
@@ -255,7 +256,7 @@ function toRecord(regs: DayRegs): DayRecord {
   for (const [id, r] of Object.entries(regs.marks))
     if (r.v) record.marks[id] = { at: r.v.at, by: r.by };
   for (const [id, r] of Object.entries(regs.notes))
-    if (r.v) record.notes[id] = { chips: r.v.chips, text: r.v.text };
+    if (r.v) record.notes[id] = { chips: r.v.chips, text: r.v.text, by: r.by };
   return record;
 }
 

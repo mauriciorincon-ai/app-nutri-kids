@@ -133,12 +133,15 @@ export function SecretsCard({
   body,
   code,
   phrase,
+  keysSaved,
   onDone,
 }: {
   title: string;
   body: string;
   code?: string;
   phrase: string;
+  /** false: la clave no se pudo guardar en este teléfono. */
+  keysSaved?: boolean;
   onDone: () => void;
 }) {
   const { t } = useI18n();
@@ -150,6 +153,11 @@ export function SecretsCard({
     >
       <h3 className="text-lg">{title}</h3>
       <p className="text-sm leading-relaxed text-muted-foreground">{body}</p>
+      {keysSaved === false && (
+        <p role="alert" className="text-sm font-semibold text-tl-yellow">
+          ⚠ {t.family.keysNotSaved}
+        </p>
+      )}
       {code && (
         <div>
           <p className="text-sm font-semibold">{t.family.codeLabel}</p>

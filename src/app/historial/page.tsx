@@ -148,6 +148,12 @@ function DayCard({
             {note && (note.chips.length > 0 || note.text) && (
               <span className="mt-0.5 block text-muted-foreground">
                 {t.history.noteLabel} <NoteSummary note={note} />
+                {who(note.by) && (
+                  <span className="font-semibold" data-testid="history-note-by">
+                    {" · "}
+                    {who(note.by)}
+                  </span>
+                )}
               </span>
             )}
           </li>

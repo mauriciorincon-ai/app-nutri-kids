@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   IV_BYTES,
@@ -22,6 +22,26 @@ describe("cifrado de la familia (WebCrypto)", () => {
     expect(PBKDF2_ITERATIONS).toBeGreaterThanOrEqual(600_000);
     expect(fromB64u(newSalt())).toHaveLength(16);
     expect(newSalt()).not.toBe(newSalt());
+  });
+
+  it("deriveKeys le pide de verdad a WebCrypto ≥ 600 000 vueltas de PBKDF2-SHA-256 con la sal de la familia", async () => {
+    const spy = vi.spyOn(crypto.subtle, "deriveBits");
+    try {
+      const salt = newSalt();
+      await deriveKeys(PHRASE, salt);
+      const call = spy.mock.calls.find(
+        ([algo]) => (algo as Pbkdf2Params).name === "PBKDF2",
+      );
+      expect(call).toBeTruthy();
+      const algo = call![0] as Pbkdf2Params;
+      expect(algo.iterations).toBeGreaterThanOrEqual(600_000);
+      expect(algo.hash).toBe("SHA-256");
+      expect([...new Uint8Array(algo.salt as ArrayBuffer)]).toEqual([
+        ...fromB64u(salt),
+      ]);
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it("base64url de ida y vuelta, sin + / ni =", () => {

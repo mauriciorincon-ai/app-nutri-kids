@@ -175,6 +175,33 @@ describe("Compartir con la familia (Ajustes)", () => {
     expect(screen.queryByTestId("family-phrase")).toBeNull();
   });
 
+  it("el consentimiento dice que perder la frase no tiene vuelta y que se puede salir", async () => {
+    const user = userEvent.setup();
+    renderSection();
+    await waitFor(() =>
+      expect(screen.getByTestId("family-create")).toBeEnabled(),
+    );
+    await user.click(screen.getByTestId("family-create"));
+    const form = await screen.findByTestId("family-create-form");
+    expect(form).toHaveTextContent(/si se pierde la frase/i);
+    expect(form).toHaveTextContent(/Salir de la familia/);
+    expect(form).toHaveTextContent(/Borrar lo compartido/);
+  });
+
+  it("si el teléfono no puede guardar las claves, la pantalla de la frase lo avisa", async () => {
+    const user = userEvent.setup();
+    const broken = {
+      open: () => {
+        throw new Error("SecurityError");
+      },
+    };
+    (globalThis as { indexedDB: unknown }).indexedDB = broken;
+    const secrets = await createFamilyThroughUi(user);
+    expect(within(secrets).getByRole("alert")).toHaveTextContent(
+      /No se pudo guardar la clave/,
+    );
+  });
+
   it("entrar: código o frase equivocados se explican; el nombre y el consentimiento son obligatorios", async () => {
     const user = userEvent.setup();
     // Otra familia ya creada.

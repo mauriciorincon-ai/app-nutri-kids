@@ -3,7 +3,13 @@ import { IDBFactory } from "fake-indexeddb";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DEVICE_KEY, clearDevice, getDeviceId } from "@/lib/device";
-import { getDayRecord, markDone, unmark } from "@/lib/diet/day-log";
+import {
+  getDayRecord,
+  getNote,
+  markDone,
+  setNote,
+  unmark,
+} from "@/lib/diet/day-log";
 import { addProfileNote, loadProfileNotes } from "@/lib/diet/profile-notes";
 import { clearAllData, importDiet } from "@/lib/diet/storage";
 import { familyApi } from "@/lib/family/client";
@@ -108,6 +114,7 @@ describe("el director de la familia en un teléfono", () => {
     // Teléfono 1
     markDone(DAY, "meal:desayuno", "07:30");
     addProfileNote("allergy", "Ejemplo anotado", DAY);
+    setNote(DAY, "meal:desayuno", { chips: [], text: "Nota de ejemplo" });
     const a = controller();
     const created = await a.create("Mamá");
     if (!created.ok) throw new Error("create");
@@ -130,6 +137,7 @@ describe("el director de la familia en un teléfono", () => {
     });
     expect(await b.join(created.code, created.phrase, "Abuela")).toEqual({
       ok: true,
+      keysSaved: true,
     });
 
     expect(getDayRecord(DAY).marks["meal:desayuno"]).toEqual({
@@ -139,6 +147,11 @@ describe("el director de la familia en un teléfono", () => {
     expect(loadProfileNotes().notes[0]).toMatchObject({
       kind: "allergy",
       text: "Ejemplo anotado",
+      by: idA,
+    });
+    // La nota del día también dice quién la escribió.
+    expect(getNote(DAY, "meal:desayuno")).toMatchObject({
+      text: "Nota de ejemplo",
       by: idA,
     });
     expect(
@@ -200,6 +213,39 @@ describe("el director de la familia en un teléfono", () => {
     // Los datos siguen en este teléfono.
     expect(getDayRecord(DAY).marks["meal:desayuno"]).toBeDefined();
     expect((await c.rotate()).ok).toBe(false);
+  });
+
+  it("si el teléfono no puede guardar las claves, crear y cambiar la frase igual entregan la frase y avisan; borrar lo compartido sigue funcionando", async () => {
+    const { controller, store } = setup();
+    const c = controller({
+      keys: {
+        save: () => Promise.reject(new Error("QuotaExceededError")),
+        load: () => Promise.resolve(null),
+        clear: () => Promise.resolve(),
+      },
+    });
+    const created = await c.create("Mamá");
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    expect(created.keysSaved).toBe(false);
+    expect(created.phrase).toMatch(/^[0-9A-Z]{4}(-[0-9A-Z]{4}){4}$/);
+
+    const rotated = await c.rotate();
+    expect(rotated.ok).toBe(true);
+    if (!rotated.ok) return;
+    expect(rotated.keysSaved).toBe(false);
+    expect(rotated.phrase).not.toBe(created.phrase);
+
+    const family = loadFamilyState()!.family;
+    expect((await c.destroy()).ok).toBe(true);
+    expect(await store.meta(family)).toBeNull();
+    expect(c.getView().phase).toBe("off");
+  });
+
+  it("con las claves guardadas, crear dice keysSaved: true", async () => {
+    const { controller } = setup();
+    const r = await controller().create("Mamá");
+    expect(r.ok && r.keysSaved).toBe(true);
   });
 
   it("«Borrar datos» también sale de la familia y olvida el nombre del teléfono", async () => {

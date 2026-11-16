@@ -111,6 +111,7 @@ export default function TodayPage() {
           key={today ? dateKey(today) : "static"}
           mealName={l(item.meal.name)}
           note={record.notes[item.checkId] ?? null}
+          by={who(record.notes[item.checkId]?.by)}
           onSave={(note) => saveNote(item.checkId, note)}
         />
       </div>

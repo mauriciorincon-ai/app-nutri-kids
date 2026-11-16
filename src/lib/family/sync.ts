@@ -11,6 +11,7 @@ import {
   type FamilyCtx,
   type Outgoing,
 } from "./session";
+import { ITEM_MAX_CT, PLAN_MAX_CT } from "./server/limits";
 import type { FamilyState } from "./state";
 
 /**
@@ -57,8 +58,16 @@ export type SyncResult =
   | { ok: true; changed: boolean; pushed: number; pending: number }
   | { ok: false; reason: Failure };
 
-/** Tope del plan en lo compartido, antes de cifrar (el servidor admite 256 KB ya cifrado). */
-export const PLAN_MAX_CHARS = 180_000;
+/**
+ * Lo que pesará un registro ya cifrado (base64url), calculado ANTES de cifrar y en bytes
+ * (no en caracteres: un acento pesa 2 bytes y un emoji 4), con margen por el relleno y la
+ * etiqueta de AES-GCM. Si pasa el tope del servidor, ese registro no viaja y la pantalla lo dice:
+ * mandarlo haría que el servidor rechazara TODA la subida, y nada más se compartiría.
+ */
+export function sealedSize(value: unknown): number {
+  const bytes = new TextEncoder().encode(canon(value)).length;
+  return Math.ceil(((Math.ceil((bytes + 64) / 256) + 1) * 256 * 4) / 3);
+}
 const DEVICE_REFRESH_MS = 10 * 60 * 1000;
 const ROUNDS = 3;
 
@@ -97,12 +106,13 @@ type Candidate = { named: Named; hash: string };
 async function candidates(
   d: SyncDeps,
   st: FamilyState,
-): Promise<{ list: Candidate[]; planTooBig: boolean }> {
+): Promise<{ list: Candidate[]; planTooBig: boolean; oversize: number }> {
   const out: Candidate[] = [];
   let planTooBig = false;
+  let oversize = 0;
   const plan = d.local.plan();
   if (plan) {
-    if (canon(plan.diet).length > PLAN_MAX_CHARS) planTooBig = true;
+    if (sealedSize(plan) > PLAN_MAX_CT) planTooBig = true;
     else
       out.push({
         named: { name: "plan", data: plan },
@@ -110,13 +120,15 @@ async function candidates(
       });
   }
   const profile = d.local.profile();
-  if (hasProfile(profile))
+  if (hasProfile(profile) && sealedSize(profile) > ITEM_MAX_CT) oversize++;
+  else if (hasProfile(profile))
     out.push({
       named: { name: "profile", data: profile },
       hash: await digest(profile),
     });
   for (const [day, regs] of Object.entries(d.local.days()))
-    if (hasDay(regs))
+    if (hasDay(regs) && sealedSize(regs) > ITEM_MAX_CT) oversize++;
+    else if (hasDay(regs))
       out.push({
         named: { name: dayName(day), data: regs },
         hash: await digest(regs),
@@ -140,16 +152,17 @@ async function candidates(
       }),
     });
   }
-  return { list: out, planTooBig };
+  return { list: out, planTooBig, oversize };
 }
 
 async function outgoing(
   d: SyncDeps,
   st: FamilyState,
-): Promise<{ list: Candidate[]; planTooBig: boolean }> {
+): Promise<{ list: Candidate[]; planTooBig: boolean; oversize: number }> {
   const all = await candidates(d, st);
   return {
     planTooBig: all.planTooBig,
+    oversize: all.oversize,
     list: all.list.filter((c) => st.pushed[c.named.name] !== c.hash),
   };
 }
@@ -189,7 +202,8 @@ export async function syncOnce(d: SyncDeps): Promise<SyncResult> {
     const pulled = await pullSince(d.api, d.ctx, st.since);
     if (!pulled.ok) return fail(pulled.reason);
     st.locked = false;
-    st.unreadable = pulled.value.unreadable;
+    // Se acumula: lo que no se pudo abrir se salta para siempre, y el aviso no debe desaparecer solo.
+    st.unreadable += pulled.value.unreadable;
     let remotePlan: PlanSide | null = null;
 
     for (const { named, ver } of pulled.value.items) {
@@ -242,6 +256,7 @@ export async function syncOnce(d: SyncDeps): Promise<SyncResult> {
     // 3 · Subir lo que el servidor aún no tiene.
     const out = await outgoing(d, st);
     st.planTooBig = out.planTooBig;
+    st.oversize = out.oversize;
     if (out.list.length === 0) break;
     const batch: Outgoing[] = out.list.map((c) => ({
       named: c.named,

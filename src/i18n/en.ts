@@ -360,6 +360,8 @@ export const en: Dictionary = {
     clearConfirmTitle: "Delete everything?",
     clearConfirmBody:
       "The loaded diet and the whole day record (checkmarks, times and notes) and what you noted in the profile (notes and textures) will be deleted, and you will leave the family. This cannot be undone.",
+    clearAlsoShared:
+      "Also delete what is shared on the internet. The family's other phones keep their copy.",
     clearConfirmYes: "Yes, delete",
     clearConfirmNo: "Cancel",
     clearedToast: "Data deleted. You're back on the demo diet.",
@@ -388,6 +390,10 @@ export const en: Dictionary = {
     consentTitle: "Before you share",
     consentBody:
       "You're about to share your little one's health data with other phones: the plan, what's ticked and what's noted, including allergies and medications. It travels encrypted and only opens with the family phrase.",
+    consentLost:
+      "If the phrase is lost and no phone is still in, what is shared cannot be recovered: no one, not even us, can open it.",
+    consentLeave:
+      "You can leave any time: “Leave the family” keeps this phone's data and “Delete what's shared” erases the copy on the internet.",
     consentCheck: "I understand what is shared and I want to do it",
     nameLabel: "This phone's name",
     nameHint: "How others will see you: “By Mum”. Up to 30 letters.",
@@ -426,7 +432,7 @@ export const en: Dictionary = {
     bodySyncing: "Sending and receiving changes…",
     bodyOffline: "Your changes are kept here and sent when internet is back.",
     bodyLocked:
-      "The family phrase was changed or this phone was removed. Join with the new phrase.",
+      "This phone can no longer get into the family: the phrase changed, it was removed or the family was deleted. Join with the new phrase or leave the family.",
     bodyUnavailable:
       "The sharing service isn't responding. Your data is still here and it retries on its own.",
     bodyFull: "The family has reached the limit of what can be shared.",
@@ -475,6 +481,10 @@ export const en: Dictionary = {
     planNoticeMine:
       "Two phones changed the plan. The most recent one stayed, this phone's.",
     planNoticeOk: "Got it",
+    keysNotSaved:
+      "The key could not be saved on this phone (private browsing?). It works while the app is open; when you close it you will need to join again with the phrase.",
+    oversize:
+      "{n} record(s) do not fit in what is shared and stay only on this phone.",
     planTooBig: "Your plan is too big to share: it stays only on this phone.",
     unreadable:
       "{n} records couldn't be opened on this phone and were left as they were.",

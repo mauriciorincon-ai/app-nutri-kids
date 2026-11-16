@@ -13,7 +13,11 @@ export function CreateForm({
   onCreated,
   onCancel,
 }: {
-  onCreated: (secrets: { code: string; phrase: string }) => void;
+  onCreated: (secrets: {
+    code: string;
+    phrase: string;
+    keysSaved: boolean;
+  }) => void;
   onCancel: () => void;
 }) {
   const { t } = useI18n();
@@ -29,7 +33,8 @@ export function CreateForm({
     setError(null);
     const r = await getFamily().create(name);
     setBusy(false);
-    if (r.ok) onCreated({ code: r.code, phrase: r.phrase });
+    if (r.ok)
+      onCreated({ code: r.code, phrase: r.phrase, keysSaved: r.keysSaved });
     else setError(errorText(t, r.reason));
   };
 
@@ -42,6 +47,12 @@ export function CreateForm({
       <h3 className="text-lg">{t.family.consentTitle}</h3>
       <p className="text-sm leading-relaxed text-muted-foreground">
         {t.family.consentBody}
+      </p>
+      <p className="text-sm leading-relaxed text-muted-foreground">
+        {t.family.consentLost}
+      </p>
+      <p className="text-sm leading-relaxed text-muted-foreground">
+        {t.family.consentLeave}
       </p>
       <NameField value={name} onChange={setName} />
       <CheckLine checked={consent} onChange={setConsent}>
@@ -83,7 +94,7 @@ export function JoinForm({
   onCancel,
 }: {
   rejoin?: { code: string; name: string };
-  onJoined: () => void;
+  onJoined: (keysSaved: boolean) => void;
   onCancel?: () => void;
 }) {
   const { t } = useI18n();
@@ -101,7 +112,7 @@ export function JoinForm({
     setError(null);
     const r = await getFamily().join(code, phrase, name);
     setBusy(false);
-    if (r.ok) onJoined();
+    if (r.ok) onJoined(r.keysSaved);
     else setError(errorText(t, r.reason));
   };
 
@@ -148,6 +159,12 @@ export function JoinForm({
         <>
           <p className="text-sm leading-relaxed text-muted-foreground">
             {t.family.consentBody}
+          </p>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {t.family.consentLost}
+          </p>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {t.family.consentLeave}
           </p>
           <NameField value={name} onChange={setName} />
           <CheckLine checked={consent} onChange={setConsent}>

@@ -329,6 +329,70 @@ describe("sincronización entre dos teléfonos (contra el doble del servidor)", 
     expect(a.state!.planTooBig).toBe(true);
   });
 
+  it("el tamaño se mide en bytes: un plan con acentos que pasa de largo en letras también se queda en el teléfono, y el día se sigue subiendo", async () => {
+    const { net, a, b, ctxA, ctxB } = await setup();
+    // 140 000 letras con tilde = 280 000 bytes: no cabe en 256 KB cifrado aunque «length» diga 140 000
+    a.data.plan = { t: 1, by: a.id, diet: { big: "é".repeat(140_000) } };
+    a.mark("2026-11-16", "meal:desayuno", "07:00", 10);
+    const r = await syncOnce(a.deps(net.api, ctxA));
+    expect(r.ok).toBe(true);
+    expect(a.state!.planTooBig).toBe(true);
+    await syncOnce(b.deps(net.api, ctxB));
+    expect(b.data.plan).toBeNull();
+    expect(b.data.days["2026-11-16"]?.marks["meal:desayuno"]?.v).toEqual({
+      at: "07:00",
+    });
+  });
+
+  it("un día que no cabe se cuenta aparte y no frena los demás", async () => {
+    const { net, a, b, ctxA, ctxB } = await setup();
+    a.data.days["2026-11-15"] = {
+      marks: {},
+      notes: {
+        "meal:cena": {
+          t: 5,
+          by: a.id,
+          v: { chips: [], text: "x".repeat(70_000) },
+        },
+      },
+    };
+    a.mark("2026-11-16", "meal:desayuno", "07:00", 10);
+    expect((await syncOnce(a.deps(net.api, ctxA))).ok).toBe(true);
+    expect(a.state!.oversize).toBe(1);
+    await syncOnce(b.deps(net.api, ctxB));
+    expect(b.data.days["2026-11-15"]).toBeUndefined();
+    expect(b.data.days["2026-11-16"]?.marks["meal:desayuno"]).toBeDefined();
+    // al achicar la nota, el aviso se va
+    a.data.days["2026-11-15"].notes["meal:cena"] = {
+      t: 6,
+      by: a.id,
+      v: { chips: [], text: "corta" },
+    };
+    await syncOnce(a.deps(net.api, ctxA));
+    expect(a.state!.oversize).toBe(0);
+  });
+
+  it("los registros que no se pueden abrir se acumulan entre rondas, no se pisan", async () => {
+    const { net, a, b, ctxA, ctxB } = await setup();
+    const junk = (n: number) => ({
+      id: n.toString().padStart(22, "0"),
+      kind: "item" as const,
+      ver: 0,
+      iv: "i".repeat(16),
+      ct: "c".repeat(40),
+    });
+    expect(
+      (await net.api.push(ctxA.family, ctxA.epoch, [junk(1)], ctxA.keys.token))
+        .ok,
+    ).toBe(true);
+    await syncOnce(b.deps(net.api, ctxB));
+    expect(b.state!.unreadable).toBe(1);
+    await net.api.push(ctxA.family, ctxA.epoch, [junk(2)], ctxA.keys.token);
+    a.mark("2026-11-16", "meal:desayuno", "07:00", 10);
+    await syncOnce(b.deps(net.api, ctxB));
+    expect(b.state!.unreadable).toBe(2);
+  });
+
   it("al cambiar la frase, el teléfono que se queda sin ella recibe «denied» y vuelve a entrar con la nueva", async () => {
     const { net, a, b, ctxA, ctxB } = await setup();
     a.mark("2026-11-16", "meal:desayuno", "07:00", 10);

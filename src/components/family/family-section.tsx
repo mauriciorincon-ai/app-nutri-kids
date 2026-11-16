@@ -24,9 +24,11 @@ export function FamilySection() {
   const [secrets, setSecrets] = useState<{
     code: string;
     phrase: string;
+    keysSaved: boolean;
   } | null>(null);
   const [health, setHealth] = useState<Health>("idle");
   const [notice, setNotice] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
 
   const inFamily = view.phase !== "off";
 
@@ -59,13 +61,14 @@ export function FamilySection() {
           body={t.family.secretsBody}
           code={secrets.code}
           phrase={secrets.phrase}
+          keysSaved={secrets.keysSaved}
           onDone={() => {
             setSecrets(null);
             setStep("home");
           }}
         />
       ) : inFamily ? (
-        <FamilyPanel onNotice={setNotice} />
+        <FamilyPanel onNotice={setNotice} onWarning={setWarning} />
       ) : step === "create" ? (
         <CreateForm
           onCreated={(s) => {
@@ -76,7 +79,10 @@ export function FamilySection() {
         />
       ) : step === "join" ? (
         <JoinForm
-          onJoined={() => setStep("home")}
+          onJoined={(keysSaved) => {
+            setStep("home");
+            setWarning(keysSaved ? null : t.family.keysNotSaved);
+          }}
           onCancel={() => setStep("home")}
         />
       ) : (
@@ -141,6 +147,15 @@ export function FamilySection() {
             </Button>
           </div>
         </>
+      )}
+      {warning && (
+        <p
+          role="alert"
+          className="rounded-xl bg-tl-yellow-surface px-4 py-3 text-sm text-tl-yellow"
+          data-testid="family-warning"
+        >
+          ⚠ {warning}
+        </p>
       )}
       {notice && (
         <p

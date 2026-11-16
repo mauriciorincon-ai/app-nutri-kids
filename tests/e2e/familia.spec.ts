@@ -75,7 +75,10 @@ async function axe(page: Page, scope = "axe") {
     await page.emulateMedia({ colorScheme, reducedMotion: "reduce" });
     // Un botón que acaba de habilitarse aún transita de color: axe mediría el tono a medias.
     await page.evaluate(() =>
-      Promise.all(document.getAnimations().map((a) => a.finished)),
+      // Una animación cancelada (el diálogo al cambiar a «menos movimiento») no es un error.
+      Promise.all(
+        document.getAnimations().map((a) => a.finished.catch(() => null)),
+      ),
     );
     const results = await new AxeBuilder({ page }).analyze();
     // Resumen legible: regla, nodo y por qué (el volcado completo de axe tapa la causa).
@@ -303,6 +306,49 @@ test("crear, entrar, marcar en uno y ver en el otro, sin red, sacar a un teléfo
   // (El código de la familia SÍ viaja: es su identificador opaco, no un secreto de contenido.)
   expectNoPlaintext([a, b], [first.phrase, second]);
 
+  await a.context.close();
+  await b.context.close();
+});
+
+test("«Borrar mis datos» dentro de una familia: avisa, y con la casilla también borra lo compartido de internet", async ({
+  browser,
+  baseURL,
+}) => {
+  const a = await phone(browser, baseURL!);
+  const b = await phone(browser, baseURL!);
+  const first = await createFamily(a);
+  await finishSecrets(a.page);
+
+  // Sin la casilla: solo sale este teléfono; la familia sigue en internet.
+  await a.page.goto("/ajustes");
+  await a.page.getByRole("button", { name: "Borrar mis datos" }).click();
+  const box = a.page.getByRole("checkbox", {
+    name: /También borrar lo compartido de internet/,
+  });
+  await expect(box).toBeVisible();
+  await expect(box).not.toBeChecked();
+  await axe(a.page, "borrar datos en familia");
+  await a.page.getByRole("button", { name: "Cancelar" }).click();
+
+  // Con la casilla: se borra la copia de internet y nadie más puede entrar.
+  await a.page.getByRole("button", { name: "Borrar mis datos" }).click();
+  await box.check();
+  await a.page.getByRole("button", { name: "Sí, borrar" }).click();
+  await expect(a.page.getByText("Datos borrados.")).toBeVisible();
+  await expect(a.page.getByTestId("family-create")).toBeVisible();
+
+  await b.page.goto("/ajustes");
+  await expect(b.page.getByTestId("family-join")).toBeEnabled();
+  await b.page.getByTestId("family-join").click();
+  await b.page.getByLabel("Código", { exact: true }).fill(first.code);
+  await b.page.getByLabel("Frase", { exact: true }).fill(first.phrase);
+  await b.page.getByLabel(/Nombre de este teléfono/).fill(PAPA);
+  await b.page
+    .getByRole("checkbox", { name: /Entiendo qué se comparte/ })
+    .check();
+  await b.page.getByRole("button", { name: "Entrar", exact: true }).click();
+  await expect(b.page.getByRole("alert")).toBeVisible();
+  await expect(b.page.getByTestId("family-panel")).toHaveCount(0);
   await a.context.close();
   await b.context.close();
 });

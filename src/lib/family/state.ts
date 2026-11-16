@@ -40,6 +40,8 @@ export const familyStateSchema = z.object({
   locked: z.boolean(),
   /** El plan no cabe en lo compartido y se queda solo en este teléfono. */
   planTooBig: z.boolean(),
+  /** Registros (días, perfil) que no caben en lo compartido y se quedan solo en este teléfono. */
+  oversize: z.number().int().nonnegative().default(0),
 });
 
 export type FamilyState = z.infer<typeof familyStateSchema>;
@@ -71,6 +73,7 @@ export function freshFamilyState(
     unreadable: 0,
     locked: false,
     planTooBig: false,
+    oversize: 0,
   };
 }
 

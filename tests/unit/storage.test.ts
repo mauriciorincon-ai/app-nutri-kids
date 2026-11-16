@@ -131,7 +131,7 @@ describe("day-log v2: hora real de cada marca", () => {
 describe("day-log v2: nota corta por comida (chips + texto, sin culpa)", () => {
   it("stores chips and short text, and reads them back", () => {
     setNote(day1, "meal:almuerzo", { chips: ["rejected"], text: "no quiso" });
-    expect(getNote(day1, "meal:almuerzo")).toEqual({
+    expect(getNote(day1, "meal:almuerzo")).toMatchObject({
       chips: ["rejected"],
       text: "no quiso",
     });
@@ -160,7 +160,7 @@ describe("day-log v2: nota corta por comida (chips + texto, sin culpa)", () => {
     setNote(day1, "meal:almuerzo", { chips: ["craving"], text: "" });
     unmark(day1, "meal:almuerzo");
     expect(getDoneIds(day1)).toEqual([]);
-    expect(getNote(day1, "meal:almuerzo")).toEqual({
+    expect(getNote(day1, "meal:almuerzo")).toMatchObject({
       chips: ["craving"],
       text: "",
     });
@@ -345,7 +345,7 @@ describe("day-log v2: coerción fail-safe ante JSON válido con forma inválida"
     expect(getMarkTime(day1, "meal:desayuno")).toBeNull();
     expect(getMarkTime(day1, "water:1")).toBe("07:05");
     // chip inválido descartado; text no-string → "".
-    expect(getNote(day1, "meal:desayuno")).toEqual({
+    expect(getNote(day1, "meal:desayuno")).toMatchObject({
       chips: ["pain"],
       text: "",
     });

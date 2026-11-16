@@ -362,6 +362,8 @@ export const es = {
     clearConfirmTitle: "¿Borrar todo?",
     clearConfirmBody:
       "Se borrará la dieta cargada y todo el registro de días (marcas, horas y notas) y lo que anotaste en el perfil (notas y texturas), y saldrás de la familia. Esto no se puede deshacer.",
+    clearAlsoShared:
+      "También borrar lo compartido de internet. Los demás teléfonos de la familia conservan su copia.",
     clearConfirmYes: "Sí, borrar",
     clearConfirmNo: "Cancelar",
     clearedToast: "Datos borrados. Volviste a la dieta demo.",
@@ -391,6 +393,10 @@ export const es = {
     consentTitle: "Antes de compartir",
     consentBody:
       "Vas a compartir con otros teléfonos datos de salud de tu peque: el plan, lo marcado y lo anotado, incluidas alergias y medicamentos. Viaja cifrado y solo se abre con la frase de la familia.",
+    consentLost:
+      "Si se pierde la frase y ningún teléfono sigue dentro, lo compartido no se puede recuperar: nadie, ni nosotros, puede abrirlo.",
+    consentLeave:
+      "Puedes salir cuando quieras: «Salir de la familia» conserva los datos de este teléfono y «Borrar lo compartido» borra la copia de internet.",
     consentCheck: "Entiendo qué se comparte y quiero hacerlo",
     nameLabel: "Nombre de este teléfono",
     nameHint: "Así te verán los demás: «Por Mamá». Hasta 30 letras.",
@@ -430,7 +436,7 @@ export const es = {
     bodyOffline:
       "Tus cambios se guardan aquí y se suben cuando vuelva internet.",
     bodyLocked:
-      "La frase de la familia cambió o sacaron a este teléfono. Entra con la frase nueva.",
+      "Este teléfono ya no puede entrar a la familia: la frase cambió, lo sacaron o la familia se borró. Entra con la frase nueva o sal de la familia.",
     bodyUnavailable:
       "El servicio de compartir no responde. Tus datos siguen aquí y se reintenta solo.",
     bodyFull: "La familia llegó al límite de lo que se puede compartir.",
@@ -479,6 +485,10 @@ export const es = {
     planNoticeMine:
       "Dos teléfonos cambiaron el plan. Quedó el más reciente, el de este teléfono.",
     planNoticeOk: "Entendido",
+    keysNotSaved:
+      "No se pudo guardar la clave en este teléfono (¿navegación privada?). Funciona mientras la app esté abierta; al cerrarla tendrás que entrar de nuevo con la frase.",
+    oversize:
+      "{n} registro(s) no caben en lo compartido y se quedan solo en este teléfono.",
     planTooBig:
       "Tu plan es demasiado grande para compartirlo: se queda solo en este teléfono.",
     unreadable:

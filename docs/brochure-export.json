@@ -12,7 +12,7 @@
     "enlaces.produccion": "null cuando la app no tiene URL pública. `razon` explica por qué, y es lo que la vitrina muestra en lugar del enlace. Nunca se rellena con un enlace de repositorio ni con una promesa."
   },
   "schema_version": "1.0.0",
-  "actualizado": "2026-11-15",
+  "actualizado": "2026-11-16",
   "app": {
     "slug": "nutri-kids",
     "nombre": "Nutrikids",
@@ -227,34 +227,34 @@
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 654,
+      "valor": 785,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-15 sobre la rama del lector contra la forma real del PDF, segunda vuelta (S6): 28 archivos, 654 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-16 sobre la rama de la familia cifrada (S7): 41 archivos, 785 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 166,
+      "valor": 180,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-15 sobre la rama del lector contra la forma real del PDF, segunda vuelta (S6), contra un build de producción: 166 pruebas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe y las de uso sin internet, todas en verde."
+      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-16 sobre la rama de la familia cifrada (S7), contra un build de producción y el doble en memoria del servicio de la familia (jamás la base real): 180 pruebas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe en los dos temas, las de uso sin internet y las de dos teléfonos con el centinela de texto en claro, todas en verde."
     },
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 98.67,
+      "valor": 97.6,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib/diet, src/lib/ia, src/lib/pdf y src/lib/privacy el 2026-11-15 sobre la rama del lector contra la forma real del PDF, segunda vuelta (98,67 % de líneas; pdf-reader.ts 98,16 %), con umbrales del 80 % en vitest.config.ts."
+      "detalle": "v8 sobre src/lib/diet, src/lib/ia, src/lib/pdf, src/lib/privacy y src/lib/family el 2026-11-16 sobre la rama de la familia cifrada (97,6 % de líneas en total; src/lib/family 97,23 % y su servidor 100 %), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family."
     },
     {
       "clave": "decisiones_registradas",
       "etiqueta": "Decisiones de arquitectura registradas",
-      "valor": 10,
+      "valor": 11,
       "unidad": "ADR",
       "fuente": "medido",
-      "detalle": "Archivos de decisions/ el 2026-11-15; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, y la 010 fija que el PDF se lee en el aparato y se revisa parte por parte."
+      "detalle": "Archivos de decisions/ el 2026-11-16; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, y la 010 fija que el PDF se lee en el aparato y se revisa parte por parte."
     },
     {
       "clave": "dependencias_runtime",
@@ -262,7 +262,7 @@
       "valor": 14,
       "unidad": "paquetes",
       "fuente": "medido",
-      "detalle": "Campo `dependencies` de package.json el 2026-11-15 sobre la rama del S6: suma pdfjs-dist, fijado y servido por la propia app (ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
+      "detalle": "Campo `dependencies` de package.json el 2026-11-16 sobre la rama del S7: sin dependencias nuevas (el cifrado es WebCrypto; el almacén se llama con fetch); sigue incluyendo pdfjs-dist, fijado y servido por la propia app (ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
     },
     {
       "clave": "requests_del_registro",
@@ -283,10 +283,10 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 79520,
+      "valor": 79626,
       "unidad": "bytes",
       "fuente": "medido",
-      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-15 sobre la rama del S6. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."
+      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-16 sobre la rama del S7. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."
     }
   ],
   "stack": [

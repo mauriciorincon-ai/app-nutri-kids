@@ -205,11 +205,12 @@ Profile stays.
   idioma, el tema y los ajustes de cada teléfono se quedan en cada teléfono.
 - **Es privado de punta a punta:** todo se cifra en tu teléfono antes de salir, con una **frase de la
   familia** que solo conocen ustedes. En internet solo quedan datos ilegibles: ni siquiera nosotros
-  podemos abrirlos. Mientras no crees ni entres a una familia, la app no hace ninguna petición.
+  podemos abrirlos. Mientras no elijas crear una familia o entrar a una, la app no hace ninguna petición.
 - **Cómo se usa:**
-  1. **Ajustes → Compartir con la familia → «Crear una familia».** Lee qué se comparte, escribe el
-     nombre de este teléfono («Mamá») y marca que lo entiendes.
-  2. Te muestra el **código** y la **frase** una sola vez: anótalos en un lugar seguro. La frase no se guarda en el teléfono.
+  1. **Ajustes → Compartir con la familia → «Crear una familia».** Lee qué se comparte (y que, si se
+     pierde la frase y ningún teléfono sigue dentro, nadie puede recuperarlo), escribe el nombre de este
+     teléfono («Mamá») y marca que lo entiendes.
+  2. Te muestra el **código** y la **frase** una sola vez: anótalos en un lugar seguro. La frase no se guarda en el teléfono; si el teléfono no pudiera guardar las claves, la pantalla lo avisa.
   3. En otro teléfono: **«Entrar con un código»**, con el código, la frase y su nombre.
   4. Desde ahí todo se sincroniza solo: al abrir la app, al volver la señal, tras cada cambio y cada
      30 segundos. En **Hoy**, **Días anteriores** y **Perfil** cada dato dice quién lo hizo.
@@ -221,7 +222,7 @@ Profile stays.
   se suben solos al volver. Los estados se dicen con símbolo y texto: «Al día», «Sincronizando», «Sin conexión», «Frase cambiada»…
 - **Limitaciones conocidas:** si dos teléfonos cambian lo mismo a la vez, gana el último cambio; si
   dos teléfonos cargan un plan distinto, gana el último y el otro teléfono lo avisa. El plan se
-  comparte si cabe en 180 000 caracteres (si no, la pantalla lo dice y el resto sí se comparte). Una
+  comparte si cabe en 180 000 caracteres (si no, la pantalla lo dice y el resto sí se comparte); una nota o marca demasiado grande se avisa igual y no frena lo demás. Una
   familia sin uso se borra sola a los 400 días.
 
 **In English — Share with the family (since Sprint 007).** Go to **Settings → Share with the family**
@@ -241,7 +242,7 @@ what's shared** erases it from the internet and each phone keeps its copy.
   **borrar todos los datos** del teléfono.
 - **Cómo se usa:** **Ajustes** (abajo). Para borrar: **"Borrar mis datos"** → confirma. Se borra
   la dieta cargada y **todo tu registro del día (marcas, horas y notas)** y **lo que anotaste en el perfil (notas y texturas)**, y este teléfono sale de la familia; la app vuelve a la demo.
-  Esto no se puede deshacer. Lo que ya estaba compartido en internet (cifrado) no se borra desde aquí: para eso está **«Borrar lo compartido»** en Compartir con la familia.
+  Esto no se puede deshacer. Si estás en una familia, el cuadro trae la casilla **«También borrar lo compartido de internet»**: con ella marcada se borra también la copia cifrada (los demás teléfonos conservan la suya); sin marcar, solo sales de la familia. También puedes borrarla antes desde **«Borrar lo compartido»** en Compartir con la familia.
 
 ## Preguntas frecuentes
 

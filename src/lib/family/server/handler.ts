@@ -71,7 +71,7 @@ export async function handle(
   }
   if (!store) return fail(503, "unavailable");
   if (req.method !== "POST") return fail(405, "method");
-  if (!(req.op in bodies)) return fail(404, "op");
+  if (!Object.hasOwn(bodies, req.op)) return fail(404, "op");
   if (req.body.length > MAX_BODY) return fail(413, "too-large");
 
   const ip = ipKey(req.ip);

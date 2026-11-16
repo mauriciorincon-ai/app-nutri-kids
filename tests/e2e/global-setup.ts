@@ -20,12 +20,35 @@ export default async function verificarQuienContesta(config: FullConfig) {
   if (!respuesta) return; // no hay nadie: Playwright levantará su propio servidor
 
   const html = await respuesta.text();
-  if (html.includes("Nutrikids")) return;
+  if (html.includes("Nutrikids")) {
+    await exigirDobleDeLaFamilia(baseURL);
+    return;
+  }
 
   const titulo = /<title>([^<]*)<\/title>/i.exec(html)?.[1] ?? "(sin título)";
   throw new Error(
     `En ${baseURL} contesta OTRA app: «${titulo}».\n` +
       `Playwright la habría reutilizado y toda la suite mediría la app equivocada.\n` +
       `Corre la suite en otro puerto:  E2E_PORT=3111 pnpm test:e2e`,
+  );
+}
+
+/**
+ * Las e2e de la familia escriben en el servicio de verdad que haya detrás de la ruta: si un
+ * `pnpm dev` ya abierto tiene las variables de Upstash, la suite lo reutilizaría y escribiría en
+ * la base real. Antes del primer test se exige que conteste el doble en memoria.
+ */
+async function exigirDobleDeLaFamilia(baseURL: string) {
+  const res = await fetch(`${baseURL}/api/family/health`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: "{}",
+  }).catch(() => null);
+  const store = (await res?.json().catch(() => null))?.store;
+  if (store === "memory" || store === "none") return;
+  throw new Error(
+    `El servidor en ${baseURL} usa el almacén «${store}» para la familia, no el doble en memoria.\n` +
+      `Las e2e jamás tocan la base real: cierra ese servidor o arráncalo con FAMILY_STORE=memory,\n` +
+      `o corre la suite en otro puerto:  E2E_PORT=3111 pnpm test:e2e`,
   );
 }

@@ -17,7 +17,7 @@ import { rebaseDemoWindow } from "./demo";
 
 /**
  * Almacenamiento local (ADR: localStorage con claves versionadas).
- * La dieta real vive SOLO en el dispositivo; el repo solo conoce la demo.
+ * La dieta real vive en el dispositivo; el repo solo conoce la demo. Si la familia elige compartir, sale únicamente cifrada de punta a punta (ADR-011).
  * Fail-safe: dato guardado corrupto ⇒ se descarta y se vuelve a demo.
  */
 

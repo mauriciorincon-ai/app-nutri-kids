@@ -84,6 +84,9 @@ describe("la ruta de la familia, contra el doble", () => {
     const s = createMemoryStore({ isolated: true });
     expect((await call(s, "pull", {}, { method: "GET" })).status).toBe(405);
     expect((await call(s, "secret", {})).status).toBe(404);
+    // nombres heredados de Object.prototype no son operaciones
+    for (const op of ["constructor", "toString", "__proto__", "hasOwnProperty"])
+      expect((await call(s, op, {})).status).toBe(404);
   });
 
   it("cuerpo enorme: 413; JSON roto o de otra forma: 400", async () => {

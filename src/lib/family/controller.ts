@@ -61,6 +61,8 @@ export type FamilyView = {
   pending: number;
   planNotice: "theirs" | "mine" | null;
   planTooBig: boolean;
+  /** Días o perfil que no caben en lo compartido y se quedan solo en este teléfono. */
+  oversize: number;
   unreadable: number;
   phones: PhoneRow[];
   ownId: string;
@@ -95,6 +97,7 @@ export const OFF_VIEW: FamilyView = {
   pending: 0,
   planNotice: null,
   planTooBig: false,
+  oversize: 0,
   unreadable: 0,
   phones: [],
   ownId: "",
@@ -140,6 +143,7 @@ export function createController(deps: ControllerDeps) {
         pending,
         planNotice: st.planNotice,
         planTooBig: st.planTooBig,
+        oversize: st.oversize,
         unreadable: st.unreadable,
         phones,
         ownId: own.id,
@@ -192,16 +196,44 @@ export function createController(deps: ControllerDeps) {
     return running;
   }
 
+  /**
+   * Guarda las claves en este teléfono. Si IndexedDB falla, la familia sigue viva en memoria
+   * (el servidor ya cambió: abortar aquí dejaría a todos sin acceso) y se avisa que al cerrar la
+   * app habrá que volver a entrar con la frase.
+   */
+  async function persistKeys(
+    family: string,
+    keys: FamilyKeys,
+  ): Promise<boolean> {
+    try {
+      await deps.keys.save(family, keys);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async function begin(
     next: FamilyCtx,
     name: string,
-  ): Promise<ActionResult<object>> {
-    await deps.keys.save(next.family, next.keys);
+  ): Promise<ActionResult<{ keysSaved: boolean }>> {
+    const keysSaved = await persistKeys(next.family, next.keys);
     ctx = next;
     setDeviceName(name);
     deps.state.save(freshFamilyState(next.family, next.epoch, deps.today()));
     await sync();
-    return { ok: true };
+    return { ok: true, keysSaved };
+  }
+
+  /** El contexto de la familia; si la app acaba de abrirse, lo arma con las claves guardadas. */
+  async function ensureCtx(): Promise<FamilyCtx | null> {
+    if (ctx) return ctx;
+    const st = deps.state.load();
+    if (!st) return null;
+    const keys = await deps.keys.load(st.family);
+    if (!keys) return null;
+    ctx = { family: st.family, epoch: st.epoch, keys };
+    return ctx;
   }
 
   const cleanName = (n: string) => n.trim();
@@ -224,7 +256,9 @@ export function createController(deps: ControllerDeps) {
 
     async create(
       name: string,
-    ): Promise<ActionResult<{ phrase: string; code: string }>> {
+    ): Promise<
+      ActionResult<{ phrase: string; code: string; keysSaved: boolean }>
+    > {
       if (!cleanName(name)) return { ok: false, reason: "no-name" };
       const r = await createFamily(deps.api);
       if (!r.ok) return r;
@@ -234,6 +268,7 @@ export function createController(deps: ControllerDeps) {
         ok: true,
         phrase: r.value.phrase,
         code: formatCode(r.value.ctx.family),
+        keysSaved: done.keysSaved,
       };
     },
 
@@ -241,7 +276,7 @@ export function createController(deps: ControllerDeps) {
       code: string,
       phrase: string,
       name: string,
-    ): Promise<ActionResult> {
+    ): Promise<ActionResult<{ keysSaved: boolean }>> {
       if (!cleanName(name)) return { ok: false, reason: "no-name" };
       const r = await joinFamily(deps.api, code, phrase);
       if (!r.ok) return r;
@@ -257,32 +292,35 @@ export function createController(deps: ControllerDeps) {
     },
 
     /** Frase nueva: sirve para sacar a un teléfono o si se perdió. Los demás vuelven a entrar. */
-    async rotate(): Promise<ActionResult<{ phrase: string }>> {
+    async rotate(): Promise<
+      ActionResult<{ phrase: string; keysSaved: boolean }>
+    > {
       const st = deps.state.load();
-      if (!st || !ctx) return { ok: false, reason: "no-family" };
+      const here = await ensureCtx();
+      if (!st || !here) return { ok: false, reason: "no-family" };
       const keep = await collectShared(
         {
           api: deps.api,
-          ctx,
+          ctx: here,
           local: deps.local,
           state: deps.state,
           now: deps.now,
         },
         st,
       );
-      const r = await rotateFamily(deps.api, ctx, keep);
+      const r = await rotateFamily(deps.api, here, keep);
       if (!r.ok) {
         if (r.reason === "denied") await setPhase("locked");
         return r;
       }
-      await deps.keys.save(r.value.ctx.family, r.value.ctx.keys);
+      const keysSaved = await persistKeys(r.value.ctx.family, r.value.ctx.keys);
       ctx = r.value.ctx;
       deps.state.save({
         ...freshFamilyState(st.family, r.value.ctx.epoch, st.consent),
         planNotice: null,
       });
       await sync();
-      return { ok: true, phrase: r.value.phrase };
+      return { ok: true, phrase: r.value.phrase, keysSaved };
     },
 
     /** Salir de la familia en este teléfono: sus datos se quedan, las claves se van. */
@@ -300,8 +338,9 @@ export function createController(deps: ControllerDeps) {
 
     /** Borra lo compartido del servidor (cada teléfono conserva su copia) y sale. */
     async destroy(): Promise<ActionResult> {
-      if (!ctx) return { ok: false, reason: "no-family" };
-      const r = await destroyFamily(deps.api, ctx);
+      const here = await ensureCtx();
+      if (!here) return { ok: false, reason: "no-family" };
+      const r = await destroyFamily(deps.api, here);
       // Si ya no existe o ya no autoriza, igual hay que salir de aquí.
       if (!r.ok && r.reason !== "denied" && r.reason !== "wrong-code") return r;
       return this.leave();

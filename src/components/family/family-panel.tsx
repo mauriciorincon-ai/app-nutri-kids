@@ -23,12 +23,17 @@ import { useFamily } from "./use-family";
 /** Lo que se ve y se hace cuando este teléfono ya está en una familia. */
 export function FamilyPanel({
   onNotice,
+  onWarning,
 }: {
   onNotice: (message: string | null) => void;
+  onWarning: (message: string | null) => void;
 }) {
   const { t, locale } = useI18n();
   const view = useFamily();
-  const [newPhrase, setNewPhrase] = useState<string | null>(null);
+  const [newPhrase, setNewPhrase] = useState<{
+    phrase: string;
+    keysSaved: boolean;
+  } | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [name, setName] = useState(view.ownName);
 
@@ -37,7 +42,7 @@ export function FamilyPanel({
   const rotate = async () => {
     setProblem(null);
     const r = await getFamily().rotate();
-    if (r.ok) setNewPhrase(r.phrase);
+    if (r.ok) setNewPhrase({ phrase: r.phrase, keysSaved: r.keysSaved });
     else setProblem(errorText(t, r.reason));
   };
 
@@ -55,7 +60,10 @@ export function FamilyPanel({
       {view.phase === "locked" && view.code && (
         <JoinForm
           rejoin={{ code: view.code, name: view.ownName }}
-          onJoined={() => onNotice(null)}
+          onJoined={(keysSaved) => {
+            onNotice(null);
+            onWarning(keysSaved ? null : t.family.keysNotSaved);
+          }}
         />
       )}
 
@@ -79,6 +87,11 @@ export function FamilyPanel({
       {view.planTooBig && (
         <p className="rounded-xl bg-tl-yellow-surface px-4 py-3 text-sm text-tl-yellow">
           ⚠ {t.family.planTooBig}
+        </p>
+      )}
+      {view.oversize > 0 && (
+        <p className="rounded-xl bg-tl-yellow-surface px-4 py-3 text-sm text-tl-yellow">
+          ⚠ {fmt(t.family.oversize, { n: view.oversize })}
         </p>
       )}
       {view.unreadable > 0 && (
@@ -147,7 +160,8 @@ export function FamilyPanel({
         <SecretsCard
           title={t.family.newPhraseTitle}
           body={t.family.newPhraseBody}
-          phrase={newPhrase}
+          phrase={newPhrase.phrase}
+          keysSaved={newPhrase.keysSaved}
           onDone={() => setNewPhrase(null)}
         />
       )}
