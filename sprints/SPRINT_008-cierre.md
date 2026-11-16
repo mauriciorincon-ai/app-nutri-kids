@@ -5,7 +5,7 @@ hito: H-2
 opened: 2026-11-16
 closed: 2026-11-16
 branch: sprint-008/avisos-que-llegan
-pr: PR_NUM
+pr: 12
 ---
 
 # S8 · Avisos que llegan
