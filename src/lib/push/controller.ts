@@ -247,6 +247,11 @@ export function createPushController(deps: PushDeps) {
     const synced = await syncServer(state0, endpoint, fam);
     let state = synced.state;
     if (synced.error === null) state = await syncSkips(state);
+    // Lo que se tocó mientras corría esta pasada manda: un interruptor no se revierte, y un
+    // «dejar de recibir» no se resucita. (La pasada siguiente, ya encolada, recoge el cambio.)
+    const latest = deps.state.load();
+    if (!latest) return;
+    state = { ...state, types: latest.types, hide: latest.hide };
     deps.state.save(state);
     await writeCopy(state, fam);
     emit({

@@ -404,6 +404,33 @@ describe("tipos, detalle y el servidor al día", () => {
     ]);
     expect(w.copies.at(-1)!.done.ids).toContain("meal:x");
   });
+
+  it("un interruptor tocado mientras una puesta al día corre no se pierde ni se revierte", async () => {
+    const w = await world();
+    await w.controller.enable();
+    const running = w.controller.refresh();
+    const toggled = Promise.all([
+      w.controller.setType("water", false),
+      w.controller.setHide(true),
+    ]);
+    await Promise.all([running, toggled]);
+    expect(w.saved!.types.water).toBe(false);
+    expect(w.saved!.hide).toBe(true);
+    const last = w.copies.at(-1)!;
+    expect(last.types.water).toBe(false);
+    expect(last.hide).toBe(true);
+    expect(last.items.some((i) => i.kind === "water")).toBe(false);
+  });
+
+  it("«dejar de recibir» mientras una puesta al día corre no resucita el estado", async () => {
+    const w = await world();
+    await w.controller.enable();
+    const running = w.controller.refresh();
+    await w.controller.disable();
+    await running;
+    expect(w.saved).toBeNull();
+    expect(w.copies).toHaveLength(0);
+  });
 });
 
 describe("marcar antes de la hora: el servidor salta ese despertar", () => {
