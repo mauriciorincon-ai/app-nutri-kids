@@ -221,10 +221,10 @@
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 605,
+      "valor": 618,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-15 sobre la rama del S6: 27 archivos, 605 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-15 sobre la rama del lector contra la forma real del PDF (S6): 28 archivos, 618 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
@@ -232,7 +232,7 @@
       "valor": 164,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `CI=1 npx playwright test --workers=2` el 2026-11-15 sobre la rama del S6, contra un build de producción: 164 pruebas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe y las de uso sin internet, todas en verde."
+      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-15 sobre la rama del lector contra la forma real del PDF (S6), contra un build de producción: 164 pruebas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe y las de uso sin internet, todas en verde."
     },
     {
       "clave": "cobertura_lineas",
