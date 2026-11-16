@@ -61,10 +61,17 @@ describe("sin IA en la nube (regla dura 5)", () => {
     }
   });
 
-  it("ningún archivo de src/ importa un SDK de proveedor ni abre una vía de red (salvo los dos de la familia)", () => {
+  it("el cliente de avisos solo llama a su propia ruta y no tiene direcciones de internet", () => {
+    const client = readFileSync(resolve("src/lib/push/client.ts"), "utf8");
+    expect(client).toMatch(/PUSH_API = "\/api\/push"/);
+    expect(client).not.toMatch(/https?:\/\//);
+  });
+
+  it("ningún archivo de src/ importa un SDK de proveedor ni abre una vía de red (salvo los clientes de la familia y de avisos, y el almacén)", () => {
     const allowed = new Set([
       resolve("src/lib/family/client.ts"),
       resolve("src/lib/family/server/upstash.ts"),
+      resolve("src/lib/push/client.ts"),
     ]);
     const offenders = sourceFiles(resolve("src")).filter((f) => {
       const code = readFileSync(f, "utf8");

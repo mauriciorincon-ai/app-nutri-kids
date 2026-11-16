@@ -3,7 +3,13 @@ import type { ProfileRegs } from "@/lib/diet/profile-notes";
 
 import type { FamilyApi } from "./client";
 import { mergePlan } from "./merge";
-import { dayName, deviceName, type Named } from "./records";
+import {
+  dayName,
+  deviceName,
+  noticeName,
+  type Named,
+  type NoticeShared,
+} from "./records";
 import {
   pullSince,
   pushNamed,
@@ -39,6 +45,10 @@ export type LocalData = {
   plan(): PlanSide | null;
   /** Aplica el plan que llegó (lo valida); false si no encaja. */
   applyPlan(plan: PlanSide): boolean;
+  /** Los avisos de la familia de hoy y ayer, por id (S8). */
+  notices(): Record<string, NoticeShared>;
+  /** Suma un aviso que llegó; true si es nuevo en este teléfono. */
+  mergeNotice(id: string, notice: NoticeShared): boolean;
 };
 
 export type StateStore = {
@@ -55,7 +65,14 @@ export type SyncDeps = {
 };
 
 export type SyncResult =
-  | { ok: true; changed: boolean; pushed: number; pending: number }
+  | {
+      ok: true;
+      changed: boolean;
+      pushed: number;
+      pending: number;
+      /** Avisos propios que acaban de subir: hay que despertar a los otros teléfonos. */
+      noticesPushed: number;
+    }
   | { ok: false; reason: Failure };
 
 /**
@@ -133,6 +150,11 @@ async function candidates(
         named: { name: dayName(day), data: regs },
         hash: await digest(regs),
       });
+  for (const [nid, notice] of Object.entries(d.local.notices()))
+    out.push({
+      named: { name: noticeName(nid), data: notice },
+      hash: `${notice.t}`,
+    });
   const id = d.local.deviceId();
   const name = d.local.deviceName();
   if (name) {
@@ -190,6 +212,7 @@ export async function syncOnce(d: SyncDeps): Promise<SyncResult> {
   const own = d.local.deviceId();
   let changed = false;
   let pushedCount = 0;
+  let noticesPushed = 0;
 
   const fail = (reason: Failure): SyncResult => {
     if (reason === "denied") st.locked = true;
@@ -217,6 +240,13 @@ export async function syncOnce(d: SyncDeps): Promise<SyncResult> {
         if (d.local.mergeDay(named.name.slice(4), named.data as DayRegs))
           changed = true;
         st.pushed[named.name] = await digest(named.data);
+      } else if (named.name.startsWith("notice:")) {
+        // Un aviso ajeno o el eco del propio: el almacén local solo suma lo nuevo.
+        if (
+          d.local.mergeNotice(named.name.slice(7), named.data as NoticeShared)
+        )
+          changed = true;
+        st.pushed[named.name] = `${(named.data as NoticeShared).t}`;
       } else if (named.name.startsWith("device:")) {
         const dev = named.data as { id: string; name: string; seen: number };
         if (dev.id !== own)
@@ -271,6 +301,7 @@ export async function syncOnce(d: SyncDeps): Promise<SyncResult> {
         st.vers[res.name] = res.ver;
         st.pushed[res.name] = mine.hash;
         pushedCount++;
+        if (res.name.startsWith("notice:")) noticesPushed++;
       } else if (res.status === "conflict") {
         st.vers[res.name] = res.ver;
         conflicts++;
@@ -285,5 +316,5 @@ export async function syncOnce(d: SyncDeps): Promise<SyncResult> {
   st.lastSync = d.now();
   d.state.save(st);
   const pending = await countPending(d, st);
-  return { ok: true, changed, pushed: pushedCount, pending };
+  return { ok: true, changed, pushed: pushedCount, pending, noticesPushed };
 }
