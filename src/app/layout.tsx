@@ -9,6 +9,7 @@ import { FirstUseDialog } from "@/components/app-shell/first-use-dialog";
 import { SwRegister } from "@/components/app-shell/sw-register";
 import { DietProvider } from "@/components/diet-provider";
 import { FamilySync } from "@/components/family/family-sync";
+import { PushSync } from "@/components/push/push-sync";
 import { I18nProvider } from "@/i18n";
 
 // Presupuesto de fuentes (gate LCP): 2 familias variables sin ejes extra y
@@ -78,6 +79,7 @@ export default function RootLayout({
             <FirstUseDialog />
             <SwRegister />
             <FamilySync />
+            <PushSync />
           </DietProvider>
         </I18nProvider>
       </body>
