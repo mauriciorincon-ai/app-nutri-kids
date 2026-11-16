@@ -4,8 +4,8 @@ app: nutri-kids
 hito: H-2
 opened: 2026-11-15
 closed: 2026-11-15
-branch: sprint-006/tu-pdf
-pr: 9
+branch: sprint-006/tu-pdf · sprint-006/lector-forma-real
+pr: 9 · PR_CORTO
 ---
 
 # S6 · Tu PDF, vuelto app
@@ -19,11 +19,12 @@ pr: 9
 - Alcance: 1.1 vigencia editable `pagado · f86b8ce` · 1.2 «mi plan no lo trae» no existe para verde, menú ni hidratación (el schema los exige; ADR-010 §7) `pagado · este commit` · 1.3 estados sin e2e/axe `pagado · eed9ddf`.
 - Calidad: 2.1 lectura colgada `pagado · f86b8ce, eed9ddf` · 2.2 error de guardado `pagado · f86b8ce, eed9ddf` · 2.3 objetivos 44 px `pagado · eed9ddf` · 2.4 foco `pagado · eed9ddf` · 2.5 borrador con Zod `pagado · f86b8ce` · 2.6 filas no leídas avisadas `pagado · f86b8ce, eed9ddf` · 2.7 pruebas de read-pdf `pagado · f86b8ce` · 2.8 nombre con tilde `pagado · f86b8ce` · 2.9 fecha solo de páginas permitidas `pagado · f86b8ce` · 2.10 ids de equivalencia `pagado · f86b8ce` · 2.11 menores `pagado · f86b8ce, eed9ddf` · 2.12 red del contexto `pagado · eed9ddf` · 2.13 caché propia de pdf.js `pagado · f86b8ce` · 2.14 formato ajeno en i18n: lo hizo el formateador del editor; se declara, no se revierte `pagado · este commit`.
 - Hallazgo propio (e2e): el hover del botón primario aclaraba el fondo (3,4:1) `pagado · eed9ddf`.
-- Seguridad y privacidad: 3.1 `@napi-rs/canvas` con 3 días `pagado · e83e058` · 3.4 «nunca se lee» → «se descarta» `pagado · 6286e31` · **3.2 anclas genéricas del lector vs «ningún título literal»: abierto · decisión del dueño (ADR-010, «Open point»)** · **3.3 el PDF de prueba se parece a una dieta real: abierto · decisión del dueño/planeadora (comparar en privado; lo hace al pasar el lector por el PDF real)**.
-- Frases caducadas: 4.1 brochure decía «desde un archivo» `pagado · 6286e31` · 4.2 métricas del export `pagado · 6286e31` · 4.3 storyboard y guía `pagado · 6286e31`. Veredicto: listo para cierre salvo 3.2 y 3.3.
+- Seguridad y privacidad: 3.1 `@napi-rs/canvas` con 3 días `pagado · e83e058` · 3.4 «nunca se lee» → «se descarta» `pagado · 6286e31` · 3.2 anclas del lector: **decisión del dueño «1 a»** (solo palabras sueltas genéricas, una por condición; lo demás por forma; lista exportada y prueba sobre el código) `pagado · c26c26f, 77f9a4c` · 3.3 PDF de prueba regenerado, todo inventado y con cada trampa de la forma `pagado · 94c4f35`.
+- Frases caducadas: 4.1 brochure decía «desde un archivo» `pagado · 6286e31` · 4.2 métricas del export `pagado · 6286e31` · 4.3 storyboard y guía `pagado · 6286e31`. Veredicto: listo para cierre.
+  **PR corto del lector contra la forma real** (decisiones «1 a 2 a»): fallas medidas del §6 pagadas — aditivos 10/10 · «otros que evitar» 4/4 · encabezado y pie tipo B fuera antes de toda tabla · «<X> de reemplazo <adjetivo>:» leído · la presentación del frasco sale del nombre (la marca queda) · caracteres de control limpios antes de unir `pagado · c26c26f, 94c4f35`. Unit 28 archivos / 636 de 636 (98,52 % líneas) · e2e 164 de 164 · Lighthouse 6 de 6 · tsc y eslint limpios. **Auditoría del PR** (Sonnet 5.5 · high · una pasada; 4 M, 7 B): M1 prueba de anclas ampliada a cadenas comparadas y a `\W`, `\s{n}`, `.{n}` · M2 consejos de familia no son equivalencia · M3 fecha solo de páginas sin datos · M4 métricas del export · B1–B7 (NUL, frasco 120 ml, inicio del menú, columna de pilares, NFD, hábito de hidratación, «otros que evitar» sin rejilla) `pagado · 77f9a4c`. Tiempo del PR: 4 commits · **0,8 h** (F1) → **sprint 3,2 h** (2,4 + 0,8). Modelo: Opus 5.5 como se requería · relevos 0 (un cambio de método: el U+0000 entra por el ToUnicode del PDF, Chromium lo borraba).
   **Defaults técnicos:** rojo fijo a mano · lista roja del PDF → `restrictions.foods` con la aclaración en la nota · plan en es=en, textos de la app en ambos · mínimos relajados (restricted, yellow, supplements) y verde, menú, hidratación requeridos · plazo 90 d si el PDF no lo dice · título «Tu plan» / «tu peque» · «Elegir JSON» · una revisión nueva reemplaza el borrador (avisado en la tarjeta) · una equivalencia por alimento · pdf.js en `nutrikids-pdfjs-<versión>` · tema oscuro: el sistema es solo claro, e2e con `colorScheme` como el resto · brochure sigue en 21 bloques.
   **Modelo por fase y desvío:** F1 Opus 5.5 · F2 Sonnet 5.5 · F3 Sonnet 5.5, todos como se requerían; cierre escrito con Sonnet (se pedía Haiku): sin desvío de calidad. **Relevos:** 0. **/compact pedidos:** 2.
-  **Desviaciones:** (1) «mi plan no lo trae» no aplica a 3 partes; (2) el plazo y el rojo fijo no salen del PDF. **Deuda:** ninguna con archivo:línea; solo 3.2 y 3.3 arriba.
-  **Recomendación:** pasar el lector por el PDF real en privado y mandar a la planeadora los campos vacíos como primera tarea del S7.
+  **Desviaciones:** (1) «mi plan no lo trae» no aplica a 3 partes; (2) el plazo y el rojo fijo no salen del PDF. **Deuda:** ninguna.
+  **Recomendación:** la planeadora mide esta rama contra el PDF real en privado antes del merge.
   **Servidores:** `lsof` LISTEN en este repo: 0 (solo el test-server de Playwright de VS Code y la propia sesión de Claude Code, que no cuentan).
   **Para mergear: squash y borrar la rama; después `/cierre-sprint nutri-kids`.**
