@@ -2,6 +2,8 @@
 
 > **Revisión S4 (2026-11-15):** la regla sigue intacta y más fuerte: el registro no entra al chat. Pero ya no existen `grounding.ts`, el POST a `/api/chat` ni el LLM de terceros que este texto describe (retirados por [ADR-008](008-chat-code-first.md): el chat contesta con código y no manda nada a la red). Lo de abajo es el texto original, de época.
 
+> **Revisión S7 (2026-11-15):** «jamás red» pasa a ser «jamás red **en claro**»: si la familia comparte ([ADR-011](011-family-shares-encrypted.md)), el registro viaja cifrado de punta a punta desde el aparato y ningún servidor puede leerlo. Sin familia, sigue sin salir del teléfono. Sigue sin entrar al chat.
+
 - **Estado:** aceptada · Sprint 003 · 2026-07-20
 - **Contexto:** el S3 añade el **registro del día** — la hora real a la que se marcó cada comida y
   una **nota corta** (chips rechazó/dolor/antojo/otro + texto libre breve) por comida. Esto son
@@ -41,8 +43,9 @@
   viajando a un LLM de terceros). Que la exclusión sea **por construcción** (el grounding ni recibe
   el registro) y no por una comprobación en runtime la hace robusta ante cambios futuros; el test
   negativo la fija como contrato.
-- **Consecuencias / deuda:** el registro no se comparte entre cuidadores ni se respalda en la nube
-  (decisión de producto, no bug) — el estado compartido multi-cuidador es **fase 2** y exige su
-  propio análisis local-first vs nube para datos de menor (contradice ADR-001 sin él). Si esa fase
-  llega, la clave versionada permite migrar leyendo `*.v2`. Relacionado:
-  [[001-local-storage]] · [[006-chat-privacy]].
+- **Consecuencias / deuda:** sin familia creada, el registro no sale del teléfono. **Revisión S7 (2026-11-15,
+  ADR-011):** el estado compartido entre quienes cuidan ya existe y no contradice al ADR-001: el
+  registro del día viaja **cifrado de punta a punta** desde el aparato (la clave nunca sale de él),
+  así que ningún servidor puede leerlo. La exclusión
+  del grounding del chat no cambia. Relacionado: [[001-local-storage]] · [[006-chat-privacy]] ·
+  [[011-family-shares-encrypted]].

@@ -18,3 +18,7 @@
   el único punto de cambio.
 - **Consecuencias:** "borrar datos" = remover claves (derecho de supresión simple). localStorage
   es por-origen y sin expiración — suficiente para un dispositivo familiar.
+- **Revisión S7 (2026-11-15, ADR-011).** Lo local sigue siendo la fuente de la verdad, pero ya no
+  es lo único: lo que la familia comparte (plan, día y perfil) se cifra en el aparato y se guarda
+  en Upstash Redis, ilegible para el servidor. Las claves de la familia viven en IndexedDB como
+  CryptoKeys no exportables; los datos siguen en `localStorage`.
