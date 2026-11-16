@@ -10,11 +10,11 @@ pr: 9 · 10
 
 # S6 · Tu PDF, vuelto app
 
-**Objetivo/resultado:** quien cuida carga el PDF del profesional; se lee en el teléfono sin red y sin guardarse, se revisa parte por parte (12, con la página de cada dato) y solo queda el plan. JSON y notas del S5 siguen. **Estado:** construido, auditado, PR listo.
-**Tiempo** (`node scripts/horas-sprint.mjs`): 12 commits · 1 sesión · **2,4 h activas** (span 1,9 h) · F1 0,7 h · F2 0,4 h · F3 1,2 h. **Diferencia vs 3,5 h: −1,1 h (−31 %).** Ninguna fase pasó el 50 %.
+**Objetivo/resultado:** quien cuida carga el PDF del profesional; se lee en el teléfono sin red y sin guardarse, se revisa parte por parte (12, con la página de cada dato) y solo queda el plan. JSON y notas del S5 siguen. **Estado:** construido y auditado en dos PR (#9 mergeado; #10 abierto, checks en verde, espera la medición de la planeadora contra el PDF real).
+**Tiempo** (`node scripts/horas-sprint.mjs`): PR #9 12 commits · **2,4 h** (F1 0,7 · F2 0,4 · F3 1,2) + PR #10 4 commits · **0,8 h** (F1) = **3,2 h**. **Diferencia vs 3,5 h + 1,5 h = 5 h: −1,8 h (−36 %).** Ninguna fase pasó el 50 %.
 **Pruebas:** unit 27 archivos / 605 de 605 (98,68 % líneas) · e2e 164 de 164 con `CI=1` (mobile+desktop, offline incluido) · tsc y eslint limpios · Lighthouse 6 de 6 URL dentro de `perf-budget.json`, `/cargar` incluida.
 **Entregables:** lector puro (`src/lib/diet/pdf-*.ts`, `plan-assemble.ts`) · revisión (`plan-review.ts`, `components/plan-review/`) · `/cargar` con «Elegir PDF» · pdf.js propio y precacheado en caché aparte · ADR-010 · e2e `cargar-pdf.spec.ts` · manual es+en, guía, BLUEPRINT, brochure+export, design-system.
-**Auditoría** (Sonnet 5.5 · high · una pasada · 1 A, 15 M, 8 B; todos los hallazgos se pagan, salvo 2 con decisión del dueño):
+**Auditoría** (Sonnet 5.5 · high · una pasada · 1 A, 15 M, 8 B; todos pagados; 3.2 y 3.3 con la decisión del dueño «1 a 2 a»):
 
 - Alcance: 1.1 vigencia editable `pagado · f86b8ce` · 1.2 «mi plan no lo trae» no existe para verde, menú ni hidratación (el schema los exige; ADR-010 §7) `pagado · este commit` · 1.3 estados sin e2e/axe `pagado · eed9ddf`.
 - Calidad: 2.1 lectura colgada `pagado · f86b8ce, eed9ddf` · 2.2 error de guardado `pagado · f86b8ce, eed9ddf` · 2.3 objetivos 44 px `pagado · eed9ddf` · 2.4 foco `pagado · eed9ddf` · 2.5 borrador con Zod `pagado · f86b8ce` · 2.6 filas no leídas avisadas `pagado · f86b8ce, eed9ddf` · 2.7 pruebas de read-pdf `pagado · f86b8ce` · 2.8 nombre con tilde `pagado · f86b8ce` · 2.9 fecha solo de páginas permitidas `pagado · f86b8ce` · 2.10 ids de equivalencia `pagado · f86b8ce` · 2.11 menores `pagado · f86b8ce, eed9ddf` · 2.12 red del contexto `pagado · eed9ddf` · 2.13 caché propia de pdf.js `pagado · f86b8ce` · 2.14 formato ajeno en i18n: lo hizo el formateador del editor; se declara, no se revierte `pagado · este commit`.
