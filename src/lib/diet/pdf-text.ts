@@ -100,9 +100,15 @@ const COLUMN_GAP = 8;
 /** Ítems con la línea base a menos de esto (pt) están en la misma línea. */
 const SAME_LINE = 2;
 
-/** Agrupa los ítems de una página en líneas y segmentos (puro). */
+/** Caracteres de control (U+0000 incluido) que algunas plantillas dejan en el texto. */
+const CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
+
+/** Agrupa los ítems de una página en líneas y segmentos (puro). Limpia los caracteres de control ANTES de unir. */
 export function toLines(page: PdfPage): Line[] {
-  const sorted = [...page.items].sort((a, b) => a.y - b.y || a.x - b.x);
+  const sorted = page.items
+    .map((it) => ({ ...it, str: it.str.replace(CONTROL, "") }))
+    .filter((it) => it.str !== "")
+    .sort((a, b) => a.y - b.y || a.x - b.x);
   const rows: PdfItem[][] = [];
   for (const it of sorted) {
     const row = rows.at(-1);
