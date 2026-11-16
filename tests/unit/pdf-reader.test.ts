@@ -474,3 +474,112 @@ function fakePage(n: number, rows: [number, string][]): PdfPage {
     })),
   };
 }
+
+describe("filas que el lector vio y no pudo leer se avisan (no se pierden en silencio)", () => {
+  it("el PDF de prueba se lee sin saltar ninguna fila", () => {
+    expect(reading.skipped).toEqual({});
+  });
+
+  it("un menú con horas sin am/pm cuenta las comidas saltadas", () => {
+    const broken = pages.map((p) => ({
+      ...p,
+      items: p.items.map((i) => ({
+        ...i,
+        str: /^\d{1,2}:\d{2}/.test(i.str)
+          ? i.str.replace(/\s*[ap]\.?\s*m\.?/gi, "")
+          : i.str,
+      })),
+    }));
+    expect(readPlanText(broken).skipped.menu ?? 0).toBeGreaterThan(0);
+  });
+
+  it("un suplemento con días abreviados no reconocibles cuenta como saltado", () => {
+    const broken = pages.map((p) => ({
+      ...p,
+      items: p.items.map((i) => ({
+        ...i,
+        str: /^(Lunes|Martes|Mi[eé]rcoles|Jueves|Viernes|S[aá]bado|Domingo)/.test(
+          i.str,
+        )
+          ? i.str.replace(/^(\p{L}{3})\p{L}*/u, "$1.")
+          : i.str,
+      })),
+    }));
+    expect(readPlanText(broken).skipped.supplements ?? 0).toBeGreaterThan(0);
+  });
+});
+
+describe("vigencia, fecha y nombres", () => {
+  it("el plazo se lee del encabezado de la restricción (3 meses → 90 días)", () => {
+    expect(reading.draft.restrictionDays).toBe(90);
+  });
+
+  it("«por 60 días» → 60 y el plan lo usa; sin plazo → 90", () => {
+    const edit = (re: RegExp, to: string) =>
+      pages.map((p) => ({
+        ...p,
+        items: p.items.map((i) => ({ ...i, str: i.str.replace(re, to) })),
+      }));
+    const d60 = readPlanText(edit(/por 3 meses/, "por 60 días"));
+    expect(d60.draft.restrictionDays).toBe(60);
+    const plan = assembleDietPlan(d60.draft, d60.pages, new Date(2026, 10, 15));
+    expect(plan.ok && plan.diet.restrictions.validUntil).toBe(
+      addDaysIso(d60.draft.issuedAt!, 60),
+    );
+    const none = readPlanText(edit(/ por 3 meses/, ""));
+    expect(none.draft.restrictionDays).toBeUndefined();
+  });
+
+  it("la fecha NO se toma de una página descartada (resultados)", () => {
+    const blank = (str: string) =>
+      str.replace(/Fecha\s*:\s*\d{2}[./-]\d{2}[./-]\d{4}/i, "Fecha:");
+    const injected = pages.map((p) =>
+      p.items.some((i) => /Secci[oó]n\s*0[12]/i.test(i.str))
+        ? {
+            ...p,
+            items: [
+              ...p.items,
+              { str: "Fecha: 12.10.2026", x: 50, y: 120, w: 100 },
+            ],
+          }
+        : {
+            ...p,
+            items: p.items.map((i) => ({ ...i, str: blank(i.str) })),
+          },
+    );
+    // Hay una página de resultados con fecha y la portada no la trae: no se usa.
+    expect(injected.some((p) => p.items.some((i) => i.str.includes("12.10.2026")))).toBe(true);
+    expect(readPlanText(injected).draft.issuedAt).toBeUndefined();
+  });
+
+  it("una hora nocturna con am/pm explícitos conserva su inicio (9:00 pm – 8:00 am)", () => {
+    expect(parseTimeRange("9:00 pm – 8:00 am")).toEqual({
+      start: "21:00",
+      end: "08:00",
+    });
+  });
+});
+
+describe("el nombre del niño se borra aunque lleve tilde o mayúsculas", () => {
+  it.each([
+    ["Álvaro Núñez", /lvaro|n[uú][ñn]ez/i],
+    ["JOSÉ PÉREZ", /jos[eé]|p[eé]rez/i],
+    ["Sofía Ramírez", /sof[ií]a|ram[ií]rez/i],
+  ])("«%s» no sobrevive en el borrador", (name, leak) => {
+    const renamed = pages.map((p) => ({
+      ...p,
+      items: p.items.map((i) => ({
+        ...i,
+        str: i.str.replace(/Lucas(\s+Ejemplar)?/g, name),
+      })),
+    }));
+    expect(JSON.stringify(readPlanText(renamed).draft)).not.toMatch(leak);
+  });
+});
+
+describe("equivalencias: una por alimento que falta", () => {
+  it("el PDF de prueba no repite ninguna", () => {
+    const keys = reading.draft.equivalences.map((e) => e.whenMissing);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+});

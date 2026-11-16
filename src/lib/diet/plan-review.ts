@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import { assembleDietPlan } from "./plan-assemble";
 import {
   type DraftAdditive,
@@ -9,7 +11,14 @@ import {
   same,
   slug,
 } from "./pdf-reader";
-import type { LocalizedText, ParseDietResult, Weekday } from "./schema";
+import {
+  localizedTextSchema,
+  textureSchema,
+  weekdaySchema,
+  type LocalizedText,
+  type ParseDietResult,
+  type Weekday,
+} from "./schema";
 
 /**
  * La revisión del plan leído (ADR-010, decisión 1 a): puro, sin React ni storage.
@@ -46,6 +55,8 @@ export type ReviewState = {
   red: DraftItem[];
   /** Lo que el lector no encontró en absoluto. */
   unrecognized: SectionKey[];
+  /** Filas que el lector no pudo leer, por parte (se avisa para cotejar con el PDF). */
+  skipped?: Partial<Record<SectionKey, number>>;
   marks: Record<ReviewKey, Mark>;
 };
 
@@ -60,6 +71,7 @@ export function startReview(reading: PlanReading, readAt: Date): ReviewState {
     pages: reading.pages,
     red: [],
     unrecognized: reading.unrecognized,
+    skipped: reading.skipped,
     marks,
   };
 }
@@ -74,7 +86,13 @@ export const SECTIONS: Record<
   ReviewKey,
   { fields: FieldSpec[]; single?: boolean }
 > = {
-  validity: { fields: [{ key: "issuedAt", kind: "date" }], single: true },
+  validity: {
+    fields: [
+      { key: "issuedAt", kind: "date" },
+      { key: "restrictionDays", kind: "number", optional: true },
+    ],
+    single: true,
+  },
   restricted: { fields: [{ key: "name", kind: "text" }] },
   red: { fields: [{ key: "name", kind: "text" }] },
   additives: {
@@ -187,7 +205,17 @@ export function rowsOf(state: ReviewState, key: ReviewKey): Row[] {
   switch (key) {
     case "validity":
       return d.issuedAt
-        ? [{ id: SINGLE, values: { issuedAt: d.issuedAt } }]
+        ? [
+            {
+              id: SINGLE,
+              values: {
+                issuedAt: d.issuedAt,
+                restrictionDays: d.restrictionDays
+                  ? String(d.restrictionDays)
+                  : "",
+              },
+            },
+          ]
         : [];
     case "restricted":
     case "red":
@@ -400,7 +428,16 @@ export function upsertRow(
   let next: ReviewState = state;
   switch (key) {
     case "validity":
-      next = { ...state, draft: { ...d, issuedAt: v("issuedAt") } };
+      next = {
+        ...state,
+        draft: {
+          ...d,
+          issuedAt: v("issuedAt"),
+          restrictionDays: v("restrictionDays")
+            ? Math.round(parseNumber(v("restrictionDays")))
+            : undefined,
+        },
+      };
       break;
     case "restricted":
       next = {
@@ -633,8 +670,9 @@ export function removeRow(
   let next: ReviewState = state;
   switch (key) {
     case "validity": {
-      const { issuedAt: _gone, ...rest } = d;
+      const { issuedAt: _gone, restrictionDays: _days, ...rest } = d;
       void _gone;
+      void _days;
       next = { ...state, draft: rest };
       break;
     }
@@ -755,39 +793,68 @@ export function buildPlan(state: ReviewState): ParseDietResult {
 // ───────────────────────── borrador guardado ─────────────────────────
 
 /** Parseo defensivo del borrador guardado: lo malformado se descarta (nunca se arregla). */
+const lt = localizedTextSchema;
+const itemS = z.object({ id: z.string(), name: lt });
+const draftS = z.object({
+  issuedAt: z.string().optional(),
+  restrictionDays: z.number().optional(),
+  restricted: z.array(itemS),
+  restrictedNotes: z.array(z.string()),
+  additives: z.array(
+    z.object({ code: z.string(), name: lt, foundIn: lt.optional() }),
+  ),
+  alsoAvoid: z.array(itemS),
+  green: z.array(
+    itemS.extend({ portion: lt, items: z.array(itemS) }),
+  ),
+  yellow: z.array(itemS.extend({ limit: lt })),
+  equivalences: z.array(
+    z.object({
+      whenMissing: z.string(),
+      title: lt,
+      use: z.array(z.object({ name: lt, texture: textureSchema.optional() })),
+    }),
+  ),
+  supplements: z.array(
+    itemS.extend({ days: z.array(weekdaySchema), dose: lt, when: lt }),
+  ),
+  supplementNotes: lt.optional(),
+  menu: z.array(
+    itemS.extend({ start: z.string(), end: z.string(), content: lt }),
+  ),
+  hydration: z
+    .object({
+      targetLitersMin: z.number(),
+      targetLitersMax: z.number(),
+      glassesPerDay: z.number().optional(),
+      habit: lt,
+    })
+    .optional(),
+  goals: z.object({ activity: lt.optional(), sleep: lt.optional() }),
+});
+const markS = z.enum(["pending", "ok", "corrected", "absent"]);
+const reviewStateS = z.object({
+  v: z.literal(1),
+  readAt: z.string().refine((x) => !Number.isNaN(new Date(x).getTime())),
+  draft: draftS,
+  pages: z.record(z.string(), z.number()),
+  red: z.array(itemS),
+  unrecognized: z.array(z.enum(SECTION_KEYS)),
+  skipped: z.record(z.string(), z.number()).optional(),
+  marks: z.object(
+    Object.fromEntries(REVIEW_KEYS.map((k) => [k, markS])) as Record<
+      ReviewKey,
+      typeof markS
+    >,
+  ),
+});
+
+/** Lo guardado se valida con Zod (regla 4): un borrador malformado se descarta entero. */
 export function parseReviewState(raw: string | null): ReviewState | null {
   if (!raw) return null;
   try {
-    const s = JSON.parse(raw) as Partial<ReviewState> | null;
-    if (
-      !s ||
-      s.v !== 1 ||
-      typeof s.readAt !== "string" ||
-      Number.isNaN(new Date(s.readAt).getTime()) ||
-      !s.draft ||
-      !Array.isArray(s.draft.restricted) ||
-      !Array.isArray(s.draft.additives) ||
-      !Array.isArray(s.draft.alsoAvoid) ||
-      !Array.isArray(s.draft.green) ||
-      !Array.isArray(s.draft.yellow) ||
-      !Array.isArray(s.draft.equivalences) ||
-      !Array.isArray(s.draft.supplements) ||
-      !Array.isArray(s.draft.menu) ||
-      !Array.isArray(s.draft.restrictedNotes) ||
-      typeof s.draft.goals !== "object" ||
-      !s.pages ||
-      typeof s.pages !== "object" ||
-      !Array.isArray(s.red) ||
-      !Array.isArray(s.unrecognized) ||
-      !s.marks ||
-      !REVIEW_KEYS.every((k) =>
-        ["pending", "ok", "corrected", "absent"].includes(
-          (s.marks as Record<string, string>)[k],
-        ),
-      )
-    )
-      return null;
-    return s as ReviewState;
+    const r = reviewStateS.safeParse(JSON.parse(raw));
+    return r.success ? (r.data as unknown as ReviewState) : null;
   } catch {
     return null;
   }

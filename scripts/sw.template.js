@@ -18,6 +18,11 @@ const SHELL_ROUTES = __SHELL_ROUTES__;
 const DETAIL_SHELL = __DETAIL_SHELL__;
 /** pdf.js y su worker, servidos por la app: el PDF se lee en el aparato, también sin red. */
 const EXTRA_ASSETS = __EXTRA_ASSETS__;
+/**
+ * Caché PROPIA de pdf.js (~1,8 MB), con la versión de la librería: un deploy nuevo no la vuelve
+ * a bajar mientras la versión no cambie, y no se borra con las cachés del cascarón.
+ */
+const PDFJS_CACHE = "nutrikids-pdfjs-__PDFJS_VERSION__";
 const NAV_TIMEOUT_MS = 3000;
 
 const ASSET_PATTERN = /\/_next\/static\/[^"'\s\\)<>]+/g;
@@ -30,7 +35,7 @@ function shellKey(pathname) {
 
 async function precache() {
   const cache = await caches.open(CACHE);
-  const assets = new Set(EXTRA_ASSETS);
+  const assets = new Set();
   // Las pantallas son obligatorias: si una falla, la instalación falla y sigue la versión anterior.
   await Promise.all(
     [...SHELL_ROUTES, DETAIL_SHELL].map(async (route) => {
@@ -39,6 +44,15 @@ async function precache() {
       const html = await res.clone().text();
       for (const m of html.matchAll(ASSET_PATTERN)) assets.add(m[0]);
       await cache.put(shellKey(route), res);
+    }),
+  );
+  // pdf.js: solo si su caché aún no lo trae (misma versión ⇒ no se descarga otra vez).
+  const pdfCache = await caches.open(PDFJS_CACHE);
+  await Promise.allSettled(
+    EXTRA_ASSETS.map(async (asset) => {
+      if (await pdfCache.match(asset)) return;
+      const res = await fetch(asset);
+      if (res.ok) await pdfCache.put(asset, res);
     }),
   );
   // Los estáticos se guardan «lo mejor posible»: uno que falle no tumba la instalación
@@ -62,7 +76,9 @@ self.addEventListener("activate", (event) => {
       .keys()
       .then((keys) =>
         Promise.all(
-          keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
+          keys
+            .filter((k) => k !== CACHE && k !== PDFJS_CACHE)
+            .map((k) => caches.delete(k)),
         ),
       )
       .then(() => self.clients.claim()),
@@ -130,12 +146,14 @@ self.addEventListener("fetch", (event) => {
   if (!STATIC_PATTERN.test(url.pathname)) return;
 
   event.respondWith(
-    caches.open(CACHE).then(async (cache) => {
-      const cached = await cache.match(request);
-      if (cached) return cached;
-      const response = await fetch(request);
-      if (response.ok) cache.put(request, response.clone());
-      return response;
-    }),
+    caches
+      .open(url.pathname.startsWith("/pdfjs/") ? PDFJS_CACHE : CACHE)
+      .then(async (cache) => {
+        const cached = await cache.match(request);
+        if (cached) return cached;
+        const response = await fetch(request);
+        if (response.ok) cache.put(request, response.clone());
+        return response;
+      }),
   );
 });

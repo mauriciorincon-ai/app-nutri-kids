@@ -36,6 +36,13 @@ export const DETAIL_SHELL = "/dieta/_";
  */
 export const PDFJS_ASSETS = ["/pdfjs/pdf.min.mjs", "/pdfjs/pdf.worker.min.mjs"];
 
+/** Versión de pdf.js instalada: nombra su caché propia (no se vuelve a bajar en cada deploy). */
+export function pdfJsVersion() {
+  return JSON.parse(
+    readFileSync(join(root, "node_modules/pdfjs-dist/package.json"), "utf8"),
+  ).version;
+}
+
 export function copyPdfJs() {
   const from = join(root, "node_modules/pdfjs-dist/legacy/build");
   const to = join(root, "public/pdfjs");
@@ -63,11 +70,17 @@ export function buildId() {
   return `${sha}-${Date.now().toString(36)}`;
 }
 
-export function renderSw(template, id, routes = SHELL_ROUTES) {
+export function renderSw(
+  template,
+  id,
+  routes = SHELL_ROUTES,
+  pdfVersion = pdfJsVersion(),
+) {
   return template
     .replace("__DETAIL_SHELL__", JSON.stringify(DETAIL_SHELL))
     .replace("__BUILD_ID__", id)
     .replace("__EXTRA_ASSETS__", JSON.stringify(PDFJS_ASSETS))
+    .replace("__PDFJS_VERSION__", pdfVersion)
     .replace("__SHELL_ROUTES__", JSON.stringify(routes));
 }
 

@@ -490,8 +490,78 @@ describe("borrador guardado", () => {
       ],
       ["sin borrador", JSON.stringify({ ...f, draft: undefined })],
       ["lista rota", JSON.stringify({ ...f, draft: { ...f.draft, menu: 3 } })],
+      [
+        "metas nulas",
+        JSON.stringify({ ...f, draft: { ...f.draft, goals: null } }),
+      ],
+      [
+        "ítem nulo en verde",
+        JSON.stringify({ ...f, draft: { ...f.draft, green: [null] } }),
+      ],
+      [
+        "hidratación de otra forma",
+        JSON.stringify({ ...f, draft: { ...f.draft, hydration: "x" } }),
+      ],
     ];
     for (const [name, raw] of broken)
       expect(parseReviewState(raw), name).toBeNull();
+  });
+});
+
+describe("vigencia editable y «También evitar»", () => {
+  it("el plazo de la restricción se edita y llega al plan", () => {
+    const s = ok(
+      upsertRow(fresh(), "validity", "single", {
+        issuedAt: "2030-01-07",
+        restrictionDays: "45",
+      }),
+    );
+    expect(s.draft.restrictionDays).toBe(45);
+    const built = buildPlan(s);
+    expect(built.ok && built.diet.restrictions.validUntil).toBe("2030-02-21");
+    // Vacío = el plazo por defecto (90 días).
+    const dflt = ok(
+      upsertRow(s, "validity", "single", {
+        issuedAt: "2030-01-07",
+        restrictionDays: "",
+      }),
+    );
+    expect(dflt.draft.restrictionDays).toBeUndefined();
+    expect(
+      validateValues("validity", { issuedAt: "2030-01-07", restrictionDays: "0" }),
+    ).toContain("restrictionDays");
+  });
+
+  it("quitar la fecha quita también el plazo", () => {
+    const s = removeRow(fresh(), "validity", "single");
+    expect(s.draft.issuedAt).toBeUndefined();
+    expect(s.draft.restrictionDays).toBeUndefined();
+  });
+
+  it("añadir, renombrar y quitar un «También evitar»", () => {
+    let s = ok(upsertRow(fresh(), "alsoAvoid", null, { name: "Algo inventado" }));
+    const row = rowsOf(s, "alsoAvoid").find(
+      (r) => r.values.name === "Algo inventado",
+    )!;
+    expect(s.marks.alsoAvoid).toBe("corrected");
+    s = ok(upsertRow(s, "alsoAvoid", row.id, { name: "Otro nombre" }));
+    expect(rowsOf(s, "alsoAvoid").map((r) => r.values.name)).toContain(
+      "Otro nombre",
+    );
+    s = removeRow(s, "alsoAvoid", row.id);
+    expect(rowsOf(s, "alsoAvoid").map((r) => r.values.name)).not.toContain(
+      "Otro nombre",
+    );
+  });
+
+  it("el aviso de filas no leídas viaja con el estado y sobrevive al guardado", () => {
+    const withSkips = startReview(
+      { ...reading, skipped: { menu: 2 } },
+      NOW,
+    );
+    expect(withSkips.skipped).toEqual({ menu: 2 });
+    expect(parseReviewState(JSON.stringify(withSkips))?.skipped).toEqual({
+      menu: 2,
+    });
   });
 });

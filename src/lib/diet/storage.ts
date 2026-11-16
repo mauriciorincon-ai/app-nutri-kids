@@ -109,8 +109,20 @@ export function storeDiet(
 ): ImportResult {
   const s = storage();
   if (!s) return { ok: false, error: "no-storage" };
-  s.setItem(STORAGE_KEYS.diet, JSON.stringify(diet));
-  s.setItem(STORAGE_KEYS.source, "real");
+  const previous = s.getItem(STORAGE_KEYS.diet);
+  try {
+    s.setItem(STORAGE_KEYS.diet, JSON.stringify(diet));
+    s.setItem(STORAGE_KEYS.source, "real");
+  } catch {
+    // Cuota llena o modo privado: no queda a medias (se devuelve lo que había).
+    try {
+      if (previous === null) s.removeItem(STORAGE_KEYS.diet);
+      else s.setItem(STORAGE_KEYS.diet, previous);
+    } catch {
+      /* sin más que hacer */
+    }
+    return { ok: false, error: "no-storage" };
+  }
   const counts = dietCounts(diet);
   log.info({ event, ...counts });
   return { ok: true, counts };

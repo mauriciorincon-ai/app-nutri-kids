@@ -79,6 +79,20 @@ describe("storeDiet (plan revisado → plan real)", () => {
     expect(loadActiveDiet().source).toBe("real");
   });
 
+  it("si el almacenamiento falla (cuota), no queda a medias y avisa", () => {
+    storeDiet(plan);
+    const before = window.localStorage.getItem(STORAGE_KEYS.diet);
+    const spy = vi
+      .spyOn(Storage.prototype, "setItem")
+      .mockImplementation(() => {
+        throw new DOMException("quota", "QuotaExceededError");
+      });
+    const r = storeDiet(plan);
+    spy.mockRestore();
+    expect(r).toEqual({ ok: false, error: "no-storage" });
+    expect(window.localStorage.getItem(STORAGE_KEYS.diet)).toBe(before);
+  });
+
   it("no toca lo que quien cuida anotó en el perfil (S5)", () => {
     const notes = JSON.stringify({ acceptedTextures: [], notes: [] });
     window.localStorage.setItem(PROFILE_NOTES_KEY, notes);

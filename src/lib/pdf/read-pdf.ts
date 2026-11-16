@@ -38,16 +38,20 @@ export type ReadPdfResult =
   | { ok: true; reading: PlanReading }
   | { ok: false; error: "not-pdf" | "no-text" | "unreadable" };
 
-export async function readPdfFile(file: File): Promise<ReadPdfResult> {
-  let bytes: Uint8Array | null = new Uint8Array(await file.arrayBuffer());
-  // Firma «%PDF-»: un archivo que no es PDF no llega a pdf.js.
-  if (
-    bytes.length < 5 ||
-    String.fromCharCode(...bytes.subarray(0, 5)) !== "%PDF-"
-  )
-    return { ok: false, error: "not-pdf" };
+export async function readPdfFile(
+  file: File,
+  load: () => Promise<PdfJsModule> = loadPdfJs,
+): Promise<ReadPdfResult> {
+  let bytes: Uint8Array | null = null;
   try {
-    const pdfjs = await loadPdfJs();
+    bytes = new Uint8Array(await file.arrayBuffer());
+    // Firma «%PDF-»: un archivo que no es PDF no llega a pdf.js.
+    if (
+      bytes.length < 5 ||
+      String.fromCharCode(...bytes.subarray(0, 5)) !== "%PDF-"
+    )
+      return { ok: false, error: "not-pdf" };
+    const pdfjs = await load();
     const pages = await extractPdfPages(pdfjs, bytes);
     bytes = null;
     if (pages.every((p) => p.items.length === 0))

@@ -24,10 +24,10 @@ const LABELS = {
   },
 };
 
-const RESTRICTION_NOTE: LocalizedText = {
-  es: `Restricción temporal de tu plan: ${RESTRICTION_DAYS} días desde la fecha del plan. Al terminar, la reintroducción la guía tu profesional.`,
-  en: `Temporary restriction from your plan: ${RESTRICTION_DAYS} days from the plan's date. Afterwards, your professional guides the reintroduction.`,
-};
+const restrictionNote = (days: number): LocalizedText => ({
+  es: `Restricción temporal de tu plan: ${days} días desde la fecha del plan. Al terminar, la reintroducción la guía tu profesional.`,
+  en: `Temporary restriction from your plan: ${days} days from the plan's date. Afterwards, your professional guides the reintroduction.`,
+});
 
 const RED_WHY: LocalizedText = {
   es: "Tu plan pide evitarlo.",
@@ -68,12 +68,14 @@ export function assembleDietPlan(
     return { ok: false, error: "invalid-schema", detail: "hydration" };
   const read = localIso(readAt);
   const issuedAt = draft.issuedAt ?? read;
+  const days = draft.restrictionDays ?? RESTRICTION_DAYS;
+  const base = restrictionNote(days);
   const note: LocalizedText = draft.restrictedNotes.length
     ? {
-        es: `${RESTRICTION_NOTE.es} ${draft.restrictedNotes.join(" ")}`,
-        en: `${RESTRICTION_NOTE.en} ${draft.restrictedNotes.join(" ")}`,
+        es: `${base.es} ${draft.restrictedNotes.join(" ")}`,
+        en: `${base.en} ${draft.restrictedNotes.join(" ")}`,
       }
-    : RESTRICTION_NOTE;
+    : base;
   const plan: DietPlan = {
     schemaVersion: 2,
     meta: {
@@ -90,7 +92,7 @@ export function assembleDietPlan(
     },
     restrictions: {
       validFrom: issuedAt,
-      validUntil: addDaysIso(issuedAt, RESTRICTION_DAYS),
+      validUntil: addDaysIso(issuedAt, days),
       note,
       foods: draft.restricted,
     },

@@ -4,8 +4,8 @@ import { type Line, type PdfPage, toLines } from "./pdf-text";
 /**
  * Lector determinista del PDF del plan (ADR-010). Puro: recibe el texto de las páginas
  * (ya extraído en el aparato) y devuelve un BORRADOR por secciones, cada dato con la
- * página de donde salió. Detecta por FORMA (encabezados, columnas, separadores), nunca
- * por un título literal de la plantilla.
+ * página de donde salió. Detecta por FORMA (encabezados, columnas, separadores) y por
+ * palabras clave genéricas; no copia los títulos de la plantilla enteros (ADR-010, punto abierto).
  *
  * Lo que JAMÁS lee (regla dura 2 y decisión 2 a): identidad, medidas del cuerpo,
  * resultados de laboratorio y contacto. Esas páginas y líneas se descartan ANTES de
@@ -65,6 +65,8 @@ export type DraftHydration = {
 /** El plan leído, por secciones; lo que falta queda vacío (o ausente) para la revisión. */
 export type PlanDraft = {
   issuedAt?: string;
+  /** Plazo de la restricción, en días, si el PDF lo dice («por 3 meses»). */
+  restrictionDays?: number;
   restricted: DraftItem[];
   /** Aclaraciones entre paréntesis de la lista restringida («incluye …»). */
   restrictedNotes: string[];
@@ -86,7 +88,11 @@ export type PlanReading = {
   pages: Record<string, number>;
   /** Secciones de las que el lector no encontró nada: quien cuida las completa a mano. */
   unrecognized: SectionKey[];
+  /** Filas que el lector vio pero no pudo leer, por sección: quien cuida las cotejará con el PDF. */
+  skipped: Partial<Record<SectionKey, number>>;
 };
+
+type Skip = (k: SectionKey) => void;
 
 // ───────────────────────── utilidades puras ─────────────────────────
 
@@ -190,7 +196,7 @@ export function parseTimeRange(
     const sfxStart = range[3]?.toLowerCase() ?? sfx;
     const end = to24(+range[4], +range[5], sfx);
     let start = to24(+range[1], +range[2], sfxStart);
-    if (start > end) start = to24(+range[1], +range[2], "a");
+    if (!range[3] && start > end) start = to24(+range[1], +range[2], "a");
     return { start: fmtMin(start), end: fmtMin(end) };
   }
   const single = /(\d{1,2}):(\d{2})\s*([ap])\.?\s*m\.?/i.exec(text);
@@ -354,7 +360,7 @@ export function readPlanText(pdfPages: PdfPage[]): PlanReading {
   };
 
   // 2.1 La fecha del plan: la única fecha completa, en la portada (lo demás de ahí no se lee).
-  for (const p of pages) {
+  for (const p of pages.filter((p) => !isForbiddenPage(p))) {
     const hit = p.lines
       .map((l) => /Fecha\s*:\s*(\d{2})[./-](\d{2})[./-](\d{4})/i.exec(l.text))
       .find(Boolean);
@@ -372,13 +378,18 @@ export function readPlanText(pdfPages: PdfPage[]): PlanReading {
     .filter((l) => !FORBIDDEN_LINE.some((re) => re.test(l.text)));
 
   readRestricted(lines, draft, pagesMap);
-  readAdditives(lines, draft, pagesMap);
+  const skipped: Partial<Record<SectionKey, number>> = {};
+  const skip: Skip = (k) => {
+    skipped[k] = (skipped[k] ?? 0) + 1;
+  };
+  readAdditives(lines, draft, pagesMap, skip);
   readAlsoAvoid(lines, draft, pagesMap);
-  readGreen(lines, draft, pagesMap);
+  readGreen(lines, draft, pagesMap, skip);
   readPillars(lines, draft, pagesMap);
-  readSupplements(lines, draft, pagesMap);
-  readMenuAndHydration(lines, draft, pagesMap);
+  readSupplements(lines, draft, pagesMap, skip);
+  readMenuAndHydration(lines, draft, pagesMap, skip);
   linkEquivalences(draft, pagesMap);
+  mergeEquivalences(draft);
 
   scrubNames(draft, names);
 
@@ -399,6 +410,7 @@ export function readPlanText(pdfPages: PdfPage[]): PlanReading {
     draft,
     pages: pagesMap,
     unrecognized: SECTION_KEYS.filter((k) => !filled[k]),
+    skipped,
   };
 }
 
@@ -419,6 +431,14 @@ function readRestricted(
   }
   const page = lines[start].page;
   pages.restricted = page;
+  const span = /\bpor\s+(\d{1,3})\s*(d[ií]as?|semanas?|mes(?:es)?)\b/i.exec(
+    lines[start].text,
+  );
+  if (span) {
+    const unit = span[2].toLowerCase();
+    draft.restrictionDays =
+      +span[1] * (unit.startsWith("d") ? 1 : unit.startsWith("s") ? 7 : 30);
+  }
   for (const raw of splitDots(joinCell(parts))) {
     const paren = /^(.*?)\s*\(([^)]*)\)\s*$/.exec(raw);
     const name = capitalize(tidy(paren ? paren[1] : raw));
@@ -462,6 +482,7 @@ function readAdditives(
   lines: Line[],
   draft: PlanDraft,
   pages: Record<string, number>,
+  skip: Skip,
 ) {
   const start = findIdx(lines, /aditivos\b.*\bevitar/i);
   if (start < 0) return;
@@ -481,7 +502,10 @@ function readAdditives(
   }
   for (const c of cells) {
     const m = /^E\s?(\d{3})\s+(.+)$/.exec(joinCell(c.parts, true));
-    if (!m) continue;
+    if (!m) {
+      skip("additives");
+      continue;
+    }
     const code = `E${m[1]}`;
     if (draft.additives.some((a) => a.code === code)) continue;
     draft.additives.push({ code, name: same(m[2]) });
@@ -543,6 +567,7 @@ function readGreen(
   lines: Line[],
   draft: PlanDraft,
   pages: Record<string, number>,
+  skip: Skip,
 ) {
   const anchor = findIdx(lines, /grupos\s+alimentarios/i);
   if (anchor < 0) return;
@@ -581,7 +606,10 @@ function readGreen(
     const portion = joinCell(row.cells[portionCol] ?? [])
       .replace(/\s+(?=\d+\s+veces\b)/g, ", ")
       .replace(/\s+(?=\p{Ll}\p{L}{1,20}:\s)/gu, "; ");
-    if (items.length === 0) continue;
+    if (items.length === 0) {
+      skip("green");
+      continue;
+    }
     draft.green.push({
       id,
       name: same(name),
@@ -661,6 +689,7 @@ function readSupplements(
   lines: Line[],
   draft: PlanDraft,
   pages: Record<string, number>,
+  skip: Skip,
 ) {
   const anchor = findIdx(lines, /plan de suplementaci[oó]n/i);
   if (anchor >= 0) {
@@ -685,7 +714,11 @@ function readSupplements(
         const days = row.cells[daysCol]
           .map((d) => WEEKDAYS[slug(d)])
           .filter((d): d is Weekday => !!d);
-        if (!name || days.length === 0) continue;
+        if (!name) continue;
+        if (days.length === 0) {
+          skip("supplements");
+          continue;
+        }
         const instr = joinCell(row.cells[instrCol] ?? []);
         const when = /^(.+?\.)(\s|$)/.exec(instr)?.[1] ?? instr;
         const id = slug(name);
@@ -726,6 +759,7 @@ function readMenuAndHydration(
   lines: Line[],
   draft: PlanDraft,
   pages: Record<string, number>,
+  skip: Skip,
 ) {
   const start = findIdx(lines, /men[uú](?!\p{L}).*d[ií]a/iu);
   const hydr = findIdx(lines, /hidrataci[oó]n/i, Math.max(start, 0));
@@ -751,7 +785,10 @@ function readMenuAndHydration(
     const used = new Set<string>();
     for (const b of blocks) {
       const timeIdx = b.left.findIndex((t) => parseTimeRange(t));
-      if (timeIdx < 0) continue;
+      if (timeIdx < 0) {
+        skip("menu");
+        continue;
+      }
       const time = parseTimeRange(b.left[timeIdx])!;
       const name = capitalize(stripIcon(joinCell(b.left.slice(0, timeIdx))));
       if (!name) continue;
@@ -828,6 +865,28 @@ function linkEquivalences(draft: PlanDraft, pages: Record<string, number>) {
   }
 }
 
+/**
+ * Una equivalencia por alimento que falta (la fila de la revisión se identifica por él):
+ * si el PDF trae dos para el mismo, se juntan sus opciones en la primera.
+ */
+function mergeEquivalences(draft: PlanDraft) {
+  const seen = new Map<string, DraftEquivalence>();
+  const out: DraftEquivalence[] = [];
+  for (const e of draft.equivalences) {
+    const first = seen.get(e.whenMissing);
+    if (!first) {
+      seen.set(e.whenMissing, e);
+      out.push(e);
+    } else {
+      first.use = [
+        ...first.use,
+        ...e.use.filter((u) => !first.use.some((f) => f.name.es === u.name.es)),
+      ];
+    }
+  }
+  draft.equivalences = out;
+}
+
 /** El nombre del niño (del encabezado) se borra de todo lo leído: jamás queda en el plan. */
 function scrubNames(draft: PlanDraft, names: string[]) {
   const tokens = names
@@ -836,7 +895,10 @@ function scrubNames(draft: PlanDraft, names: string[]) {
     .sort((a, b) => b.length - a.length);
   if (tokens.length === 0) return;
   const esc = tokens.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-  const re = new RegExp(`(?:\\s+de)?\\s*\\b(?:${esc.join("|")})\\b`, "gu");
+  const re = new RegExp(
+    `(?:\\s+de)?\\s*(?<![\\p{L}\\p{N}])(?:${esc.join("|")})(?![\\p{L}\\p{N}])`,
+    "giu",
+  );
   const walk = (v: unknown): unknown => {
     if (typeof v === "string") return tidy(v.replace(re, ""));
     if (Array.isArray(v)) return v.map(walk);
