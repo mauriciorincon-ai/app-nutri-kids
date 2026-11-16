@@ -24,22 +24,46 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
 
 ## Features
 
-### Cargar tu dieta · desde Sprint 001
+### Cargar tu dieta · desde Sprint 001 (con el PDF, desde Sprint 006)
 
-- **Qué hace:** guarda la dieta de tu peque EN TU TELÉFONO (no viaja a ningún servidor) y la app
-  entera pasa a responder con esa dieta.
-- **Cómo se usa:**
-  1. Pide el archivo de la dieta a quien lo tenga (termina en `.json`; te lo pueden mandar por
-     WhatsApp o correo). Descárgalo en el teléfono.
-  2. Ve a **Cargar** (abajo) → **"Elegir archivo"** → busca el archivo descargado.
-  3. Verás un resumen de lo que se cargó (grupos, suplementos…). Listo: el letrero de arriba
-     ahora dice **"Tu dieta"**.
-  - **Si el archivo no abre:** ábrelo donde te lo mandaron, copia TODO su contenido, y en
-    **Cargar** pégalo en la caja de texto → **"Cargar lo pegado"**.
-- **Si sale un error:** el archivo no es el correcto o llegó incompleto — pide que te lo
-  reenvíen tal cual, sin editarlo.
-- **Limitaciones conocidas:** la dieta queda solo en ese teléfono (cada cuidador la carga en el
-  suyo, por ahora).
+- **Qué hace:** guarda el plan de tu peque EN TU TELÉFONO (no viaja a ningún servidor) y la app
+  entera pasa a responder con ese plan. Puedes cargarlo **desde el PDF que te dio tu profesional**
+  o desde un archivo `.json`.
+- **Cómo se usa con el PDF:**
+  1. Ve a **Cargar** (abajo) → **"Elegir PDF"** → busca el PDF que te dio tu profesional.
+  2. La app lo lee **en tu teléfono, sin internet** (funciona también sin señal). El PDF **no se
+     guarda ni sale del teléfono**: solo queda tu plan, ya revisado por ti.
+  3. Aparece **"Revisa tu plan"**, parte por parte (fecha del plan, alimentos en descanso, rojo fijo,
+     verde, amarillo, equivalencias, suplementos, menú, hidratación, metas…). Cada parte te dice
+     **de qué página del PDF** salió lo que se leyó. En cada una eliges:
+     **"Está bien"** (✓), corregir (✎: editar, quitar o añadir) o **"Mi plan no lo trae"** (–).
+  4. Lo que la app no reconoció lo completas a mano en la misma pantalla; un PDF con otra forma
+     nunca se rechaza. El **rojo fijo** (lo que se evita siempre) lo añades tú, uno por uno,
+     porque en el PDF viene en texto corrido.
+  5. Cuando todas las partes están revisadas, **"Guardar mi plan"** se activa. Si te falta algo,
+     el botón dice qué (cuántas partes faltan, o que verde, menú e hidratación son necesarios).
+  - **Si lo dejas a medias:** al volver a **Cargar** aparece **"Tienes una revisión a medias"**:
+    **"Seguir revisando"** o **"Descartar esta revisión"**. **"Borrar mis datos"** también la borra.
+  - **Lo que nunca se lee del PDF:** peso, talla, IMC, percentiles, nombre, contacto ni resultados
+    de laboratorio.
+- **Cómo se usa con el archivo:** pide el `.json` a quien lo tenga (te lo pueden mandar por
+  WhatsApp o correo), descárgalo → **Cargar** → **"Elegir JSON"**. Si no abre, copia TODO su
+  contenido y pégalo en la caja de texto → **"Cargar lo pegado"**.
+- **Si sale un error:** "ese archivo no es un PDF", "el PDF no trae texto" (es una foto escaneada)
+  o "no pudimos abrirlo": elige otro PDF o carga el archivo `.json`.
+- **Lo que anotaste en el Perfil** (notas y texturas) **se queda** al cargar un plan nuevo.
+- **Limitaciones conocidas:** el PDF debe traer texto (uno escaneado como foto no se puede leer);
+  el plan queda solo en ese teléfono (cada cuidador lo carga en el suyo).
+
+**In English — Load your plan (from the PDF, since Sprint 006).** Go to **Load** → **"Choose PDF"**
+and pick the PDF your professional gave you. The app reads it **on your phone, with no internet**;
+the PDF is **not saved and never leaves the phone** — only your reviewed plan is kept. In **"Review
+your plan"** each part shows the PDF page it came from, and you mark it **"Looks right"**, fix it
+(edit, remove or add) or **"My plan doesn't have it"**; whatever the app didn't recognize you fill in
+by hand. **"Save my plan"** turns on when every part is reviewed. An unfinished review can be
+resumed from **Load**. Weight, height, BMI, percentiles, names, contact details and lab results are
+never read. You can still load a `.json` file (**"Choose JSON"**), and what you noted in the
+Profile stays.
 
 ### El semáforo de la dieta · desde Sprint 001
 
@@ -162,7 +186,7 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
   cuando te convenga (la app se recarga una vez) o **"Ahora no"** para seguir con lo que estás
   haciendo. **Nunca se actualiza sola mientras la usas.**
 - **Limitaciones conocidas:** la primera vez necesita señal. Si cambias de teléfono, la dieta no
-  viaja sola: vuelve a cargar el archivo.
+  viaja sola: vuelve a cargar tu PDF o el archivo.
 
 ### Suplementos de la semana · desde Sprint 001
 
@@ -180,8 +204,11 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
 
 ## Preguntas frecuentes
 
+- **¿El PDF que cargo se sube o se guarda?** No. Se lee en tu teléfono, sin internet, y al terminar se
+  suelta de la memoria: solo queda el plan ya revisado por ti. Peso, talla, IMC, percentiles, nombre
+  y contacto del PDF nunca se leen ni se guardan.
 - **¿Mis datos van a internet?** No. La dieta, las marcas, las horas y las notas viven solo en tu
-  teléfono. Por eso mismo, si cambias de teléfono, vuelve a cargar el archivo de la dieta. Las notas
+  teléfono. Por eso mismo, si cambias de teléfono, vuelve a cargar tu PDF (o el archivo de la dieta). Las notas
   del día (lo que escribes en "Agregar nota") **nunca** salen del teléfono: el chat ni las lee. Lo que
   anotas en el **Perfil** tampoco sale: solo el chat de tu propio teléfono lo usa, para contestarte
   con eso marcado como «anotado por ti».
@@ -205,3 +232,4 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
 | 003    | Registro del día: hora real al marcar + nota corta por comida (etiquetas + texto) · recordatorio "Ahora mismo" (qué toca y qué sigue, sin notificaciones) · "Ver días anteriores" (historial local de solo lectura) · borrar datos ahora cubre horas y notas                                                                                                                  |
 | 004    | Chat nuevo que contesta con tu plan **sin internet y sin enviar nada** ("no tengo X", "no quiso X", "¿qué le doy ahora?", "¿cuánta agua?", "tu plan no lo dice") · todas las pantallas abren sin internet · aviso de versión nueva con "Actualizar" / "Ahora no"                                                                                                              |
 | 005    | Perfil de tu peque: lo del profesional **«según tu plan»** y lo tuyo **«anotado por ti»** (texturas que hoy acepta y notas) · opciones de reemplazo ordenadas por textura, con la marca «textura que hoy no acepta» · el chat contesta sueño, actividad, alergias y medicamentos del plan · el plan guardado de antes se actualiza solo · la pantalla nueva abre sin internet |
+| 006    | **Tu PDF, vuelto app:** cargas el PDF de tu profesional, que se lee en tu teléfono sin internet y sin guardarse · «Revisa tu plan» parte por parte, con la página de cada dato («está bien», corregir o «mi plan no lo trae») · una revisión a medias se retoma · el JSON sigue funcionando y tus notas del Perfil se quedan |

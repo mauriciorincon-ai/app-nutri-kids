@@ -124,6 +124,11 @@ dibujada en SVG con estos tokens (nunca una captura incrustada), topada a su tam
 - **OptionChip** (`components/traffic-light/`): opción de reemplazo con su textura (símbolo + texto).
   Si la textura hoy no se acepta: borde **punteado** + fondo apagado + «textura que hoy no acepta»;
   va después de las aceptadas y jamás se oculta.
+- **MarkChip** (`components/plan-review/`, S6): estado de cada parte de «Revisa tu plan» — círculo
+  «Por revisar», visto «Está bien» (tinta verde), lápiz «Corregida» (tinta amarilla) y guion «Mi plan
+  no lo trae» (tinta apagada). Símbolo + texto + color, siempre. Un botón desactivado dice POR QUÉ en
+  texto debajo (`aria-describedby`), nunca solo se apaga. La lista de partes y el formulario de cada
+  fila son tap targets ≥ 44 px; el campo inválido lleva `aria-invalid` y su mensaje.
 - **Disclaimer**: elemento permanente del layout (no letra pequeña); versión completa en /ajustes.
 - **SourceBanner**: chip siempre visible "Dieta demo" / "Tu dieta" — nadie confunde la demo.
 - shadcn base: button, card, checkbox, tabs, dialog, textarea, badge — con los tokens de arriba,
