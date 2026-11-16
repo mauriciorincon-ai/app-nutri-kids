@@ -190,6 +190,8 @@ test("crear, entrar, marcar en uno y ver en el otro, sin red, sacar a un teléfo
   browser,
   baseURL,
 }) => {
+  // Dos teléfonos, ocho axe y varias subidas y bajadas: en la CI pasa de 30 s.
+  test.setTimeout(90_000);
   const a = await phone(browser, baseURL!);
   const b = await phone(browser, baseURL!);
 
@@ -347,7 +349,7 @@ test("«Borrar mis datos» dentro de una familia: avisa, y con la casilla tambi�
     .getByRole("checkbox", { name: /Entiendo qué se comparte/ })
     .check();
   await b.page.getByRole("button", { name: "Entrar", exact: true }).click();
-  await expect(b.page.getByRole("alert")).toBeVisible();
+  await expect(b.page.locator('p[role="alert"]')).toBeVisible();
   await expect(b.page.getByTestId("family-panel")).toHaveCount(0);
   await a.context.close();
   await b.context.close();
