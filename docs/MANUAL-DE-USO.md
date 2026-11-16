@@ -252,7 +252,7 @@ what's shared** erases it from the internet and each phone keeps its copy.
   pantalla te muestra los 4 pasos.
 - **Qué eliges:** cuatro tipos, cada uno por teléfono: **Suplementos**, **Comidas y meriendas**,
   **Agua** y **Avisos de la familia**. Y **«Ocultar el detalle con el teléfono bloqueado»** (apagado al
-  inicio): con él prendido, el aviso dice solo «Nutrikids» y el detalle se ve al abrir la app.
+  inicio): con él prendido, el aviso trae un mensaje genérico en vez del detalle, y el detalle se ve al abrir la app.
 - **Si ya lo marcaste:** si marcas una comida o el suplemento antes de su hora, ese aviso de hoy no
   suena. Si lo desmarcas, vuelve a sonar.
 - **Avisar a la familia:** en **Hoy**, **«Avisar a la familia»** → escribe → **«Enviar aviso»**. La nota
@@ -262,7 +262,8 @@ what's shared** erases it from the internet and each phone keeps its copy.
   quita los avisos de este teléfono. **«Borrar mis datos»** también lo hace.
 - **Qué sabe el servidor:** solo la dirección para despertar tu teléfono, tu huso horario y las horas
   del día **sin etiqueta** (no sabe si es comida, suplemento o agua), más el código de la familia si
-  recibes avisos de ella. El toque va vacío: el aviso se arma en tu teléfono. Nunca viajan nombres,
+  recibes avisos de ella. Si marcas algo **antes de su hora**, también sale el día y el minuto de ese
+  aviso (para no repetirlo): el servidor no sabe qué era, pero sí que algo de ese minuto ya se marcó. El toque va vacío: el aviso se arma en tu teléfono. Nunca viajan nombres,
   alimentos, suplementos ni notas. Google, Apple, Mozilla o Microsoft (el servicio de tu navegador) ven
   que llegó un toque vacío, nada más.
 - **Limitaciones conocidas:** el reloj es de cada 5 minutos, así que un aviso puede llegar hasta unos
@@ -277,7 +278,7 @@ screen shows the 4 steps. Four types are switched per phone: supplements, meals 
 family notices; times come from the plan. **Hide the detail on a locked phone** is off at first. Marking
 something early skips that notice for today. In **Today**, **Notify the family** sends a short note
 (up to 140 characters) that wakes the other phones; it travels encrypted and opens Today with the note
-and who wrote it. The server keeps only the address, the time zone and label-free times, and sends an
+and who wrote it. The server keeps only the address, the time zone and label-free times (plus the day and minute of a notice you marked early), and sends an
 empty push: the notice is built on your phone. **Stop receiving notices** and **Delete my data** both
 delete the subscription.
 
@@ -296,11 +297,11 @@ delete the subscription.
   y el contacto que traiga el PDF se descartan: no entran al plan ni se guardan.
 - **¿Mis datos van a internet?** Solo si activas «Compartir con la familia»: entonces el plan, el
   día (marcas, horas y notas) y el perfil (notas, alergias y medicamentos) viajan **cifrados desde tu
-  teléfono**, y en internet solo quedan datos ilegibles. Sin familia y sin avisos, nada sale del teléfono; con los avisos activos salen solo la dirección para despertarlo y horas sin etiqueta. El chat
+  teléfono**, y en internet solo quedan datos ilegibles. Sin familia y sin avisos, nada sale del teléfono; con los avisos activos salen solo la dirección para despertarlo y horas sin etiqueta (y, si marcas antes de la hora, el día y el minuto de ese aviso). El chat
   **nunca** envía nada: solo el de tu propio teléfono usa lo que anotaste, para contestarte con eso
   marcado como «anotado por quien cuida».
 - **¿Los avisos le cuentan algo a alguien?** Solo que un teléfono quiere avisos a ciertas horas del día,
-  sin decir de qué. El aviso se arma en tu teléfono con lo que ya tiene; el servidor manda un toque vacío.
+  sin decir de qué, y que algo de un minuto de hoy ya se marcó cuando marcas antes de la hora. El aviso se arma en tu teléfono con lo que ya tiene; el servidor manda un toque vacío.
 - **¿Y si pierdo la frase de la familia?** Con otro teléfono que ya esté dentro, **«Cambiar la frase»**
   crea una nueva; los demás teléfonos entran con ella. Sin ningún teléfono dentro, la familia no se
   puede abrir: se crea otra (nadie, ni nosotros, puede leerla).
