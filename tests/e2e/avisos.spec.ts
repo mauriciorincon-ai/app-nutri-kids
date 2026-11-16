@@ -33,11 +33,32 @@ type Phone = { context: BrowserContext; page: Page; wire: Wire };
 let seq = 0;
 
 /** Un teléfono: contexto propio, IP propia, permiso concedido y suscripción de mentira. */
-async function phone(browser: Browser, baseURL: string): Promise<Phone> {
+type PhoneOptions = {
+  /** El permiso ya está negado en el navegador. */
+  denied?: boolean;
+  /** Este navegador no sabe de push (sin PushManager). */
+  noPush?: boolean;
+  /** Un iPhone con la app sin instalar. */
+  ios?: boolean;
+  /** Hay una versión nueva de la app esperando turno. */
+  updateWaiting?: boolean;
+};
+
+async function phone(
+  browser: Browser,
+  baseURL: string,
+  opts: PhoneOptions = {},
+): Promise<Phone> {
   seq += 1;
   const octet = () => Math.floor(Math.random() * 250) + 1;
   const context = await browser.newContext({
     baseURL,
+    ...(opts.ios
+      ? {
+          userAgent:
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
+        }
+      : {}),
     extraHTTPHeaders: {
       "x-forwarded-for": `10.${(seq + 100) % 250}.${octet()}.${octet()}`,
     },
@@ -52,7 +73,7 @@ async function phone(browser: Browser, baseURL: string): Promise<Phone> {
     return route.continue();
   });
   // En el contexto (no en la página): cada pestaña de este teléfono lleva el mismo doble.
-  await context.addInitScript(() => {
+  await context.addInitScript((o) => {
     const store = window.localStorage;
     if (!store.getItem("nutrikids.prefs.v1"))
       store.setItem(
@@ -62,8 +83,16 @@ async function phone(browser: Browser, baseURL: string): Promise<Phone> {
     // El permiso se pide una vez, al tocar: el doble lo cuenta y lo concede.
     const asked = () => Number(store.getItem("e2e.asked") ?? 0);
     Object.defineProperty(Notification, "permission", {
-      get: () => (asked() > 0 ? "granted" : "default"),
+      get: () => (o.denied ? "denied" : asked() > 0 ? "granted" : "default"),
     });
+    if (o.noPush) {
+      delete (window as unknown as { PushManager?: unknown }).PushManager;
+      return;
+    }
+    if (o.updateWaiting)
+      Object.defineProperty(navigator.serviceWorker, "getRegistration", {
+        value: async () => ({ waiting: {} }),
+      });
     Notification.requestPermission = async () => {
       store.setItem("e2e.asked", String(asked() + 1));
       return "granted";
@@ -93,7 +122,7 @@ async function phone(browser: Browser, baseURL: string): Promise<Phone> {
           } as unknown as PushSubscription)
         : null;
     };
-  });
+  }, opts);
   const page = await context.newPage();
   return { context, page, wire };
 }
@@ -608,6 +637,182 @@ test.describe("avisos en este teléfono", () => {
     noPlain([...a.wire, ...b.wire], [NOTE, "quinoa", MAMA, PAPA, "Desayuno"]);
     await a.context.close();
     await b.context.close();
+  });
+});
+
+test.describe("estados de los avisos que no son el camino feliz (axe en los dos temas)", () => {
+  async function open(page: Page) {
+    await page.goto("/ajustes");
+    const section = page.getByTestId("push-section");
+    await expect(section).toBeVisible();
+    return section;
+  }
+
+  test("el navegador no sabe de avisos: lo dice con texto y símbolo", async ({
+    browser,
+    baseURL,
+  }) => {
+    const a = await phone(browser, baseURL!, { noPush: true });
+    const section = await open(a.page);
+    await expect(section).toContainText(
+      "ℹ Este navegador no puede mostrar avisos",
+    );
+    await expect(
+      section.getByRole("button", { name: "Activar avisos en este teléfono" }),
+    ).toHaveCount(0);
+    await axe(a.page, "avisos · navegador sin soporte");
+    await a.context.close();
+  });
+
+  test("el permiso está bloqueado: ⚠ y cómo cambiarlo, sin pedir nada", async ({
+    browser,
+    baseURL,
+  }) => {
+    const a = await phone(browser, baseURL!, { denied: true });
+    const section = await open(a.page);
+    await expect(section).toContainText("⚠ El permiso está bloqueado");
+    await axe(a.page, "avisos · permiso bloqueado");
+    await a.context.close();
+  });
+
+  test("iPhone sin instalar la app: los 4 pasos de instalación", async ({
+    browser,
+    baseURL,
+  }) => {
+    const a = await phone(browser, baseURL!, { ios: true });
+    const section = await open(a.page);
+    const steps = section.getByTestId("push-install");
+    await expect(steps).toContainText("Primero instala la app en tu iPhone");
+    await expect(steps.getByRole("listitem")).toHaveCount(4);
+    await axe(a.page, "avisos · iPhone sin instalar");
+    await a.context.close();
+  });
+
+  test("el servicio no está disponible: ℹ y el resto de la app sigue igual", async ({
+    browser,
+    baseURL,
+  }) => {
+    const a = await phone(browser, baseURL!);
+    await a.context.route("**/api/push/health", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ available: false, store: "none", key: null }),
+      }),
+    );
+    const section = await open(a.page);
+    const button = section.getByRole("button", {
+      name: "Activar avisos en este teléfono",
+    });
+    await expect(button).toBeEnabled();
+    await button.click();
+    await expect(section).toContainText("ℹ Los avisos no están disponibles");
+    expect(
+      await a.page.evaluate(() => window.localStorage.getItem("e2e.asked")),
+    ).toBeNull(); // no se pidió permiso
+    await axe(a.page, "avisos · servicio no disponible");
+    await a.context.close();
+  });
+
+  test("sin conexión al activar: el error rojo lleva ⚠ y texto", async ({
+    browser,
+    baseURL,
+  }) => {
+    const a = await phone(browser, baseURL!);
+    await a.context.route("**/api/push/health", (route) => route.abort());
+    const section = await open(a.page);
+    const button = section.getByRole("button", {
+      name: "Activar avisos en este teléfono",
+    });
+    await expect(button).toBeEnabled();
+    await button.click();
+    await expect(section.getByRole("alert")).toContainText("⚠ Sin conexión");
+    await axe(a.page, "avisos · sin conexión");
+    await a.context.close();
+  });
+
+  test("hay una versión nueva esperando: pide actualizar ANTES de pedir el permiso", async ({
+    browser,
+    baseURL,
+  }) => {
+    const a = await phone(browser, baseURL!, { updateWaiting: true });
+    const section = await open(a.page);
+    const button = section.getByRole("button", {
+      name: "Activar avisos en este teléfono",
+    });
+    await expect(button).toBeEnabled();
+    await button.click();
+    await expect(section.getByRole("alert")).toContainText(
+      "⚠ Hay una versión nueva de la app esperando",
+    );
+    expect(
+      await a.page.evaluate(() => window.localStorage.getItem("e2e.asked")),
+    ).toBeNull();
+    await axe(a.page, "avisos · versión nueva esperando");
+    await a.context.close();
+  });
+
+  test("el servidor no guarda: el error rojo lleva ⚠ y texto", async ({
+    browser,
+    baseURL,
+  }) => {
+    test.skip(!process.env.CI, NEEDS_SW);
+    const a = await phone(browser, baseURL!);
+    await a.context.route("**/api/push/subscribe", (route) =>
+      route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "x" }),
+      }),
+    );
+    await a.page.goto("/ajustes");
+    const section = a.page.getByTestId("push-section");
+    const button = section.getByRole("button", {
+      name: "Activar avisos en este teléfono",
+    });
+    await expect(button).toBeEnabled();
+    await button.click();
+    await expect(section.getByRole("alert")).toContainText(
+      "⚠ No se pudo guardar",
+      { timeout: 15_000 },
+    );
+    await axe(a.page, "avisos · el servidor no guarda");
+    await a.context.close();
+  });
+
+  test("«Avisar a la familia»: nota vacía y nota guardada sin red, ambas con texto y símbolo", async ({
+    browser,
+    baseURL,
+  }) => {
+    const a = await phone(browser, baseURL!);
+    await a.page.goto("/ajustes");
+    await a.page.getByTestId("family-create").click();
+    await a.page.getByLabel(/Nombre de este teléfono/).fill(MAMA);
+    await a.page
+      .getByRole("checkbox", { name: /Entiendo qué se comparte/ })
+      .check();
+    await a.page.getByRole("button", { name: "Crear la familia" }).click();
+    await expect(a.page.getByTestId("family-secrets")).toBeVisible();
+    await a.page.getByRole("checkbox", { name: /Ya los anoté/ }).check();
+    await a.page.getByRole("button", { name: "Listo" }).click();
+    await expect(a.page.getByTestId("family-panel")).toBeVisible();
+
+    await a.page.goto("/");
+    await a.page.getByRole("button", { name: "Avisar a la familia" }).click();
+    await a.page.getByRole("button", { name: "Enviar aviso" }).click();
+    await expect(
+      a.page.getByTestId("family-notices").getByRole("alert"),
+    ).toContainText("⚠ Escribe algo antes de enviar.");
+    await axe(a.page, "avisar a la familia · nota vacía");
+
+    await a.page.getByLabel("Tu aviso").fill("Nota sin red");
+    await a.context.setOffline(true);
+    await a.page.getByRole("button", { name: "Enviar aviso" }).click();
+    await expect(
+      a.page.getByText("✓ Guardado. Se envía cuando vuelva la red."),
+    ).toBeVisible();
+    await axe(a.page, "avisar a la familia · guardada sin red");
+    await a.context.close();
   });
 });
 
