@@ -44,8 +44,8 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
      el botón dice qué (cuántas partes faltan, o que verde, menú e hidratación son necesarios).
   - **Si lo dejas a medias:** al volver a **Cargar** aparece **"Tienes una revisión a medias"**:
     **"Seguir revisando"** o **"Descartar esta revisión"**. **"Borrar mis datos"** también la borra.
-  - **Lo que nunca se lee del PDF:** peso, talla, IMC, percentiles, nombre, contacto ni resultados
-    de laboratorio.
+  - **Lo que no se guarda del PDF:** las medidas del cuerpo, el nombre, el contacto y los resultados
+    de laboratorio se descartan al leer: no entran al plan, no se guardan y no salen del teléfono.
 - **Cómo se usa con el archivo:** pide el `.json` a quien lo tenga (te lo pueden mandar por
   WhatsApp o correo), descárgalo → **Cargar** → **"Elegir JSON"**. Si no abre, copia TODO su
   contenido y pégalo en la caja de texto → **"Cargar lo pegado"**.
@@ -61,8 +61,8 @@ the PDF is **not saved and never leaves the phone** — only your reviewed plan 
 your plan"** each part shows the PDF page it came from, and you mark it **"Looks right"**, fix it
 (edit, remove or add) or **"My plan doesn't have it"**; whatever the app didn't recognize you fill in
 by hand. **"Save my plan"** turns on when every part is reviewed. An unfinished review can be
-resumed from **Load**. Weight, height, BMI, percentiles, names, contact details and lab results are
-never read. You can still load a `.json` file (**"Choose JSON"**), and what you noted in the
+resumed from **Load**. Body measurements, names, contact details and lab results in the PDF are
+discarded: they never enter the plan or get saved. You can still load a `.json` file (**"Choose JSON"**), and what you noted in the
 Profile stays.
 
 ### El semáforo de la dieta · desde Sprint 001
@@ -205,8 +205,8 @@ Profile stays.
 ## Preguntas frecuentes
 
 - **¿El PDF que cargo se sube o se guarda?** No. Se lee en tu teléfono, sin internet, y al terminar se
-  suelta de la memoria: solo queda el plan ya revisado por ti. Peso, talla, IMC, percentiles, nombre
-  y contacto del PDF nunca se leen ni se guardan.
+  suelta de la memoria: solo queda el plan ya revisado por ti. Las medidas del cuerpo, el nombre
+  y el contacto que traiga el PDF se descartan: no entran al plan ni se guardan.
 - **¿Mis datos van a internet?** No. La dieta, las marcas, las horas y las notas viven solo en tu
   teléfono. Por eso mismo, si cambias de teléfono, vuelve a cargar tu PDF (o el archivo de la dieta). Las notas
   del día (lo que escribes en "Agregar nota") **nunca** salen del teléfono: el chat ni las lee. Lo que

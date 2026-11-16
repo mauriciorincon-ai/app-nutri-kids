@@ -304,7 +304,7 @@ pantalla de la que habla**, y detrás llegan sus features.
 | T1 · ¿Esto se puede?      | Buscador «¿Se puede…?», los filtros Verde/Amarillo/Rojo, «Pollo · ✓ Se puede», «Galleta rellena · ✕ Evitar» |
 | T2 · El día de hoy        | «Ya hiciste 2 de 10», «Desayuno · Hecho · 7:12 a. m.», «Almuerzo · 12:30 p. m.»                             |
 | T3 · Pregúntale           | «Asistente IA: en pausa», las 3 preguntas sugeridas, la caja de escribir y el botón de enviar               |
-| T4 · Tu dieta, adentro    | «Aún no has cargado una dieta», «Elegir archivo», «…o pega el contenido»                                    |
+| T4 · Tu dieta, adentro    | «Aún no has cargado una dieta», «Elegir archivo» (hoy «Elegir PDF» y «Elegir JSON», S6), «…o pega el contenido»                                    |
 | T5 · Tuya, en tu teléfono | Español/English, «Demo de ejemplo (ninguna dieta cargada)», «Borrar mis datos»                              |
 
 **Dibujadas en SVG, no capturadas** (decisión del usuario): una captura incrustada engordaría el

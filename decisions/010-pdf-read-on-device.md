@@ -14,9 +14,9 @@ Until S5, a real plan could only be loaded as JSON, which someone had to build b
    - `getDocument` runs with `isEvalSupported: false`, no system fonts, and no range, stream or auto-fetch.
 2. **A deterministic, pure reader.** `src/lib/diet/pdf-reader.ts` turns the extracted text into a draft:
    - Text items become lines and column segments by x (`pdf-text.ts`). Tables are rebuilt by column, never by physical line. A row that crosses a page continues without a repeated header.
-   - Sections are found by **shape and generic keywords**, never by a literal template title: restriction validity, red-listed foods, additives (and «found in»), also-avoid, green groups and portions, yellow (parentheses with a limit), equivalences, supplements and their notes, menu and times (12 h → 24 h; a lone time means start + 30 min), hydration, activity and sleep.
+   - Sections are found by **shape plus generic Spanish keywords and anchors** (a header ending in a colon, a table with a portion/frequency column, a code like `E 123`), not by copying the template's titles whole: restriction validity, red-listed foods, additives (and «found in»), also-avoid, green groups and portions, yellow (parentheses with a limit), equivalences, supplements and their notes, menu and times (12 h → 24 h; a lone time means start + 30 min), hydration, activity and sleep.
    - **Every datum records the page it came from** (`pages["<section>.<id>"]`), and the field is stored in the plan.
-3. **What is never read** (hard rule 2, decision 2 a):
+3. **What is discarded, never kept** (hard rule 2, decision 2 a). pdf.js hands the reader every page's text in memory; the reader drops the following before searching anything, and none of it is stored, logged or sent:
    - **Dropped pages:** lab results (Sections 01/02), the identity-and-measurements table (`Dato | Información`), dividers, and cover/closing pages, except the cover date.
    - **Dropped lines:** any line holding an e-mail, a phone number, `ID:`, weight, height, BMI, percentiles, age, or `kg`/`cm`. They go before any section is searched.
    - **The child's name** is taken from the type-B header only to erase it from everything read.
@@ -40,3 +40,7 @@ Until S5, a real plan could only be loaded as JSON, which someone had to build b
 - The template's red categories written in prose (no deterministic pattern) are added by hand in the review.
 - A scanned PDF with no text layer is reported as unreadable (OCR is out of scope).
 - The real PDF may differ from the invented one. The planner runs the reader against it privately at close, and any missing field (listed without content) becomes the next sprint's first task.
+
+## Open point for the owner (declared at the S6 close)
+
+The reader still uses a few generic Spanish phrases as anchors (for example the words for «recommended food groups», «supplementation plan» and «also avoid»), and the invented fixture reproduces the template's layout with similar section words. Whether these generic anchors honour «no literal template title is copied to the public repo» is the owner's call. If they do not, the anchors are replaced by shape-only detection as the next sprint's first task.
