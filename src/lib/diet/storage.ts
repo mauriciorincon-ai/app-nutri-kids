@@ -8,6 +8,7 @@ import {
 } from "./schema";
 import { clearDayLog } from "./day-log";
 import { clearProfileNotes } from "./profile-notes";
+import { clearPlanDraft } from "./plan-draft";
 import { dateKey } from "./logic";
 import { rebaseDemoWindow } from "./demo";
 
@@ -98,12 +99,32 @@ export function importDiet(jsonText: string): ImportResult {
     });
     return { ok: false, error: parsed.error };
   }
+  return storeDiet(parsed.diet, "diet-imported");
+}
+
+/** Guarda una dieta ya validada como la real (JSON o PDF revisado). Logs: solo conteos. */
+export function storeDiet(
+  diet: DietPlan,
+  event: "diet-imported" | "diet-saved-from-pdf" = "diet-imported",
+): ImportResult {
   const s = storage();
   if (!s) return { ok: false, error: "no-storage" };
-  s.setItem(STORAGE_KEYS.diet, JSON.stringify(parsed.diet));
-  s.setItem(STORAGE_KEYS.source, "real");
-  const counts = dietCounts(parsed.diet);
-  log.info({ event: "diet-imported", ...counts });
+  const previous = s.getItem(STORAGE_KEYS.diet);
+  try {
+    s.setItem(STORAGE_KEYS.diet, JSON.stringify(diet));
+    s.setItem(STORAGE_KEYS.source, "real");
+  } catch {
+    // Cuota llena o modo privado: no queda a medias (se devuelve lo que había).
+    try {
+      if (previous === null) s.removeItem(STORAGE_KEYS.diet);
+      else s.setItem(STORAGE_KEYS.diet, previous);
+    } catch {
+      /* sin más que hacer */
+    }
+    return { ok: false, error: "no-storage" };
+  }
+  const counts = dietCounts(diet);
+  log.info({ event, ...counts });
   return { ok: true, counts };
 }
 
@@ -125,7 +146,7 @@ export function hasStoredRealDiet(): boolean {
 
 /**
  * "Borrar datos": elimina dieta importada + checklist del día (day-log) + lo que
- * quien cuida anotó del niño (profile-notes) y vuelve a demo.
+ * quien cuida anotó del niño (profile-notes) + la revisión a medias de un PDF (plan-draft) y vuelve a demo.
  * Conserva la preferencia de idioma (no es dato del niño).
  */
 export function clearAllData(): void {
@@ -135,6 +156,7 @@ export function clearAllData(): void {
   s.removeItem(STORAGE_KEYS.source);
   clearDayLog();
   clearProfileNotes();
+  clearPlanDraft();
   log.info({ event: "data-cleared" });
 }
 

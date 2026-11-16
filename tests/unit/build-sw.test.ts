@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   DETAIL_SHELL,
+  PDFJS_ASSETS,
   SHELL_ROUTES,
   renderSw,
 } from "../../scripts/build-sw.mjs";
@@ -47,6 +48,21 @@ describe("contrato service worker ↔ app (regla 19)", () => {
     expect(out).toContain(JSON.stringify(SHELL_ROUTES));
     expect(out).not.toContain("__BUILD_ID__");
     expect(out).not.toContain("__SHELL_ROUTES__");
+  });
+
+  it("pdf.js y su worker salen de la app y se precachean (el PDF se lee sin red, ADR-010)", () => {
+    const out = renderSw(template, "x");
+    expect(out).toContain(`const EXTRA_ASSETS = ${JSON.stringify(PDFJS_ASSETS)}`);
+    // …en su caché propia, nombrada con la versión de pdf.js, que `activate` conserva.
+    expect(out).toMatch(/const PDFJS_CACHE = "nutrikids-pdfjs-\d+\.\d+\.\d+"/);
+    expect(out).toContain("k !== PDFJS_CACHE");
+    expect(out).not.toContain("__PDFJS_VERSION__");
+    expect(out).not.toContain("__EXTRA_ASSETS__");
+    expect(PDFJS_ASSETS.every((a) => a.startsWith("/pdfjs/"))).toBe(true);
+    // La copia sale de la build instalada (versión fijada en package.json), jamás de una CDN.
+    const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+    expect(pkg.dependencies["pdfjs-dist"]).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(template).not.toMatch(/https?:\/\//);
   });
 
   it("dos builds distintos dan SW distintos (si no, el navegador no avisa)", () => {

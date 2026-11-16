@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Artefactos de cobertura (vitest --coverage)
     "coverage/**",
+    // pdf.js y su worker: copia minificada de node_modules que genera el build (S6, ADR-010)
+    "public/pdfjs/**",
   ]),
 ]);
 

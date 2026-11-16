@@ -16,6 +16,8 @@ Thumbs.db
 
 # Estampado por scripts/build-sw.mjs desde scripts/sw.template.js
 public/sw.js
+# Copiados de pdfjs-dist por scripts/build-sw.mjs (ADR-010)
+public/pdfjs/
 
 # Lighthouse CI artifacts
 .lighthouseci/

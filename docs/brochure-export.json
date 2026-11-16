@@ -139,19 +139,19 @@
         "orden": 4,
         "estrella": false,
         "nombre": "La dieta real, dentro de la app",
-        "linea": "El plan del profesional entra desde un archivo y toda la app responde con él; antes, una demo para explorar",
+        "linea": "El PDF de tu profesional se lee en tu teléfono, lo revisas parte por parte y toda la app responde con él; antes, una demo para explorar",
         "features": [
           {
             "id": "F14",
-            "nombre": "Carga el archivo del plan",
-            "que_hace": "Toda la app pasa a responder con la dieta real de tu hijo. Eliges el archivo del plan que te compartieron, la app revisa que tenga el formato correcto antes de aceptarlo y te muestra un resumen de lo que encontró.",
+            "nombre": "Carga y revisa el PDF de tu profesional",
+            "que_hace": "Toda la app pasa a responder con la dieta real de tu hijo. Eliges el PDF que te dio tu profesional y se lee en tu teléfono, sin internet y sin guardarse. Revisas tu plan parte por parte, con la página de donde salió cada dato: está bien, corregir o «mi plan no lo trae». Lo que no se reconoció lo completas a mano, y una revisión a medias se retoma.",
             "seccion_manual": "Cargar tu dieta"
           },
           {
             "id": "F15",
-            "nombre": "Plan B: pegar el contenido",
-            "que_hace": "Si el archivo no abre desde el teléfono, igual cargas la dieta. Copias todo su contenido desde donde te lo enviaron, lo pegas en una caja de texto y la app lo revisa y lo carga como si fuera el archivo.",
-            "seccion_manual": "Cargar tu dieta · «Si el archivo no abre»"
+            "nombre": "Plan B: el archivo .json o pegar el contenido",
+            "que_hace": "Si te mandaron el archivo de la dieta (.json), lo eliges en Cargar; si no abre desde el teléfono, copias todo su contenido, lo pegas en una caja de texto y la app lo revisa y lo carga igual. Lo que anotaste en el perfil se queda.",
+            "seccion_manual": "Cargar tu dieta · «Cómo se usa con el archivo»"
           },
           {
             "id": "F16",
@@ -221,42 +221,42 @@
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 514,
+      "valor": 605,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-15 sobre 108e6f4: 23 archivos, 514 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-15 sobre la rama del S6: 27 archivos, 605 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 138,
+      "valor": 164,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `CI=1 npx playwright test --workers=2` el 2026-11-15 sobre 108e6f4, contra un build de producción: 138 pruebas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe y las de uso sin internet, todas en verde."
+      "detalle": "Salida de `CI=1 npx playwright test --workers=2` el 2026-11-15 sobre la rama del S6, contra un build de producción: 164 pruebas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe y las de uso sin internet, todas en verde."
     },
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 99.43,
+      "valor": 98.68,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib/diet, src/lib/ia y src/lib/privacy el 2026-11-15 sobre 108e6f4 (703 de 707 líneas), con umbrales del 80 % en vitest.config.ts."
+      "detalle": "v8 sobre src/lib/diet, src/lib/ia, src/lib/pdf y src/lib/privacy el 2026-11-15 sobre la rama del S6 (98,68 % de líneas, ahora con src/lib/pdf), con umbrales del 80 % en vitest.config.ts."
     },
     {
       "clave": "decisiones_registradas",
       "etiqueta": "Decisiones de arquitectura registradas",
-      "valor": 9,
+      "valor": 10,
       "unidad": "ADR",
       "fuente": "medido",
-      "detalle": "Archivos de decisions/ el 2026-11-15; la 008 (chat code-first) reemplaza a la 004 y la 005, y la 009 fija el perfil en el aparato y el schema v2."
+      "detalle": "Archivos de decisions/ el 2026-11-15; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, y la 010 fija que el PDF se lee en el aparato y se revisa parte por parte."
     },
     {
       "clave": "dependencias_runtime",
       "etiqueta": "Dependencias en tiempo de ejecución",
-      "valor": 13,
+      "valor": 14,
       "unidad": "paquetes",
       "fuente": "medido",
-      "detalle": "Campo `dependencies` de package.json el 2026-11-15 sobre 88f9c6d. Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
+      "detalle": "Campo `dependencies` de package.json el 2026-11-15 sobre la rama del S6: suma pdfjs-dist, fijado y servido por la propia app (ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
     },
     {
       "clave": "requests_del_registro",
@@ -277,10 +277,10 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 77925,
+      "valor": 78061,
       "unidad": "bytes",
       "fuente": "medido",
-      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-15 sobre 108e6f4. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."
+      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-15 sobre la rama del S6. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."
     }
   ],
   "stack": [
