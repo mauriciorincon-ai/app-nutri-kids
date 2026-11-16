@@ -139,8 +139,6 @@ export const VALUE_WORDS = [
   "del",
   "el",
   "la",
-  "los",
-  "las",
   "incluye",
   "dia",
   "dias",
@@ -663,7 +661,7 @@ function readRestricted(
     // «Nota <palabra>: el|la <X> incluye …»: lo que se reemplaza es <X> (la palabra de la
     // nota es el momento o el contexto).
     const subject = execF(
-      /^nota\s+[^:]+:\s*(?:el|la|los|las)\s+([^.,:]+?)\s+incluye\b/,
+      /^nota\s+[^:]+:\s*(?:el|la)\s+([^.,:]+?)\s+incluye\b/,
       joinCell(para),
     );
     const key = tidy(subject ? subject[1] : note[1]);
@@ -748,7 +746,7 @@ function readAdditives(
     const left = cells.filter((c) => c.x <= seg.x);
     const colX = Math.max(...left.map((c) => c.x));
     const row = left
-      .filter((c) => c.x === colX && Math.abs(c.y - seg.y) < half)
+      .filter((c) => Math.abs(c.x - colX) < 4 && Math.abs(c.y - seg.y) < half)
       .sort((a, b) => Math.abs(a.y - seg.y) - Math.abs(b.y - seg.y))[0];
     row?.parts.push(seg);
   }
@@ -1015,7 +1013,8 @@ function readPillars(
     if (!e.label || has(e.label, "objetivo")) continue;
     const shape = execF(/^(\S+)\s+(del?)\s+(\S+)(?:\s+\S+)?$/, e.label);
     if (!shape) continue;
-    const list = /^([^.→]+)\./.exec(joinCell([e.text]));
+    // La lista (o la frase) termina en el primer punto que no es decimal («0.5»).
+    const list = /^((?:[^.→]|\.(?=\d))+)\./.exec(joinCell([e.text]));
     if (!list) continue;
     // «<persona>: si tiene …, reemplazar por …» nombra a alguien de la familia: no se lee.
     if (/^\s*si\b/.test(fold(list[1])) || /\bsi\b[^,]*,/.test(fold(list[1])))
@@ -1023,9 +1022,11 @@ function readPillars(
     const isDel = fold(shape[2]) === "del";
     // «<sustantivo> del <x>:» trae una FRASE «<verbo> el <x> por <y> — <comentario>»: el
     // reemplazo es <y>; lo de después de la raya es comentario, no un ítem.
+    // El «por» va ANTES de la raya; sin él, la etiqueta no trae reemplazo y no se lee.
     const phrase = isDel
-      ? execF(/\bpor\s+([^—–]+?)\s*(?:[—–]|$)/, list[1])
+      ? execF(/^[^—–]*?\bpor\s+([^—–]+?)\s*(?:[—–]|$)/, list[1])
       : null;
+    if (isDel && !phrase) continue;
     const use = phrase ? [tidy(phrase[1])] : splitList(list[1]);
     if (use.length < (phrase ? 1 : 2)) continue;
     const key = isDel ? shape[3] : shape[1];

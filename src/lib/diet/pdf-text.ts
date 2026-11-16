@@ -110,7 +110,7 @@ const CONTROL = /[\u0001-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
  * («flúor»), en todo lo demás «fi» (≈ 4 de cada 5 en la plantilla). Jamás blanco ni borrado.
  */
 export function restoreLigatures(text: string): string {
-  return text.replace(/\u0000+/g, (_, at: number) =>
+  return text.replace(/\u0000/g, (_, at: number) =>
     /^[uúüUÚÜ]/.test(text.slice(at + 1)) ? "fl" : "fi",
   );
 }
@@ -148,7 +148,11 @@ export function toLines(page: PdfPage): Line[] {
       const cur = segs.at(-1);
       const gap = cur && !Number.isNaN(cur.end) ? it.x - cur.end : Infinity;
       if (cur && cur.text !== "" && gap < COLUMN_GAP) {
-        cur.text += (pendingSpace || gap > 1.5 ? " " : "") + it.str;
+        // La ligadura (U+0000) va pegada a sus vecinos aunque pdf.js redondee su ancho:
+        // no abre espacio salvo que venga un blanco explícito.
+        const glued =
+          it.str.startsWith("\u0000") || cur.text.endsWith("\u0000");
+        cur.text += (pendingSpace || (gap > 1.5 && !glued) ? " " : "") + it.str;
         cur.end = it.x + it.w;
       } else {
         if (cur && cur.text === "") segs.pop();

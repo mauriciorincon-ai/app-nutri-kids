@@ -883,3 +883,107 @@ describe("segunda vuelta del PR #10: celdas centradas en vertical (forma-del-pdf
     expect(m.use.at(-1)?.name.es).toBe("manzana deshidratada");
   });
 });
+
+describe("lo que pagó la auditoría de la segunda vuelta", () => {
+  type Item = PdfPage["items"][number];
+  const item = (str: string, x: number, y: number): Item => ({
+    str,
+    x,
+    y,
+    w: str.length * 4,
+  });
+  const read = (items: Item[]) => readPlanText([{ n: 1, height: 842, items }]);
+  const grid = (jitter: number[], rows = jitter.length) => [
+    item("Aditivos a evitar", 21, 100),
+    ...Array.from({ length: rows }, (_, r) => {
+      const y = 140 + r * 38;
+      return [
+        item(`E ${901 + r * 2}`, 30 + jitter[r], y),
+        item(`Nombre ${r}A`, 68, y),
+        item(`E ${902 + r * 2}`, 311 + jitter[r], y),
+        item(`Nombre ${r}B`, 349, y - 4.5),
+        item("Largo", 349, y + 4.5),
+      ];
+    }).flat(),
+    item("Párrafo de ancho completo.", 21, 140 + rows * 38),
+  ];
+
+  it("aditivos: con la x de los códigos movida unas décimas, cada nombre sigue siendo de su fila", () => {
+    const r = read(grid([0, 0.3, -0.2, 0.3, 0.1]));
+    expect(r.draft.additives).toHaveLength(10);
+    expect(r.draft.additives.map((a) => a.name.es)).toContain(
+      "Nombre 2B Largo",
+    );
+    expect(r.skipped).toEqual({});
+  });
+
+  it("aditivos: una rejilla de una sola fila usa la media fila de respaldo", () => {
+    const r = read(grid([0]));
+    expect(r.draft.additives.map((a) => [a.code, a.name.es])).toEqual([
+      ["E901", "Nombre 0A"],
+      ["E902", "Nombre 0B Largo"],
+    ]);
+  });
+
+  it.each([0, 1.6, 3])(
+    "toLines: la ligadura no parte la palabra aunque pdf.js deje %s pt de hueco",
+    (gap) => {
+      const [l] = toLines({
+        n: 1,
+        height: 800,
+        items: [
+          { str: "arti", x: 78, y: 100, w: 14 },
+          { str: "\u0000", x: 92 + gap, y: 100, w: 1.6 },
+          { str: "cioso", x: 93.6 + 2 * gap, y: 100, w: 18 },
+        ],
+      });
+      expect(l.text).toBe("artificioso");
+    },
+  );
+
+  it("ligadura: dos seguidas son dos («fifi»), no una", () => {
+    expect(restoreLigatures("\u0000\u0000x")).toBe("fifix");
+  });
+
+  const delPhrase = (text: string) =>
+    read([
+      item("🏃 Moverse", 78, 100),
+      item("Objetivo de la semana: 20 a 30 minutos de juego.", 324, 100),
+      item(text, 324, 112),
+      item("→ Objetivo: dormir temprano.", 324, 124),
+    ]).draft.equivalences;
+
+  it("equivalencias (b): un «por» después de la raya no es el reemplazo", () => {
+    expect(
+      delPhrase("Cambio del aceite: cambiarlo — por salud y costo, sin prisa."),
+    ).toEqual([]);
+  });
+
+  it("equivalencias (b): sin «por», la etiqueta «del» no inventa ítems de una lista", () => {
+    expect(delPhrase("Cambio del aceite: uno, otro, el último.")).toEqual([]);
+  });
+
+  it("equivalencias (b): un decimal antes del «por» no corta la frase", () => {
+    const [eq] = delPhrase(
+      "Cambio del aceite: usar 0.5 cucharada, cambiar el aceite por aceite de oliva — más suave.",
+    );
+    expect(eq.use.map((u) => u.name.es)).toEqual(["aceite de oliva"]);
+  });
+
+  it("menú: una línea exactamente entre dos comidas va a la de arriba (desempate fijo)", () => {
+    const r = read([
+      item("Menú de ejemplo", 78, 100),
+      item("🌅 Uno", 105, 112),
+      item("contenido uno", 179, 112),
+      item("7:00 – 7:30 am", 105, 124),
+      item("línea en medio", 179, 136),
+      item("🌙 Dos", 105, 148),
+      item("6:00 – 6:30 pm", 105, 160),
+      item("contenido dos", 179, 160),
+    ]);
+    expect(r.draft.menu.map((m) => m.content.es)).toEqual([
+      "contenido uno línea en medio",
+      "contenido dos",
+    ]);
+  });
+});
