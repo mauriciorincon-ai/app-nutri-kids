@@ -39,7 +39,8 @@ reemplazar lo que falta, qué suplemento toca hoy y un checklist para ir marcand
      **"Está bien"** (✓), corregir (✎: editar, quitar o añadir) o **"Mi plan no lo trae"** (–).
   4. Lo que la app no reconoció lo completas a mano en la misma pantalla; un PDF con otra forma
      nunca se rechaza. El **rojo fijo** (lo que se evita siempre) lo añades tú, uno por uno,
-     porque en el PDF viene en texto corrido.
+     porque en el PDF viene en texto corrido. Los consejos que nombran a alguien de la familia
+     («si tiene sed, …») tampoco se leen: si quieres ese cambio, añádelo en **Equivalencias**.
   5. Cuando todas las partes están revisadas, **"Guardar mi plan"** se activa. Si te falta algo,
      el botón dice qué (cuántas partes faltan, o que verde, menú e hidratación son necesarios).
   - **Si lo dejas a medias:** al volver a **Cargar** aparece **"Tienes una revisión a medias"**:
@@ -60,7 +61,8 @@ and pick the PDF your professional gave you. The app reads it **on your phone, w
 the PDF is **not saved and never leaves the phone** — only your reviewed plan is kept. In **"Review
 your plan"** each part shows the PDF page it came from, and you mark it **"Looks right"**, fix it
 (edit, remove or add) or **"My plan doesn't have it"**; whatever the app didn't recognize you fill in
-by hand. **"Save my plan"** turns on when every part is reviewed. An unfinished review can be
+by hand. Tips that name someone in the family ("if they're thirsty, …") are not read either: add that
+swap yourself under **Equivalences**. **"Save my plan"** turns on when every part is reviewed. An unfinished review can be
 resumed from **Load**. Body measurements, names, contact details and lab results in the PDF are
 discarded: they never enter the plan or get saved. You can still load a `.json` file (**"Choose JSON"**), and what you noted in the
 Profile stays.

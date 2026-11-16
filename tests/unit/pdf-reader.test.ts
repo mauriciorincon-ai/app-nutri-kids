@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import {
+  has,
   joinCell,
   parseTimeRange,
   readPlanText,
@@ -12,6 +13,7 @@ import {
 } from "@/lib/diet/pdf-reader";
 import {
   extractPdfPages,
+  restoreLigatures,
   toLines,
   type PdfJsLike,
   type PdfPage,
@@ -48,76 +50,90 @@ describe("cada sección del PDF de prueba sale completa y con su página", () =>
   });
 
   it("vigencia: la fecha de la portada (DD.MM.AAAA) y su página", () => {
-    expect(reading.draft.issuedAt).toBe("2030-01-05");
+    expect(reading.draft.issuedAt).toBe("2031-03-14");
     expect(reading.pages.validity).toBe(1);
   });
 
   it("restricción temporal: 5 alimentos separados por «·», aclaración aparte", () => {
     expect(reading.draft.restricted.map(es)).toEqual([
-      "Lácteos de vaca",
-      "Gluten",
-      "Huevo de gallina",
-      "Maní",
-      "Fresa",
+      "Leche de vaca",
+      "Trigo y cebada",
+      "Huevo entero",
+      "Cacahuate",
+      "Kiwi",
     ]);
     expect(reading.draft.restrictedNotes).toEqual([
-      "Huevo de gallina: incluye mayonesa y repostería.",
+      "Huevo entero: incluye tortas y salsas batidas.",
     ]);
-    expect(reading.pages["restricted.mani"]).toBe(11);
+    expect(reading.pages["restricted.cacahuate"]).toBe(11);
   });
 
-  it("aditivos: 10 códigos, la palabra cortada sin guion se une, «presente en» por código", () => {
+  it("aditivos: 10 de 10 en la rejilla de dos segmentos (código y nombre a otra x); el nombre envuelto se une", () => {
     const adds = reading.draft.additives;
-    expect(adds.map((a) => a.code)).toEqual([
-      "E901",
-      "E902",
-      "E903",
-      "E904",
-      "E905",
-      "E906",
-      "E907",
-      "E908",
-      "E909",
-      "E910",
+    expect(adds.map((a) => [a.code, a.name.es])).toEqual([
+      ["E951", "Tinte Simulado Uno"],
+      ["E952", "Brillo Simulado Doble (BSD)"],
+      ["E953", "Conserva Simulada"],
+      ["E954", "Espesor Simulado"],
+      ["E955", "Realce Simulado"],
+      ["E956", "Suelto Simulado"],
+      ["E957", "Mezcla Simulada"],
+      ["E958", "Ácido Simulado"],
+      ["E959", "Dulzor Simulado"],
+      ["E960", "Firmeza Simulada"],
     ]);
-    expect(adds[2].name.es).toBe("Conservante Ejemplo (CEJ)");
-    // Dos códigos en una fila comparten «presente en»; la columna de riesgo se ignora.
+    // Dos códigos en una fila comparten «presente»; la columna personal se ignora.
     expect(adds[1].foundIn?.es).toBe("Embutidos, salsas");
     expect(adds[2].foundIn?.es).toBe("Embutidos, salsas");
-    expect(adds[0].foundIn?.es).toBe("Gomitas, refrescos de ejemplo");
+    expect(adds[0].foundIn?.es).toBe("Gomitas, refrescos simulados");
     expect(adds[9].foundIn).toBeUndefined();
     expect(JSON.stringify(reading)).not.toContain("texto personal");
-    expect(reading.pages["additives.E903"]).toBe(8);
+    expect(reading.pages["additives.E952"]).toBe(8);
   });
 
-  it("también evitar: solo el nombre antes de «:»", () => {
-    expect(reading.draft.alsoAvoid.map(es)).toEqual([
-      "Edulcorantes artificiales",
-      "Grasas hidrogenadas",
-      "Embutidos procesados",
-      "Bebidas energéticas",
+  it("otros que evitar: 4 de 4, cada nombre es una línea sola que termina en «:» (uno de ≥ 40 caracteres)", () => {
+    const names = reading.draft.alsoAvoid.map(es);
+    expect(names).toEqual([
+      "Endulzantes de laboratorio",
+      "Grasas endurecidas de fábrica para untar (GEFU)",
+      "Colorantes artificiales de bolsa",
+      "Pastas con flúor añadido",
     ]);
+    expect(names[1].length).toBeGreaterThanOrEqual(40);
+    // Ni el párrafo de cada bloque ni el recuadro de aviso del pie.
+    expect(JSON.stringify(reading.draft.alsoAvoid)).not.toMatch(
+      /Párrafo|Recuadro/,
+    );
   });
 
-  it("verde: 8 grupos con porción; la fila partida entre páginas se une", () => {
+  it("verde: 8 grupos con porción; la fila partida entre páginas se une SIN el pie ni el encabezado", () => {
     const g = reading.draft.green;
-    expect(g).toHaveLength(8);
-    const cereal = g.find((x) => x.id === "cereales-sin-gluten")!;
-    expect(cereal.items.map(es)).toEqual([
+    expect(g.map(es)).toEqual([
+      "Carnes y huevo",
+      "Hojas verdes",
+      "Frutas de temporada",
+      "Granos sin trigo",
+      "Grasas amables",
+      "Legumbres de olla",
+      "Bebidas de planta",
+      "Raíces",
+    ]);
+    const grain = g.find((x) => x.id === "granos-sin-trigo")!;
+    expect(grain.items.map(es)).toEqual([
       "Arroz",
       "Quinoa",
       "Maíz",
       "Avena certificada",
       "Arepa de maíz",
     ]);
-    expect(cereal.portion.es).toBe("arroz: 1/2 taza; quinoa: 1/3 taza");
-    expect(g[0].portion.es).toBe("80-100g por comida, 2 veces al día");
-    expect(reading.pages["green.cereales-sin-gluten"]).toBe(11);
-    expect(reading.pages["green.tuberculos"]).toBe(12);
+    expect(grain.portion.es).toBe("arroz: 1/2 taza; quinoa: 1/3 taza");
+    expect(g[0].portion.es).toBe("70-90g por comida, 2 veces al día");
+    expect(reading.pages["green.granos-sin-trigo"]).toBe(11);
+    expect(reading.pages["green.raices"]).toBe(12);
     // Los paréntesis con hábitos del niño y las marcas ✅ se descartan.
-    expect(JSON.stringify(g)).not.toMatch(/le encanta|✅/);
-    // Las columnas «Nutrientes» y «Tip» no se leen.
-    expect(JSON.stringify(g)).not.toMatch(/texto libre|hierro y zinc/);
+    expect(JSON.stringify(g)).not.toMatch(/lo pide|✅/);
+    // Las columnas de aporte e idea no se leen.
+    expect(JSON.stringify(g)).not.toMatch(/texto libre|hierro de/);
   });
 
   it("amarillo: solo lo que trae un límite entre paréntesis", () => {
@@ -128,99 +144,168 @@ describe("cada sección del PDF de prueba sale completa y con su página", () =>
     ]);
   });
 
-  it("equivalencias: notas del rojo, etiquetas de reemplazo y el tip de hidratación", () => {
+  it("equivalencias: notas del rojo y etiquetas de reemplazo, la del adjetivo incluida (envuelve 5 líneas)", () => {
     const byKey = Object.fromEntries(
       reading.draft.equivalences.map((e) => [e.whenMissing, e]),
     );
-    // «Nota lácteos» apunta al id del alimento restringido.
-    expect(byKey["lacteos-de-vaca"].use.map((u) => u.name.es)).toEqual([
-      "bebida de avena",
+    expect(Object.keys(byKey).sort()).toEqual([
+      "galleta",
+      "leche-de-vaca",
+      "meriendas",
+      "pan",
+      "tazas",
+      "trigo-y-cebada",
+    ]);
+    // «Nota leche» apunta al id del alimento restringido.
+    expect(byKey["leche-de-vaca"].use.map((u) => u.name.es)).toEqual([
       "bebida de arroz",
+      "bebida de avena",
       "bebida de coco",
       "bebida de almendra",
     ]);
-    expect(byKey.gluten.use).toHaveLength(5);
-    expect(byKey.pan.use.map((u) => u.name.es)).toEqual([
-      "pan de arroz",
-      "tortilla de maíz",
-      "arepa",
+    expect(byKey["trigo-y-cebada"].use).toHaveLength(5);
+    expect(byKey.pan.use.map((u) => u.name.es)).toEqual(["casabe tostado"]);
+    // «<X> de reemplazo <adjetivo>:»: la lista termina a mitad de línea, la frase siguiente no entra.
+    expect(byKey.meriendas.title.es).toBe("Meriendas de reemplazo crujientes");
+    expect(byKey.meriendas.use.map((u) => u.name.es)).toEqual([
+      "maíz o arroz inflado",
+      "chips de plátano verde",
+      "semillas de girasol tostadas",
+      "bastones de jícama en tiras",
+      "manzana deshidratada",
     ]);
     // La textura solo cuando el texto la dice.
-    expect(byKey.snacks.use.every((u) => u.texture === "crunchy")).toBe(true);
+    expect(byKey.meriendas.use.every((u) => u.texture === "crunchy")).toBe(
+      true,
+    );
     expect(byKey.pan.use.every((u) => u.texture === undefined)).toBe(true);
-    expect(byKey.leches.use).toHaveLength(2);
-    expect(byKey.jugos.use.map((u) => u.name.es)).toEqual([
-      "agua con limón",
-      "agua de coco",
-    ]);
-    expect(reading.pages["equivalences.lacteos-de-vaca"]).toBe(11);
+    expect(byKey.tazas.use).toHaveLength(2);
+    expect(reading.pages["equivalences.leche-de-vaca"]).toBe(11);
   });
 
-  it("suplementos: días Lun–Dom, dosis envuelta y la primera oración de instrucciones", () => {
+  it("el consejo «<persona>: si tiene …, reemplazar por …» no se lee (nombra a la familia), aunque el sujeto lleve «de»", () => {
+    const all = JSON.stringify(reading);
+    expect(all).not.toMatch(/Abuelo|hielo|Tía|Ana|hambre|yogur/);
+  });
+
+  it("en hidratación, un sujeto largo o con punto tampoco entra al hábito", () => {
+    const r = readPlanText([
+      fakePage(1, [
+        [78, "💧 Hidratación simulada"],
+        [
+          78,
+          "Meta: 1.0 a 1.5 litros. Hábito: 1 vaso al despertar. Sra. Persona Simulada De Nombre Muy Largo Extra: si tiene sed, reemplazar por agua.",
+        ],
+      ]),
+    ]);
+    expect(r.draft.hydration?.habit.es).toBe("1 vaso al despertar.");
+    expect(JSON.stringify(r)).not.toMatch(/Persona|sed/);
+  });
+
+  it("suplementos: la presentación del frasco sale del nombre (la marca se queda), la palabra cortada se une", () => {
     const s = reading.draft.supplements;
     expect(s.map((x) => [x.name.es, x.days, x.dose.es, x.when.es])).toEqual([
       [
-        "Vitamina D Gotas Ejemplo",
+        "Gotas de Sol Simuladas",
         ["mon", "wed", "fri"],
         "2 gotas por dosis",
-        "Tomar con el desayuno.",
+        "Darlas con el arranque.",
       ],
       [
-        "Omega Ejemplo Masticable",
+        "Gomitas Simuladas Marca Lumen",
         ["tue", "thu", "sat"],
         "1 unidad (masticable)",
-        "Tomar con el almuerzo.",
+        "Darla con el mediodía.",
       ],
       [
-        "Probiótico Ejemplo",
+        "Polvo Flora Simulada",
         ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
         "1 sobre",
-        "Puede darse disuelto en agua fría.",
+        "Puede ir disuelto en agua fría.",
       ],
     ]);
+    // Ni el título del calendario de verificación entra al último nombre.
+    expect(JSON.stringify(s)).not.toMatch(/fl oz|120 ml|vistazo/);
     expect(reading.draft.supplementNotes?.es).toMatch(
-      /^Constancia: .*Olvidos: /,
+      /^Rutina: .*Si se olvida: /,
     );
     // El aviso y la columna del profesional no entran a las notas.
-    expect(reading.draft.supplementNotes?.es).not.toMatch(/Aviso|Inventada/);
+    expect(reading.draft.supplementNotes?.es).not.toMatch(/Aviso|Ficticia/);
     expect(reading.pages.supplements).toBe(15);
   });
 
-  it("menú: 5 franjas en 24 h; «12:30 – 1:30 pm» y una hora sola (+30 min); sin «→»", () => {
+  it("menú: 5 franjas en 24 h; «12:15 – 1:15 pm» y una hora sola (+30 min); sin «→»", () => {
     expect(reading.draft.menu.map((m) => [m.name.es, m.start, m.end])).toEqual([
-      ["Desayuno", "07:00", "07:30"],
-      ["Media mañana", "10:00", "10:30"],
-      ["Almuerzo", "12:30", "13:30"],
-      ["Merienda / Onces", "16:00", "16:30"],
-      ["Cena", "18:30", "19:00"],
+      ["Arranque", "06:45", "07:15"],
+      ["Recreo / Media", "09:50", "10:20"],
+      ["Mediodía", "12:15", "13:15"],
+      ["Tarde", "15:40", "16:10"],
+      ["Noche", "18:20", "18:50"],
     ]);
-    expect(reading.draft.menu[0].content.es).toBe(
-      "Arepa de maíz con aguacate · Opción A: avena con pera",
-    );
+    expect(reading.draft.menu.map((m) => m.content.es)).toEqual([
+      "Arepa de maíz con aguacate y huevo de codorniz · Opción 2: avena con pera en trozos · Opción 3: casabe con queso",
+      "Fruta con semillas de girasol · Opción 2: maíz inflado con banano · Opción 3: papaya picada con coco",
+      "Arroz, trucha y verduras al vapor · Opción 2: lentejas con papa",
+      "Maíz inflado casero con pera · Opción 2: yuca horneada",
+      "Crema de ahuyama con pollo · Opción 2: sopa de quinoa",
+    ]);
     expect(JSON.stringify(reading.draft.menu)).not.toContain("→");
-    expect(reading.pages["menu.almuerzo"]).toBe(13);
+    expect(reading.pages["menu.mediodia"]).toBe(13);
   });
 
   it("hidratación: meta con punto decimal, hábito y vasos", () => {
     expect(reading.draft.hydration).toEqual({
-      targetLitersMin: 1.1,
-      targetLitersMax: 1.3,
+      targetLitersMin: 0.9,
+      targetLitersMax: 1.4,
       glassesPerDay: 3,
       habit: {
-        es: "1 vaso al despertar, 1 con el almuerzo, 1 con la cena.",
-        en: "1 vaso al despertar, 1 con el almuerzo, 1 con la cena.",
+        es: "2 vasos al levantarse, 1 en la merienda.",
+        en: "2 vasos al levantarse, 1 en la merienda.",
       },
     });
   });
 
-  it("actividad y sueño: solo de la columna de recomendaciones", () => {
+  it("actividad y sueño: solo de la columna de la derecha", () => {
     expect(reading.draft.goals.activity?.es).toBe(
-      "45 a 60 minutos de juego activo al aire libre.",
+      "30 a 50 minutos de bici o patines cada tarde.",
     );
     expect(reading.draft.goals.sleep?.es).toBe(
-      "Acostarse entre 7:30 y 8:00pm y dormir 10-11 horas.",
+      "Dormir de 8:15 pm a 6:45 am con la luz apagada.",
     );
-    expect(JSON.stringify(reading.draft.goals)).not.toContain("análisis");
+    expect(JSON.stringify(reading.draft.goals)).not.toContain("lectura");
+  });
+});
+
+describe("trampas de la extracción (forma-del-pdf §4)", () => {
+  it("encabezado y pie tipo B fuera ANTES de leer tablas: la identidad del profesional no entra a ningún grupo", () => {
+    // El pie está en la banda de abajo (y > alto − 60) de cada página tipo B…
+    const footer = pages
+      .find((p) => p.n === 11)!
+      .items.find((i) => i.str.includes("Rosa"))!;
+    expect(footer.y).toBeGreaterThan(842.88 - 60);
+    expect(footer.y).toBeLessThan(842.88 - 30);
+    // …y no sobrevive en lo leído.
+    expect(JSON.stringify(reading)).not.toMatch(
+      /Rosa|Ficticia|Dietética|Cuaderno/,
+    );
+  });
+
+  it("un U+0000 del PDF es la ligadura fi/fl perdida: se restaura, jamás blanco ni borrado", () => {
+    // En el PDF de prueba llega como en el real: un ítem de texto SOLO, angosto y pegado.
+    const nul = pages.flatMap((p) => p.items).filter((i) => i.str === "\u0000");
+    expect(nul).toHaveLength(3);
+    expect(nul.every((i) => i.w < 6)).toBe(true);
+    expect(JSON.stringify(reading)).not.toContain("\\u0000");
+    // A mitad de palabra («arti|fi|ciales»), al inicio ante «u» («|fl|úor») y al inicio («|fi|jo»).
+    expect(reading.draft.alsoAvoid.map(es)).toEqual(
+      expect.arrayContaining([
+        "Colorantes artificiales de bolsa",
+        "Pastas con flúor añadido",
+      ]),
+    );
+    expect(reading.draft.supplementNotes?.es).toContain(
+      "en un lugar fijo, fresco y seco",
+    );
   });
 });
 
@@ -239,14 +324,14 @@ describe("lo que jamás se lee (regla dura 2, decisión 2 a)", () => {
       "IMC",
       "Percentil",
       "6 años",
-      "Lucas",
-      "Ejemplar",
-      "EJ-0000",
+      "Tomás",
+      "Quimera",
+      "SIM-1234",
       "@",
       "+00",
-      "Inventada",
-      "Marcador",
-      "Motivo de Consulta",
+      "Ficticia",
+      "Valor Simulado",
+      "Prosa simulada",
     ])
       expect(all, bait).not.toContain(bait);
   });
@@ -278,7 +363,7 @@ describe("lo que jamás se lee (regla dura 2, decisión 2 a)", () => {
 });
 
 describe("el plan ensamblado", () => {
-  it("valida contra el schema v2, con 90 días de vigencia y la página de cada dato", () => {
+  it("valida contra el schema v2, con el plazo leído y la página de cada dato", () => {
     const res = assembleDietPlan(
       reading.draft,
       reading.pages,
@@ -286,13 +371,14 @@ describe("el plan ensamblado", () => {
     );
     expect(res.ok).toBe(true);
     if (!res.ok) return;
-    expect(res.diet.restrictions.validFrom).toBe("2030-01-05");
-    expect(res.diet.restrictions.validUntil).toBe("2030-04-05");
-    expect(res.diet.restrictions.note.es).toContain("incluye mayonesa");
+    expect(res.diet.restrictions.validFrom).toBe("2031-03-14");
+    // «por 4 meses» → 120 días.
+    expect(res.diet.restrictions.validUntil).toBe("2031-07-12");
+    expect(res.diet.restrictions.note.es).toContain("incluye tortas");
     expect(res.diet.meta.source.es).toBe(
       "Leído del PDF el 2030-01-06, revisado por ti.",
     );
-    expect(res.diet.pages?.["menu.cena"]).toBe(13);
+    expect(res.diet.pages?.["menu.noche"]).toBe(13);
     expect(res.diet.trafficLight.red.additives[9].foundIn.es).toBe(
       "Tu plan no lo dice.",
     );
@@ -510,8 +596,8 @@ describe("filas que el lector vio y no pudo leer se avisan (no se pierden en sil
 });
 
 describe("vigencia, fecha y nombres", () => {
-  it("el plazo se lee del encabezado de la restricción (3 meses → 90 días)", () => {
-    expect(reading.draft.restrictionDays).toBe(90);
+  it("el plazo se lee del encabezado de la restricción (4 meses → 120 días)", () => {
+    expect(reading.draft.restrictionDays).toBe(120);
   });
 
   it("«por 60 días» → 60 y el plan lo usa; sin plazo → 90", () => {
@@ -520,19 +606,18 @@ describe("vigencia, fecha y nombres", () => {
         ...p,
         items: p.items.map((i) => ({ ...i, str: i.str.replace(re, to) })),
       }));
-    const d60 = readPlanText(edit(/por 3 meses/, "por 60 días"));
+    const d60 = readPlanText(edit(/por 4 meses/, "por 60 días"));
     expect(d60.draft.restrictionDays).toBe(60);
     const plan = assembleDietPlan(d60.draft, d60.pages, new Date(2026, 10, 15));
     expect(plan.ok && plan.diet.restrictions.validUntil).toBe(
       addDaysIso(d60.draft.issuedAt!, 60),
     );
-    const none = readPlanText(edit(/ por 3 meses/, ""));
+    const none = readPlanText(edit(/ por 4 meses/, ""));
     expect(none.draft.restrictionDays).toBeUndefined();
   });
 
   it("la fecha NO se toma de una página descartada (resultados)", () => {
-    const blank = (str: string) =>
-      str.replace(/Fecha\s*:\s*\d{2}[./-]\d{2}[./-]\d{4}/i, "Fecha:");
+    const blank = (str: string) => str.replace(/\d{2}[./-]\d{2}[./-]\d{4}/, "");
     const injected = pages.map((p) =>
       p.items.some((i) => /Secci[oó]n\s*0[12]/i.test(i.str))
         ? {
@@ -548,7 +633,9 @@ describe("vigencia, fecha y nombres", () => {
           },
     );
     // Hay una página de resultados con fecha y la portada no la trae: no se usa.
-    expect(injected.some((p) => p.items.some((i) => i.str.includes("12.10.2026")))).toBe(true);
+    expect(
+      injected.some((p) => p.items.some((i) => i.str.includes("12.10.2026"))),
+    ).toBe(true);
     expect(readPlanText(injected).draft.issuedAt).toBeUndefined();
   });
 
@@ -570,7 +657,7 @@ describe("el nombre del niño se borra aunque lleve tilde o mayúsculas", () => 
       ...p,
       items: p.items.map((i) => ({
         ...i,
-        str: i.str.replace(/Lucas(\s+Ejemplar)?/g, name),
+        str: i.str.replace(/Tomás(\s+Quimera)?/g, name),
       })),
     }));
     expect(JSON.stringify(readPlanText(renamed).draft)).not.toMatch(leak);
@@ -581,5 +668,322 @@ describe("equivalencias: una por alimento que falta", () => {
   it("el PDF de prueba no repite ninguna", () => {
     const keys = reading.draft.equivalences.map((e) => e.whenMissing);
     expect(new Set(keys).size).toBe(keys.length);
+  });
+});
+
+describe("lo que pagó la auditoría del PR del lector", () => {
+  const edit = (
+    f: (
+      i: PdfPage["items"][number],
+      p: PdfPage,
+    ) => PdfPage["items"][number] | null,
+  ) =>
+    pages.map((p) => ({
+      ...p,
+      items: p.items
+        .map((i) => f(i, p))
+        .filter((i): i is PdfPage["items"][number] => !!i),
+    }));
+
+  it("fecha: solo de la portada; sin fecha en la portada, una fecha de otra página no gana", () => {
+    const noCover = edit((i) =>
+      /\d{2}\.\d{2}\.\d{4}/.test(i.str) ? null : i,
+    ).map((p) =>
+      p.n === 12
+        ? {
+            ...p,
+            items: [
+              ...p.items,
+              { str: "Revisado el 02.02.2032", x: 78, y: 400, w: 90 },
+            ],
+          }
+        : p,
+    );
+    expect(readPlanText(noCover).draft.issuedAt).toBeUndefined();
+  });
+
+  it("fecha: con dos fechas en la portada, gana la última (la del plan, no una anterior)", () => {
+    const two = pages.map((p) =>
+      p.n === 1
+        ? {
+            ...p,
+            items: [
+              { str: "Nacimiento 09.09.2024", x: 78, y: 200, w: 90 },
+              ...p.items,
+            ],
+          }
+        : p,
+    );
+    expect(readPlanText(two).draft.issuedAt).toBe("2031-03-14");
+  });
+
+  it("menú: una mención suelta de «menú» antes de filas con ícono no roba el inicio", () => {
+    const early = pages.map((p) =>
+      p.n === 6
+        ? {
+            ...p,
+            items: [
+              { str: "Ideas para el menú", x: 78, y: 65, w: 70 },
+              ...p.items,
+            ],
+          }
+        : p,
+    );
+    const r = readPlanText(early);
+    expect(r.draft.menu.map((m) => m.name.es)).toEqual([
+      "Arranque",
+      "Recreo / Media",
+      "Mediodía",
+      "Tarde",
+      "Noche",
+    ]);
+    expect(r.pages.menu).toBe(13);
+  });
+
+  it("pilares: si la meta de minutos se escribe distinto, el sueño y los reemplazos se leen igual", () => {
+    const r = readPlanText(
+      edit((i) => ({
+        ...i,
+        str: i.str.replace("30 a 50 minutos de", "media hora de"),
+      })),
+    );
+    expect(r.draft.goals.activity).toBeUndefined();
+    expect(r.draft.goals.sleep?.es).toBe(
+      "Dormir de 8:15 pm a 6:45 am con la luz apagada.",
+    );
+    expect(r.draft.equivalences.map((e) => e.whenMissing)).toEqual(
+      expect.arrayContaining(["pan", "meriendas", "tazas"]),
+    );
+  });
+
+  it("sin rejilla de aditivos, «otros que evitar» no se busca en otra parte del PDF", () => {
+    const r = readPlanText(edit((i) => (/^E \d{3}$/.test(i.str) ? null : i)));
+    expect(r.draft.additives).toEqual([]);
+    expect(r.draft.alsoAvoid).toEqual([]);
+  });
+
+  it("toLines: un U+0000 suelto y pegado se restaura como ligadura; los demás controles se limpian", () => {
+    const lines = toLines({
+      n: 1,
+      height: 800,
+      items: [
+        { str: "arti", x: 78, y: 100, w: 14 },
+        { str: "\u0000", x: 92, y: 100, w: 4.5 },
+        { str: "cial", x: 96.5, y: 100, w: 14 },
+        { str: "con ", x: 78, y: 120, w: 16 },
+        { str: "\u0000", x: 94, y: 120, w: 4.5 },
+        { str: "úor", x: 98.5, y: 120, w: 12 },
+        { str: "se\u0007co", x: 78, y: 140, w: 20 },
+      ],
+    });
+    expect(lines.map((l) => l.text)).toEqual([
+      "artificial",
+      "con flúor",
+      "seco",
+    ]);
+  });
+
+  it("ligadura: «fl» ante «u», «fi» en todo lo demás (pdf.js no da el nombre del glifo)", () => {
+    expect(restoreLigatures("\u0000uido")).toBe("fluido");
+    expect(restoreLigatures("\u0000Úor")).toBe("flÚor");
+    expect(restoreLigatures("de\u0000nir")).toBe("definir");
+    expect(restoreLigatures("\u0000esta")).toBe("fiesta");
+    expect(restoreLigatures("al \u0000n")).toBe("al fin");
+    expect(restoreLigatures("sin nada")).toBe("sin nada");
+  });
+
+  it("toLines: una tilde descompuesta (NFD) se recompone y el ancla la reconoce", () => {
+    const [l] = toLines({
+      n: 1,
+      height: 800,
+      items: [{ str: "Porcio\u0301n", x: 78, y: 100, w: 30 }],
+    });
+    expect(l.text).toBe("Porción");
+    expect(has(l.text, "porcion")).toBe(true);
+  });
+});
+
+describe("segunda vuelta del PR #10: celdas centradas en vertical (forma-del-pdf §2.3, §2.5, §2.7, §2.9, §4)", () => {
+  const page = (n: number) => pages.find((p) => p.n === n)!;
+  const lineOf = (n: number, re: RegExp) =>
+    toLines(page(n)).find((l) => re.test(l.text))!;
+
+  it("aditivos: el nombre de dos líneas va CENTRADO (una arriba, otra abajo del código) y es de su fila", () => {
+    const code = lineOf(8, /E 951/);
+    const above = lineOf(8, /^Brillo Simulado$/);
+    const below = lineOf(8, /^Doble \(BSD\)$/);
+    expect(above.y).toBeLessThan(code.y);
+    expect(below.y).toBeGreaterThan(code.y);
+    // La 1.ª línea, por orden de lectura, sería de la celda de arriba: se asigna por y.
+    expect(
+      reading.draft.additives.find((a) => a.code === "E952")?.name.es,
+    ).toBe("Brillo Simulado Doble (BSD)");
+    expect(reading.draft.additives).toHaveLength(10);
+  });
+
+  it("menú: el título va seguido de contenido, no del ícono, y aun así se encuentra", () => {
+    const lines = toLines(page(13));
+    const title = lines.findIndex((l) => has(l.text, "menu"));
+    expect(lines[title + 1].text).not.toMatch(/^\p{Extended_Pictographic}/u);
+    expect(reading.draft.menu).toHaveLength(5);
+  });
+
+  it("menú: el contenido que empieza ANTES del ícono es de su comida, no de la anterior", () => {
+    const first = lineOf(13, /^Arepa de maíz/);
+    const icon = lineOf(13, /Arranque/);
+    expect(first.y).toBeLessThan(icon.y);
+    const recreo = reading.draft.menu.find((m) => m.id === "recreo-media")!;
+    expect(recreo.content.es).toMatch(/^Fruta con semillas/);
+    expect(reading.draft.menu[0].content.es).not.toMatch(
+      /Fruta|semillas de girasol/,
+    );
+  });
+
+  it("actividad: una línea con «objetivo» sin minutos antes no gana; la meta es la de los minutos", () => {
+    expect(lineOf(6, /Objetivo simulado/).y).toBeLessThan(
+      lineOf(6, /Objetivo de la semana/).y,
+    );
+    expect(reading.draft.goals.activity?.es).toBe(
+      "30 a 50 minutos de bici o patines cada tarde.",
+    );
+  });
+
+  it("equivalencias (a): «Nota <palabra>: la <X> incluye …» reemplaza <X>, no <palabra>", () => {
+    const keys = reading.draft.equivalences.map((e) => e.whenMissing);
+    expect(keys).toContain("galleta");
+    expect(keys).not.toContain("recreo");
+    const r = readPlanText([
+      fakePage(1, [
+        [78, "⛔ Ejemplo por 2 meses:"],
+        [78, "alimento A · alimento B"],
+        [
+          78,
+          "Nota tarde: el yogur incluye leche. Mejor reemplazar por fruta, compota o gelatina.",
+        ],
+      ]),
+    ]);
+    expect(
+      r.draft.equivalences.map((e) => [e.whenMissing, e.use.length]),
+    ).toEqual([["yogur", 3]]);
+  });
+
+  it("equivalencias (b): «<sustantivo> del <x>:» trae una frase; el reemplazo es <y> y lo de la raya no es ítem", () => {
+    const pan = reading.draft.equivalences.find(
+      (e) => e.whenMissing === "pan",
+    )!;
+    expect(pan.use.map((u) => u.name.es)).toEqual(["casabe tostado"]);
+    expect(JSON.stringify(pan)).not.toMatch(/rinde|cruje/);
+  });
+
+  it("equivalencias (c): « o » dentro de un ítem no separa; separan las comas y la «o»/«y» del último", () => {
+    const m = reading.draft.equivalences.find(
+      (e) => e.whenMissing === "meriendas",
+    )!;
+    expect(m.use[0].name.es).toBe("maíz o arroz inflado");
+    expect(m.use.at(-1)?.name.es).toBe("manzana deshidratada");
+  });
+});
+
+describe("lo que pagó la auditoría de la segunda vuelta", () => {
+  type Item = PdfPage["items"][number];
+  const item = (str: string, x: number, y: number): Item => ({
+    str,
+    x,
+    y,
+    w: str.length * 4,
+  });
+  const read = (items: Item[]) => readPlanText([{ n: 1, height: 842, items }]);
+  const grid = (jitter: number[], rows = jitter.length) => [
+    item("Aditivos a evitar", 21, 100),
+    ...Array.from({ length: rows }, (_, r) => {
+      const y = 140 + r * 38;
+      return [
+        item(`E ${901 + r * 2}`, 30 + jitter[r], y),
+        item(`Nombre ${r}A`, 68, y),
+        item(`E ${902 + r * 2}`, 311 + jitter[r], y),
+        item(`Nombre ${r}B`, 349, y - 4.5),
+        item("Largo", 349, y + 4.5),
+      ];
+    }).flat(),
+    item("Párrafo de ancho completo.", 21, 140 + rows * 38),
+  ];
+
+  it("aditivos: con la x de los códigos movida unas décimas, cada nombre sigue siendo de su fila", () => {
+    const r = read(grid([0, 0.3, -0.2, 0.3, 0.1]));
+    expect(r.draft.additives).toHaveLength(10);
+    expect(r.draft.additives.map((a) => a.name.es)).toContain(
+      "Nombre 2B Largo",
+    );
+    expect(r.skipped).toEqual({});
+  });
+
+  it("aditivos: una rejilla de una sola fila usa la media fila de respaldo", () => {
+    const r = read(grid([0]));
+    expect(r.draft.additives.map((a) => [a.code, a.name.es])).toEqual([
+      ["E901", "Nombre 0A"],
+      ["E902", "Nombre 0B Largo"],
+    ]);
+  });
+
+  it.each([0, 1.6, 3])(
+    "toLines: la ligadura no parte la palabra aunque pdf.js deje %s pt de hueco",
+    (gap) => {
+      const [l] = toLines({
+        n: 1,
+        height: 800,
+        items: [
+          { str: "arti", x: 78, y: 100, w: 14 },
+          { str: "\u0000", x: 92 + gap, y: 100, w: 1.6 },
+          { str: "cioso", x: 93.6 + 2 * gap, y: 100, w: 18 },
+        ],
+      });
+      expect(l.text).toBe("artificioso");
+    },
+  );
+
+  it("ligadura: dos seguidas son dos («fifi»), no una", () => {
+    expect(restoreLigatures("\u0000\u0000x")).toBe("fifix");
+  });
+
+  const delPhrase = (text: string) =>
+    read([
+      item("🏃 Moverse", 78, 100),
+      item("Objetivo de la semana: 20 a 30 minutos de juego.", 324, 100),
+      item(text, 324, 112),
+      item("→ Objetivo: dormir temprano.", 324, 124),
+    ]).draft.equivalences;
+
+  it("equivalencias (b): un «por» después de la raya no es el reemplazo", () => {
+    expect(
+      delPhrase("Cambio del aceite: cambiarlo — por salud y costo, sin prisa."),
+    ).toEqual([]);
+  });
+
+  it("equivalencias (b): sin «por», la etiqueta «del» no inventa ítems de una lista", () => {
+    expect(delPhrase("Cambio del aceite: uno, otro, el último.")).toEqual([]);
+  });
+
+  it("equivalencias (b): un decimal antes del «por» no corta la frase", () => {
+    const [eq] = delPhrase(
+      "Cambio del aceite: usar 0.5 cucharada, cambiar el aceite por aceite de oliva — más suave.",
+    );
+    expect(eq.use.map((u) => u.name.es)).toEqual(["aceite de oliva"]);
+  });
+
+  it("menú: una línea exactamente entre dos comidas va a la de arriba (desempate fijo)", () => {
+    const r = read([
+      item("Menú de ejemplo", 78, 100),
+      item("🌅 Uno", 105, 112),
+      item("contenido uno", 179, 112),
+      item("7:00 – 7:30 am", 105, 124),
+      item("línea en medio", 179, 136),
+      item("🌙 Dos", 105, 148),
+      item("6:00 – 6:30 pm", 105, 160),
+      item("contenido dos", 179, 160),
+    ]);
+    expect(r.draft.menu.map((m) => m.content.es)).toEqual([
+      "contenido uno línea en medio",
+      "contenido dos",
+    ]);
   });
 });

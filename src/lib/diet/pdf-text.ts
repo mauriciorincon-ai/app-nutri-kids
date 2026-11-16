@@ -100,9 +100,33 @@ const COLUMN_GAP = 8;
 /** Ítems con la línea base a menos de esto (pt) están en la misma línea. */
 const SAME_LINE = 2;
 
-/** Agrupa los ítems de una página en líneas y segmentos (puro). */
+/** Caracteres de control que algunas plantillas dejan en el texto. U+0000 NO: es una ligadura (abajo). */
+const CONTROL = /[\u0001-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
+
+/**
+ * U+0000 es la ligadura «fi» o «fl» que la fuente no supo nombrar: pdf.js la entrega como un
+ * ítem SOLO, angosto y pegado a sus vecinos (al inicio o a mitad de palabra). pdf.js no da el
+ * nombre del glifo, así que se restaura por la letra que sigue (ADR-010): ante «u» es «fl»
+ * («flúor»), en todo lo demás «fi» (≈ 4 de cada 5 en la plantilla). Jamás blanco ni borrado.
+ */
+export function restoreLigatures(text: string): string {
+  return text.replace(/\u0000/g, (_, at: number) =>
+    /^[uúüUÚÜ]/.test(text.slice(at + 1)) ? "fl" : "fi",
+  );
+}
+
+/** Agrupa los ítems de una página en líneas y segmentos (puro). Limpia los caracteres de control ANTES de unir. */
 export function toLines(page: PdfPage): Line[] {
-  const sorted = [...page.items].sort((a, b) => a.y - b.y || a.x - b.x);
+  // NFC (una tilde descompuesta se recompone) y sin controles; un ítem que solo era otro
+  // control queda como blanco, para que no pegue las palabras de los lados. La ligadura
+  // (U+0000) sigue como texto pegado y se restaura al cerrar cada segmento.
+  const sorted = page.items
+    .map((it) => {
+      const str = it.str.normalize("NFC").replace(CONTROL, "");
+      return { ...it, str: str === "" && it.str !== "" ? " " : str };
+    })
+    .filter((it) => it.str !== "")
+    .sort((a, b) => a.y - b.y || a.x - b.x);
   const rows: PdfItem[][] = [];
   for (const it of sorted) {
     const row = rows.at(-1);
@@ -124,7 +148,11 @@ export function toLines(page: PdfPage): Line[] {
       const cur = segs.at(-1);
       const gap = cur && !Number.isNaN(cur.end) ? it.x - cur.end : Infinity;
       if (cur && cur.text !== "" && gap < COLUMN_GAP) {
-        cur.text += (pendingSpace || gap > 1.5 ? " " : "") + it.str;
+        // La ligadura (U+0000) va pegada a sus vecinos aunque pdf.js redondee su ancho:
+        // no abre espacio salvo que venga un blanco explícito.
+        const glued =
+          it.str.startsWith("\u0000") || cur.text.endsWith("\u0000");
+        cur.text += (pendingSpace || (gap > 1.5 && !glued) ? " " : "") + it.str;
         cur.end = it.x + it.w;
       } else {
         if (cur && cur.text === "") segs.pop();
@@ -134,7 +162,10 @@ export function toLines(page: PdfPage): Line[] {
     }
     const clean = segs
       .filter((s) => s.text.trim() !== "")
-      .map((s) => ({ ...s, text: s.text.replace(/\s+/g, " ").trim() }));
+      .map((s) => ({
+        ...s,
+        text: restoreLigatures(s.text).replace(/\s+/g, " ").trim(),
+      }));
     if (clean.length === 0) continue;
     lines.push({
       page: page.n,
