@@ -81,7 +81,10 @@ async function createFamilyThroughUi(user: ReturnType<typeof userEvent.setup>) {
   const create = await screen.findByTestId("family-create");
   await waitFor(() => expect(create).toBeEnabled());
   await user.click(create);
-  await user.type(screen.getByLabelText(/Nombre de este teléfono/), "Mamá");
+  await user.type(
+    await screen.findByLabelText(/Nombre de este teléfono/),
+    "Mamá",
+  );
   await user.click(
     screen.getByRole("checkbox", { name: /Entiendo qué se comparte/ }),
   );
@@ -92,21 +95,29 @@ async function createFamilyThroughUi(user: ReturnType<typeof userEvent.setup>) {
 describe("Compartir con la familia (Ajustes)", () => {
   it("sin servicio: lo dice, no ofrece crear y explica que la app sigue completa", async () => {
     net.store = null;
+    const user = userEvent.setup();
     renderSection();
+    // Mientras nadie elige crear o entrar, no se pregunta nada a la red.
+    expect(screen.queryByTestId("family-unavailable")).toBeNull();
+    await user.click(screen.getByTestId("family-create"));
     expect(await screen.findByTestId("family-unavailable")).toHaveTextContent(
       "no responde",
     );
-    expect(screen.getByTestId("family-create")).toBeDisabled();
-    expect(screen.getByTestId("family-join")).toBeDisabled();
+    expect(screen.queryByTestId("family-create-form")).toBeNull();
+    await user.click(screen.getByTestId("family-join"));
+    expect(await screen.findByTestId("family-unavailable")).toBeInTheDocument();
+    expect(screen.queryByTestId("family-join-form")).toBeNull();
   });
 
   it("sin red: lo dice y no ofrece crear", async () => {
     net.offline = true;
+    const user = userEvent.setup();
     renderSection();
+    await user.click(screen.getByTestId("family-create"));
     expect(await screen.findByTestId("family-offline")).toHaveTextContent(
       "Sin conexión",
     );
-    expect(screen.getByTestId("family-create")).toBeDisabled();
+    expect(screen.queryByTestId("family-create-form")).toBeNull();
   });
 
   it("dice qué se comparte, qué se queda y que va cifrado, antes de pedir nada", async () => {
@@ -125,9 +136,14 @@ describe("Compartir con la familia (Ajustes)", () => {
       expect(screen.getByTestId("family-create")).toBeEnabled(),
     );
     await user.click(screen.getByTestId("family-create"));
-    const submit = screen.getByRole("button", { name: "Crear la familia" });
+    const submit = await screen.findByRole("button", {
+      name: "Crear la familia",
+    });
     expect(submit).toBeDisabled(); // sin nombre ni consentimiento
-    await user.type(screen.getByLabelText(/Nombre de este teléfono/), "Mamá");
+    await user.type(
+      await screen.findByLabelText(/Nombre de este teléfono/),
+      "Mamá",
+    );
     expect(submit).toBeDisabled(); // falta el consentimiento
     await user.click(
       screen.getByRole("checkbox", { name: /Entiendo qué se comparte/ }),
@@ -178,9 +194,12 @@ describe("Compartir con la familia (Ajustes)", () => {
     );
     await user.click(screen.getByTestId("family-join"));
     const submit = screen.getByRole("button", { name: "Entrar" });
-    await user.type(screen.getByLabelText("Código"), "ZZZZZ-ZZZZZ");
-    await user.type(screen.getByLabelText("Frase"), secrets.phrase);
-    await user.type(screen.getByLabelText(/Nombre de este teléfono/), "Abuela");
+    await user.type(await screen.findByLabelText("Código"), "ZZZZZ-ZZZZZ");
+    await user.type(await screen.findByLabelText("Frase"), secrets.phrase);
+    await user.type(
+      await screen.findByLabelText(/Nombre de este teléfono/),
+      "Abuela",
+    );
     await user.click(
       screen.getByRole("checkbox", { name: /Entiendo qué se comparte/ }),
     );
@@ -190,16 +209,19 @@ describe("Compartir con la familia (Ajustes)", () => {
     );
 
     await user.clear(screen.getByLabelText("Código"));
-    await user.type(screen.getByLabelText("Código"), secrets.code);
+    await user.type(await screen.findByLabelText("Código"), secrets.code);
     await user.clear(screen.getByLabelText("Frase"));
-    await user.type(screen.getByLabelText("Frase"), "AAAA-AAAA-AAAA-AAAA-AAAA");
+    await user.type(
+      await screen.findByLabelText("Frase"),
+      "AAAA-AAAA-AAAA-AAAA-AAAA",
+    );
     await user.click(submit);
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Esa frase no es la de la familia.",
     );
 
     await user.clear(screen.getByLabelText("Frase"));
-    await user.type(screen.getByLabelText("Frase"), secrets.phrase);
+    await user.type(await screen.findByLabelText("Frase"), secrets.phrase);
     await user.click(submit);
     const panel = await screen.findByTestId("family-panel");
     expect(within(panel).getByTestId("family-phones")).toHaveTextContent(

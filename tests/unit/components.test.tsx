@@ -60,7 +60,7 @@ describe("ChecklistRow", () => {
       />,
     );
     expect(
-      screen.getByText("Desayuno").closest("span.opacity-55"),
+      screen.getByText("Desayuno").closest("span.text-muted-foreground"),
     ).not.toBeNull();
     expect(document.querySelector(".line-through")).toBeNull();
   });

@@ -40,9 +40,12 @@ export default defineConfig({
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
-    // El chat no tiene variables (ADR-008: código primero, cero red).
+    // El chat no tiene variables (ADR-008: código primero, cero red). `FAMILY_STORE=memory`
+    // (S7): la ruta de la familia usa el doble en memoria, JAMÁS la base real, aunque haya
+    // variables de Upstash en el entorno o en `.env.local`.
     env: {
       PORT: String(PORT),
+      FAMILY_STORE: "memory",
     },
   },
 });

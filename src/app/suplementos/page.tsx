@@ -76,7 +76,10 @@ export default function SupplementsPage() {
                           />
                         )}
                         <span
-                          className={cn("min-w-0 flex-1", done && "opacity-55")}
+                          className={cn(
+                            "min-w-0 flex-1",
+                            done && "text-muted-foreground",
+                          )}
                         >
                           <span className="flex flex-wrap items-baseline gap-x-2">
                             <span className="font-semibold">{l(s.name)}</span>

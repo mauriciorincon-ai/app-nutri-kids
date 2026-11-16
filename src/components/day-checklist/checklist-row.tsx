@@ -45,8 +45,8 @@ export function ChecklistRow({
       />
       <span
         className={cn(
-          "min-w-0 flex-1 transition-opacity",
-          done && "opacity-55",
+          "min-w-0 flex-1 transition-colors",
+          done && "text-muted-foreground",
         )}
       >
         <span className="flex items-baseline justify-between gap-2">

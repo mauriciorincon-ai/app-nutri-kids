@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { UsersRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,8 @@ import { SecretsCard } from "./parts";
 import { useFamily } from "./use-family";
 
 type Step = "home" | "create" | "join" | "secrets";
-type Health = "checking" | "ready" | "unavailable" | "offline";
+/** «idle»: aún no se ha preguntado nada a la red — sin familia, Ajustes no hace ninguna petición. */
+type Health = "idle" | "checking" | "unavailable" | "offline";
 
 /** «Compartir con la familia» en Ajustes: cada estado tiene su pantalla. */
 export function FamilySection() {
@@ -24,21 +25,23 @@ export function FamilySection() {
     code: string;
     phrase: string;
   } | null>(null);
-  const [health, setHealth] = useState<Health>("checking");
+  const [health, setHealth] = useState<Health>("idle");
   const [notice, setNotice] = useState<string | null>(null);
 
   const inFamily = view.phase !== "off";
 
-  useEffect(() => {
-    if (inFamily) return;
-    let live = true;
-    void getFamily()
-      .health()
-      .then((h) => live && setHealth(h));
-    return () => {
-      live = false;
-    };
-  }, [inFamily]);
+  /** Solo al elegir crear o entrar se pregunta si el servicio responde (no antes: cero red por defecto). */
+  const choose = async (next: "create" | "join") => {
+    setNotice(null);
+    setHealth("checking");
+    const h = await getFamily().health();
+    if (h === "ready") {
+      setHealth("idle");
+      setStep(next);
+    } else {
+      setHealth(h);
+    }
+  };
 
   return (
     <section
@@ -119,11 +122,8 @@ export function FamilySection() {
             <Button
               size="lg"
               className="min-h-11 w-full"
-              disabled={health !== "ready"}
-              onClick={() => {
-                setNotice(null);
-                setStep("create");
-              }}
+              disabled={health === "checking"}
+              onClick={() => void choose("create")}
               data-testid="family-create"
             >
               <UsersRound aria-hidden className="size-5" />
@@ -133,11 +133,8 @@ export function FamilySection() {
               variant="outline"
               size="lg"
               className="min-h-11 w-full bg-transparent"
-              disabled={health !== "ready"}
-              onClick={() => {
-                setNotice(null);
-                setStep("join");
-              }}
+              disabled={health === "checking"}
+              onClick={() => void choose("join")}
               data-testid="family-join"
             >
               {t.family.joinButton}
