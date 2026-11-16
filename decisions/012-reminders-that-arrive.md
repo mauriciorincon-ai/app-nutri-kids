@@ -1,0 +1,38 @@
+# ADR-012 — Reminders that arrive: empty pushes, the notice is built on the phone
+
+**Status:** accepted · **Date:** 2026-11-16 · **Sprint:** S008 · **Revises:** ADR-003 (the hand-written service worker gains `push` and `notificationclick`), ADR-007 («no push, no system permissions»: reopened in the S4 G-Plan, decision «2 a») · **Owner decisions:** G-Plan S8 «1a 2a» (the core's DECISION look for notices).
+
+## Context
+
+Until S7 the reminder existed only while the app was open (`reminder-card.tsx`): the 8:00 supplement depended on someone remembering to open it. The VISION's two [MVP] items «Reminders that matter» and «Notices for caregivers» ask for a phone notification at the right time, even with the app closed, and for a caregiver's note to reach the others. Hard rule 6 forbids the child's health data from leaving the phone in clear: no server, log or Sentry may learn what is due, what was eaten, or anyone's name.
+
+## Owner decisions (G-Plan, verbatim intent)
+
+1. **The trigger is Upstash QStash Free:** one schedule every 5 minutes that signs its call to `/api/push/tick`; the route verifies the signature with QStash's keys (in tests, test keys). It is connected at the H-2 close, together with Upstash Redis and the VAPID keys.
+2. **What shows on a locked phone is the detail** of what is due, with a «hide the detail» switch in Settings (per phone, off at first).
+
+## Decision
+
+1. **Times from the plan, computed on the phone** (`src/lib/push/schedule.ts`, pure). Meals and snacks at their `start`, every day. Supplements: the plan says which days, not at what hour, so they fire at the **first meal's start** on their days (technical default). Water: the plan's glasses spread evenly between the first meal's start and the last meal's end, on the trigger's 5-minute grid. Each type can be switched off per phone.
+2. **What the server holds, per phone:** the push endpoint (only known push services, https only: FCM, Mozilla, Apple, Windows — an allowlist against SSRF), `SHA-256` of a per-phone write token (compared with `timingSafeEqual`), the time zone, the wake-ups as `{minute of day, weekday mask}` **with no label**, and — only if the phone wants family notices and proves membership with the S7 family token — the family code. No subscription keys (`p256dh`, `auth`) are stored: pushes carry no payload, so nothing is encrypted to the phone. Keys live under `np:*` in the S7 Upstash Redis; the in-memory double (`FAMILY_STORE=memory`) serves CI and e2e and refuses to run under `VERCEL`.
+3. **The push is empty.** `POST` with no body, `TTL: 600`, `Urgency: normal` and a VAPID `Authorization` (RFC 8292: an ES256 JWT signed with WebCrypto, `aud` = the push service origin, 12 h validity). No topic header, no payload, no redirects followed. A 404/410 from the service deletes the subscription.
+4. **The trigger is signed and idempotent.** `POST /api/push/tick` accepts only a QStash JWT (HS256 with the current or next signing key, issuer `Upstash`, within its validity ±60 s, `sub` pointing to `/api/push/tick`, body hash matching). For each subscription it looks at the last 10 minutes in the phone's time zone (`Intl`: DST and midnight included), skips what the phone asked to skip, and marks «sent» with `SET NX` **before** sending: a late or doubled tick never repeats a notice, and a lost one only loses that notice.
+5. **The notice is built on the phone.** The service worker cannot read `localStorage`, so the page keeps a minimal copy in IndexedDB (`nutrikids-push`): the items per minute with their text already in the chosen language, today's marks, the switches and the strings. On `push` the worker (`scripts/sw-push.js`, inserted into `public/sw.js`) shows the most recent wake-up of the last 15 minutes not yet shown — with «hide the detail» on, a generic line instead. If everything due at that minute is already marked it shows a silent «all marked» (iOS requires every push to show something); to avoid that, marking an item before its time asks the server to **skip** that minute today (only date and minute travel), and unmarking undoes it.
+6. **Notices for caregivers.** «Notify the family» writes a short note as a new S7 record (`notice:<id>`, encrypted like everything else) and then asks `POST /api/push/family` (authorised by the S7 family token) to touch the other phones of the family that opted in. The waking worker pulls what is new with the family token unsealed from the non-extractable keys in IndexedDB, decrypts it **on the phone** (same AES-GCM, AAD and HMAC-name checks as S7) and shows «Notice from <name>» with the note; if it cannot decrypt, «There is a new notice». Tapping opens Today with the note.
+7. **Turning it off.** «Stop receiving notices» deletes the subscription on the server, unsubscribes the browser and wipes the local copy; «Delete data» does the same.
+8. **Caps.** Body ≤ 8 KB; ≤ 96 wake-ups per phone; 60 requests per IP per minute; 10 new subscriptions per IP per day; 1 000 subscriptions in total; 20 phones per family; 30 family notices per family per day. IPs are hashed inside the counters, never stored. A subscription not updated for 400 days expires; «sent» and «skip» flags expire after 2 days.
+9. **What the server can still learn (accepted).** That a phone wants notices at certain minutes of certain weekdays in a given time zone (a daily rhythm, without saying what it is), which phones share a family code, and when a family notice was sent. The push services (Google, Apple, Mozilla, Microsoft) see that an empty push reached a phone at that time. The trigger keeps the free Redis active once connected.
+10. **Provisioning at the H-2 close (not in this sprint):** `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (base64url; generated by the builder with `generateVapidKeys`, pasted by the owner into Vercel), `VAPID_SUBJECT` (`mailto:` or `https:`), `QSTASH_CURRENT_SIGNING_KEY`, `QSTASH_NEXT_SIGNING_KEY`, and the QStash schedule (every 5 min, `POST` to `/api/push/tick`). Without them `health` reports unavailable and Settings says notices are not available.
+
+## Alternatives considered
+
+- **A push payload with the text (encrypted to the phone):** the push service would carry ciphertext of health data on every reminder, and the server would need the text to encrypt it; rejected for empty pushes plus the local copy.
+- **Vercel Cron (once a day on Hobby) or Vercel Schedules (15 min with 15 min jitter):** too late for a supplement at 8:00; the owner chose QStash (decision 1).
+- **A `web-push` library:** a dependency for what WebCrypto does in ~60 lines (ES256 JWT, no payload encryption needed); rejected.
+- **Silent pushes for marked items:** iOS revokes the permission of sites that push without showing; rejected for the server-side skip.
+
+## Consequences
+
+- `tests/unit/no-cloud-ai.test.ts` now allows two server routes (`/api/family`, `/api/push`).
+- The service worker contract (rule 19) grows: `tests/unit/push-sw.test.ts` runs the real worker module against the page's copy writer and against records sealed by `src/lib/family/crypto.ts`.
+- Notices work only where the browser supports Web Push: on iPhone, from iOS 16.4 and only with the app installed on the home screen; Settings explains how to install it.

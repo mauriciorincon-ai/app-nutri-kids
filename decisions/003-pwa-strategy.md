@@ -1,6 +1,6 @@
 # ADR 003 — PWA: manifest + íconos + service worker mínimo escrito a mano
 
-- **Estado:** aceptada · Sprint 001 · 2026-07-07 · **revisada en el Sprint 004 (2026-11-15):** el SW ahora precachea el cascarón de todas las pantallas (ver «Revisión S4»; el «límite conocido» de abajo quedó superado).
+- **Estado:** aceptada · Sprint 001 · 2026-07-07 · **revisada en el Sprint 004 (2026-11-15):** el SW ahora precachea el cascarón de todas las pantallas (ver «Revisión S4»; el «límite conocido» de abajo quedó superado) · **revisada en el Sprint 008 (2026-11-16):** el SW atiende `push` y `notificationclick` (ver «Revisión S8» y ADR-012).
 - **Contexto:** la app debe ser instalable (Add to Home Screen, uso diario en el teléfono).
   Opciones: next-pwa (sin mantenimiento activo para Next 16), Serwist, o SW mínimo propio.
 - **Decisión:** sin dependencia: `public/manifest.webmanifest` (standalone, portrait, íconos
@@ -41,3 +41,14 @@
   congela el aviso de versión con axe. Demostrado en rojo quitando una pantalla de la lista.
 - **Lo que no cambia:** los datos de la dieta y del registro viven en `localStorage`, nunca en el caché
   del SW; el SW solo se registra en producción.
+
+## Revisión S8 — «avisos que llegan» (2026-11-16)
+
+- **El SW atiende dos eventos más:** `push` (el toque llega vacío; el aviso se arma con la copia mínima que
+  la página deja en IndexedDB `nutrikids-push`, y el aviso de la familia se descifra en el teléfono) y
+  `notificationclick` (abre solo rutas de la propia app). El código vive en `scripts/sw-push.js` y
+  `build-sw.mjs` lo inserta en `public/sw.js`.
+- **Contrato (regla 19):** `tests/unit/push-sw.test.ts` carga ese mismo módulo contra la copia que escribe
+  `src/lib/push/copy.ts` y contra registros sellados por `src/lib/family/crypto.ts`.
+- **Lo que cambia de «lo que no cambia»:** el SW ya lee datos, pero solo esa copia local para armar el
+  aviso; los datos de la dieta siguen en `localStorage` y nada de esto entra al caché.

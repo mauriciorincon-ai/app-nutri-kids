@@ -37,7 +37,9 @@
 - **Recordatorio = información, no dato nuevo.** Los recordatorios ("qué toca ahora / sigue") son
   **100% deterministas** desde `logic.ts` (franja del menú + suplementos del día + hidratación) —
   no persisten nada, no son un canal de salida. Sin push ni permisos del sistema: el recordatorio
-  es la información correcta visible en el momento correcto.
+  es la información correcta visible en el momento correcto. **Revisado en el S8 (ADR-012):** el
+  recordatorio ahora también llega como notificación del teléfono, con permiso pedido una vez y
+  explicado; el servidor manda toques vacíos y el aviso se arma en el teléfono.
 - **Razones:** para datos de salud de un menor, el registro local-only + la exclusión estructural
   del grounding es la minimización más fuerte — elimina toda una clase de riesgo (una nota íntima
   viajando a un LLM de terceros). Que la exclusión sea **por construcción** (el grounding ni recibe
