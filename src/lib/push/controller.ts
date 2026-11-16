@@ -50,7 +50,14 @@ export type PushStatus =
   | "on";
 
 export type PushError =
-  "offline" | "worker" | "dismissed" | "server" | "full" | "lost" | null;
+  | "offline"
+  | "worker"
+  | "update"
+  | "dismissed"
+  | "server"
+  | "full"
+  | "lost"
+  | null;
 
 export type PushView = {
   status: PushStatus;
@@ -95,6 +102,9 @@ export const OFF_PUSH_VIEW: PushView = {
   error: null,
   inFamily: false,
 };
+
+/** Aunque nada cambie, se le recuerda al servidor cada 30 días: él olvida a los 400 sin noticias. */
+const RENEW_MS = 30 * 24 * 3600 * 1000;
 
 export function createPushController(deps: PushDeps) {
   let view: PushView = OFF_PUSH_VIEW;
@@ -146,8 +156,17 @@ export function createPushController(deps: PushDeps) {
     const tz = deps.timeZone();
     const { wakes } = build(state);
     const family = proof(fam, state.types);
-    const fp = await digest({ endpoint, tz, wakes, fam: family?.code ?? null });
-    if (fp === state.sent) return { state, error: null };
+    const fp = await digest({
+      endpoint,
+      tz,
+      wakes,
+      fam: family?.code ?? null,
+      // Un token de familia nuevo (la familia sacó a alguien) también es un cambio que contar.
+      ft: family?.token ?? null,
+    });
+    const stamp = deps.now();
+    if (fp === state.sent && stamp - state.sentAt < RENEW_MS)
+      return { state, error: null };
     const upd = await deps.api.update(state.token, {
       id: state.id,
       endpoint,
@@ -155,7 +174,8 @@ export function createPushController(deps: PushDeps) {
       wakes,
       family,
     });
-    if (upd.ok) return { state: { ...state, sent: fp }, error: null };
+    if (upd.ok)
+      return { state: { ...state, sent: fp, sentAt: stamp }, error: null };
     if (upd.status === 0) return { state, error: "offline" };
     if (upd.error === "family-full") return { state, error: "full" };
     if (upd.status === 403) {
@@ -175,6 +195,7 @@ export function createPushController(deps: PushDeps) {
           id: sub.data.id,
           token,
           sent: fp,
+          sentAt: stamp,
           skipped: { date: "1970-01-01", ms: [] },
         },
         error: null,
@@ -334,6 +355,12 @@ export function createPushController(deps: PushDeps) {
           emit({ status: "unavailable" });
           return;
         }
+        // Una versión nueva de la app espera turno: su trabajador es el que sabe mostrar avisos.
+        // Antes de pedir el permiso se le dice que actualice (un toque sin trabajador no avisa).
+        if (await deps.browser.updatePending()) {
+          emit({ error: "update" });
+          return;
+        }
         let perm = deps.browser.permission();
         if (perm === "default") perm = await deps.browser.requestPermission();
         if (perm === "denied") {
@@ -381,7 +408,9 @@ export function createPushController(deps: PushDeps) {
             tz,
             wakes,
             fam: family?.code ?? null,
+            ft: family?.token ?? null,
           }),
+          sentAt: deps.now(),
         };
         deps.state.save(state);
         const done = await syncSkips(state);

@@ -7,7 +7,7 @@
  *  1. ¿Venció un despertar del plan en los últimos 15 min que aún no se mostró? Arma el
  *     aviso con la copia local (o el genérico si «ocultar el detalle» está prendido). Si
  *     todo lo de esa hora ya está marcado, un aviso silencioso lo dice (iPhone exige
- *     mostrar algo en cada toque).
+ *     mostrar algo en cada toque) — salvo que haya una nota nueva de la familia: esa gana.
  *  2. Si no, es un aviso de la familia: baja lo nuevo, lo descifra AQUÍ con las llaves no
  *     exportables del teléfono y muestra «Aviso de <nombre>». Si no puede, «Hay un aviso nuevo».
  */
@@ -277,6 +277,12 @@ const NK_PUSH = (() => {
     const wake = pickWake(copy, now, keys);
     if (wake) {
       await idbPut("shown", { date: now.date, keys: [...keys, wake.key] });
+      // Un despertar ya marcado (silencioso) no puede tragarse un aviso de la familia que
+      // llegó en la misma ventana: si hay una nota nueva, esa es la que se muestra.
+      if (wake.pending.length === 0 && copy.types && copy.types.family) {
+        const found = await familyNotice(fetchFn);
+        if (found && found.notice) return familyShown(copy, found);
+      }
       return scheduleNotice(copy, wake);
     }
     if (copy.types && copy.types.family) {
@@ -292,7 +298,8 @@ const NK_PUSH = (() => {
   /** Solo rutas de la propia app: un aviso jamás abre otro sitio. */
   function clickUrl(data) {
     const url = data && typeof data.url === "string" ? data.url : "/";
-    return url.startsWith("/") && !url.startsWith("//") ? url : "/";
+    // Solo «/ruta»: ni «//otro» ni «/\\otro» (el navegador trata la barra invertida como «/»).
+    return /^\/(?![\\/])/.test(url) ? url : "/";
   }
 
   return {

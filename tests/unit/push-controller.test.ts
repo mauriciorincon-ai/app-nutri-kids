@@ -35,6 +35,7 @@ async function world(
     available?: boolean;
     withFamily?: boolean;
     offline?: boolean;
+    update?: boolean;
   } = {},
 ) {
   const store = createMemoryPushStore({ isolated: true, now: () => MONDAY_7 });
@@ -102,6 +103,7 @@ async function world(
       endpoint = "https://fcm.googleapis.com/fcm/send/phone-1";
       return endpoint;
     },
+    updatePending: async () => opts.update ?? false,
     endpoint: async () => endpoint,
     unsubscribe: async () => {
       unsubscribed++;
@@ -258,6 +260,15 @@ describe("encender los avisos en este teléfono", () => {
     expect(w.asked).toBe(0);
   });
 
+  it("con una versión nueva de la app esperando turno: pide actualizar, sin pedir el permiso ni registrar nada", async () => {
+    const w = await world({ update: true });
+    await w.controller.enable();
+    expect(w.controller.getView().error).toBe("update");
+    expect(w.asked).toBe(0);
+    expect(w.saved).toBeNull();
+    expect(w.wire.some((c) => c.includes("subscribe"))).toBe(false);
+  });
+
   it("sin red: lo dice y no pide permiso; permiso negado queda «denied»; cerrar el diálogo no activa nada", async () => {
     const off = await world({ offline: true });
     await off.controller.enable();
@@ -340,6 +351,23 @@ describe("tipos, detalle y el servidor al día", () => {
     const calls = w.wire.length;
     await w.controller.refresh();
     expect(w.wire.length).toBe(calls);
+  });
+
+  it("aunque nada cambie, a los 30 días le recuerda al servidor (él olvida a los 400 sin noticias)", async () => {
+    const w = await world();
+    await w.controller.enable();
+    const calls = w.wire.length;
+    w.clock.now += 29 * 24 * 3600 * 1000;
+    await w.controller.refresh();
+    expect(w.wire.length).toBe(calls); // 29 días: nada
+    w.clock.now += 2 * 24 * 3600 * 1000;
+    await w.controller.refresh();
+    expect(w.wire.length).toBe(calls + 1); // 31 días: un update
+    expect(w.wire[w.wire.length - 1]).toContain("/api/push/update");
+    expect(w.saved?.sentAt).toBe(w.clock.now);
+    const after = w.wire.length;
+    await w.controller.refresh();
+    expect(w.wire.length).toBe(after); // y vuelve a callar
   });
 
   it("sin red en una puesta al día: no pierde nada y no muestra error; al volver se pone al día", async () => {

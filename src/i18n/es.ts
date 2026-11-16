@@ -417,6 +417,8 @@ export const es = {
     install4: "Abre la app desde su ícono y vuelve a Ajustes.",
     lost: "El navegador quitó la suscripción de este teléfono. Actívalos de nuevo.",
     errOffline: "Sin conexión. Inténtalo otra vez cuando vuelva la red.",
+    errUpdate:
+      "Hay una versión nueva de la app esperando. Actualízala con el aviso de versión (o cierra y abre la app) y vuelve aquí.",
     errWorker:
       "No se pudo preparar el servicio de avisos en este navegador. Recarga la página e inténtalo de nuevo.",
     errDismissed:

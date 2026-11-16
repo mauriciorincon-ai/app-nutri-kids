@@ -173,6 +173,10 @@ describe("el trabajador arma el aviso con la copia local", () => {
     expect(sw.clickUrl({ url: "/#avisos" })).toBe("/#avisos");
     expect(sw.clickUrl({ url: "https://otro.example" })).toBe("/");
     expect(sw.clickUrl({ url: "//otro.example" })).toBe("/");
+    expect(sw.clickUrl({ url: "/\\otro.example" })).toBe("/");
+    expect(sw.clickUrl({ url: "/\\/otro.example" })).toBe("/");
+    expect(sw.clickUrl({ url: "javascript:alert(1)" })).toBe("/");
+    expect(sw.clickUrl({ url: "/dieta/pollo" })).toBe("/dieta/pollo");
     expect(sw.clickUrl(null)).toBe("/");
   });
 });
@@ -230,6 +234,45 @@ describe("el trabajador abre el aviso de la familia con las llaves del teléfono
     const again = await sw.onPush(at(15, 1), serve([notice]));
     expect(again.options.body).toBe("Hay un aviso nuevo de la familia.");
     expect(await readKey("familySeen", idb)).toBe(1000);
+  });
+
+  it("un despertar ya marcado (silencioso) no se traga la nota de la familia que llegó en su ventana", async () => {
+    const { record, serve } = await familySetup();
+    const allDone = copy({
+      types: { ...DEFAULT_TYPES, family: true },
+      done: {
+        date: "2026-11-16",
+        ids: ["meal:desayuno", "supplement:multivitaminico-demo"],
+      },
+    });
+    await saveCopy(allDone, idb);
+    const notice = await record("notice:n1", {
+      text: "Hoy no enviar jugo",
+      name: "Mamá",
+      by: "otro",
+      t: 1000,
+    });
+    // 07:08: el despertar de las 07:00 está todo marcado, pero hay una nota nueva.
+    const n = await loadSw().onPush(at(7, 8), serve([notice]));
+    expect(n.title).toBe("Aviso de Mamá");
+    expect(n.options.body).toBe("Hoy no enviar jugo");
+  });
+
+  it("ya marcado y sin nota nueva de la familia: sigue siendo el silencioso de «ya está marcado»", async () => {
+    const { serve } = await familySetup();
+    await saveCopy(
+      copy({
+        types: { ...DEFAULT_TYPES, family: true },
+        done: {
+          date: "2026-11-16",
+          ids: ["meal:desayuno", "supplement:multivitaminico-demo"],
+        },
+      }),
+      idb,
+    );
+    const n = await loadSw().onPush(at(7, 8), serve([]));
+    expect(n.options).toMatchObject({ silent: true });
+    expect(n.options.body).toBe("Todo lo de esta hora ya está marcado.");
   });
 
   it("de varios, el más reciente; lo propio, lo alterado o de otro sitio no cuenta", async () => {

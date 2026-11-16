@@ -14,6 +14,7 @@ import { usePush } from "./use-push";
 const ERROR_KEY: Record<NonNullable<PushError>, keyof Dictionary["push"]> = {
   offline: "errOffline",
   worker: "errWorker",
+  update: "errUpdate",
   dismissed: "errDismissed",
   server: "errServer",
   full: "errFull",

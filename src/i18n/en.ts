@@ -414,6 +414,8 @@ export const en: Dictionary = {
     install4: "Open the app from its icon and come back to Settings.",
     lost: "The browser removed this phone's subscription. Turn notices on again.",
     errOffline: "No connection. Try again when the network is back.",
+    errUpdate:
+      "A new version of the app is waiting. Update it from the version notice (or close and reopen the app) and come back here.",
     errWorker:
       "The notice service couldn't be prepared in this browser. Reload the page and try again.",
     errDismissed:

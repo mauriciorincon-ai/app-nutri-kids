@@ -40,9 +40,6 @@ export default function SettingsPage() {
 
   const onClear = async () => {
     setClearError(null);
-    // Los avisos primero: necesitan su token para borrar la suscripción del servidor, y
-    // `clearAllData` lo olvida. Sin red, la dirección caduca sola (el navegador ya la quitó).
-    await getPush().disable();
     // Primero la familia: se espera a que acabe cualquier sincronización en curso, para que no
     // reescriba el estado de una familia de la que ya salimos. Con la casilla, también se borra
     // la copia de internet; si eso falla (sin red), no se borra nada y se dice.
@@ -58,6 +55,10 @@ export default function SettingsPage() {
       }
       if (!r.ok) await getFamily().leave();
     }
+    // Los avisos, justo antes de borrar: necesitan su token para quitar la suscripción del
+    // servidor, y `clearAllData` lo olvida. Si la familia falló arriba, no se llega aquí y nada
+    // queda a medias. Sin red, la dirección caduca sola (el navegador ya la quitó).
+    await getPush().disable();
     clearAllData();
     refresh();
     setConfirmOpen(false);

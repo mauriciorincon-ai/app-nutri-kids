@@ -24,6 +24,8 @@ export const pushStateSchema = z.object({
   hide: z.boolean(),
   /** Huella de lo último que el servidor aceptó (dirección, huso, horas, familia). */
   sent: z.string().max(64),
+  /** Cuándo (ms) se lo dijo por última vez: el servidor olvida lo que no se renueva en 400 días. */
+  sentAt: z.number().int().min(0).default(0),
   /** Despertares de hoy que se le pidió saltar (minutos del día). */
   skipped: z.object({
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -49,6 +51,7 @@ export function freshPushState(id: string, token: string): PushState {
     types: { ...DEFAULT_TYPES },
     hide: false,
     sent: "",
+    sentAt: 0,
     skipped: { date: "1970-01-01", ms: [] },
   };
 }

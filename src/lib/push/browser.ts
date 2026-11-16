@@ -13,6 +13,8 @@ export type BrowserPush = {
   support(): Support;
   permission(): Permission;
   requestPermission(): Promise<Permission>;
+  /** ¿Hay una versión nueva de la app esperando turno (su trabajador aún no manda)? */
+  updatePending(): Promise<boolean>;
   /** La dirección de push de este teléfono; null si no hay trabajador listo. */
   subscribe(applicationServerKey: string): Promise<string | null>;
   endpoint(): Promise<string | null>;
@@ -62,6 +64,15 @@ export function browserPush(): BrowserPush {
     },
     async requestPermission() {
       return Notification.requestPermission();
+    },
+    async updatePending() {
+      if (!("serviceWorker" in navigator)) return false;
+      try {
+        const reg = await navigator.serviceWorker.getRegistration();
+        return Boolean(reg?.waiting);
+      } catch {
+        return false;
+      }
     },
     async subscribe(key) {
       const reg = await registration();
