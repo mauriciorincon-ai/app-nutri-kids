@@ -137,6 +137,11 @@ export const VALUE_WORDS = [
   "por",
   "de",
   "del",
+  "el",
+  "la",
+  "los",
+  "las",
+  "incluye",
   "dia",
   "dias",
   "semana",
@@ -281,13 +286,18 @@ const splitDots = (s: string) =>
     .map((x) => stripIcon(x.replace(/✅/g, "")))
     .filter(Boolean);
 
-/** Separa una lista con comas y una «o»/«y» final. */
-const splitList = (s: string) =>
-  s
-    .replace(/\.\s*$/, "")
-    .split(/\s*,\s*|\s+[oy]\s+/)
+/**
+ * Separa una lista: por comas y por la «o»/«y» que va antes del ÚLTIMO ítem. Dentro de un
+ * ítem, « o » no separa («<a> o <b> <calificativo>» es uno: comparten el calificativo).
+ */
+const splitList = (s: string) => {
+  const parts = s.replace(/\.\s*$/, "").split(/\s*,\s*/);
+  const last = parts.pop() ?? "";
+  const m = /^(.*)\s+[oy]\s+(.+)$/.exec(last);
+  return [...parts, ...(m ? [m[1], m[2]] : [last])]
     .map((x) => tidy(x))
     .filter(Boolean);
+};
 
 /** Un paréntesis con límite (amarillo): «máx 2/día», «3-4 uds», «2/semana». */
 const LIMIT =
@@ -650,7 +660,13 @@ function readRestricted(
       joinCell(para),
     );
     if (!opts) continue;
-    const key = tidy(note[1]);
+    // «Nota <palabra>: el|la <X> incluye …»: lo que se reemplaza es <X> (la palabra de la
+    // nota es el momento o el contexto).
+    const subject = execF(
+      /^nota\s+[^:]+:\s*(?:el|la|los|las)\s+([^.,:]+?)\s+incluye\b/,
+      joinCell(para),
+    );
+    const key = tidy(subject ? subject[1] : note[1]);
     draft.equivalences.push({
       whenMissing: slug(key),
       title: { es: `En vez de ${key}`, en: `Instead of ${key}` },
@@ -664,7 +680,9 @@ const CODE = /^E\s?(\d{3})(?!\d)\s*(.*)$/;
 
 /**
  * Rejilla de aditivos: cada celda son DOS segmentos en la misma línea, el código «E nnn»
- * y, a otra x, el nombre; si el nombre envuelve, la 2.ª línea va alineada con el NOMBRE.
+ * y, a otra x, el nombre. Un nombre de dos líneas va CENTRADO sobre su código (una arriba,
+ * otra abajo): cada línea de nombre es de la fila cuyo código le queda más cerca en `y`
+ * (a menos de media fila), jamás de la que la precede en orden de lectura.
  * Termina en el primer párrafo que empieza a la izquierda de los códigos sin traer código.
  * Devuelve el índice donde terminó (lo de «evitar» que sigue se busca desde ahí).
  */
@@ -688,8 +706,15 @@ function readAdditives(
         ),
   );
   if (start < 0) return 0;
-  type Cell = { code: string; nameX: number; parts: string[]; page: number };
+  type Cell = {
+    code: string;
+    x: number;
+    y: number;
+    parts: { y: number; x: number; text: string }[];
+    page: number;
+  };
   const cells: Cell[] = [];
+  const loose: { y: number; x: number; text: string }[] = [];
   let codeX = Infinity;
   let i = start + 1;
   for (; i < lines.length; i++) {
@@ -697,39 +722,41 @@ function readAdditives(
     if (l.page !== lines[start].page) break;
     const hasCode = l.segs.some((s) => CODE.test(s.text));
     if (cells.length && !hasCode && l.segs[0].x < codeX - 3) break;
-    for (let k = 0; k < l.segs.length; k++) {
-      const s = l.segs[k];
+    for (const s of l.segs) {
       const code = CODE.exec(s.text);
       if (code) {
         codeX = Math.min(codeX, s.x);
-        const next = l.segs[k + 1];
-        if (code[2])
-          cells.push({
-            code: code[1],
-            nameX: s.x,
-            parts: [code[2]],
-            page: l.page,
-          });
-        else if (next && !CODE.test(next.text)) {
-          cells.push({
-            code: code[1],
-            nameX: next.x,
-            parts: [next.text],
-            page: l.page,
-          });
-          k++;
-        } else
-          cells.push({ code: code[1], nameX: NaN, parts: [], page: l.page });
-      } else if (cells.length) {
-        const open = [...cells]
-          .reverse()
-          .find((c) => Math.abs(c.nameX - s.x) < 4);
-        open?.parts.push(s.text);
-      }
+        cells.push({
+          code: code[1],
+          x: s.x,
+          y: l.y,
+          parts: code[2] ? [{ y: l.y, x: s.x, text: code[2] }] : [],
+          page: l.page,
+        });
+      } else loose.push({ y: l.y, x: s.x, text: s.text });
     }
   }
+  // Media fila: la mitad del paso más corto entre dos códigos de la misma columna.
+  const steps = cells.flatMap((c) =>
+    cells
+      .filter((d) => Math.abs(d.x - c.x) < 4 && d.y > c.y)
+      .map((d) => d.y - c.y),
+  );
+  const half = (steps.length ? Math.min(...steps) : 40) / 2;
+  for (const seg of loose) {
+    // La columna: el código más cercano a su izquierda; la fila: el más cercano en y.
+    const left = cells.filter((c) => c.x <= seg.x);
+    const colX = Math.max(...left.map((c) => c.x));
+    const row = left
+      .filter((c) => c.x === colX && Math.abs(c.y - seg.y) < half)
+      .sort((a, b) => Math.abs(a.y - seg.y) - Math.abs(b.y - seg.y))[0];
+    row?.parts.push(seg);
+  }
   for (const c of cells) {
-    const name = joinCell(c.parts, true);
+    const name = joinCell(
+      c.parts.sort((a, b) => a.y - b.y || a.x - b.x).map((p) => p.text),
+      true,
+    );
     if (!name) {
       skip("additives");
       continue;
@@ -951,9 +978,15 @@ function readPillars(
     .filter((l) => l.text);
   const all = joinCell(right.map((l) => l.text));
 
-  const activity = execF(/objetivo[^:]*:\s*(.+?\.)/, all);
-  if (activity && ACTIVITY.test(fold(activity[1]))) {
-    draft.goals.activity = same(capitalize(tidy(activity[1])));
+  // La meta es la frase con «objetivo» que trae los minutos; otra con «objetivo» sin
+  // minutos puede ir antes en la misma columna y no cuenta.
+  const goals = [...fold(all).matchAll(/objetivo[^:.]*:\s*([^.]+\.)/g)].map(
+    (m) =>
+      all.slice(m.index + m[0].length - m[1].length, m.index + m[0].length),
+  );
+  const activity = goals.find((g) => ACTIVITY.test(fold(g)));
+  if (activity) {
+    draft.goals.activity = same(capitalize(tidy(activity)));
     pages["goals.activity"] = page;
   }
   const sleepAt = right.find((l) => /^→\s*objetivo\s*:/.test(fold(l.text)));
@@ -987,9 +1020,15 @@ function readPillars(
     // «<persona>: si tiene …, reemplazar por …» nombra a alguien de la familia: no se lee.
     if (/^\s*si\b/.test(fold(list[1])) || /\bsi\b[^,]*,/.test(fold(list[1])))
       continue;
-    const use = splitList(list[1]);
-    if (use.length < 2) continue;
-    const key = fold(shape[2]) === "del" ? shape[3] : shape[1];
+    const isDel = fold(shape[2]) === "del";
+    // «<sustantivo> del <x>:» trae una FRASE «<verbo> el <x> por <y> — <comentario>»: el
+    // reemplazo es <y>; lo de después de la raya es comentario, no un ítem.
+    const phrase = isDel
+      ? execF(/\bpor\s+([^—–]+?)\s*(?:[—–]|$)/, list[1])
+      : null;
+    const use = phrase ? [tidy(phrase[1])] : splitList(list[1]);
+    if (use.length < (phrase ? 1 : 2)) continue;
+    const key = isDel ? shape[3] : shape[1];
     const texture = TEXTURE_WORDS.find(([re]) => re.test(fold(e.label)))?.[1];
     draft.equivalences.push({
       whenMissing: slug(key),
@@ -1091,20 +1130,17 @@ function readMenuAndHydration(
   pages: Record<string, number>,
   skip: Skip,
 ) {
-  // Inicio: una línea con «menú» seguida (en su página) de un bloque con ícono.
-  const start = findIdx(
-    lines,
-    (l, i) =>
-      has(l.text, "menu") &&
-      !startsWithIcon(l.text) &&
-      lines
-        .slice(i + 1, i + 3)
-        .some((n) => n.page === l.page && startsWithIcon(n.text)) &&
-      // …y unas líneas más abajo, una hora: es el menú, no una mención suelta.
-      lines
-        .slice(i + 1, i + 8)
-        .some((n) => n.page === l.page && /\d{1,2}:\d{2}/.test(n.text)),
-  );
+  // Inicio: una línea con «menú» (sin ícono) y, en su página y pocas líneas abajo, un bloque
+  // con ícono y una hora: es el menú, no una mención suelta. El título va seguido de
+  // contenido, no del ícono (la celda izquierda va centrada frente a la derecha).
+  const start = findIdx(lines, (l, i) => {
+    if (!has(l.text, "menu") || startsWithIcon(l.text)) return false;
+    const near = lines.slice(i + 1, i + 9).filter((n) => n.page === l.page);
+    const icon = near.findIndex((n) => startsWithIcon(n.text));
+    return (
+      icon >= 0 && near.slice(icon).some((n) => /\d{1,2}:\d{2}/.test(n.text))
+    );
+  });
   const hydr = findIdx(lines, (l) => has(l.text, "hidratacion"), start);
   if (start >= 0) {
     const end = hydr >= 0 ? hydr : lines.length;
@@ -1113,17 +1149,46 @@ function readMenuAndHydration(
       .filter((l) => l.page === lines[start].page);
     const xs = body.flatMap((l) => l.segs.map((s) => s.x));
     const split = Math.min(...xs) + 40;
-    type Block = { page: number; left: string[]; right: string[] };
+    // Izquierda: cada bloque va del ícono a su hora. Derecha: cada línea es de la comida
+    // cuyo bloque izquierdo le queda más cerca en y (las celdas van centradas), jamás de la
+    // que la precede en orden de lectura.
+    type Block = {
+      page: number;
+      top: number;
+      bottom: number;
+      left: string[];
+      right: { y: number; text: string }[];
+    };
     const blocks: Block[] = [];
+    const rights: { y: number; text: string }[] = [];
     for (const l of body) {
       const left = l.segs.filter((s) => s.x < split).map((s) => s.text);
       const right = l.segs.filter((s) => s.x >= split).map((s) => s.text);
       if (left[0] && startsWithIcon(left[0]))
-        blocks.push({ page: l.page, left: [], right: [] });
+        blocks.push({
+          page: l.page,
+          top: l.y,
+          bottom: l.y,
+          left: [],
+          right: [],
+        });
       const b = blocks.at(-1);
-      if (!b) continue;
-      b.left.push(...left);
-      b.right.push(...right);
+      if (b && left.length) {
+        b.left.push(...left);
+        b.bottom = l.y;
+      }
+      if (right.length) rights.push({ y: l.y, text: right.join(" ") });
+    }
+    const gap = (b: Block, y: number) =>
+      y < b.top ? b.top - y : y > b.bottom ? y - b.bottom : 0;
+    for (const r of rights) {
+      const b = [...blocks].sort(
+        (p, q) =>
+          gap(p, r.y) - gap(q, r.y) ||
+          Math.abs((p.top + p.bottom) / 2 - r.y) -
+            Math.abs((q.top + q.bottom) / 2 - r.y),
+      )[0];
+      b?.right.push(r);
     }
     const used = new Set<string>();
     for (const b of blocks) {
@@ -1138,7 +1203,7 @@ function readMenuAndHydration(
       // Las líneas con «→» son recordatorios de suplemento: no son parte del menú.
       // Una línea «<Etiqueta corta>: …» abre otra opción.
       const pieces: string[] = [];
-      for (const r of b.right) {
+      for (const { text: r } of b.right.sort((p, q) => p.y - q.y)) {
         if (/^→/.test(r)) continue;
         if (/^\p{Lu}[^:]{0,20}:\s/u.test(r) || pieces.length === 0)
           pieces.push(r);

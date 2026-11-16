@@ -6,15 +6,21 @@
  * existen) y dosis son de mentira (decisión del dueño «1 a»). Reproduce las trampas:
  *  - dos documentos fusionados: encabezado tipo A «… Sección NN» y tipo B «… · … · Mes AAAA»;
  *  - pie tipo B a y ≈ 805, x ≈ 72, también en una página tipo A;
- *  - rejilla de aditivos de DOS segmentos por celda (código y, a otra x, el nombre), con un
- *    nombre que envuelve bajo el NOMBRE;
+ *  - rejilla de aditivos de DOS segmentos por celda (código y, a otra x, el nombre), filas a
+ *    38 pt y un nombre de dos líneas CENTRADO sobre su código (una arriba, otra abajo);
  *  - 4 bloques de «otros que evitar», cada nombre solo en su línea y terminado en «:», uno de
- *    ≥ 40 caracteres;
+ *    ≥ 40 caracteres y uno con una ligadura a mitad de palabra;
  *  - encabezado de la tabla de grupos en dos líneas y una fila partida entre páginas con el
  *    pie y el encabezado EN MEDIO;
- *  - etiqueta «<X> de reemplazo <adjetivo>:» que envuelve 5 líneas y termina a mitad de línea;
+ *  - etiqueta «<X> de reemplazo <adjetivo>:» que envuelve 5 líneas, termina a mitad de línea y
+ *    abre con un ítem «<a> o <b> <calificativo>»; «<sustantivo> del <x>:» con una FRASE y raya;
+ *  - «Nota <palabra>: la <X> incluye …» (se reemplaza <X>);
+ *  - en pilares, una línea con «objetivo» SIN minutos antes de la de los minutos;
+ *  - menú con la celda izquierda CENTRADA: el contenido empieza antes del ícono y el título va
+ *    seguido de contenido;
  *  - suplemento con la presentación del frasco («4 fl oz 120 ml») y una palabra cortada sin guion;
- *  - un U+0000 dentro de un párrafo; la hora «12:15 – 1:15 pm»;
+ *  - ligaduras fi/fl perdidas (U+0000) como ítem de texto APARTE, al inicio y a mitad de
+ *    palabra; la hora «12:15 – 1:15 pm»;
  *  - dos consejos «<persona>: si tiene …, reemplazar por …» (uno con «de» en el sujeto) que NO se leen.
  * La página de identidad trae peso, talla, IMC, percentil y contacto A PROPÓSITO: es la carnada
  * del test que exige que el lector jamás los lea (regla dura 2).
@@ -36,14 +42,19 @@ const PRO = "Mtra. Rosa Ficticia, Lic. Dietética · Infancia / Juego / Familia"
 const HEAD_B = `Cuaderno Simulado · ${CHILD} · Marzo 2031`;
 const HEAD_A = "Reporte Simulado de Marcadores";
 /**
- * Chromium descarta U+0000 al dibujar. Se escribe U+00A6 («¦», que el plan no usa) y, ya en
- * el PDF, su entrada en el ToUnicode de la fuente pasa a <0000>: pdf.js lo extrae como U+0000,
- * igual que en la plantilla real.
+ * Ligadura perdida. Chromium descarta U+0000 al dibujar: se escribe U+00A6 («¦», que el plan no
+ * usa) en OTRA fuente (así pdf.js lo entrega como un ítem de texto aparte, pegado a sus
+ * vecinos) y, ya en el PDF, su entrada en el ToUnicode pasa a <0000>: pdf.js lo extrae como
+ * U+0000, igual que la ligadura fi/fl de la plantilla real.
  */
 const NUL = "\u00a6";
 
 const esc = (s) =>
-  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replaceAll(NUL, `<span class="lig">${NUL}</span>`);
 const lines = (arr) => arr.map((l) => `<div>${esc(l)}</div>`).join("");
 const foot = `<footer>${esc(PRO)}</footer>`;
 
@@ -225,19 +236,20 @@ const pages = [
           ["🥗 Comer"],
           ["lectura personal", "simulada que no se lee"],
           [
-            "Cambio del pan: tostada de yuca, galleta",
-            "de maíz morado, casabe.",
+            "Cambio del pan: cambiar el pan por casabe",
+            "tostado — rinde más y cruje igual.",
             "Meriendas de reemplazo crujientes: maíz",
-            "inflado o garbanzo horneado, chips de",
-            "plátano verde, semillas de girasol",
-            "tostadas, bastones de jícama o",
-            "manzana deshidratada. Otra frase sigue.",
+            "o arroz inflado, chips de plátano verde,",
+            "semillas de girasol tostadas, bastones",
+            "de jícama en tiras o manzana",
+            "deshidratada. Otra frase sigue.",
           ],
         ],
         [
           ["🏃 Moverse"],
           ["lectura personal"],
           [
+            "Objetivo simulado: moverse jugando, sin prisa.",
             "Objetivo de la semana: 30 a 50 minutos de",
             "bici o patines cada tarde.",
           ],
@@ -291,9 +303,9 @@ const pages = [
         "Párrafo simulado de por qué.",
         "Grasas endurecidas de fábrica para untar (GEFU):",
         "Párrafo simulado.",
-        "Carnes curadas de bolsa:",
+        `Colorantes arti${NUL}ciales de bolsa:`,
         "Párrafo simulado.",
-        "Refrescos con cafeína:",
+        `Pastas con ${NUL}úor añadido:`,
         "Párrafo simulado.",
       ])}</div>` +
       `<div class="box">${lines(["Recuadro simulado: nada de esto es una indicación médica."])}</div>`,
@@ -362,6 +374,8 @@ const pages = [
       "bebida de avena, bebida de coco o bebida de almendra.",
       "Nota trigo: texto simulado. Buenas alternativas: arroz, quinoa, maíz, papa",
       "o yuca.",
+      "Nota recreo: la galleta incluye trigo. Mejor reemplazar por arepa, casabe",
+      "o tostada de arroz.",
       "Tus grupos de cada día",
     ]) + table(GREEN_W, GREEN_H, GREEN_1),
   ),
@@ -375,20 +389,40 @@ const pages = [
           ["🌅 Arranque", "6:45 – 7:15 am"],
           [
             "Arepa de maíz con aguacate",
+            "y huevo de codorniz",
             "Opción 2: avena con pera",
+            "en trozos",
+            "Opción 3: casabe con queso",
             "→ Gotas de sol si es Lunes, Miércoles o Viernes",
           ],
         ],
         [
           ["🍎 Recreo /", "Media", "9:50 am"],
-          ["Fruta con semillas de girasol"],
+          [
+            "Fruta con semillas de girasol",
+            "Opción 2: maíz inflado",
+            "con banano",
+            "Opción 3: papaya picada",
+            "con coco",
+          ],
         ],
         [
           ["☀️ Mediodía", "12:15 – 1:15 pm"],
-          ["Arroz, trucha y verduras", "Opción 2: lentejas con papa"],
+          [
+            "Arroz, trucha y verduras",
+            "al vapor",
+            "Opción 2: lentejas con papa",
+            "→ Gomitas si es Martes, Jueves o Sábado",
+          ],
         ],
-        [["🍪 Tarde", "3:40 – 4:10 pm"], ["Maíz inflado casero"]],
-        [["🌙 Noche", "6:20 – 6:50 pm"], ["Crema de ahuyama con pollo"]],
+        [
+          ["🍪 Tarde", "3:40 – 4:10 pm"],
+          ["Maíz inflado casero", "con pera", "Opción 2: yuca horneada"],
+        ],
+        [
+          ["🌙 Noche", "6:20 – 6:50 pm"],
+          ["Crema de ahuyama", "con pollo", "Opción 2: sopa de quinoa"],
+        ],
       ]
         .map(
           ([l, r]) =>
@@ -476,7 +510,7 @@ const pages = [
     lines([
       "📌 Antes de abrir el frasco",
       "Rutina: darlos a la misma hora ayuda a no olvidarlos.",
-      `Guardado: en un lugar fresco${NUL} y seco.`,
+      `Guardado: en un lugar ${NUL}jo, fresco y seco.`,
       "Si se olvida: seguir al día siguiente sin doblar la toma.",
     ]) +
       `<div class="two"><div>${lines([
@@ -504,11 +538,13 @@ td { vertical-align: top; padding: 0 4pt 9pt 0; overflow-wrap: anywhere }
 .th td { font-weight: bold; padding-bottom: 4pt }
 .cover { margin-top: 300pt; font-size: 12pt; line-height: 18pt }
 .divider { margin-top: 380pt; font-size: 18pt; line-height: 24pt }
-.grid { display: grid; grid-template-columns: 38pt 243pt 38pt 200pt; row-gap: 6pt; margin: 8pt 0 10pt 9pt }
+.grid { display: grid; grid-template-columns: 38pt 243pt 38pt 200pt; grid-auto-rows: 38pt; align-items: center; margin: 8pt 0 10pt 9pt }
+.grid > div { line-height: 9.5pt }
+.lig { font-family: "Times New Roman", Times, serif }
 .avoid { margin: 4pt 0 10pt 6pt }
 .box { margin: 10pt 0 0 0; padding: 0 }
 .menu { margin: 8pt 0 }
-.block { display: flex; margin-bottom: 22pt }
+.block { display: flex; align-items: center; margin-bottom: 10pt }
 .ml { width: 74pt; margin-left: 27pt }
 .mr { width: 300pt }
 .two { display: flex; gap: 40pt; margin-top: 30pt }

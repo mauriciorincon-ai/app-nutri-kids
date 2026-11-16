@@ -13,6 +13,7 @@ import {
 } from "@/lib/diet/pdf-reader";
 import {
   extractPdfPages,
+  restoreLigatures,
   toLines,
   type PdfJsLike,
   type PdfPage,
@@ -95,8 +96,8 @@ describe("cada sección del PDF de prueba sale completa y con su página", () =>
     expect(names).toEqual([
       "Endulzantes de laboratorio",
       "Grasas endurecidas de fábrica para untar (GEFU)",
-      "Carnes curadas de bolsa",
-      "Refrescos con cafeína",
+      "Colorantes artificiales de bolsa",
+      "Pastas con flúor añadido",
     ]);
     expect(names[1].length).toBeGreaterThanOrEqual(40);
     // Ni el párrafo de cada bloque ni el recuadro de aviso del pie.
@@ -148,6 +149,7 @@ describe("cada sección del PDF de prueba sale completa y con su página", () =>
       reading.draft.equivalences.map((e) => [e.whenMissing, e]),
     );
     expect(Object.keys(byKey).sort()).toEqual([
+      "galleta",
       "leche-de-vaca",
       "meriendas",
       "pan",
@@ -162,19 +164,14 @@ describe("cada sección del PDF de prueba sale completa y con su página", () =>
       "bebida de almendra",
     ]);
     expect(byKey["trigo-y-cebada"].use).toHaveLength(5);
-    expect(byKey.pan.use.map((u) => u.name.es)).toEqual([
-      "tostada de yuca",
-      "galleta de maíz morado",
-      "casabe",
-    ]);
+    expect(byKey.pan.use.map((u) => u.name.es)).toEqual(["casabe tostado"]);
     // «<X> de reemplazo <adjetivo>:»: la lista termina a mitad de línea, la frase siguiente no entra.
     expect(byKey.meriendas.title.es).toBe("Meriendas de reemplazo crujientes");
     expect(byKey.meriendas.use.map((u) => u.name.es)).toEqual([
-      "maíz inflado",
-      "garbanzo horneado",
+      "maíz o arroz inflado",
       "chips de plátano verde",
       "semillas de girasol tostadas",
-      "bastones de jícama",
+      "bastones de jícama en tiras",
       "manzana deshidratada",
     ]);
     // La textura solo cuando el texto la dice.
@@ -245,9 +242,13 @@ describe("cada sección del PDF de prueba sale completa y con su página", () =>
       ["Tarde", "15:40", "16:10"],
       ["Noche", "18:20", "18:50"],
     ]);
-    expect(reading.draft.menu[0].content.es).toBe(
-      "Arepa de maíz con aguacate · Opción 2: avena con pera",
-    );
+    expect(reading.draft.menu.map((m) => m.content.es)).toEqual([
+      "Arepa de maíz con aguacate y huevo de codorniz · Opción 2: avena con pera en trozos · Opción 3: casabe con queso",
+      "Fruta con semillas de girasol · Opción 2: maíz inflado con banano · Opción 3: papaya picada con coco",
+      "Arroz, trucha y verduras al vapor · Opción 2: lentejas con papa",
+      "Maíz inflado casero con pera · Opción 2: yuca horneada",
+      "Crema de ahuyama con pollo · Opción 2: sopa de quinoa",
+    ]);
     expect(JSON.stringify(reading.draft.menu)).not.toContain("→");
     expect(reading.pages["menu.mediodia"]).toBe(13);
   });
@@ -289,12 +290,22 @@ describe("trampas de la extracción (forma-del-pdf §4)", () => {
     );
   });
 
-  it("un U+0000 del PDF se limpia antes de unir", () => {
-    expect(
-      pages.some((p) => p.items.some((i) => i.str.includes("\u0000"))),
-    ).toBe(true);
+  it("un U+0000 del PDF es la ligadura fi/fl perdida: se restaura, jamás blanco ni borrado", () => {
+    // En el PDF de prueba llega como en el real: un ítem de texto SOLO, angosto y pegado.
+    const nul = pages.flatMap((p) => p.items).filter((i) => i.str === "\u0000");
+    expect(nul).toHaveLength(3);
+    expect(nul.every((i) => i.w < 6)).toBe(true);
     expect(JSON.stringify(reading)).not.toContain("\\u0000");
-    expect(reading.draft.supplementNotes?.es).toContain("fresco y seco");
+    // A mitad de palabra («arti|fi|ciales»), al inicio ante «u» («|fl|úor») y al inicio («|fi|jo»).
+    expect(reading.draft.alsoAvoid.map(es)).toEqual(
+      expect.arrayContaining([
+        "Colorantes artificiales de bolsa",
+        "Pastas con flúor añadido",
+      ]),
+    );
+    expect(reading.draft.supplementNotes?.es).toContain(
+      "en un lugar fijo, fresco y seco",
+    );
   });
 });
 
@@ -751,18 +762,34 @@ describe("lo que pagó la auditoría del PR del lector", () => {
     expect(r.draft.alsoAvoid).toEqual([]);
   });
 
-  it("toLines: un U+0000 suelto entre dos palabras es un blanco; uno pegado a la palabra se quita sin partirla", () => {
+  it("toLines: un U+0000 suelto y pegado se restaura como ligadura; los demás controles se limpian", () => {
     const lines = toLines({
       n: 1,
       height: 800,
       items: [
-        { str: "fresco", x: 78, y: 100, w: 24 },
-        { str: "\u0000", x: 102, y: 100, w: 1 },
-        { str: "y", x: 103, y: 100, w: 4 },
-        { str: "se\u0000co", x: 78, y: 120, w: 20 },
+        { str: "arti", x: 78, y: 100, w: 14 },
+        { str: "\u0000", x: 92, y: 100, w: 4.5 },
+        { str: "cial", x: 96.5, y: 100, w: 14 },
+        { str: "con ", x: 78, y: 120, w: 16 },
+        { str: "\u0000", x: 94, y: 120, w: 4.5 },
+        { str: "úor", x: 98.5, y: 120, w: 12 },
+        { str: "se\u0007co", x: 78, y: 140, w: 20 },
       ],
     });
-    expect(lines.map((l) => l.text)).toEqual(["fresco y", "seco"]);
+    expect(lines.map((l) => l.text)).toEqual([
+      "artificial",
+      "con flúor",
+      "seco",
+    ]);
+  });
+
+  it("ligadura: «fl» ante «u», «fi» en todo lo demás (pdf.js no da el nombre del glifo)", () => {
+    expect(restoreLigatures("\u0000uido")).toBe("fluido");
+    expect(restoreLigatures("\u0000Úor")).toBe("flÚor");
+    expect(restoreLigatures("de\u0000nir")).toBe("definir");
+    expect(restoreLigatures("\u0000esta")).toBe("fiesta");
+    expect(restoreLigatures("al \u0000n")).toBe("al fin");
+    expect(restoreLigatures("sin nada")).toBe("sin nada");
   });
 
   it("toLines: una tilde descompuesta (NFD) se recompone y el ancla la reconoce", () => {
@@ -773,5 +800,86 @@ describe("lo que pagó la auditoría del PR del lector", () => {
     });
     expect(l.text).toBe("Porción");
     expect(has(l.text, "porcion")).toBe(true);
+  });
+});
+
+describe("segunda vuelta del PR #10: celdas centradas en vertical (forma-del-pdf §2.3, §2.5, §2.7, §2.9, §4)", () => {
+  const page = (n: number) => pages.find((p) => p.n === n)!;
+  const lineOf = (n: number, re: RegExp) =>
+    toLines(page(n)).find((l) => re.test(l.text))!;
+
+  it("aditivos: el nombre de dos líneas va CENTRADO (una arriba, otra abajo del código) y es de su fila", () => {
+    const code = lineOf(8, /E 951/);
+    const above = lineOf(8, /^Brillo Simulado$/);
+    const below = lineOf(8, /^Doble \(BSD\)$/);
+    expect(above.y).toBeLessThan(code.y);
+    expect(below.y).toBeGreaterThan(code.y);
+    // La 1.ª línea, por orden de lectura, sería de la celda de arriba: se asigna por y.
+    expect(
+      reading.draft.additives.find((a) => a.code === "E952")?.name.es,
+    ).toBe("Brillo Simulado Doble (BSD)");
+    expect(reading.draft.additives).toHaveLength(10);
+  });
+
+  it("menú: el título va seguido de contenido, no del ícono, y aun así se encuentra", () => {
+    const lines = toLines(page(13));
+    const title = lines.findIndex((l) => has(l.text, "menu"));
+    expect(lines[title + 1].text).not.toMatch(/^\p{Extended_Pictographic}/u);
+    expect(reading.draft.menu).toHaveLength(5);
+  });
+
+  it("menú: el contenido que empieza ANTES del ícono es de su comida, no de la anterior", () => {
+    const first = lineOf(13, /^Arepa de maíz/);
+    const icon = lineOf(13, /Arranque/);
+    expect(first.y).toBeLessThan(icon.y);
+    const recreo = reading.draft.menu.find((m) => m.id === "recreo-media")!;
+    expect(recreo.content.es).toMatch(/^Fruta con semillas/);
+    expect(reading.draft.menu[0].content.es).not.toMatch(
+      /Fruta|semillas de girasol/,
+    );
+  });
+
+  it("actividad: una línea con «objetivo» sin minutos antes no gana; la meta es la de los minutos", () => {
+    expect(lineOf(6, /Objetivo simulado/).y).toBeLessThan(
+      lineOf(6, /Objetivo de la semana/).y,
+    );
+    expect(reading.draft.goals.activity?.es).toBe(
+      "30 a 50 minutos de bici o patines cada tarde.",
+    );
+  });
+
+  it("equivalencias (a): «Nota <palabra>: la <X> incluye …» reemplaza <X>, no <palabra>", () => {
+    const keys = reading.draft.equivalences.map((e) => e.whenMissing);
+    expect(keys).toContain("galleta");
+    expect(keys).not.toContain("recreo");
+    const r = readPlanText([
+      fakePage(1, [
+        [78, "⛔ Ejemplo por 2 meses:"],
+        [78, "alimento A · alimento B"],
+        [
+          78,
+          "Nota tarde: el yogur incluye leche. Mejor reemplazar por fruta, compota o gelatina.",
+        ],
+      ]),
+    ]);
+    expect(
+      r.draft.equivalences.map((e) => [e.whenMissing, e.use.length]),
+    ).toEqual([["yogur", 3]]);
+  });
+
+  it("equivalencias (b): «<sustantivo> del <x>:» trae una frase; el reemplazo es <y> y lo de la raya no es ítem", () => {
+    const pan = reading.draft.equivalences.find(
+      (e) => e.whenMissing === "pan",
+    )!;
+    expect(pan.use.map((u) => u.name.es)).toEqual(["casabe tostado"]);
+    expect(JSON.stringify(pan)).not.toMatch(/rinde|cruje/);
+  });
+
+  it("equivalencias (c): « o » dentro de un ítem no separa; separan las comas y la «o»/«y» del último", () => {
+    const m = reading.draft.equivalences.find(
+      (e) => e.whenMissing === "meriendas",
+    )!;
+    expect(m.use[0].name.es).toBe("maíz o arroz inflado");
+    expect(m.use.at(-1)?.name.es).toBe("manzana deshidratada");
   });
 });

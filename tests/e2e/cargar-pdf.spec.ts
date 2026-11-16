@@ -115,6 +115,33 @@ async function axeClean(page: Page) {
   expect(results.violations).toEqual([]);
 }
 
+test("lo leído del PDF llega a la revisión: cada comida con su contenido, el nombre centrado entero, la ligadura restaurada", async ({
+  page,
+}) => {
+  await open(page);
+  await pickPdf(page);
+  const look = async (key: string, want: string[], not: RegExp[] = []) => {
+    await SECTION(page, key).click();
+    const section = page.getByTestId("review-section");
+    for (const w of want) await expect(section).toContainText(w);
+    for (const n of not) await expect(section).not.toContainText(n);
+    await page.getByRole("button", { name: "Volver a la lista" }).click();
+  };
+  await look(
+    "menu",
+    [
+      "Arepa de maíz con aguacate y huevo de codorniz · Opción 2: avena con pera en trozos · Opción 3: casabe con queso",
+      "Fruta con semillas de girasol · Opción 2: maíz inflado con banano",
+    ],
+    [/queso Fruta|codorniz Fruta/],
+  );
+  await look("additives", ["Brillo Simulado Doble (BSD)"]);
+  await look("alsoAvoid", [
+    "Colorantes artificiales de bolsa",
+    "Pastas con flúor añadido",
+  ]);
+});
+
 test("PDF → revisar todas las partes → guardar → Hoy y Dieta muestran el plan, sin red hacia fuera", async ({
   page,
 }) => {

@@ -100,13 +100,26 @@ const COLUMN_GAP = 8;
 /** Ítems con la línea base a menos de esto (pt) están en la misma línea. */
 const SAME_LINE = 2;
 
-/** Caracteres de control (U+0000 incluido) que algunas plantillas dejan en el texto. */
-const CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
+/** Caracteres de control que algunas plantillas dejan en el texto. U+0000 NO: es una ligadura (abajo). */
+const CONTROL = /[\u0001-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
+
+/**
+ * U+0000 es la ligadura «fi» o «fl» que la fuente no supo nombrar: pdf.js la entrega como un
+ * ítem SOLO, angosto y pegado a sus vecinos (al inicio o a mitad de palabra). pdf.js no da el
+ * nombre del glifo, así que se restaura por la letra que sigue (ADR-010): ante «u» es «fl»
+ * («flúor»), en todo lo demás «fi» (≈ 4 de cada 5 en la plantilla). Jamás blanco ni borrado.
+ */
+export function restoreLigatures(text: string): string {
+  return text.replace(/\u0000+/g, (_, at: number) =>
+    /^[uúüUÚÜ]/.test(text.slice(at + 1)) ? "fl" : "fi",
+  );
+}
 
 /** Agrupa los ítems de una página en líneas y segmentos (puro). Limpia los caracteres de control ANTES de unir. */
 export function toLines(page: PdfPage): Line[] {
-  // NFC (una tilde descompuesta se recompone) y sin controles; un ítem que solo era un
-  // control queda como blanco, para que no pegue las palabras de los lados.
+  // NFC (una tilde descompuesta se recompone) y sin controles; un ítem que solo era otro
+  // control queda como blanco, para que no pegue las palabras de los lados. La ligadura
+  // (U+0000) sigue como texto pegado y se restaura al cerrar cada segmento.
   const sorted = page.items
     .map((it) => {
       const str = it.str.normalize("NFC").replace(CONTROL, "");
@@ -145,7 +158,10 @@ export function toLines(page: PdfPage): Line[] {
     }
     const clean = segs
       .filter((s) => s.text.trim() !== "")
-      .map((s) => ({ ...s, text: s.text.replace(/\s+/g, " ").trim() }));
+      .map((s) => ({
+        ...s,
+        text: restoreLigatures(s.text).replace(/\s+/g, " ").trim(),
+      }));
     if (clean.length === 0) continue;
     lines.push({
       page: page.n,
