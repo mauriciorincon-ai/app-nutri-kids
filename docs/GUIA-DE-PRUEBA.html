@@ -6,9 +6,9 @@
 <title>Guía de prueba — Nutrikids</title>
 <!--
   GUÍA DE PRUEBA VIVA Y ACUMULATIVA de Nutrikids. PRIMERA guía de la app (v1), pero ACUMULATIVA:
-  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil), S6 (PDF) y S7 (familia). Autocontenida
+  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil), S6 (PDF), S7 (familia) y S8 (avisos). Autocontenida
   (cero CDNs). Origen por línea (S1/S2 heredadas ⇒ regresión · Nuevo/Mejorado · S3). Gate mínimo ⭐
-  = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s4.
+  = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s8.
 -->
 <style>
   :root {
@@ -373,6 +373,43 @@
       creado una familia; un estado que se diga solo con color; una frase que no entiendas.</p></div>
   </section>
 
+  <!-- ============================ M · AVISOS ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">M</span><h2>Avisos que llegan</h2></div>
+    <p class="meta-bloque chica suave">~8 min · <strong>dos teléfonos</strong> (el de la familia con la app instalada) · pantalla <strong>Ajustes</strong> y <strong>Hoy</strong> · el aviso se arma en el teléfono; en internet solo viajan horas sin etiqueta.</p>
+    <ul class="pasos">
+      <li data-origen="nuevo"><input type="checkbox" id="m1"><label for="m1">En el teléfono A abre
+        <strong>Ajustes → Avisos en este teléfono</strong> → antes de pedir nada te explica qué avisa y qué
+        sabe internet. Toca <strong>«Activar avisos en este teléfono»</strong> → el teléfono te pide el permiso <strong>una sola
+        vez</strong> y los cuatro tipos (suplementos, comidas y meriendas, agua, avisos de la familia) quedan
+        listos. En iPhone, antes de eso te dice cómo agregar la app a la pantalla de inicio.
+        <span class="origen origen-nuevo">Nuevo · S8</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="m2"><label for="m2">Apaga <strong>«Agua»</strong> y
+        deja el resto → a la hora de una comida del plan, con la app cerrada, te llega el aviso con
+        <strong>el detalle de lo que toca</strong>. Si ya marcaste esa comida antes de su hora, <strong>no
+        llega</strong> (o llega uno silencioso que dice que todo está marcado).
+        <span class="origen origen-nuevo">Nuevo · S8</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="m3"><label for="m3">Prende
+        <strong>«Ocultar el detalle con el teléfono bloqueado»</strong> → el siguiente aviso con el teléfono bloqueado dice solo
+        «Nutrikids», sin nombres ni alimentos. Apágalo y vuelve a verse el detalle.
+        <span class="origen origen-nuevo">Nuevo · S8</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="m4"><label for="m4">Con A y B en la misma familia
+        (bloque L) y los avisos de la familia prendidos en B, en A toca
+        <strong>Hoy → «Avisar a la familia»</strong>, escribe una nota corta y toca «Enviar aviso» → en B llega
+        <strong>«Aviso de Mamá»</strong> con la nota; al tocarlo se abre Hoy con la nota y
+        <strong>«Por Mamá»</strong>. Si B no tiene la familia o la llave, solo dice «Hay un aviso nuevo».
+        <span class="origen origen-nuevo">Nuevo · S8</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="m5"><label for="m5">En B toca
+        <strong>«Dejar de recibir avisos»</strong> → dice que ya no los recibe y no llega ninguno más.
+        Vuelve a activarlos y luego toca <strong>«Borrar mis datos»</strong> → los avisos también quedan
+        apagados. Todo estado se lee con símbolo y texto, no solo con color.
+        <span class="origen origen-nuevo">Nuevo · S8</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> un aviso con nombres, alimentos o notas que
+      llegue cuando «Ocultar el detalle…» está prendido; un aviso repetido a la misma hora; uno que
+      te apure o te culpe; o un permiso que se pida sin que toques el botón.</p></div>
+  </section>
+
   <!-- ============================ J · SIN INTERNET ============================ -->
   <section class="bloque">
     <div class="bloque-cabeza"><span class="letra">J</span><h2>Sin internet y versión nueva</h2></div>
@@ -450,12 +487,16 @@
 
   <footer>
     <p class="chica suave">Guía <strong>viva y acumulativa</strong>: contiene TODAS las pruebas vigentes
-      de Nutrikids (S1 a S4) con su origen visible; una prueba solo se elimina cuando su feature
+      de Nutrikids (S1 a S8) con su origen visible; una prueba solo se elimina cuando su feature
       dejó de existir. Archivo autocontenido — se abre sin internet, se versiona con el repo y se comparte
       tal cual.</p>
     <details class="chica">
       <summary>Historial de la guía</summary>
       <ul>
+        <li><strong>S8 · 2026-11-16 (v6):</strong> nace el bloque M (avisos que llegan: activar con una explicación y un
+          solo permiso, el aviso con el detalle a la hora del plan, «ocultar el detalle», «Avisar a la familia»
+          entre dos teléfonos y dejar de recibir o borrar). Mejorado: L (la familia ahora también avisa) y G
+          («Borrar mis datos» apaga los avisos). Ninguna prueba eliminada.</li>
         <li><strong>S7 · 2026-11-16 (v5):</strong> nace el bloque L (compartir con la familia, con dos teléfonos: crear, entrar,
           ver lo del otro, sin conexión, sacar a un teléfono, salir y borrar lo compartido). Mejorado: A y K
           (el dato puede viajar con la familia, cifrado), G (borrar saca de la familia) e I (el «repórtame»
@@ -484,9 +525,9 @@
 
 <script>
   (function () {
-    // NS VERSIONADO POR SPRINT (regla dura): s7. Una regresión sin correr no aparece marcada por
+    // NS VERSIONADO POR SPRINT (regla dura): s8. Una regresión sin correr no aparece marcada por
     // una versión anterior de la guía.
-    var NS = "guia-nutri-kids:s7:";
+    var NS = "guia-nutri-kids:s8:";
     var casillas = Array.prototype.slice.call(document.querySelectorAll('input[type="checkbox"]'));
     var barra = document.getElementById("barra-avance");
     var contador = document.getElementById("contador");
