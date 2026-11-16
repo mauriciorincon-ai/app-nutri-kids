@@ -29,7 +29,7 @@
     "diferencial": "No califica al niño: sin calorías, peso, IMC ni percentiles, y sin convertir el «cumplimiento» en una nota. El chat contesta con tu plan dentro del teléfono y sin internet: no manda nada a ningún lado, ni siquiera para hacerle una pregunta. Lo que anotas del día, las horas y las notas sobre tu hijo solo viaja a tu familia si tú lo decides, y siempre cifrado desde el teléfono."
   },
   "funcionalidades": {
-    "total": 22,
+    "total": 23,
     "fuente_del_conteo": "docs/MANUAL-DE-USO.md",
     "descartadas": [],
     "grupos": [
@@ -74,8 +74,14 @@
           {
             "id": "F5",
             "nombre": "Qué toca ahora mismo",
-            "que_hace": "Abres la app y sabes qué toca en este momento y qué sigue. Arriba aparecen la comida de la franja, el suplemento del día si falta y cómo va el agua, sin notificaciones, sin pedir permisos y sin reproches.",
+            "que_hace": "Abres la app y sabes qué toca en este momento y qué sigue. Arriba aparecen la comida de la franja, el suplemento del día si falta y cómo va el agua, y sin reproches. Con los avisos activados también te llega con la app cerrada.",
             "seccion_manual": "«Hoy» · Recordatorio «Ahora mismo» (Sprint 003)"
+          },
+          {
+            "id": "F23",
+            "nombre": "Los avisos que llegan",
+            "que_hace": "Tu teléfono te avisa a la hora de cada comida, del suplemento y del agua aunque la app esté cerrada, con las horas de tu plan; eliges qué tipos quieres y puedes ocultar el detalle con el teléfono bloqueado. Si marcas algo antes, ese aviso no suena. «Avisar a la familia» deja una nota corta y cifrada que despierta los demás teléfonos. El servidor solo guarda horas sin etiqueta y manda un toque vacío: el aviso se arma en tu teléfono.",
+            "seccion_manual": "Avisos que llegan"
           },
           {
             "id": "F6",
@@ -227,18 +233,18 @@
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 785,
+      "valor": 910,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-16 sobre la rama de la familia cifrada (S7): 41 archivos, 785 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-16 sobre la rama de los avisos que llegan (S8): 49 archivos, 910 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 180,
+      "valor": 202,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-16 sobre la rama de la familia cifrada (S7), contra un build de producción y el doble en memoria del servicio de la familia (jamás la base real): 180 pruebas en dos proyectos (móvil Pixel 7 y escritorio), incluidas las de accesibilidad con axe en los dos temas, las de uso sin internet y las de dos teléfonos con el centinela de texto en claro, todas en verde."
+      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-16 sobre la rama de los avisos que llegan (S8), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 202 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 200 en verde y 2 omitidas a propósito (el reloj firmado solo se prueba en el móvil, porque los dos proyectos comparten servidor); incluyen axe en los dos temas, el uso sin internet, los dos teléfonos con el centinela de texto en claro, el service worker real con el toque entregado por el protocolo del navegador y el reloj de 5 minutos con cinco firmas rechazadas."
     },
     {
       "clave": "cobertura_lineas",
@@ -246,15 +252,15 @@
       "valor": 97.6,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib/diet, src/lib/ia, src/lib/pdf, src/lib/privacy y src/lib/family el 2026-11-16 sobre la rama de la familia cifrada (97,6 % de líneas en total; src/lib/family 97,23 % y su servidor 100 %), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family."
+      "detalle": "v8 sobre src/lib el 2026-11-16 sobre la rama de los avisos que llegan (97,63 % de líneas en total; src/lib/family 97,24 % y su servidor 100 %; src/lib/push 96,47 % y su servidor 100 %), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
     },
     {
       "clave": "decisiones_registradas",
       "etiqueta": "Decisiones de arquitectura registradas",
-      "valor": 11,
+      "valor": 12,
       "unidad": "ADR",
       "fuente": "medido",
-      "detalle": "Archivos de decisions/ el 2026-11-16; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, y la 010 fija que el PDF se lee en el aparato y se revisa parte por parte."
+      "detalle": "Archivos de decisions/ el 2026-11-16; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, y la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, y la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono."
     },
     {
       "clave": "dependencias_runtime",
@@ -262,7 +268,7 @@
       "valor": 14,
       "unidad": "paquetes",
       "fuente": "medido",
-      "detalle": "Campo `dependencies` de package.json el 2026-11-16 sobre la rama del S7: sin dependencias nuevas (el cifrado es WebCrypto; el almacén se llama con fetch); sigue incluyendo pdfjs-dist, fijado y servido por la propia app (ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
+      "detalle": "Campo `dependencies` de package.json el 2026-11-16 sobre la rama del S8: sin dependencias nuevas (el cifrado y la firma VAPID son WebCrypto; el almacén y el push se llaman con fetch); sigue incluyendo pdfjs-dist, fijado y servido por la propia app (ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
     },
     {
       "clave": "requests_del_registro",
@@ -283,10 +289,10 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 79626,
+      "valor": 81141,
       "unidad": "bytes",
       "fuente": "medido",
-      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-16 sobre la rama del S7. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."
+      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-16 sobre la rama del S8. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."
     }
   ],
   "stack": [
