@@ -61,6 +61,55 @@ const KEYS = [
   "goals",
 ];
 
+/** Un PDF mínimo y válido; `text` null = sin capa de texto (como uno escaneado). */
+function tinyPdf(text: string | null): Buffer {
+  const content = text
+    ? `BT /F1 14 Tf 40 700 Td (${text}) Tj ET`
+    : "0 0 100 100 re f";
+  const objs = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>",
+    `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+  ];
+  let out = "%PDF-1.4\n";
+  const offsets: number[] = [];
+  objs.forEach((o, i) => {
+    offsets.push(out.length);
+    out += `${i + 1} 0 obj\n${o}\nendobj\n`;
+  });
+  const xref = out.length;
+  out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n`;
+  for (const o of offsets) out += `${String(o).padStart(10, "0")} 00000 n \n`;
+  out += `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+  return Buffer.from(out, "latin1");
+}
+
+async function pickBuffer(page: Page, buffer: Buffer) {
+  await page.locator('input[accept="application/pdf,.pdf"]').setInputFiles({
+    name: "plan.pdf",
+    mimeType: "application/pdf",
+    buffer,
+  });
+}
+
+/** Reescribe el borrador guardado (todo «está bien») para armar estados difíciles de alcanzar. */
+async function seedDraft(
+  page: Page,
+  edit: (draft: Record<string, unknown>) => void,
+) {
+  await page.evaluate(
+    ([key, src]) => {
+      const d = JSON.parse(localStorage.getItem(key) as string);
+      for (const k of Object.keys(d.marks)) d.marks[k] = "ok";
+      new Function("d", src)(d);
+      localStorage.setItem(key, JSON.stringify(d));
+    },
+    [DRAFT_KEY, `(${edit.toString()})(d)`] as const,
+  );
+}
+
 async function axeClean(page: Page) {
   const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations).toEqual([]);
@@ -70,7 +119,8 @@ test("PDF → revisar todas las partes → guardar → Hoy y Dieta muestran el p
   page,
 }) => {
   const requests: { url: string; method: string; body: boolean }[] = [];
-  page.on("request", (r) =>
+  // En el contexto (no solo la página): también ve lo que piden el worker y el service worker.
+  page.context().on("request", (r) =>
     requests.push({
       url: r.url(),
       method: r.method(),
@@ -215,7 +265,7 @@ for (const colorScheme of ["light", "dark"] as const) {
   test(`axe limpio en cada estado de la revisión · tema ${colorScheme}`, async ({
     page,
   }) => {
-    await page.emulateMedia({ colorScheme });
+    await page.emulateMedia({ colorScheme, reducedMotion: "reduce" });
     await open(page);
 
     // Error: archivo que no es PDF.
@@ -262,3 +312,139 @@ for (const colorScheme of ["light", "dark"] as const) {
     ).toBeEnabled();
   });
 }
+
+for (const colorScheme of ["light", "dark"] as const) {
+  test(`axe limpio: otra forma de PDF, sin texto, guardado fallido y fila no leída · tema ${colorScheme}`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme, reducedMotion: "reduce" });
+    await open(page);
+
+    // PDF sin capa de texto: error en llano.
+    await pickBuffer(page, tinyPdf(null));
+    await expect(page.locator("p[role=alert]")).toContainText("texto");
+    await axeClean(page);
+
+    // Otra forma: no se rechaza, dice qué no reconoció y se completa a mano.
+    await pickBuffer(page, tinyPdf("Un documento cualquiera"));
+    await expect(page.getByTestId("review-list")).toBeVisible({
+      timeout: 60_000,
+    });
+    await SECTION(page, "menu").click();
+    await expect(page.getByText("No encontramos esta parte")).toBeVisible();
+    await axeClean(page);
+    // «Mi plan no lo trae» desactivado con su razón (menú es necesario).
+    await expect(
+      page.getByRole("button", { name: "Mi plan no lo trae" }),
+    ).toBeDisabled();
+    await page.getByRole("button", { name: "Volver a la lista" }).click();
+
+    // Guardado que no se puede armar: aviso visible.
+    await seedDraft(page, (d) => {
+      const draft = d.draft as {
+        menu: { start: string }[];
+        green: unknown[];
+        hydration?: unknown;
+      };
+      draft.menu = [
+        {
+          id: "x",
+          start: "99:99",
+          end: "99:99",
+          name: { es: "x", en: "x" },
+          content: { es: "x", en: "x" },
+        } as never,
+      ];
+      draft.green = [
+        {
+          id: "g",
+          name: { es: "g", en: "g" },
+          portion: { es: "p", en: "p" },
+          items: [{ id: "i", name: { es: "i", en: "i" } }],
+        },
+      ];
+      draft.hydration = {
+        targetLitersMin: 1,
+        targetLitersMax: 2,
+        habit: { es: "h", en: "h" },
+      };
+    });
+    await page.reload();
+    await page.getByRole("button", { name: "Seguir revisando" }).click();
+    await page.getByRole("button", { name: "Guardar mi plan" }).click();
+    await expect(page.locator("p[role=alert]")).toBeVisible();
+    await axeClean(page);
+
+    // Una fila que el lector no pudo leer: aviso para cotejar con el PDF.
+    await seedDraft(page, (d) => {
+      d.skipped = { green: 2 };
+    });
+    await page.reload();
+    await page.getByRole("button", { name: "Seguir revisando" }).click();
+    await SECTION(page, "green").click();
+    await expect(page.getByRole("note")).toContainText("2 fila");
+    await axeClean(page);
+  });
+
+  test(`axe limpio: sin espacio para guardar el avance ni el plan · tema ${colorScheme}`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme, reducedMotion: "reduce" });
+    await open(page);
+    await pickPdf(page);
+    // Cuota llena: el borrador y luego el plan no se pueden escribir.
+    await page.evaluate(() => {
+      const real = Storage.prototype.setItem;
+      Storage.prototype.setItem = function (k: string, v: string) {
+        if (k.startsWith("nutrikids.plan-draft") || k === "nutrikids.diet.v1")
+          throw new DOMException("quota", "QuotaExceededError");
+        return real.call(this, k, v);
+      };
+    });
+    await reviewSection(page, "validity");
+    await expect(
+      page.getByRole("status").filter({ hasText: "avance" }),
+    ).toBeVisible();
+    await axeClean(page);
+    for (const k of KEYS.filter((k) => k !== "validity")) {
+      if (k === "red") {
+        await SECTION(page, "red").click();
+        await page.getByRole("button", { name: "Mi plan no lo trae" }).click();
+      } else await reviewSection(page, k);
+    }
+    await page.getByRole("button", { name: "Guardar mi plan" }).click();
+    await expect(page.locator("p[role=alert]")).toBeVisible();
+    await axeClean(page);
+  });
+}
+
+test("los botones de la revisión miden al menos 44 px y el foco no se pierde", async ({
+  page,
+}) => {
+  await open(page);
+  await pickPdf(page);
+  const small = await page.evaluate(() =>
+    [...document.querySelectorAll("button:not([disabled])")]
+      .filter((b) => b.getBoundingClientRect().height < 44)
+      .map((b) => b.textContent?.trim()),
+  );
+  expect(small).toEqual([]);
+
+  await SECTION(page, "alsoAvoid").click();
+  await expect(page.getByRole("heading", { level: 2 })).toBeFocused();
+  await page.getByRole("button", { name: "Añadir" }).click();
+  // El foco pasa al primer campo del formulario…
+  await expect(page.getByLabel("Nombre")).toBeFocused();
+  await page.getByLabel("Nombre").fill("Algo inventado");
+  await page.getByRole("button", { name: "Guardar cambios" }).click();
+  // …y al cerrarlo vuelve al título de la parte.
+  await expect(page.getByRole("heading", { level: 2 })).toBeFocused();
+  const tiny = await page.evaluate(() =>
+    [...document.querySelectorAll("button:not([disabled])")]
+      .filter((b) => b.getBoundingClientRect().height < 44)
+      .map((b) => b.textContent?.trim()),
+  );
+  expect(tiny).toEqual([]);
+  await page.getByRole("button", { name: /^Quitar Algo inventado/ }).click();
+  await expect(page.getByRole("heading", { level: 2 })).toBeFocused();
+});

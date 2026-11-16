@@ -233,9 +233,11 @@ export const es = {
       "Este PDF es una foto del plan, sin texto que se pueda leer. Pide a tu profesional el PDF original o carga el plan con el archivo .json.",
     errorUnreadable:
       "No pudimos abrir ese PDF. Prueba con el original que te dieron o carga el plan con el archivo .json.",
+    draftNotSaved:
+      "No pudimos guardar tu avance en este teléfono (¿poco espacio?). Termina la revisión sin salir de esta pantalla.",
     resumeTitle: "Tienes una revisión a medias",
     resumeBody:
-      "Dejaste tu plan a medio revisar en este teléfono. Puedes seguir donde ibas.",
+      "Dejaste tu plan a medio revisar en este teléfono. Puedes seguir donde ibas. Si eliges otro PDF, esta revisión se reemplaza.",
     resumeContinue: "Seguir revisando",
     resumeDiscard: "Descartar esta revisión",
     reviewTitle: "Revisa tu plan",
@@ -253,6 +255,8 @@ export const es = {
     addedByYou: "Añadido por ti",
     unrecognizedNote:
       "No encontramos esta parte en tu PDF. Complétala a mano o di que tu plan no la trae.",
+    skippedNote:
+      "No pudimos leer {n} fila(s) de esta parte. Compárala con tu PDF y añade lo que falte.",
     emptyNote: "Aquí no hay nada todavía.",
     confirmButton: "Está bien",
     absentButton: "Mi plan no lo trae",
@@ -290,7 +294,7 @@ export const es = {
     hint_red:
       "El PDF cuenta estos alimentos en texto corrido y no podemos separarlos con seguridad. Añade aquí, uno por uno, los que tu plan pide evitar siempre.",
     hint_restricted:
-      "Los que tu plan pide dejar un tiempo. La app cuenta 90 días desde la fecha del plan.",
+      "Los que tu plan pide dejar un tiempo. La app cuenta el plazo desde la fecha del plan: 90 días si tu PDF no lo dice. Lo ajustas en «Fecha del plan».",
     f_name: "Nombre",
     f_code: "Código (por ejemplo E123)",
     f_foundIn: "Se encuentra en",
@@ -311,7 +315,8 @@ export const es = {
     f_habit: "Hábito",
     f_activity: "Actividad",
     f_sleep: "Sueño",
-    f_issuedAt: "Fecha del plan (AAAA-MM-DD)",
+    f_issuedAt: "Fecha del plan",
+    f_restrictionDays: "Días de la restricción (vacío = 90)",
     orPaste: "…o pega el contenido",
     pasteHint:
       "Si el archivo no abre desde el teléfono, copia todo su contenido y pégalo aquí:",

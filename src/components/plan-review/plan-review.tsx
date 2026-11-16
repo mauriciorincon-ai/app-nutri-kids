@@ -114,7 +114,10 @@ function FieldInput({
   if (spec.kind === "days") {
     const on = value.split(",").filter(Boolean);
     return (
-      <fieldset className="flex flex-col gap-1.5">
+      <fieldset
+        className="flex flex-col gap-1.5"
+        aria-describedby={invalid ? `${id}-err` : undefined}
+      >
         <legend className="mb-1 text-sm font-semibold">{label}</legend>
         <div className="flex flex-wrap gap-1.5">
           {WEEKDAYS.map((d) => {
@@ -138,13 +141,13 @@ function FieldInput({
                   )
                 }
               >
-                {sel ? "✓ " : ""}
+                {sel && <span aria-hidden>✓ </span>}
                 {t.weekdays[d].slice(0, 3)}
               </button>
             );
           })}
         </div>
-        {invalid && <FieldError />}
+        {invalid && <FieldError id={`${id}-err`} />}
       </fieldset>
     );
   }
@@ -197,8 +200,14 @@ function RowForm({
   const { t } = useI18n();
   const [values, setValues] = useState<Values>(initial);
   const [bad, setBad] = useState<string[]>([]);
+  const formRef = useRef<HTMLFormElement>(null);
+  // Al abrir el formulario, el foco pasa a su primer campo (no se pierde en <body>).
+  useEffect(() => {
+    formRef.current?.querySelector<HTMLElement>("input, button")?.focus();
+  }, []);
   return (
     <form
+      ref={formRef}
       className="flex flex-col gap-3 rounded-xl border bg-card px-4 py-4"
       onSubmit={(e) => {
         e.preventDefault();
@@ -217,14 +226,14 @@ function RowForm({
         />
       ))}
       <div className="flex gap-2">
-        <Button type="submit" size="lg" className="flex-1">
+        <Button type="submit" size="lg" className="min-h-11 flex-1">
           {t.load.saveRow}
         </Button>
         <Button
           type="button"
           size="lg"
           variant="outline"
-          className="flex-1 bg-transparent"
+          className="min-h-11 flex-1 bg-transparent"
           onClick={onCancel}
         >
           {t.load.cancel}
@@ -268,6 +277,12 @@ function SectionView({
   useEffect(() => heading.current?.focus(), [sectionKey]);
   // `null` = cerrado · `""` = añadiendo · id = editando esa fila
   const [editing, setEditing] = useState<string | null>(null);
+  // Al cerrar un formulario (guardar o cancelar) o quitar una fila, el foco vuelve al título.
+  const wasEditing = useRef(false);
+  useEffect(() => {
+    if (wasEditing.current && editing === null) heading.current?.focus();
+    wasEditing.current = editing !== null;
+  }, [editing]);
 
   const rows = rowsOf(state, sectionKey);
   const spec = SECTIONS[sectionKey];
@@ -275,6 +290,8 @@ function SectionView({
   const required = REQUIRED_KEYS.includes(sectionKey);
   const unrecognized = wasUnrecognized(state, sectionKey);
   const mark = state.marks[sectionKey];
+  const skippedCount =
+    (state.skipped as Record<string, number> | undefined)?.[sectionKey] ?? 0;
   const hint =
     sectionKey === "red"
       ? t.load.hint_red
@@ -311,7 +328,11 @@ function SectionView({
 
   return (
     <section className="flex flex-col gap-4" data-testid="review-section">
-      <Button variant="ghost" className="-ml-2 self-start" onClick={onBack}>
+      <Button
+        variant="ghost"
+        className="-ml-2 min-h-11 self-start"
+        onClick={onBack}
+      >
         <ChevronLeft aria-hidden className="size-4" />
         {t.load.back}
       </Button>
@@ -328,6 +349,15 @@ function SectionView({
         <p className="flex items-start gap-2 rounded-xl bg-tl-yellow-surface px-4 py-3 text-sm font-semibold leading-relaxed text-tl-yellow">
           <TriangleAlert aria-hidden className="mt-0.5 size-4 shrink-0" />
           {t.load.unrecognizedNote}
+        </p>
+      )}
+      {skippedCount > 0 && (
+        <p
+          role="note"
+          className="flex items-start gap-2 rounded-xl bg-tl-yellow-surface px-4 py-3 text-sm font-semibold leading-relaxed text-tl-yellow"
+        >
+          <TriangleAlert aria-hidden className="mt-0.5 size-4 shrink-0" />
+          {fmt(t.load.skippedNote, { n: skippedCount })}
         </p>
       )}
       {!unrecognized && rows.length === 0 && editing === null && (
@@ -358,7 +388,7 @@ function SectionView({
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
-                      className="flex-1 bg-transparent"
+                      className="min-h-11 flex-1 bg-transparent"
                       aria-label={fmt(t.load.editLabel, { name: title })}
                       onClick={() => setEditing(row.id)}
                     >
@@ -367,11 +397,12 @@ function SectionView({
                     </Button>
                     <Button
                       variant="outline"
-                      className="flex-1 bg-transparent"
+                      className="min-h-11 flex-1 bg-transparent"
                       aria-label={fmt(t.load.removeLabel, { name: title })}
                       onClick={() => {
                         onChange(removeRow(state, sectionKey, row.id));
                         setEditing(null);
+                        heading.current?.focus();
                       }}
                     >
                       <Minus aria-hidden className="size-4" />
@@ -394,7 +425,12 @@ function SectionView({
         />
       ) : (
         canAdd && (
-          <Button variant="secondary" size="lg" onClick={() => setEditing("")}>
+          <Button
+            variant="secondary"
+            size="lg"
+            className="min-h-11"
+            onClick={() => setEditing("")}
+          >
             <Plus aria-hidden className="size-4" />
             {t.load.add}
           </Button>
@@ -404,6 +440,7 @@ function SectionView({
       <div className="flex flex-col gap-2 border-t pt-4">
         <Button
           size="lg"
+          className="min-h-11"
           disabled={rows.length === 0}
           aria-describedby={rows.length === 0 ? "rv-ok-why" : undefined}
           onClick={confirm}
@@ -419,7 +456,7 @@ function SectionView({
         <Button
           size="lg"
           variant="outline"
-          className="bg-transparent"
+          className="min-h-11 bg-transparent"
           disabled={block !== null}
           aria-describedby={block ? "rv-absent-why" : undefined}
           onClick={absent}
@@ -539,6 +576,7 @@ export function PlanReview({
       <div className="flex flex-col gap-2">
         <Button
           size="lg"
+          className="min-h-11"
           disabled={!complete}
           aria-describedby={complete ? undefined : "rv-save-why"}
           onClick={onSave}
@@ -557,7 +595,7 @@ export function PlanReview({
         <p className="text-xs text-muted-foreground">{t.load.reviewPrivacy}</p>
         <Button
           variant="ghost"
-          className="self-start text-muted-foreground"
+          className="min-h-11 self-start text-muted-foreground"
           onClick={onDiscard}
         >
           {t.load.resumeDiscard}

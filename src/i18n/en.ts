@@ -231,9 +231,11 @@ export const en: Dictionary = {
       "This PDF is a picture of the plan, with no text that can be read. Ask your professional for the original PDF, or load the plan with the .json file.",
     errorUnreadable:
       "We couldn't open that PDF. Try the original you were given, or load the plan with the .json file.",
+    draftNotSaved:
+      "We couldn't save your progress on this phone (low storage?). Finish the review without leaving this screen.",
     resumeTitle: "You have a review in progress",
     resumeBody:
-      "You left your plan half reviewed on this phone. You can pick up where you stopped.",
+      "You left your plan half reviewed on this phone. You can pick up where you stopped. If you choose another PDF, this review is replaced.",
     resumeContinue: "Keep reviewing",
     resumeDiscard: "Discard this review",
     reviewTitle: "Review your plan",
@@ -252,6 +254,8 @@ export const en: Dictionary = {
     addedByYou: "Added by you",
     unrecognizedNote:
       "We didn't find this part in your PDF. Fill it in by hand, or say your plan doesn't have it.",
+    skippedNote:
+      "We couldn't read {n} row(s) of this part. Compare it with your PDF and add what's missing.",
     emptyNote: "Nothing here yet.",
     confirmButton: "Looks right",
     absentButton: "My plan doesn't have it",
@@ -289,7 +293,7 @@ export const en: Dictionary = {
     hint_red:
       "The PDF describes these foods in running text, so we can't separate them reliably. Add here, one by one, the ones your plan always asks to avoid.",
     hint_restricted:
-      "The ones your plan asks to pause for a while. The app counts 90 days from the plan's date.",
+      "The ones your plan asks to pause for a while. The app counts the period from the plan's date: 90 days if your PDF doesn't say. You adjust it in “Plan date”.",
     f_name: "Name",
     f_code: "Code (for example E123)",
     f_foundIn: "Found in",
@@ -310,7 +314,8 @@ export const en: Dictionary = {
     f_habit: "Habit",
     f_activity: "Activity",
     f_sleep: "Sleep",
-    f_issuedAt: "Plan date (YYYY-MM-DD)",
+    f_issuedAt: "Plan date",
+    f_restrictionDays: "Restriction days (empty = 90)",
     orPaste: "…or paste the content",
     pasteHint:
       "If the file won't open on the phone, copy all its content and paste it here:",

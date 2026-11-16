@@ -62,13 +62,15 @@ export default function LoadPage() {
   const [resumed, setResumed] = useState(false);
   const [local, setLocal] = useState<ReviewState | null>(null);
   const [saveFailed, setSaveFailed] = useState(false);
+  // La cuota llena impide guardar el avance: se avisa para que no cierren la pantalla.
+  const [draftLost, setDraftLost] = useState(false);
   const review = local ?? (resumed ? saved : null);
   const busy = state.phase === "validating" || state.phase === "reading";
 
   const commit = (next: ReviewState) => {
     setLocal(next);
     setSaveFailed(false);
-    savePlanDraft(next);
+    setDraftLost(!savePlanDraft(next));
     notifyLocalStore();
   };
 
@@ -82,7 +84,12 @@ export default function LoadPage() {
   const onPdf = async (file: File | undefined) => {
     if (!file) return;
     setState({ phase: "reading" });
-    const result = await readPdfFile(file);
+    let result: Awaited<ReturnType<typeof readPdfFile>>;
+    try {
+      result = await readPdfFile(file);
+    } catch {
+      result = { ok: false, error: "unreadable" };
+    }
     if (!result.ok) {
       setState({ phase: "error", error: result.error });
       return;
@@ -178,13 +185,33 @@ export default function LoadPage() {
           </Button>
         </section>
       ) : review ? (
-        <PlanReview
-          state={review}
-          onChange={commit}
-          onSave={savePlan}
-          onDiscard={discard}
-          saveFailed={saveFailed}
-        />
+        <>
+          {state.phase === "error" && (
+            <p
+              role="alert"
+              className="flex items-start gap-2 rounded-xl bg-tl-red-surface px-4 py-3 text-sm font-semibold leading-relaxed text-tl-red"
+            >
+              <TriangleAlert aria-hidden className="mt-0.5 size-4 shrink-0" />
+              {errorMessage(state.error)}
+            </p>
+          )}
+          {draftLost && (
+            <p
+              role="status"
+              className="flex items-start gap-2 rounded-xl bg-tl-yellow-surface px-4 py-3 text-sm font-semibold leading-relaxed text-tl-yellow"
+            >
+              <TriangleAlert aria-hidden className="mt-0.5 size-4 shrink-0" />
+              {t.load.draftNotSaved}
+            </p>
+          )}
+          <PlanReview
+            state={review}
+            onChange={commit}
+            onSave={savePlan}
+            onDiscard={discard}
+            saveFailed={saveFailed}
+          />
+        </>
       ) : (
         <>
           {saved && (
@@ -198,12 +225,16 @@ export default function LoadPage() {
               <p className="text-sm leading-relaxed text-muted-foreground">
                 {t.load.resumeBody}
               </p>
-              <Button size="lg" onClick={() => setResumed(true)}>
+              <Button
+                size="lg"
+                className="min-h-11"
+                onClick={() => setResumed(true)}
+              >
                 {t.load.resumeContinue}
               </Button>
               <Button
                 variant="ghost"
-                className="text-muted-foreground"
+                className="min-h-11 text-muted-foreground"
                 onClick={discard}
               >
                 {t.load.resumeDiscard}
@@ -224,7 +255,7 @@ export default function LoadPage() {
             )}
             <Button
               size="lg"
-              className="mt-4 w-full"
+              className="mt-4 min-h-11 w-full"
               disabled={busy}
               onClick={() => pdfInput.current?.click()}
             >
@@ -248,7 +279,7 @@ export default function LoadPage() {
             <Button
               size="lg"
               variant="secondary"
-              className="mt-3 w-full"
+              className="mt-3 min-h-11 w-full"
               disabled={busy}
               onClick={() => fileInput.current?.click()}
             >
