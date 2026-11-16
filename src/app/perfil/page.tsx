@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Perfil: lo que el profesional dijo en el plan («según tu plan») y lo que quien
- * cuida completa en el teléfono («anotado por ti»), cada dato con su origen
+ * cuida completa en el teléfono («anotado por quien cuida»), cada dato con su origen
  * (ADR-009). Lo anotado vive aparte del plan; solo sale del aparato si la familia
  * comparte, y entonces cifrado. Lo que el plan no trae se dice («tu plan no lo
  * dice»), nunca se inventa.

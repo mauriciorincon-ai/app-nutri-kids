@@ -174,8 +174,8 @@ export const en: Dictionary = {
       "You noted {food} as an allergy (not from your plan). Any doubt, ask your professional.",
     intoleranceNotedYes:
       "You noted {food} as an intolerance (not from your plan): ask your professional.",
-    notedList: "You noted: {list}.",
-    medicationNoted: "Noted by you: {name}",
+    notedList: "A caregiver noted: {list}.",
+    medicationNoted: "Noted by a caregiver: {name}",
     intoleranceYes:
       "Your plan lists {food} as an intolerance: ask your professional how much and when.",
     allergyList: "Your plan lists these allergies: {list}.",
@@ -503,7 +503,7 @@ export const en: Dictionary = {
     intro:
       "What your plan says and what you note on this phone, each with its origin. It stays on the phone, and only travels to your family if you choose to share: always encrypted.",
     originPlan: "from your plan",
-    originYou: "noted by you",
+    originYou: "noted by a caregiver",
     notSaid: "Your plan doesn't say.",
     goalsTitle: "Professional's goals",
     groupsTitle: "Food groups",

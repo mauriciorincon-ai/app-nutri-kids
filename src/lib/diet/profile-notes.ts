@@ -8,7 +8,7 @@ import { TEXTURES, textureSchema, type Texture } from "./schema";
 /**
  * Lo que QUIEN CUIDA anota del niño en el teléfono (ADR-009, decisión 1 a del
  * G-Plan del S5). Vive en su propia clave, aparte del plan: cargar un plan nuevo
- * no lo toca, y cada dato se muestra como «anotado por ti», nunca como del
+ * no lo toca, y cada dato se muestra como «anotado por quien cuida», nunca como del
  * profesional. Regla dura 6: jamás sale del aparato en claro (ni red, ni logs, ni Sentry,
  * ni export); si la familia comparte, solo viaja CIFRADO en el aparato (src/lib/family,
  * ADR-011). «Borrar datos» lo elimina. Lo que se lee pasa por Zod (regla 4): un dato

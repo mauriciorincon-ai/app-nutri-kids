@@ -175,8 +175,8 @@ export const es = {
       "Anotaste {food} como alergia (no viene de tu plan). Cualquier duda, con tu profesional.",
     intoleranceNotedYes:
       "Anotaste {food} como intolerancia (no viene de tu plan): pregúntale a tu profesional.",
-    notedList: "Tú anotaste: {list}.",
-    medicationNoted: "Anotado por ti: {name}",
+    notedList: "Quien cuida anotó: {list}.",
+    medicationNoted: "Anotado por quien cuida: {name}",
     intoleranceYes:
       "Tu plan anota {food} como intolerancia: pregúntale a tu profesional cuánto y cuándo.",
     allergyList: "Tu plan anota estas alergias: {list}.",
@@ -508,7 +508,7 @@ export const es = {
     intro:
       "Lo que dice tu plan y lo que tú anotas en este teléfono, cada cosa con su origen. Se queda en el teléfono, y solo viaja a tu familia si decides compartir: siempre cifrado.",
     originPlan: "según tu plan",
-    originYou: "anotado por ti",
+    originYou: "anotado por quien cuida",
     notSaid: "Tu plan no lo dice.",
     goalsTitle: "Objetivos del profesional",
     groupsTitle: "Grupos de alimentos",
