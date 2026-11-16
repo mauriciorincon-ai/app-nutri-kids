@@ -5,7 +5,7 @@ hito: H-2
 opened: 2026-11-15
 closed: 2026-11-15
 branch: sprint-006/tu-pdf · sprint-006/lector-forma-real
-pr: 9 · PR_CORTO
+pr: 9 · 10
 ---
 
 # S6 · Tu PDF, vuelto app
