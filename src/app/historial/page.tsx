@@ -6,6 +6,7 @@ import { ChevronLeft } from "lucide-react";
 import { NoteSummary } from "@/components/day-checklist/note-summary";
 import { useToday } from "@/components/day-checklist/use-today";
 import { useDiet } from "@/components/diet-provider";
+import { useWho } from "@/components/family/use-family";
 import { TodayBadge } from "@/components/today-badge";
 import { fmt, useI18n, type Dictionary, type Locale } from "@/i18n";
 import {
@@ -94,6 +95,7 @@ function DayCard({
   t: Dictionary;
 }) {
   const { l } = useI18n();
+  const who = useWho();
 
   // Rótulo del ítem resuelto contra la dieta ACTIVA; si el id es de una dieta
   // anterior (ya no existe), un texto legible — jamás el checkId crudo.
@@ -115,7 +117,7 @@ function DayCard({
       </p>
 
       <ul className="mt-2 flex flex-col gap-2">
-        {listDayEntries(record).map(({ checkId, at, marked, note }) => (
+        {listDayEntries(record).map(({ checkId, at, marked, note, by }) => (
           <li key={checkId} className="text-sm">
             <span className="flex items-baseline justify-between gap-2">
               <span
@@ -135,6 +137,14 @@ function DayCard({
                 </time>
               )}
             </span>
+            {marked && who(by) && (
+              <span
+                className="mt-0.5 block font-semibold text-muted-foreground"
+                data-testid="history-by"
+              >
+                {who(by)}
+              </span>
+            )}
             {note && (note.chips.length > 0 || note.text) && (
               <span className="mt-0.5 block text-muted-foreground">
                 {t.history.noteLabel} <NoteSummary note={note} />

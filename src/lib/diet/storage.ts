@@ -1,5 +1,6 @@
 import demoRaw from "../../../data/demo-diet.json";
 import { clearDevice, getDeviceId } from "../device";
+import { clearKeys } from "../family/keystore";
 import { clearFamilyLocal } from "../family/state";
 import { log } from "../log";
 import {
@@ -251,6 +252,7 @@ export function clearAllData(): void {
   // Sale de la familia (las claves y el estado se van de este teléfono; lo compartido en el
   // servidor lo borra «Borrar lo compartido» en Ajustes) y olvida quién es este teléfono.
   clearFamilyLocal();
+  void clearKeys();
   clearDevice();
   log.info({ event: "data-cleared" });
 }

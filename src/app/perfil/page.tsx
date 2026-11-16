@@ -7,6 +7,7 @@ import { FileText, PenLine, Trash2 } from "lucide-react";
 import { useToday } from "@/components/day-checklist/use-today";
 import { useDiet } from "@/components/diet-provider";
 import { Button } from "@/components/ui/button";
+import { useWho } from "@/components/family/use-family";
 import { useProfileNotes } from "@/components/use-profile-notes";
 import { fmt, useI18n } from "@/i18n";
 import { dateKey, isRestrictionActive } from "@/lib/diet/logic";
@@ -27,8 +28,9 @@ import { cn } from "@/lib/utils";
 /**
  * Perfil: lo que el profesional dijo en el plan («según tu plan») y lo que quien
  * cuida completa en el teléfono («anotado por ti»), cada dato con su origen
- * (ADR-009). Lo anotado vive aparte del plan y jamás sale del aparato. Lo que el
- * plan no trae se dice («tu plan no lo dice»), nunca se inventa.
+ * (ADR-009). Lo anotado vive aparte del plan; solo sale del aparato si la familia
+ * comparte, y entonces cifrado. Lo que el plan no trae se dice («tu plan no lo
+ * dice»), nunca se inventa.
  */
 function Origin({ kind }: { kind: "plan" | "you" }) {
   const { t } = useI18n();
@@ -74,6 +76,7 @@ export default function ProfilePage() {
   const { t, l, locale } = useI18n();
   const today = useToday();
   const notes = useProfileNotes();
+  const who = useWho();
   const [kind, setKind] = useState<NoteKind>("other");
   const [text, setText] = useState("");
   const [status, setStatus] = useState("");
@@ -292,6 +295,7 @@ export default function ProfilePage() {
                   {fmt(t.profile.noteDate, {
                     date: formatShortDate(n.at, locale),
                   })}
+                  {who(n.by) && ` · ${who(n.by)}`}
                 </p>
               </div>
               <Button

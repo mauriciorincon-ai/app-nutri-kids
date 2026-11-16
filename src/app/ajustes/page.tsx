@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Trash2 } from "lucide-react";
 
 import { useDiet } from "@/components/diet-provider";
+import { FamilySection } from "@/components/family/family-section";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,7 +20,6 @@ import { fmt, useI18n, type Locale } from "@/i18n";
 import { clearAllData } from "@/lib/diet/storage";
 import { formatShortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
 
 /** Ajustes: idioma ES/EN, dieta cargada, borrar datos (confirmación) y disclaimer completo. */
 export default function SettingsPage() {
@@ -80,6 +80,8 @@ export default function SettingsPage() {
           {t.settings.profileLink}
         </Link>
       </section>
+
+      <FamilySection />
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg">{t.settings.dietVersion}</h2>

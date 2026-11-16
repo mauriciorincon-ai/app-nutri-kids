@@ -355,11 +355,11 @@ export const en: Dictionary = {
     dietVersionInfo: "{title} · issued on {date}",
     clearTitle: "Delete data",
     clearBody:
-      "Deletes the loaded diet and your whole day record (checkmarks, times and notes) and what you noted in the profile (notes and textures) from this device. The app returns to the demo.",
+      "Deletes the loaded diet and your whole day record (checkmarks, times and notes) and what you noted in the profile (notes and textures) from this device, and you leave the family if you were in one. What is already shared online is deleted from “Share with the family”. The app returns to the demo.",
     clearButton: "Delete my data",
     clearConfirmTitle: "Delete everything?",
     clearConfirmBody:
-      "The loaded diet and the whole day record (checkmarks, times and notes) and what you noted in the profile (notes and textures) will be deleted. This cannot be undone.",
+      "The loaded diet and the whole day record (checkmarks, times and notes) and what you noted in the profile (notes and textures) will be deleted, and you will leave the family. This cannot be undone.",
     clearConfirmYes: "Yes, delete",
     clearConfirmNo: "Cancel",
     clearedToast: "Data deleted. You're back on the demo diet.",
@@ -367,6 +367,121 @@ export const en: Dictionary = {
     aiTitle: "How the chat answers",
     aiBody:
       "The chat answers with code, only with what your plan contains, right here on the phone: it uses no internet AI services and nothing you type leaves the phone. If your browser has its own language model inside the phone, it's only used to reword an answer the code already decided. None of the conversation is saved.",
+  },
+  family: {
+    title: "Share with the family",
+    intro:
+      "So everyone who looks after your little one sees the same thing: the plan, what's ticked off today and what each person noted.",
+    travelsTitle: "What is shared",
+    travels:
+      "The plan, the day (ticks, times and notes) and the profile with its notes, allergies and medications. Each phone also shares its name, so you can see “By Mum”.",
+    staysTitle: "What stays on each phone",
+    stays: "The language, the theme and each phone's own settings.",
+    privacy:
+      "Everything is encrypted on your phone before it leaves. Only unreadable data is kept online: without the family phrase nobody can open it, not even us.",
+    createButton: "Create a family",
+    joinButton: "Join with a code",
+    unavailable:
+      "Sharing isn't responding right now. Your app is still complete on this phone.",
+    offlineHome: "You're offline: creating or joining a family needs internet.",
+    checking: "Checking…",
+    consentTitle: "Before you share",
+    consentBody:
+      "You're about to share your little one's health data with other phones: the plan, what's ticked and what's noted, including allergies and medications. It travels encrypted and only opens with the family phrase.",
+    consentCheck: "I understand what is shared and I want to do it",
+    nameLabel: "This phone's name",
+    nameHint: "How others will see you: “By Mum”. Up to 30 letters.",
+    createSubmit: "Create the family",
+    creating: "Creating…",
+    cancel: "Cancel",
+    secretsTitle: "Write down the code and the phrase",
+    secretsBody:
+      "Another phone needs both to join. The phrase is shown only now and isn't saved: if it's lost, you change it for a new one.",
+    codeLabel: "Family code",
+    phraseLabel: "Family phrase",
+    savedCheck: "I've written them down somewhere safe",
+    secretsDone: "Done",
+    joinTitle: "Join a family",
+    joinBody: "Ask whoever created the family for the code and the phrase.",
+    joinCode: "Code",
+    joinPhrase: "Phrase",
+    joinSubmit: "Join",
+    joining: "Joining…",
+    errWrongCode: "We couldn't find a family with that code.",
+    errWrongPhrase: "That isn't the family's phrase.",
+    errOffline: "You're offline. Try again when internet is back.",
+    errUnavailable: "Sharing isn't responding right now.",
+    errBusy: "That was a lot of tries in a row. Wait a minute.",
+    errFull: "Sharing has reached its limit.",
+    errError: "Something went wrong. Try again.",
+    errNoName: "Write this phone's name.",
+    statusIdle: "Up to date",
+    statusSyncing: "Syncing",
+    statusOffline: "Offline",
+    statusLocked: "Phrase changed",
+    statusUnavailable: "Not responding",
+    statusFull: "No room left",
+    statusError: "Couldn't sync",
+    bodyIdle: "Everything shared is up to date.",
+    bodySyncing: "Sending and receiving changes…",
+    bodyOffline: "Your changes are kept here and sent when internet is back.",
+    bodyLocked:
+      "The family phrase was changed or this phone was removed. Join with the new phrase.",
+    bodyUnavailable:
+      "The sharing service isn't responding. Your data is still here and it retries on its own.",
+    bodyFull: "The family has reached the limit of what can be shared.",
+    bodyError: "Something failed. It retries on its own.",
+    lastSync: "Last synced: {when}",
+    neverSynced: "First sync pending",
+    pending: "Changes waiting to send: {n}",
+    codeShown: "Family code: {code}",
+    phonesTitle: "The family's phones",
+    youTag: "This phone",
+    seenAt: "Seen {when}",
+    renameSave: "Save name",
+    renamed: "Name saved.",
+    removeButton: "Remove {name}",
+    removeTitle: "Remove {name}?",
+    removeBody:
+      "The family phrase is changed: {name} loses access and the other phones join again with the new phrase. What {name} already has on their phone stays there.",
+    removeYes: "Change the phrase and remove",
+    rotateTitle: "Change the phrase",
+    rotateBody:
+      "Use it if you lost the phrase or want to remove someone. The other phones join again with the new phrase.",
+    rotateButton: "Change the phrase",
+    rotateConfirmTitle: "Change the phrase?",
+    rotateConfirmBody:
+      "The old phrase stops working. The other phones will have to join with the new one.",
+    rotateYes: "Yes, change it",
+    newPhraseTitle: "New phrase",
+    newPhraseBody:
+      "Write it down and pass it to the phones that stay. The old one no longer works.",
+    leaveButton: "Leave the family",
+    leaveConfirmTitle: "Leave the family?",
+    leaveConfirmBody:
+      "This phone stops sharing and keeps its data. The others carry on. To come back, join with the code and the phrase.",
+    leaveYes: "Yes, leave",
+    destroyButton: "Delete what's shared",
+    destroyBody:
+      "Deletes everything the family shared from the internet and dissolves the group. Each phone keeps its copy.",
+    destroyConfirmTitle: "Delete what's shared?",
+    destroyConfirmBody:
+      "Everything shared is deleted from the internet and the group is dissolved. Each phone keeps its copy. This can't be undone.",
+    destroyYes: "Yes, delete what's shared",
+    left: "You left the family. Your data is still on this phone.",
+    destroyed: "What was shared is deleted. Your data is still on this phone.",
+    planNoticeTheirs:
+      "Two phones changed the plan. The most recent one stayed, the other phone's.",
+    planNoticeMine:
+      "Two phones changed the plan. The most recent one stayed, this phone's.",
+    planNoticeOk: "Got it",
+    planTooBig: "Your plan is too big to share: it stays only on this phone.",
+    unreadable:
+      "{n} records couldn't be opened on this phone and were left as they were.",
+    lockedTitle: "Join again",
+    lockedBody:
+      "Ask whoever changed the phrase for the new one. The code is the same.",
+    by: "By {name}",
   },
   a11y: {
     mainNav: "Main navigation",
@@ -386,7 +501,7 @@ export const en: Dictionary = {
   profile: {
     title: "Your child's profile",
     intro:
-      "What your plan says and what you note on this phone, each with its origin. None of this leaves the phone.",
+      "What your plan says and what you note on this phone, each with its origin. It stays on the phone, and only travels to your family if you choose to share: always encrypted.",
     originPlan: "from your plan",
     originYou: "noted by you",
     notSaid: "Your plan doesn't say.",
@@ -411,7 +526,7 @@ export const en: Dictionary = {
     medicationsTitle: "Medications",
     mineTitle: "What you note",
     mineBody:
-      "Saved only on this phone, apart from your plan: if you load a new plan, your notes stay.",
+      "Saved on this phone, apart from your plan (and shared with your family only if you choose to share): if you load a new plan, your notes stay.",
     texturesTitle: "Textures accepted today",
     texturesHint:
       "Mark them: options with another texture show at the end, marked, and are never hidden.",
