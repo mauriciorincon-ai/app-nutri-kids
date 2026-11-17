@@ -28,7 +28,7 @@ pr: 16
 - **Decisiones:** un registro `day:<fecha>` con cuatro mapas; exposiciones derivadas; franja sin fecha; textos fuera del bundle; sin dependencias nuevas.
 - **Deuda (solo lo imposible):**
   - Página de la OMS 2019 sin verificar (el PDF devolvió 403): `src/lib/wellbeing/references.ts` cita la sección, no la página. **Decisión del dueño:** aceptar la cita por sección o darme el PDF para fijar la página.
-  - Dark mode: la app solo lo activa con `.dark`, que nada pone; los tonos oscuros existen pero no se ven. **Decisión del dueño:** heredada de S1 (light-only).
+  - Dark mode: la app solo lo activa con `.dark`, que nada pone; los tonos oscuros existen pero no se ven. **Decisión del dueño:** heredada de S1 (light-only). · CI: picomatch GHSA-fc5q-39xc-vjpf (alta) sin versión parcheada y solo de build → ignore puntual en `pnpm-workspace.yaml` (default mío; se quita con 4.0.8).
 - **Recomendación:** merge tras revisar la decisión de la OMS 2019. Esfuerzo-beneficio: alto (registro único, sin infraestructura nueva).
 - **Auditoría** (Sonnet 5.5, solo lectura, una pasada): 0 críticos, 0 altos; 8 medios, 12 bajos.
   - Alcance: A-1 ficha del alimento → pagado · 27d9b6e · A-2 enlace desde Historial → pagado · 27d9b6e · A-3 cuidador hábitos → desviación declarada arriba.
