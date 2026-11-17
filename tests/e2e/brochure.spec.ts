@@ -68,7 +68,7 @@ async function abrirTarjeta(page: Page, nombre: RegExp) {
 }
 
 test.describe("brochure /conoce", () => {
-  test("carga, declara su estado inicial y, sin bajar, trae las 5 tarjetas CERRADAS", async ({
+  test("carga, declara su estado inicial y, sin bajar, trae las 6 tarjetas CERRADAS", async ({
     page,
   }) => {
     const respuesta = await page.goto("/conoce");
@@ -84,7 +84,7 @@ test.describe("brochure /conoce", () => {
     // Nada se abre al cargar: el automático solo despierta cuando TÚ bajas. Esto es
     // también lo que mantiene el CLS de la carga en cero.
     const botones = page.getByRole("button", { expanded: false });
-    await expect(botones).toHaveCount(5);
+    await expect(botones).toHaveCount(6);
     await expect(
       page.getByRole("heading", { name: "El checklist del día" }),
     ).toBeHidden();
@@ -183,12 +183,12 @@ test.describe("brochure /conoce", () => {
     // reposo (el modelo anterior abría solo al detenerse o en un tick periódico, y las
     // aperturas caían en posiciones arbitrarias — el usuario: «no se percibe»).
     const aperturas = new Map<number, number>();
-    let previos = Array(5).fill("false");
-    for (let i = 0; i < 170 && aperturas.size < 5; i++) {
+    let previos = Array(6).fill("false");
+    for (let i = 0; i < 170 && aperturas.size < 6; i++) {
       await page.mouse.wheel(0, 60);
       await page.waitForTimeout(40);
       const ahora = await estados(page);
-      for (let k = 0; k < 5; k++) {
+      for (let k = 0; k < 6; k++) {
         if (previos[k] === "false" && ahora[k] === "true") {
           const caja = await page.locator(".tarjeta").nth(k).boundingBox();
           aperturas.set(k, caja!.y / alto);
@@ -196,8 +196,8 @@ test.describe("brochure /conoce", () => {
       }
       previos = ahora;
     }
-    expect([...aperturas.keys()].sort(), "no abrieron las cinco").toEqual([
-      0, 1, 2, 3, 4,
+    expect([...aperturas.keys()].sort(), "no abrieron las seis").toEqual([
+      0, 1, 2, 3, 4, 5,
     ]);
     for (const [k, pos] of aperturas) {
       expect(
@@ -316,7 +316,7 @@ test.describe("brochure /conoce", () => {
   }) => {
     await page.goto("/conoce");
 
-    // Bajando: las CINCO se abren, cada una cuando llegas a ella.
+    // Bajando: las SEIS se abren, cada una cuando llegas a ella.
     const abiertasAlgunaVez = new Set<number>();
     for (let ronda = 0; ronda < 45; ronda++) {
       for (let paso = 0; paso < 4; paso++) {
@@ -337,14 +337,14 @@ test.describe("brochure /conoce", () => {
     expect(
       [...abiertasAlgunaVez].sort(),
       "alguna tarjeta nunca se abrió sola al bajar",
-    ).toEqual([0, 1, 2, 3, 4]);
+    ).toEqual([0, 1, 2, 3, 4, 5]);
 
     // Y cada una se cerró sola al salir de pantalla: al final no queda ninguna abierta.
-    expect(await estados(page)).toEqual(Array(5).fill("false"));
+    expect(await estados(page)).toEqual(Array(6).fill("false"));
 
     const abrioSubiendo = await subirDelTodo(page);
     expect(abrioSubiendo, "una tarjeta se abrió mientras subías").toBe(false);
-    expect(await estados(page)).toEqual(Array(5).fill("false"));
+    expect(await estados(page)).toEqual(Array(6).fill("false"));
 
     // Y al volver a bajar, se despliega de nuevo: el gesto se puede repetir.
     await bajarHastaQueAbra(page, 0);
@@ -373,14 +373,14 @@ test.describe("brochure /conoce", () => {
     page,
   }) => {
     await page.goto("/conoce");
-    await expect(page.locator("figure.muestra")).toHaveCount(5);
+    await expect(page.locator("figure.muestra")).toHaveCount(6);
     // Dibujos, no imágenes: por eso la pieza sigue abriendo sin internet y no puede
     // arrastrar en un píxel nada que no esté escrito aquí.
     await expect(page.locator("figure.muestra img")).toHaveCount(0);
     expect(await page.content()).not.toMatch(/data:image/i);
 
     const svgs = page.locator("figure.muestra > svg");
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 6; i++) {
       // El SVG es ilustración; el sentido lo carga el pie, en palabras.
       await expect(svgs.nth(i)).toHaveAttribute("aria-hidden", "true");
       const pie = page.locator("figure.muestra figcaption").nth(i);
@@ -433,7 +433,7 @@ test.describe("brochure /conoce", () => {
     expect(await arbol()).toContain("El checklist del día");
   });
 
-  test("el pie declara las 23 funcionalidades y el clímax es texto visible", async ({
+  test("el pie declara las 27 funcionalidades y el clímax es texto visible", async ({
     page,
   }) => {
     await page.goto("/conoce");
@@ -444,8 +444,8 @@ test.describe("brochure /conoce", () => {
     ).toBeVisible();
     await expect(page.getByText(/Marcar el día no es un examen/)).toBeVisible();
 
-    await expect(page.locator("#conteo-cifra")).toHaveText("23");
-    await expect(page.locator(".feature")).toHaveCount(23);
+    await expect(page.locator("#conteo-cifra")).toHaveText("27");
+    await expect(page.locator(".feature")).toHaveCount(27);
   });
 
   test("todas las rutas del mapa existen de verdad", async ({
@@ -542,7 +542,7 @@ test.describe("brochure con prefers-reduced-motion", () => {
 
     // Los números llegan en su valor final: no se cuentan solos.
     await expect(page.locator("#marcador-cifra")).toHaveText("7");
-    await expect(page.locator("#conteo-cifra")).toHaveText("23");
+    await expect(page.locator("#conteo-cifra")).toHaveText("27");
 
     // Los iconos de trazo están dibujados enteros (no a medio dibujar).
     const sinDibujar = await page
@@ -569,7 +569,7 @@ test.describe("brochure con prefers-reduced-motion", () => {
     // Mismo mecanismo, misma información: lo que desaparece es la animación. Se probó
     // entregarlas todas abiertas y era peor — un muro de texto donde nadie ve nunca una
     // tarjeta abrirse.
-    expect(await estados(page)).toEqual(Array(5).fill("false"));
+    expect(await estados(page)).toEqual(Array(6).fill("false"));
 
     const duracion = await page
       .locator(".detalle")
