@@ -36,6 +36,7 @@ import {
 } from "./state";
 import {
   addOp,
+  addOpResult,
   collectShared,
   countPending,
   syncOnce,
@@ -154,7 +155,13 @@ export type ActionResult<T = object> =
   | ({ ok: true } & T)
   | {
       ok: false;
-      reason: Failure | "no-family" | "no-name" | "not-allowed" | "invalid";
+      reason:
+        | Failure
+        | "no-family"
+        | "no-name"
+        | "not-allowed"
+        | "invalid"
+        | "roster-full";
     };
 
 export const OFF_VIEW: FamilyView = {
@@ -414,8 +421,15 @@ export function createController(deps: ControllerDeps) {
     if (roster?.members[deps.local.deviceId()]?.role !== "parent")
       return { ok: false, reason: "not-allowed" };
     const signer = await deps.keys.signer();
-    const ok = await addOp(st, signer, deps.local.deviceId(), deps.now(), body);
-    if (!ok) return { ok: false, reason: "invalid" };
+    const done = await addOpResult(
+      st,
+      signer,
+      deps.local.deviceId(),
+      deps.now(),
+      body,
+    );
+    if (done === "full") return { ok: false, reason: "roster-full" };
+    if (done === "invalid") return { ok: false, reason: "invalid" };
     deps.state.save(st);
     await render();
     return { ok: true };

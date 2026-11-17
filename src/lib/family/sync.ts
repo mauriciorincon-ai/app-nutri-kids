@@ -149,8 +149,31 @@ const rosterRef = (b: OpBody): string =>
 
 /**
  * Suma un cambio de roster firmado por este teléfono, si encadena y vale (quien firma es padre,
- * queda al menos un padre, cabe). Lo anota en la bitácora propia.
+ * queda al menos un padre, cabe). Lo anota en la bitácora propia. Dice POR QUÉ no entró:
+ * `full` (la lista de la familia ya no admite más cambios: tope de 120 o de peso) o `invalid`
+ * (no encadena o no vale), porque a quien lo intenta le toca hacer cosas distintas.
  */
+export async function addOpResult(
+  st: FamilyState,
+  signer: Signer,
+  own: string,
+  now: number,
+  body: OpBody,
+): Promise<"ok" | "full" | "invalid"> {
+  if (st.roster.length >= ROSTER_MAX_OPS) return "full";
+  const op = await appendOp(st.roster, signer, own, now, body);
+  const next = [...st.roster, op];
+  // El tope también es de peso: una cadena que no cabe en un registro haría que el servidor
+  // rechazara TODA la subida. Con los nombres y comidas más largos llegaría antes de las 120.
+  if (sealedSize({ ops: next }) > ITEM_MAX_CT) return "full";
+  const r = await foldRoster({ ops: next });
+  if (!r) return "invalid";
+  st.roster = next;
+  st.pin ??= r.pin;
+  st.log.own = await appendEvent(st.log.own, now, "roster", rosterRef(body));
+  return "ok";
+}
+
 export async function addOp(
   st: FamilyState,
   signer: Signer,
@@ -158,18 +181,7 @@ export async function addOp(
   now: number,
   body: OpBody,
 ): Promise<boolean> {
-  if (st.roster.length >= ROSTER_MAX_OPS) return false;
-  const op = await appendOp(st.roster, signer, own, now, body);
-  const next = [...st.roster, op];
-  // El tope también es de peso: una cadena que no cabe en un registro haría que el servidor
-  // rechazara TODA la subida. Con los nombres y comidas más largos llegaría antes de las 120.
-  if (sealedSize({ ops: next }) > ITEM_MAX_CT) return false;
-  const r = await foldRoster({ ops: next });
-  if (!r) return false;
-  st.roster = next;
-  st.pin ??= r.pin;
-  st.log.own = await appendEvent(st.log.own, now, "roster", rosterRef(body));
-  return true;
+  return (await addOpResult(st, signer, own, now, body)) === "ok";
 }
 
 /**
