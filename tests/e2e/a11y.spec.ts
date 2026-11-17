@@ -29,6 +29,9 @@ const ROUTES = [
   "/cargar",
   "/ajustes",
   "/historial",
+  "/perfil",
+  "/escenarios",
+  "/unir",
 ];
 
 for (const route of ROUTES) {
