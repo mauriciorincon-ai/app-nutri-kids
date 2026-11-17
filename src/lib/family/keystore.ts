@@ -1,4 +1,5 @@
 import { fromB64u, open, seal, type FamilyKeys, type Sealed } from "./crypto";
+import { newSigner, PUB_RE, type Signer } from "./sign";
 
 /**
  * Dónde se guardan las claves de la familia en el teléfono (regla dura 6): IndexedDB, como
@@ -10,6 +11,8 @@ import { fromB64u, open, seal, type FamilyKeys, type Sealed } from "./crypto";
 const DB_NAME = "nutrikids-family";
 const STORE = "keys";
 const ROW = "main";
+/** La llave de firma de este teléfono (S9 · ADR-013): es del teléfono, no de la familia. */
+const SIGNER_ROW = "signer";
 
 type Row = { family: string; enc: CryptoKey; id: CryptoKey; token: Sealed };
 
@@ -84,5 +87,36 @@ export async function clearKeys(idb?: IDBFactory): Promise<void> {
     await run(idb ?? defaultIdb(), "readwrite", (s) => s.delete(ROW));
   } catch {
     /* sin IndexedDB: no hay nada guardado que borrar */
+  }
+}
+
+/**
+ * La llave de firma de este teléfono; la crea la primera vez. Si IndexedDB no está, vive en
+ * memoria esta sesión (lo firmado con ella sigue valiendo mientras el roster la tenga).
+ */
+let memorySigner: Promise<Signer> | null = null;
+export async function loadSigner(idb?: IDBFactory): Promise<Signer> {
+  try {
+    const f = idb ?? defaultIdb();
+    const row = (await run(f, "readonly", (s) => s.get(SIGNER_ROW))) as
+      | Signer
+      | undefined;
+    if (row && row.key instanceof CryptoKey && PUB_RE.test(row.pub)) return row;
+    const fresh = await newSigner();
+    await run(f, "readwrite", (s) => s.put(fresh, SIGNER_ROW));
+    return fresh;
+  } catch {
+    memorySigner ??= newSigner();
+    return memorySigner;
+  }
+}
+
+/** «Borrar datos»: también se va la llave de firma (el teléfono queda como nuevo). */
+export async function clearSigner(idb?: IDBFactory): Promise<void> {
+  memorySigner = null;
+  try {
+    await run(idb ?? defaultIdb(), "readwrite", (s) => s.delete(SIGNER_ROW));
+  } catch {
+    /* nada guardado */
   }
 }

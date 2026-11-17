@@ -42,12 +42,16 @@ export function formatCode(code: string): string {
   return group(code, 5);
 }
 
-function normalize(input: string, length: number): string | null {
-  const raw = input
+function clean(input: string): string {
+  return input
     .toUpperCase()
     .replace(/[\s-]/g, "")
     .replace(/O/g, "0")
     .replace(/[IL]/g, "1");
+}
+
+function normalize(input: string, length: number): string | null {
+  const raw = clean(input);
   if (raw.length !== length) return null;
   for (const c of raw) if (!ALPHABET.includes(c)) return null;
   return raw;
@@ -60,6 +64,31 @@ export function normalizePhrase(input: string): string | null {
 
 export function normalizeCode(input: string): string | null {
   return normalize(input, CODE_LENGTH);
+}
+
+/**
+ * La INVITACIÓN (S9 · ADR-013): el código de la familia, la huella del roster (12 caracteres,
+ * 60 bits: el teléfono nuevo solo acepta un roster que empiece en ese génesis) y, si un padre
+ * invitó con un rol, la etiqueta de esa invitación (4). Se dicta o se copia junto con la frase.
+ */
+export const PIN_LENGTH = 12;
+export const TAG_LENGTH = 4;
+export type Invitation = { family: string; pin: string; tag: string | null };
+
+export function formatInvite(family: string, pin: string, tag?: string | null): string {
+  return [group(family, 5), group(pin, 4), tag ?? ""].filter(Boolean).join("-");
+}
+
+export function parseInvite(input: string): Invitation | null {
+  const raw = clean(input);
+  if (![CODE_LENGTH + PIN_LENGTH, CODE_LENGTH + PIN_LENGTH + TAG_LENGTH].includes(raw.length))
+    return null;
+  for (const c of raw) if (!ALPHABET.includes(c)) return null;
+  return {
+    family: raw.slice(0, CODE_LENGTH),
+    pin: raw.slice(CODE_LENGTH, CODE_LENGTH + PIN_LENGTH),
+    tag: raw.length > CODE_LENGTH + PIN_LENGTH ? raw.slice(CODE_LENGTH + PIN_LENGTH) : null,
+  };
 }
 
 /** Id de este teléfono dentro de la familia (no es secreto: desempata la mezcla). */

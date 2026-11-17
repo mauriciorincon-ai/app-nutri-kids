@@ -187,6 +187,23 @@ export const en: Dictionary = {
     medicationTitle: "Medications in your plan",
     notInPlanFood:
       "Your plan has no replacements for {food}. Ask your professional.",
+    planBFridgeLead:
+      "With no fridge, these options from your plan are marked as keeping fine:",
+    planBFridgeTitle: "Keep without a fridge",
+    planBMarkedPlan: "your plan says so",
+    planBMarkedAdult: "marked by a caregiver",
+    planBNoMarks:
+      "Your plan doesn't say which options keep without a fridge. Ask your professional, and in Profile you can mark the ones you already know keep.",
+    planBNoMenu: "Your plan has no daily menu, so I can't say what's due.",
+    planBLateMeal: "{meal} ({start}–{end}): {content}",
+    planBLateNow: "This slot of your plan is running now: {text}.",
+    planBLatePrev: "The last slot that passed was: {text}.",
+    planBLateNext: "What comes next is {meal}, at {start}: {content}.",
+    planBLateNoNext:
+      "There are no more slots in your plan today; tomorrow starts as usual.",
+    planBLateRuleTitle: "What your plan doesn't say",
+    planBLateRule:
+      "Your plan doesn't say whether a late meal is made up or skipped. Ask your professional.",
   },
   detail: {
     whyTitle: "Why?",
@@ -341,6 +358,15 @@ export const en: Dictionary = {
     activeReal: "your diet",
     useDemo: "Use the demo",
     useReal: "Use your diet",
+    secondTitle: "Do you have a second plan?",
+    secondBody:
+      "If another professional gave you another plan, add it as a second plan: it stays apart, you see it next to the first one and, if you want, you merge them into one. Whatever either of them forbids stays forbidden.",
+    secondAdd: "Add as a second plan",
+    secondOnTitle: "The next plan will be the second one",
+    secondOnBody:
+      "Pick the PDF or the JSON of the other plan. It doesn't replace the one you already have: it stays apart until you merge it or discard it.",
+    secondCancel: "Never mind, go back",
+    secondOpen: "See my plans and merge them",
   },
   settings: {
     profileTitle: "Your child's profile",
@@ -463,7 +489,7 @@ export const en: Dictionary = {
       "So everyone who looks after your little one sees the same thing: the plan, what's ticked off today and what each person noted.",
     travelsTitle: "What is shared",
     travels:
-      "The plan, the day (ticks, times and notes) and the profile with its notes, allergies and medications. Each phone also shares its name, so you can see “By Mum”.",
+      "The plan, the day (ticks, times and notes) and the profile with its notes, allergies and medications. Each phone also shares its name, its role and its signing key, so you can see “By Mum” and nobody can write in someone else's name.",
     staysTitle: "What stays on each phone",
     stays: "The language, the theme and each phone's own settings.",
     privacy:
@@ -487,20 +513,21 @@ export const en: Dictionary = {
     createSubmit: "Create the family",
     creating: "Creating…",
     cancel: "Cancel",
-    secretsTitle: "Write down the code and the phrase",
+    secretsTitle: "Write down the invitation and the phrase",
     secretsBody:
-      "Another phone needs both to join. The phrase is shown only now and isn't saved: if it's lost, you change it for a new one.",
-    codeLabel: "Family code",
+      "Another phone needs both to join. The invitation carries the family code and its fingerprint; the phrase is shown only now and isn't saved: if it's lost, you change it for a new one.",
+    codeLabel: "Invitation",
     phraseLabel: "Family phrase",
     savedCheck: "I've written them down somewhere safe",
     secretsDone: "Done",
     joinTitle: "Join a family",
-    joinBody: "Ask whoever created the family for the code and the phrase.",
-    joinCode: "Code",
+    joinBody: "Ask a parent in the family for the invitation and the phrase.",
+    joinCode: "Invitation",
     joinPhrase: "Phrase",
     joinSubmit: "Join",
     joining: "Joining…",
-    errWrongCode: "We couldn't find a family with that code.",
+    errWrongCode:
+      "That invitation isn't valid, or the family no longer exists.",
     errWrongPhrase: "That isn't the family's phrase.",
     errOffline: "You're offline. Try again when internet is back.",
     errUnavailable: "Sharing isn't responding right now.",
@@ -527,7 +554,7 @@ export const en: Dictionary = {
     lastSync: "Last synced: {when}",
     neverSynced: "First sync pending",
     pending: "Changes waiting to send: {n}",
-    codeShown: "Family code: {code}",
+    codeShown: "Family invitation: {code}",
     phonesTitle: "The family's phones",
     youTag: "This phone",
     seenAt: "Seen {when}",
@@ -536,8 +563,8 @@ export const en: Dictionary = {
     removeButton: "Remove {name}",
     removeTitle: "Remove {name}?",
     removeBody:
-      "The family phrase is changed: {name} loses access and the other phones join again with the new phrase. What {name} already has on their phone stays there.",
-    removeYes: "Change the phrase and remove",
+      "{name} leaves the family list and the phrase is changed: they lose access, and the other phones join again with the new phrase. What {name} already has on their phone stays there.",
+    removeYes: "Remove and change the phrase",
     rotateTitle: "Change the phrase",
     rotateBody:
       "Use it if you lost the phrase or want to remove someone. The other phones join again with the new phrase.",
@@ -577,8 +604,79 @@ export const en: Dictionary = {
       "{n} records couldn't be opened on this phone and were left as they were.",
     lockedTitle: "Join again",
     lockedBody:
-      "Ask whoever changed the phrase for the new one. The code is the same.",
+      "Ask whoever changed the phrase for the new one. The invitation is the same.",
     by: "By {name}",
+    roleParent: "Parent",
+    roleCaregiver: "Caregiver",
+    roleSchool: "School",
+    roleNutritionist: "Nutritionist",
+    roleParentCan:
+      "Everything: the plan, the profile, the family and the roles.",
+    roleCaregiverCan: "Logs the day, leaves notes and alerts the family.",
+    roleSchoolCan:
+      "Ticks the meals in its hours, leaves notes on them and alerts the family.",
+    roleNutritionistCan:
+      "Sees everything and leaves notes on the day and the profile.",
+    yourRole: "Your role: {role}",
+    noRoleYet:
+      "Waiting for a parent to give you a role. Meanwhile you can see everything shared, but not change it.",
+    peopleTitle: "People in the family",
+    roleFor: "{name}'s role",
+    roleSave: "Save role",
+    roleSaved: "Role saved.",
+    mealsFor: "Meals {name} ticks",
+    waitingTitle: "Waiting for a role",
+    waitingInvited: "Joined with the {role} invitation.",
+    waitingNoInvite: "Joined without a role invitation.",
+    waitingMark:
+      "Their phone's fingerprint: {mark}. Confirm only if it matches the one that person sees on their screen; compare in person or by phone call, not in the same message as the invitation.",
+    myMark:
+      "This phone's fingerprint: {mark}. Whoever confirms you should see the same one.",
+    waitingConfirm: "Confirm as {role}",
+    waitingOld:
+      "Their app predates roles: once it updates, you can give them one here.",
+    inviteTitle: "Invite with a role",
+    inviteBody:
+      "Choose what the person will be able to do. Give them this invitation together with the family phrase.",
+    inviteRole: "Role",
+    inviteMeals: "Meals the school will tick",
+    inviteNoMeals:
+      "The plan has no meals with times: the school will be able to send alerts, but not tick.",
+    inviteCreate: "Create invitation",
+    inviteReady: "Invitation for {role}:",
+    inviteHint:
+      "Valid for 7 days. When the person joins, they show up under “Waiting for a role” and you confirm them with one tap.",
+    onlyParents: "Only a parent can change this.",
+    roleBlocked: "With your role ({role}) you can see this, but not change it.",
+    logTitle: "Change log",
+    logBody: "Who changed what and when, across all phones.",
+    logEmpty: "No changes yet.",
+    logMark: "ticked {item} ({date})",
+    logUnmark: "unticked {item} ({date})",
+    logDayNote: "added a note on {item} ({date})",
+    logProfileNote: "changed a profile note",
+    logTextures: "changed the accepted textures",
+    logPlan: "changed the plan",
+    logPlanLine: "changed a line of the merged plan ({item})",
+    logGenesis: "created the family",
+    logSet: "gave {name} the {role} role",
+    logRemove: "removed {name} from the family",
+    logInvite: "invited someone as {role}",
+    logNotice: "alerted the family",
+    logItemWater: "a glass of water",
+    logItemOther: "an entry",
+    oneParent:
+      "Tip: invite another parent. If this phone is lost, nobody else could change the roles.",
+    rejected:
+      "{n} incoming change(s) were not accepted: they lacked the signature of who they claim to be, or their role doesn't allow it.",
+    rosterPin:
+      "The family online doesn't match your invitation. For safety, this phone won't accept its roles: ask a parent for a new invitation.",
+    rosterInvalid:
+      "A list of roles arrived that doesn't fit; this phone ignored it.",
+    rewritten:
+      "{names}'s change log arrived altered; this phone kept what it had already seen.",
+    errNotAllowed: "Your role doesn't allow this.",
+    errInvalid: "That change couldn't be made.",
   },
   a11y: {
     mainNav: "Main navigation",
@@ -640,7 +738,169 @@ export const en: Dictionary = {
     noteKinds_intolerance: "Intolerance",
     noteKinds_medication: "Medication",
     noteKinds_other: "Other note",
+    noteKinds_fridge: "Keeps without a fridge",
+    fridgeTitle: "Keep without a fridge",
+    fridgeHint:
+      "Mark the options in your plan you already know keep without a fridge (lunchbox, outing, trip). Plan B uses them when you say “no fridge”; the ones your plan already marks can't be removed.",
+    fridgePlan: "your plan says so",
+    fridgeMark: "Mark {name}: keeps without a fridge",
+    fridgeUnmark: "Remove the mark from {name}",
+    fridgeEmpty: "Your plan has no options that can be marked.",
     medicalReminder:
       "For dose changes or medical questions, check with your professional.",
+  },
+  merge: {
+    lineRestrictions: "Dated restrictions",
+    lineHydration: "Hydration",
+    lineGoalActivity: "Activity goal",
+    lineGoalSleep: "Sleep goal",
+    lineOther: "A line of the plan",
+    title: "Several diets",
+    intro:
+      "If another professional gave you another plan, here you see both together and merge them into one. Each line remembers where it came from.",
+    navLink: "Several diets",
+    noSecondTitle: "There is no second plan",
+    noSecondBody:
+      "Add the other plan from Load, with “Add as a second plan”. Until you merge it, your usual plan stays exactly as it is.",
+    goLoad: "Go to Load",
+    needReal:
+      "To merge two plans, load yours first: the demo doesn't merge with anything.",
+    planA: "Plan A",
+    planB: "Plan B",
+    planAActive: "Plan A · the one you have active",
+    planBSecond: "Plan B · the second plan",
+    sideTitle: "The two plans, side by side",
+    redTitle: "Whatever is forbidden wins on its own",
+    redBody:
+      "If a plan forbids something, it stays forbidden in the merged plan and it shows which one it comes from. That way the merged plan is never looser than either of the two.",
+    redNone: "Both plans agree on what is forbidden.",
+    redLine: "{food}: stays red (comes from {origin})",
+    redWindow: "The dated restriction uses the widest window.",
+    pickTitle: "These you choose, one by one",
+    pickBody:
+      "Here the two plans say different things and only you know which one applies. Look at both sides and choose.",
+    pickNone: "Nothing to choose: the two plans don't clash.",
+    pickUse: "Use this one",
+    pickChosen: "Chosen",
+    pendingCount: "{n} left to choose.",
+    allChosen: "Everything chosen. You can merge now.",
+    mergeBtn: "Merge the two plans",
+    discardBtn: "Discard the second plan",
+    discarded: "Second plan discarded.",
+    merging:
+      "Merging creates a single plan on this phone and deletes the second one; you can load it again if you need to.",
+    invalid:
+      "With these choices the merged plan wouldn't be complete. Check both plans before merging.",
+    merged:
+      "Done: your two plans are now one. Each line says where it came from.",
+    storeError: "The merged plan couldn't be saved on this phone.",
+    mineTitle: "Your merged plan",
+    mineFrom: "Merges {a} and {b}.",
+    linesTitle: "Where each line came from",
+    linesBody:
+      "A parent can change any line whenever they need to, including a red one. You see both origins, confirm once, and it's written to the log.",
+    linesNone: "Every line comes from one side or matches.",
+    originOnly: "only in {origin}",
+    originSame: "in both plans",
+    originRed: "forbidden won · {origin}",
+    originPicked: "you chose · {origin}",
+    originParent: "changed by a parent · {origin}",
+    originBoth: "both",
+    says: "{origin} says: {text}",
+    change: "Switch to the other origin",
+    changeConfirmTitle: "Change this line",
+    changeConfirmBody:
+      "Today the merged plan keeps this as forbidden because a plan says so. If you change it, it becomes what the other plan says. It's written to the log, and you can switch it back.",
+    changeConfirm: "Confirm the change",
+    changeCancel: "Cancel",
+    changed: "Change saved and written to the log.",
+    changeFailed: "This line couldn't be changed.",
+    onlyParents: "Only a parent can change the merged plan.",
+    badgeFrom: "Comes from {origin}",
+    kinds_color: "Color",
+    kinds_limit: "How much",
+    kinds_portion: "Portion",
+    kinds_dose: "Dose",
+    kinds_schedule: "Schedule",
+    kinds_texture: "Texture",
+    kinds_content: "What to eat",
+    kinds_hydration: "Water",
+    kinds_text: "Plan text",
+  },
+  planB: {
+    title: "Plan B",
+    intro:
+      "When something goes wrong, your plan tells you what works. Only what your plan says: if it doesn't say, it tells you so.",
+    out: "We ran out of something",
+    fridge: "No fridge",
+    late: "We're running late",
+    pickFood: "What ran out?",
+    pickPlaceholder: "Pick a food from your plan",
+  },
+  scenarios: {
+    title: "Special days",
+    intro:
+      "Birthday, restaurant, emergency or someone offering something. It all comes from your plan and opens without a signal. This is not medical advice.",
+    link: "Special days: birthday, restaurant, emergency",
+    pick: "Which day is it?",
+    birthday: "Birthday",
+    restaurant: "Restaurant",
+    emergency: "Emergency",
+    offered: "Offered something they can't have",
+    birthdayIntro: "To get to the party with the plan in hand.",
+    restaurantIntro: "To order with confidence and without over-explaining.",
+    emergencyIntro:
+      "This gives no medical advice: it gathers what your plan and the caregivers wrote down, so you have it at hand.",
+    offeredIntro:
+      "Short phrases to say no without making anyone uncomfortable.",
+    bringTitle: "What to bring or choose",
+    bringHint: "The ones that keep without a fridge come first.",
+    bringNone: "Your plan has no green options to suggest.",
+    fridgeMark: "keeps without a fridge",
+    avoidTitle: "What they can't have",
+    avoidNone: "Your plan doesn't list forbidden foods.",
+    notedAvoid: "noted by a caregiver",
+    restricted: "current restriction",
+    limitsTitle: "In measured amounts",
+    additivesTitle: "Additives your plan asks to avoid",
+    mealsTitle: "The meals in your plan",
+    mealFocusNow: "This slot of your plan is running now.",
+    mealFocusNext: "The slot that comes next.",
+    sayTitle: "What to say",
+    sayBirthday:
+      "“{alias} follows a food plan that looks after their health. They can't have: {avoid}. We're bringing their own to share with everyone.”",
+    sayRestaurant:
+      "“{alias} follows a food plan. We need to order without: {avoid}. Could you help us choose something they can have?”",
+    sayOffered:
+      "“Thank you, that's kind. {alias} can't have that, but thanks so much for thinking of them.”",
+    sayOfferedAlt:
+      "If you want to offer an alternative: “We'll give them their own: {safe}.”",
+    sayNoAvoid:
+      "Your plan doesn't list forbidden foods, so there's no list to read out.",
+    askTitle: "What to ask for",
+    askRestaurant:
+      "Ask how each dish is made and order the simplest: no sauces or additives your plan avoids.",
+    askRestaurantSafe: "From the plan, the easiest to find: {safe}.",
+    doubt:
+      "If you doubt a food, don't give it: look it up in the chat, which answers from your plan.",
+    chat: "Ask in the chat",
+    cardTitle: "Card at hand",
+    cardCondition: "Condition according to your plan",
+    cardAllergies: "Allergies",
+    cardIntolerances: "Intolerances",
+    cardMedications: "Medications",
+    cardNoted: "Noted by a caregiver",
+    cardNone: "Your plan doesn't say.",
+    callTitle: "Who to call",
+    callEmergency: "The emergency services where you are.",
+    callProfessional: "Your professional: {name}.",
+    callNote:
+      "Your plan doesn't have their number: keep it saved in your contacts.",
+    notifyTitle: "Notify the family",
+    notifyBody: "Send a notice so the others know what's going on.",
+    offline:
+      "It opens without a signal: it comes from the plan saved on this phone.",
+    notMedical:
+      "There is no medical advice here: whatever your plan doesn't say, ask your professional.",
   },
 };

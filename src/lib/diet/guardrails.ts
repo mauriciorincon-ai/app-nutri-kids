@@ -113,3 +113,27 @@ export function rejectionMessage(
 
 /** Longitud máxima de la pregunta (el campo de texto la corta aquí). */
 export const MAX_INPUT_CHARS = 1000;
+
+/**
+ * Salida: ¿este TEXTO que la app escribe suena a indicación médica? Pensado para el copy de los
+ * escenarios y el plan B (ADR-014), que organizan el plan pero jamás recetan, dosifican,
+ * diagnostican ni cuentan calorías (reglas duras 2 y 3). Es una red de seguridad barata: la
+ * garantía de fondo es que el motor solo repite lo que el plan dice. Se prueba con controles
+ * positivos (tests/unit/scenarios.test.ts).
+ */
+const ADVICE_PATTERNS: RegExp[] = [
+  // Dar, quitar o cambiar un medicamento o una dosis
+  /\b(dale|dales|darle|administr\w*|toma|tomar|suspend\w*|aument\w*|reduc\w*|sube|subir|baja|bajar|dobla\w*|receto|recet\w*)\b.*\b(dosis|medicament\w*|medicina|pastilla\w*|jarabe|gotas|mg|ml)\b/,
+  /\b(give|gives|giving|take|stop|increase|decrease|raise|lower|double|prescribe\w*)\b.*\b(dose|dosage|medicat\w*|medicine|pill\w*|syrup|drops|mg|ml)\b/,
+  // Cantidades de dosis
+  /\b\d+([.,]\d+)?\s?(mg|ml|mcg|ui|iu)\b/,
+  // Diagnóstico o pronóstico
+  /\b(el diagnostico es|tiene (autismo|tea|diabetes)|es (alergico|intolerante) a|the diagnosis is|has (autism|diabetes))\b/,
+  // Calorías, peso, talla, IMC, percentiles (regla dura 2)
+  /\b(calori\w*|kcal|imc|bmi|percentil\w*|percentile\w*|peso|talla|weight|height)\b/,
+];
+
+export function looksLikeMedicalAdvice(text: string): boolean {
+  const norm = normalize(text);
+  return ADVICE_PATTERNS.some((r) => r.test(norm));
+}

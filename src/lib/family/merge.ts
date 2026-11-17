@@ -12,8 +12,9 @@
  */
 
 export type Stamp = { t: number; by: string };
+/** `s`: firma de quien lo escribió (S9 · ADR-013). No cuenta para decidir quién gana. */
 /** Un valor con sello; `v: null` es una lápida (se quitó o se borró). */
-export type Reg<T> = Stamp & { v: T | null };
+export type Reg<T> = Stamp & { v: T | null; s?: string };
 export type RegMap<T> = Record<string, Reg<T>>;
 
 /** ¿`a` le gana a `b`? Orden total: hora, luego teléfono, luego valor. */
@@ -29,7 +30,12 @@ export function mergeReg<T>(
 ): Reg<T> | undefined {
   if (!a) return b;
   if (!b) return a;
-  return wins(b, a) ? b : a;
+  if (wins(b, a)) return b;
+  if (wins(a, b)) return a;
+  // El mismo cambio, firmado y sin firmar (o con dos firmas): se queda el firmado, y entre
+  // dos firmas la mayor, para que todos los teléfonos lleguen a lo mismo.
+  if ((b.s ?? "") > (a.s ?? "")) return b;
+  return a;
 }
 
 export function mergeMap<T>(a: RegMap<T>, b: RegMap<T>): RegMap<T> {
@@ -44,7 +50,7 @@ export function mapChanged<T>(prev: RegMap<T>, next: RegMap<T>): boolean {
   for (const k of keys) {
     const a = prev[k];
     const b = next[k];
-    if (!a || !b || a.t !== b.t || a.by !== b.by) return true;
+    if (!a || !b || a.t !== b.t || a.by !== b.by || a.s !== b.s) return true;
     if (JSON.stringify(a.v) !== JSON.stringify(b.v)) return true;
   }
   return false;

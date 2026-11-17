@@ -34,6 +34,8 @@ const ERROR_KEY: Record<Failure, keyof Dictionary["family"]> = {
   error: "errError",
   "no-family": "errError",
   "no-name": "errNoName",
+  "not-allowed": "errNotAllowed",
+  invalid: "errInvalid",
 };
 
 export function errorText(t: Dictionary, reason: Failure): string {

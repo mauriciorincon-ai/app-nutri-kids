@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { KeyRound, LogOut, Trash2, UserMinus } from "lucide-react";
+import { KeyRound, LogOut, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { fmt, useI18n } from "@/i18n";
@@ -17,6 +17,7 @@ import {
   SecretsCard,
   when,
 } from "./parts";
+import { InviteCard, LogList, MyRole, People, Waiting } from "./roles";
 import { StatusBadge } from "./status-badge";
 import { useFamily } from "./use-family";
 
@@ -46,6 +47,14 @@ export function FamilyPanel({
     else setProblem(errorText(t, r.reason));
   };
 
+  const remove = async (id: string) => {
+    setProblem(null);
+    const r = await getFamily().removeMember(id);
+    if (r.ok) setNewPhrase({ phrase: r.phrase, keysSaved: r.keysSaved });
+    else setProblem(errorText(t, r.reason));
+  };
+  const parent = view.role === "parent";
+
   const rename = async () => {
     setProblem(null);
     const r = await getFamily().rename(name);
@@ -59,7 +68,7 @@ export function FamilyPanel({
 
       {view.phase === "locked" && view.code && (
         <JoinForm
-          rejoin={{ code: view.code, name: view.ownName }}
+          rejoin={{ code: view.invite ?? view.code, name: view.ownName }}
           onJoined={(keysSaved) => {
             onNotice(null);
             onWarning(keysSaved ? null : t.family.keysNotSaved);
@@ -94,6 +103,32 @@ export function FamilyPanel({
           ⚠ {fmt(t.family.oversize, { n: view.oversize })}
         </p>
       )}
+      {view.rejected > 0 && (
+        <p
+          role="status"
+          className="rounded-xl bg-tl-yellow-surface px-4 py-3 text-sm text-tl-yellow"
+          data-testid="family-rejected"
+        >
+          ⚠ {fmt(t.family.rejected, { n: view.rejected })}
+        </p>
+      )}
+      {view.rosterIssue && (
+        <p
+          role="status"
+          className="rounded-xl bg-tl-yellow-surface px-4 py-3 text-sm text-tl-yellow"
+          data-testid="family-roster-issue"
+        >
+          ⚠{" "}
+          {view.rosterIssue === "pin"
+            ? t.family.rosterPin
+            : t.family.rosterInvalid}
+        </p>
+      )}
+      {view.rewritten.length > 0 && (
+        <p className="rounded-xl bg-tl-yellow-surface px-4 py-3 text-sm text-tl-yellow">
+          ⚠ {fmt(t.family.rewritten, { names: view.rewritten.join(", ") })}
+        </p>
+      )}
       {view.unreadable > 0 && (
         <p className="rounded-xl bg-tl-yellow-surface px-4 py-3 text-sm text-tl-yellow">
           ⚠ {fmt(t.family.unreadable, { n: view.unreadable })}
@@ -104,7 +139,7 @@ export function FamilyPanel({
         <p>
           {fmt(t.family.codeShown, { code: "" })}
           <span className="font-mono text-base" data-testid="family-code-shown">
-            {view.code}
+            {view.invite ?? view.code}
           </span>
         </p>
         <p className="mt-1 text-muted-foreground">
@@ -119,42 +154,19 @@ export function FamilyPanel({
         )}
       </div>
 
-      <section className="flex flex-col gap-2">
-        <h3 className="text-lg">{t.family.phonesTitle}</h3>
-        <ul className="flex flex-col gap-2" data-testid="family-phones">
-          {view.phones.map((p) => (
-            <li
-              key={p.id}
-              className="flex flex-col gap-2 rounded-xl border bg-card px-4 py-3"
-            >
-              <p className="font-semibold">
-                {p.name || "—"}
-                {p.self && (
-                  <span className="ml-2 rounded-md bg-muted px-2 py-0.5 text-xs font-semibold">
-                    {t.family.youTag}
-                  </span>
-                )}
-              </p>
-              {!p.self && (
-                <p className="-mt-1 text-sm text-muted-foreground">
-                  {fmt(t.family.seenAt, { when: when(p.seen, locale) })}
-                </p>
-              )}
-              {!p.self && (
-                <Confirm
-                  testId={`family-remove-${p.id}`}
-                  icon={<UserMinus aria-hidden className="size-5" />}
-                  triggerLabel={fmt(t.family.removeButton, { name: p.name })}
-                  title={fmt(t.family.removeTitle, { name: p.name })}
-                  body={fmt(t.family.removeBody, { name: p.name })}
-                  yes={t.family.removeYes}
-                  onYes={rotate}
-                />
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
+      <MyRole view={view} />
+      <People view={view} onRemove={remove} />
+      <Waiting view={view} onRemove={remove} />
+      {parent &&
+        view.members.filter((m) => m.role === "parent").length === 1 && (
+          <p
+            className="text-sm text-muted-foreground"
+            data-testid="family-one-parent"
+          >
+            ℹ {t.family.oneParent}
+          </p>
+        )}
+      {parent && <InviteCard />}
 
       {newPhrase && (
         <SecretsCard
@@ -191,20 +203,30 @@ export function FamilyPanel({
         </Button>
       </section>
 
+      <LogList view={view} />
+
       <section className="flex flex-col gap-2">
         <h3 className="text-lg">{t.family.rotateTitle}</h3>
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          {t.family.rotateBody}
-        </p>
-        <Confirm
-          testId="family-rotate"
-          icon={<KeyRound aria-hidden className="size-5" />}
-          triggerLabel={t.family.rotateButton}
-          title={t.family.rotateConfirmTitle}
-          body={t.family.rotateConfirmBody}
-          yes={t.family.rotateYes}
-          onYes={rotate}
-        />
+        {!parent && view.members.length > 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {t.family.onlyParents}
+          </p>
+        ) : (
+          <>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {t.family.rotateBody}
+            </p>
+            <Confirm
+              testId="family-rotate"
+              icon={<KeyRound aria-hidden className="size-5" />}
+              triggerLabel={t.family.rotateButton}
+              title={t.family.rotateConfirmTitle}
+              body={t.family.rotateConfirmBody}
+              yes={t.family.rotateYes}
+              onYes={rotate}
+            />
+          </>
+        )}
       </section>
 
       <section className="flex flex-col gap-2">
@@ -220,22 +242,26 @@ export function FamilyPanel({
             onNotice(t.family.left);
           }}
         />
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          {t.family.destroyBody}
-        </p>
-        <Confirm
-          testId="family-destroy"
-          icon={<Trash2 aria-hidden className="size-5" />}
-          triggerLabel={t.family.destroyButton}
-          title={t.family.destroyConfirmTitle}
-          body={t.family.destroyConfirmBody}
-          yes={t.family.destroyYes}
-          onYes={async () => {
-            const r = await getFamily().destroy();
-            if (r.ok) onNotice(t.family.destroyed);
-            else setProblem(errorText(t, r.reason));
-          }}
-        />
+        {(parent || view.members.length === 0) && (
+          <>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {t.family.destroyBody}
+            </p>
+            <Confirm
+              testId="family-destroy"
+              icon={<Trash2 aria-hidden className="size-5" />}
+              triggerLabel={t.family.destroyButton}
+              title={t.family.destroyConfirmTitle}
+              body={t.family.destroyConfirmBody}
+              yes={t.family.destroyYes}
+              onYes={async () => {
+                const r = await getFamily().destroy();
+                if (r.ok) onNotice(t.family.destroyed);
+                else setProblem(errorText(t, r.reason));
+              }}
+            />
+          </>
+        )}
       </section>
 
       {problem && (

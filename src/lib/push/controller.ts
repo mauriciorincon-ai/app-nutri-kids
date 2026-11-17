@@ -4,6 +4,7 @@ import { getDeviceId } from "@/lib/device";
 import { toB64u } from "@/lib/family/crypto";
 import { loadKeys } from "@/lib/family/keystore";
 import { loadFamilyState } from "@/lib/family/state";
+import { noticeSenders } from "@/lib/family/trust";
 import { digest } from "@/lib/family/sync";
 
 import { browserPush, type BrowserPush } from "./browser";
@@ -142,7 +143,13 @@ export function createPushController(deps: PushDeps) {
     });
     await deps.copy.pointer(
       fam
-        ? { family: fam.family, epoch: fam.epoch, seq: fam.seq, self: fam.self }
+        ? {
+            family: fam.family,
+            epoch: fam.epoch,
+            seq: fam.seq,
+            self: fam.self,
+            senders: fam.senders,
+          }
         : null,
     );
   }
@@ -490,6 +497,7 @@ export async function realFamilyInfo(): Promise<FamilyInfo | null> {
     epoch: st.epoch,
     seq: st.since,
     self: getDeviceId(),
+    senders: await noticeSenders(st.roster),
     token: keys.token,
   };
 }

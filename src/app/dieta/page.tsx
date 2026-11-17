@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Search } from "lucide-react";
+import Link from "next/link";
+import { ChevronRight, Search } from "lucide-react";
 
 import { useDiet } from "@/components/diet-provider";
 import { ItemCard } from "@/components/traffic-light/item-card";
@@ -174,6 +175,15 @@ export default function DietPage() {
           · {l(diet.restrictions.note)}
         </p>
       )}
+
+      <Link
+        href="/unir"
+        data-testid="merge-link"
+        className="inline-flex min-h-11 items-center gap-1 self-start text-sm font-medium text-primary hover:underline"
+      >
+        {diet.merged ? t.merge.title : t.merge.navLink}
+        <ChevronRight aria-hidden className="size-4" />
+      </Link>
     </div>
   );
 }

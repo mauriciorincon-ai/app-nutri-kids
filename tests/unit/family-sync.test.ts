@@ -1,178 +1,13 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
 
-import type { DayRegs } from "@/lib/diet/day-log";
-import type { ProfileRegs } from "@/lib/diet/profile-notes";
-import { familyApi } from "@/lib/family/client";
-import { mergeMap, mergeReg } from "@/lib/family/merge";
-import { handle } from "@/lib/family/server/handler";
-import { createMemoryStore } from "@/lib/family/server/memory";
-import type { FamilyStore } from "@/lib/family/server/store";
-import {
-  createFamily,
-  joinFamily,
-  pullSince,
-  rotateFamily,
-  type FamilyCtx,
-} from "@/lib/family/session";
+import { joinFamily, pullSince, rotateFamily } from "@/lib/family/session";
 import type { NoticeShared } from "@/lib/family/records";
-import { freshFamilyState, type FamilyState } from "@/lib/family/state";
-import {
-  collectShared,
-  countPending,
-  syncOnce,
-  type LocalData,
-  type PlanSide,
-} from "@/lib/family/sync";
+import { formatInvite } from "@/lib/family/phrase";
+import { freshFamilyState } from "@/lib/family/state";
+import { collectShared, countPending, syncOnce } from "@/lib/family/sync";
 
-const SENTINELS = [
-  "SENTINEL-NAME",
-  "SENTINEL-NOTE",
-  "SENTINEL-FOOD",
-  "es-LOCALE",
-  "dark-THEME",
-];
-
-type Hook = (op: string) => Promise<void> | void;
-
-function network(store: FamilyStore) {
-  const wire: string[] = [];
-  let offline = false;
-  let hook: Hook | null = null;
-  const fetcher = (async (url: string, init: RequestInit) => {
-    if (offline) throw new TypeError("Failed to fetch");
-    const headers = init.headers as Record<string, string>;
-    wire.push(`${url} ${JSON.stringify(headers)} ${String(init.body)}`);
-    const op = url.replace("/api/family/", "");
-    if (hook) {
-      const h = hook;
-      hook = null;
-      await h(op);
-    }
-    const out = await handle(
-      {
-        op,
-        method: "POST",
-        body: String(init.body ?? ""),
-        authorization: headers.authorization ?? null,
-        ip: "203.0.113.9",
-      },
-      store,
-    );
-    return new Response(JSON.stringify(out.json), { status: out.status });
-  }) as unknown as typeof fetch;
-  return {
-    api: familyApi(fetcher),
-    wire,
-    setOffline: (v: boolean) => (offline = v),
-    onNext: (h: Hook): void => {
-      hook = h;
-    },
-  };
-}
-
-/** Un teléfono: sus datos y su estado en memoria, con las MISMAS mezclas que el aparato. */
-function phone(id: string, name: string, now = { t: 1_000 }) {
-  const data = {
-    days: {} as Record<string, DayRegs>,
-    profile: { notes: {} } as ProfileRegs,
-    plan: null as PlanSide | null,
-    name,
-    notices: {} as Record<string, NoticeShared>,
-  };
-  let state: FamilyState | null = null;
-  const local: LocalData = {
-    deviceId: () => id,
-    deviceName: () => data.name,
-    days: () => data.days,
-    mergeDay(day, regs) {
-      const cur = data.days[day] ?? { marks: {}, notes: {} };
-      const next = {
-        marks: mergeMap(cur.marks, regs.marks),
-        notes: mergeMap(cur.notes, regs.notes),
-      };
-      const changed = JSON.stringify(next) !== JSON.stringify(cur);
-      data.days[day] = next;
-      return changed;
-    },
-    profile: () => data.profile,
-    mergeProfile(regs) {
-      const textures = mergeReg(data.profile.textures, regs.textures);
-      const next: ProfileRegs = {
-        ...(textures ? { textures } : {}),
-        notes: mergeMap(data.profile.notes, regs.notes),
-      };
-      const changed = JSON.stringify(next) !== JSON.stringify(data.profile);
-      data.profile = next;
-      return changed;
-    },
-    notices: () => data.notices,
-    mergeNotice(nid, n) {
-      if (data.notices[nid]) return false;
-      data.notices[nid] = n;
-      return true;
-    },
-    plan: () => data.plan,
-    applyPlan(p) {
-      if (typeof p.diet !== "object" || p.diet === null) return false;
-      data.plan = p;
-      return true;
-    },
-  };
-  return {
-    id,
-    data,
-    local,
-    now,
-    get state() {
-      return state;
-    },
-    set state(s: FamilyState | null) {
-      state = s;
-    },
-    deps(api: ReturnType<typeof network>["api"], ctx: FamilyCtx) {
-      return {
-        api,
-        ctx,
-        local,
-        state: {
-          load: () => (state ? structuredClone(state) : null),
-          save: (s: FamilyState) => {
-            state = structuredClone(s);
-          },
-        },
-        now: () => now.t,
-      };
-    },
-    mark(day: string, check: string, at: string, t: number) {
-      const cur = data.days[day] ?? { marks: {}, notes: {} };
-      cur.marks[check] = { t, by: id, v: { at } };
-      data.days[day] = cur;
-    },
-    unmark(day: string, check: string, t: number) {
-      data.days[day].marks[check] = { t, by: id, v: null };
-    },
-  };
-}
-
-async function setup() {
-  const store = createMemoryStore({ isolated: true });
-  const net = network(store);
-  const a = phone("PHONE-A-0001", "SENTINEL-NAME Mamá");
-  const created = await createFamily(net.api);
-  if (!created.ok) throw new Error("create");
-  const { ctx: ctxA, phrase } = created.value;
-  a.state = freshFamilyState(ctxA.family, ctxA.epoch, "2026-11-16");
-  const b = phone("PHONE-B-0002", "Abuela");
-  const joined = await joinFamily(net.api, ctxA.family, phrase);
-  if (!joined.ok) throw new Error("join");
-  b.state = freshFamilyState(
-    joined.value.family,
-    joined.value.epoch,
-    "2026-11-16",
-  );
-  return { store, net, a, b, ctxA, ctxB: joined.value, phrase };
-}
+import { SENTINELS, phone, setup } from "./family-harness";
 
 describe("sincronización entre dos teléfonos (contra el doble del servidor)", () => {
   it("lo que marca uno lo ve el otro, con quién y a qué hora; el plan y el perfil también", async () => {
@@ -197,7 +32,7 @@ describe("sincronización entre dos teléfonos (contra el doble del servidor)", 
     const rb = await syncOnce(b.deps(net.api, ctxB));
     expect(rb).toMatchObject({ ok: true, changed: true });
     expect(b.data.plan?.diet).toEqual({ foods: ["SENTINEL-FOOD"] });
-    expect(b.data.days["2026-11-16"].marks["meal:desayuno"]).toEqual({
+    expect(b.data.days["2026-11-16"].marks["meal:desayuno"]).toMatchObject({
       t: 10,
       by: a.id,
       v: { at: "07:30" },
@@ -411,21 +246,32 @@ describe("sincronización entre dos teléfonos (contra el doble del servidor)", 
     const rot = await rotateFamily(net.api, ctxA, keep);
     expect(rot.ok).toBe(true);
     if (!rot.ok) return;
-    a.state = freshFamilyState(ctxA.family, rot.value.ctx.epoch, "2026-11-16");
+    a.state = {
+      ...freshFamilyState(ctxA.family, rot.value.ctx.epoch, "2026-11-16"),
+      roster: a.state!.roster,
+      pin: a.state!.pin,
+    };
 
     const denied = await syncOnce(b.deps(net.api, ctxB));
     expect(denied).toEqual({ ok: false, reason: "denied" });
     expect(b.state!.locked).toBe(true);
 
-    const back = await joinFamily(net.api, ctxA.family, rot.value.phrase);
+    const back = await joinFamily(
+      net.api,
+      formatInvite(ctxA.family, a.state.pin!),
+      rot.value.phrase,
+    );
     expect(back.ok).toBe(true);
     if (!back.ok) return;
-    b.state = freshFamilyState(
-      back.value.family,
-      back.value.epoch,
-      "2026-11-16",
-    );
-    expect((await syncOnce(b.deps(net.api, back.value))).ok).toBe(true);
+    b.state = {
+      ...freshFamilyState(
+        back.value.ctx.family,
+        back.value.ctx.epoch,
+        "2026-11-16",
+      ),
+      pin: back.value.invite.pin,
+    };
+    expect((await syncOnce(b.deps(net.api, back.value.ctx))).ok).toBe(true);
     expect(b.data.days["2026-11-16"].marks["meal:desayuno"].v).toEqual({
       at: "07:00",
     });
@@ -434,7 +280,7 @@ describe("sincronización entre dos teléfonos (contra el doble del servidor)", 
   });
 
   it("por la red solo viajan los nombres opacos y cifrados: nada de nombres, notas, comida, idioma ni tema", async () => {
-    const { net, a, b, ctxA, ctxB, phrase } = await setup();
+    const { net, a, b, ctxA, ctxB, phrase, pin } = await setup();
     a.data.plan = { t: 5, by: a.id, diet: { foods: ["SENTINEL-FOOD"] } };
     a.data.profile = {
       notes: {
@@ -459,9 +305,9 @@ describe("sincronización entre dos teléfonos (contra el doble del servidor)", 
     expect(wire).not.toMatch(/prefs|locale|theme/i);
 
     // Y lo que llega descifrado, desde un tercero que sí tiene la frase, es solo lo compartido.
-    const c = await joinFamily(net.api, ctxA.family, phrase);
+    const c = await joinFamily(net.api, formatInvite(ctxA.family, pin), phrase);
     if (!c.ok) throw new Error("join");
-    const all = await pullSince(net.api, c.value, 0);
+    const all = await pullSince(net.api, c.value.ctx, 0);
     if (!all.ok) throw new Error("pull");
     const names = all.value.items.map((i) => i.named.name).sort();
     expect(names).toEqual(
@@ -469,8 +315,10 @@ describe("sincronización entre dos teléfonos (contra el doble del servidor)", 
         "day:2026-11-16",
         `device:${a.id}`,
         `device:${b.id}`,
+        `log:${a.id}`,
         "plan",
         "profile",
+        "roster",
       ].sort(),
     );
     expect(JSON.stringify(all.value.items)).not.toMatch(/locale|theme|prefs/i);
@@ -494,7 +342,7 @@ describe("sincronización entre dos teléfonos (contra el doble del servidor)", 
 
     const got = await syncOnce(b.deps(net.api, ctxB));
     expect(got.ok && got.changed).toBe(true);
-    expect(b.data.notices["abc123def456"]).toEqual(notice);
+    expect(b.data.notices["abc123def456"]).toMatchObject(notice);
     // El eco vuelve a A sin duplicarse ni marcarse como cambio.
     const echo = await syncOnce(a.deps(net.api, ctxA));
     expect(echo.ok && echo.changed).toBe(false);

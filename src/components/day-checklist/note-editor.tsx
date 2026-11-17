@@ -33,12 +33,15 @@ export function NoteEditor({
   note,
   by,
   onSave,
+  readOnly = false,
 }: {
   mealName: string;
   note: DayNote | null;
   /** «Por Mamá»: quién escribió la nota (solo con familia). */
   by?: string;
   onSave: (note: DayNote | null) => void;
+  /** Con un rol que no deja notas aquí (S9): se ve la nota, no se edita. */
+  readOnly?: boolean;
 }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -88,15 +91,17 @@ export function NoteEditor({
   if (!open) {
     return (
       <div className="mt-1 pl-9">
-        <button
-          ref={openButtonRef}
-          type="button"
-          onClick={() => setOpen(true)}
-          className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-        >
-          <NotebookPen aria-hidden className="size-4" />
-          {hasNote ? t.today.editNote : t.today.addNote}
-        </button>
+        {!readOnly && (
+          <button
+            ref={openButtonRef}
+            type="button"
+            onClick={() => setOpen(true)}
+            className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          >
+            <NotebookPen aria-hidden className="size-4" />
+            {hasNote ? t.today.editNote : t.today.addNote}
+          </button>
+        )}
         {note && (note.chips.length > 0 || note.text) && (
           <p className="mt-0.5 text-sm text-muted-foreground">
             <NoteSummary note={note} />

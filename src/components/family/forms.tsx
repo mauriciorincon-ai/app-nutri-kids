@@ -34,7 +34,7 @@ export function CreateForm({
     const r = await getFamily().create(name);
     setBusy(false);
     if (r.ok)
-      onCreated({ code: r.code, phrase: r.phrase, keysSaved: r.keysSaved });
+      onCreated({ code: r.invite, phrase: r.phrase, keysSaved: r.keysSaved });
     else setError(errorText(t, r.reason));
   };
 

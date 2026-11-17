@@ -99,12 +99,15 @@ function coerceNoteValue(raw: unknown): DayNote | null {
 }
 
 /** Sello válido de un registro leído, o null si no lo es. */
-function coerceStamp(raw: unknown): { t: number; by: string } | null {
+function coerceStamp(
+  raw: unknown,
+): { t: number; by: string; s?: string } | null {
   if (!obj(raw)) return null;
-  const { t, by } = raw;
+  const { t, by, s } = raw;
   if (typeof t !== "number" || !Number.isInteger(t) || t < 0) return null;
   if (typeof by !== "string" || by.length < 1 || by.length > 24) return null;
-  return { t, by };
+  // La firma (familia, S9) se conserva tal cual para volver a compartirla; la valida quien la recibe.
+  return typeof s === "string" && s.length <= 100 ? { t, by, s } : { t, by };
 }
 
 function coerceRegs(value: unknown): DayRegs {

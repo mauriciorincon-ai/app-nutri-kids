@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import AxeBuilder from "@axe-core/playwright";
 import {
   expect,
@@ -126,7 +128,7 @@ async function joinFamily(
   await expect(join).toBeEnabled();
   await join.click();
   await expect(page.getByTestId("family-join-form")).toBeVisible();
-  await page.getByLabel("Código", { exact: true }).fill(secrets.code);
+  await page.getByLabel("Invitación", { exact: true }).fill(secrets.code);
   await page.getByLabel("Frase", { exact: true }).fill(secrets.phrase);
   await page.getByLabel(/Nombre de este teléfono/).fill(name);
   await page
@@ -208,10 +210,75 @@ test("crear, entrar, marcar en uno y ver en el otro, sin red, sacar a un teléfo
   await expect(a.page.getByTestId("family-status")).toHaveText("Al día");
   await axe(a.page, "familia creada");
 
-  // 2 · Entrar con el código y la frase en el otro teléfono.
+  // 2 · Entrar con la invitación (código + huella del roster) y la frase en el otro teléfono.
   await joinFamily(b, first);
   await expect(b.page.getByTestId("family-phones")).toContainText(MAMA);
-  await axe(b.page, "familia unida");
+  // Sin rol todavía: ve todo, no cambia nada, y muestra su huella para que la madre la compare.
+  await expect(b.page.getByTestId("family-no-role")).toBeVisible({
+    timeout: 15_000,
+  });
+  const bMark = (await b.page.getByTestId("family-my-mark").innerText()).match(
+    /[0-9A-Z]{4}-[0-9A-Z]{4}/,
+  )![0];
+  await axe(b.page, "familia unida, esperando rol");
+
+  // 2b · La madre ve a Papá esperando, con la MISMA huella, y lo confirma como cuidador.
+  const bId = await b.page.evaluate(
+    () => JSON.parse(localStorage.getItem("nutrikids.device.v1")!).id as string,
+  );
+  await a.page.goto("/ajustes");
+  await reloadUntil(a.page, async () => {
+    await expect(a.page.getByTestId(`family-mark-${bId}`)).toContainText(
+      bMark,
+      { timeout: 1000 },
+    );
+  });
+  await axe(a.page, "esperando rol");
+  await a.page.getByTestId(`family-confirm-${bId}`).click();
+  await expect(a.page.getByTestId(`family-person-${bId}`)).toContainText(
+    "Cuidador",
+  );
+  await b.page.goto("/ajustes");
+  await reloadUntil(b.page, async () => {
+    await expect(b.page.getByTestId("family-my-role")).toContainText(
+      "Cuidador",
+      { timeout: 1000 },
+    );
+  });
+  // Con rol de cuidador, /cargar dice que el plan lo cambia una madre o un padre.
+  await b.page.goto("/cargar");
+  await expect(b.page.getByTestId("role-limit")).toBeVisible();
+  await axe(b.page, "cargar con rol de cuidador");
+
+  // 2c · Un cliente modificado: Papá escribe un plan directo en su teléfono y lo sube firmado
+  // con SU llave. El teléfono de la madre lo descarta y lo dice, sin alarma.
+  // (El plan inventado del repo, el único que existe aquí.)
+  const forged = readFileSync("data/demo-diet.json", "utf8");
+  await b.page.evaluate(
+    ({ by, diet }) => {
+      localStorage.setItem("nutrikids.diet.v1", diet);
+      localStorage.setItem("nutrikids.source.v1", "real");
+      localStorage.setItem(
+        "nutrikids.plan-meta.v1",
+        JSON.stringify({ t: Date.now() + 60_000, by }),
+      );
+    },
+    { by: bId, diet: forged },
+  );
+  await b.page.goto("/ajustes");
+  await expect(b.page.getByTestId("family-status")).toHaveText("Al día", {
+    timeout: 15_000,
+  });
+  await a.page.goto("/ajustes");
+  await reloadUntil(a.page, async () => {
+    await expect(a.page.getByTestId("family-rejected")).toBeVisible({
+      timeout: 1000,
+    });
+  });
+  expect(
+    await a.page.evaluate(() => localStorage.getItem("nutrikids.source.v1")),
+  ).not.toBe("real");
+  await axe(a.page, "cambio descartado");
 
   // 3 · Marcar el desayuno y una nota en A: B lo ve, con «Por Mamá».
   await a.page.goto("/");
@@ -269,7 +336,7 @@ test("crear, entrar, marcar en uno y ver en el otro, sin red, sacar a un teléfo
   ).toBeVisible();
   await axe(a.page, "confirmar sacar");
   await a.page
-    .getByRole("button", { name: "Cambiar la frase y sacar" })
+    .getByRole("button", { name: "Sacar y cambiar la frase" })
     .click();
   await expect(a.page.getByTestId("family-phrase")).toBeVisible();
   const second = (await a.page.getByTestId("family-phrase").innerText()).trim();
@@ -342,7 +409,7 @@ test("«Borrar mis datos» dentro de una familia: avisa, y con la casilla tambi�
   await b.page.goto("/ajustes");
   await expect(b.page.getByTestId("family-join")).toBeEnabled();
   await b.page.getByTestId("family-join").click();
-  await b.page.getByLabel("Código", { exact: true }).fill(first.code);
+  await b.page.getByLabel("Invitación", { exact: true }).fill(first.code);
   await b.page.getByLabel("Frase", { exact: true }).fill(first.phrase);
   await b.page.getByLabel(/Nombre de este teléfono/).fill(PAPA);
   await b.page

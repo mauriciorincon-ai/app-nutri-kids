@@ -12,14 +12,10 @@
  * Puro: la fecha entra por parámetro y solo se leen datos del `DietPlan`.
  * La redacción vive en i18n (`answer-text.ts` la compone): el motor decide QUÉ.
  */
-import {
-  currentMealSlot,
-  resolveItemStatus,
-  waterGlassesTarget,
-  type ItemStatus,
-} from "./logic";
+import { currentMealSlot, waterGlassesTarget } from "./logic";
 import type { DietPlan, LocalizedText, Texture } from "./schema";
-import { orderByTexture, type OrderedOption } from "./texture";
+import { avoidTexts, planOptionsFor, type Options } from "./options";
+import { fridgeMarks, planBLate, planBNoFridge, type PlanB } from "./plan-b";
 import {
   matchItem,
   matchLookup,
@@ -29,9 +25,13 @@ import {
 } from "./search";
 import { screenInput } from "./guardrails";
 
+export { planOptionsFor, type OptionItem, type Options } from "./options";
+
 type Meal = DietPlan["dailyMenu"][number];
 
 export type OpenIntent =
+  | "nofridge"
+  | "late"
   | "refused"
   | "replacement"
   | "allergy"
@@ -49,6 +49,54 @@ export type OpenIntent =
  * rechazo, no una pregunta de menú; «no tengo pollo, ¿qué le doy?» es un reemplazo.
  */
 export const INTENT_PATTERNS: Record<OpenIntent, Record<Locale, string[]>> = {
+  // Plan B (S9). Van ANTES de «replacement»: «no hay nevera» contiene «no hay».
+  nofridge: {
+    es: [
+      "no hay nevera",
+      "no hay refrigerador",
+      "no hay heladera",
+      "no tengo nevera",
+      "no tenemos nevera",
+      "no tengo refrigerador",
+      "no tengo heladera",
+      "sin nevera",
+      "sin refrigerador",
+      "sin heladera",
+    ],
+    en: [
+      "no fridge",
+      "no refrigerator",
+      "without a fridge",
+      "without fridge",
+      "without a refrigerator",
+      "don t have a fridge",
+      "dont have a fridge",
+      "there s no fridge",
+    ],
+  },
+  late: {
+    es: [
+      "llegamos tard*",
+      "llegue tard*",
+      "llego tard*",
+      "vamos tard*",
+      "vamos atrasad*",
+      "estamos tard*",
+      "se nos hizo tard*",
+      "se hizo tard*",
+      "voy tard*",
+    ],
+    en: [
+      "running late",
+      "we re late",
+      "we are late",
+      "i m late",
+      "im late",
+      "got home late",
+      "we got home late",
+      "late for",
+    ],
+  },
   refused: {
     es: [
       "no quiso",
@@ -181,6 +229,8 @@ export const INTENT_PATTERNS: Record<OpenIntent, Record<Locale, string[]>> = {
 };
 
 const INTENT_ORDER: OpenIntent[] = [
+  "nofridge",
+  "late",
   "refused",
   "replacement",
   "allergy",
@@ -299,69 +349,11 @@ function nextMealFrom(diet: DietPlan, now: Date): Meal | null {
 }
 
 // ---------------------------------------------------------------------------
-// Opciones del plan para un alimento
-// ---------------------------------------------------------------------------
-
-/** Una opción del plan, con su textura y si hoy cae en una que no acepta. */
-export type OptionItem = OrderedOption;
-
-export type Options = {
-  /** De dónde salen: una equivalencia explícita del plan o su mismo grupo verde. */
-  source: "equivalence" | "group";
-  /** Ya ordenadas por textura (las que hoy no acepta, al final y marcadas). */
-  items: OptionItem[];
-  note?: LocalizedText;
-};
-
-/** ¿Ese nombre es hoy una opción segura (verde, o un nombre que el plan no clasifica)? */
-function isSafeOption(diet: DietPlan, name: LocalizedText, now: Date): boolean {
-  for (const locale of ["es", "en"] as const) {
-    const hit = matchItem(diet, name[locale], locale, now);
-    if (hit && hit.kind !== "green") return false;
-  }
-  return true;
-}
-
-/**
- * Reemplazos que el plan da para un alimento; null si no hay ninguno. Nunca se
- * propone algo que HOY esté restringido o en rojo, aunque el plan lo liste o viva
- * en un grupo verde.
- */
-export function planOptionsFor(
-  status: ItemStatus,
-  diet: DietPlan,
-  now: Date,
-  /** Texturas que quien cuida marcó como aceptadas hoy (vacío = orden del plan). */
-  accepted: readonly Texture[] = [],
-): Options | null {
-  const eq = status.equivalences[0];
-  if (eq) {
-    const items = status.equivalences
-      .flatMap((e) => e.use)
-      .filter((u) => isSafeOption(diet, u.name, now));
-    if (items.length > 0)
-      return {
-        source: "equivalence",
-        items: orderByTexture(items, accepted),
-        ...(eq.note ? { note: eq.note } : {}),
-      };
-  }
-  if (status.kind === "green") {
-    const items = status.group.items
-      .filter((i) => i.id !== status.id)
-      .filter((i) => resolveItemStatus(diet, i.id, now)?.kind === "green")
-      .map((i) => ({ name: i.name }));
-    if (items.length > 0)
-      return { source: "group", items: orderByTexture(items, accepted) };
-  }
-  return null;
-}
-
-// ---------------------------------------------------------------------------
 // Respuesta
 // ---------------------------------------------------------------------------
 
 export type OpenAnswer =
+  | { kind: "plan-b"; plan: PlanB }
   | { kind: "replacement"; food: LocalizedText; options: Options }
   | {
       kind: "refused";
@@ -444,10 +436,29 @@ export function answerOpen(
   if (!intent) return null;
 
   switch (intent) {
+    case "nofridge":
+      return {
+        kind: "plan-b",
+        plan: planBNoFridge(
+          diet,
+          now,
+          fridgeMarks(notes),
+          accepted,
+          avoidTexts(notes),
+        ),
+      };
+    case "late":
+      return { kind: "plan-b", plan: planBLate(diet, now) };
     case "replacement": {
       const item = matchItem(diet, question, lang, now);
       if (!item) return { kind: "not-in-plan", reason: "unknown-food" };
-      const options = planOptionsFor(item, diet, now, accepted);
+      const options = planOptionsFor(
+        item,
+        diet,
+        now,
+        accepted,
+        avoidTexts(notes),
+      );
       if (!options)
         return { kind: "not-in-plan", reason: "no-options", food: item.name };
       return { kind: "replacement", food: item.name, options };
@@ -460,7 +471,9 @@ export function answerOpen(
         kind: "refused",
         food: item?.name ?? null,
         meal,
-        options: item ? planOptionsFor(item, diet, now, accepted) : null,
+        options: item
+          ? planOptionsFor(item, diet, now, accepted, avoidTexts(notes))
+          : null,
         next,
       };
     }

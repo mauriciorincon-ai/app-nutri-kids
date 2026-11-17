@@ -1,6 +1,6 @@
 import demoRaw from "../../../data/demo-diet.json";
 import { clearDevice, getDeviceId } from "../device";
-import { clearKeys } from "../family/keystore";
+import { clearKeys, clearSigner } from "../family/keystore";
 import { clearNotices } from "../family/notices";
 import { clearFamilyLocal } from "../family/state";
 import { log } from "../log";
@@ -14,6 +14,7 @@ import {
 import { clearDayLog } from "./day-log";
 import { clearProfileNotes } from "./profile-notes";
 import { clearPlanDraft } from "./plan-draft";
+import { clearSecondPlan } from "./second-plan";
 import { dateKey } from "./logic";
 import { rebaseDemoWindow } from "./demo";
 
@@ -112,7 +113,13 @@ export function importDiet(jsonText: string): ImportResult {
 /** Guarda una dieta ya validada como la real (JSON o PDF revisado). Logs: solo conteos. */
 export function storeDiet(
   diet: DietPlan,
-  event: "diet-imported" | "diet-saved-from-pdf" = "diet-imported",
+  event:
+    | "diet-imported"
+    | "diet-saved-from-pdf"
+    | "diet-merged"
+    | "diet-line-changed" = "diet-imported",
+  /** El sello del plan; un cambio de línea lo fija para que la bitácora lo reconozca. */
+  at: number = Date.now(),
 ): ImportResult {
   const s = storage();
   if (!s) return { ok: false, error: "no-storage" };
@@ -123,7 +130,7 @@ export function storeDiet(
     s.setItem(STORAGE_KEYS.source, "real");
     s.setItem(
       STORAGE_KEYS.planMeta,
-      JSON.stringify({ t: Date.now(), by: getDeviceId() }),
+      JSON.stringify({ t: at, by: getDeviceId() }),
     );
   } catch {
     // Cuota llena o modo privado: no queda a medias (se devuelve lo que había).
@@ -251,10 +258,11 @@ export function clearAllData(): void {
   clearDayLog();
   clearProfileNotes();
   clearPlanDraft();
+  clearSecondPlan();
   // Sale de la familia (las claves y el estado se van de este teléfono; lo compartido en el
   // servidor lo borra «Borrar lo compartido» en Ajustes) y olvida quién es este teléfono.
   clearFamilyLocal();
-  void clearKeys();
+  void clearKeys().then(() => clearSigner());
   clearDevice();
   // Avisos (S8): los de la familia y el estado de los de este teléfono. La suscripción y la
   // copia del trabajador las quita «Borrar datos» en Ajustes (necesitan red y IndexedDB).

@@ -23,6 +23,7 @@ const SCREENS = [
   "/historial",
   "/perfil",
   "/conoce",
+  "/escenarios",
 ];
 
 async function firstVisit(page: Page) {

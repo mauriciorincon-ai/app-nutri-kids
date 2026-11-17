@@ -13,6 +13,8 @@ import {
   seal,
 } from "@/lib/family/crypto";
 import { saveKeys } from "@/lib/family/keystore";
+import { newSigner, sign, type Signer } from "@/lib/family/sign";
+import { noticePayload } from "@/lib/family/trust";
 import {
   clearCopy,
   readKey,
@@ -184,16 +186,38 @@ describe("el trabajador arma el aviso con la copia local", () => {
 describe("el trabajador abre el aviso de la familia con las llaves del teléfono", () => {
   const FAMILY = "A1B2C3D4E5";
 
+  /** Quienes pueden avisar en esta familia de prueba (S9): cada uno con su llave. */
+  const SENDERS = ["otro", "p", "a", "x"];
+
   async function familySetup() {
     const keys = await deriveKeys("frase de prueba para el puente", newSalt());
     await saveKeys(FAMILY, keys, idb);
+    const signers: Record<string, Signer> = {};
+    for (const id of SENDERS) signers[id] = await newSigner();
     await saveFamilyPointer(
-      { family: FAMILY, epoch: 1, seq: 4, self: "yo" },
+      {
+        family: FAMILY,
+        epoch: 1,
+        seq: 4,
+        self: "yo",
+        senders: Object.fromEntries(SENDERS.map((id) => [id, signers[id].pub])),
+      },
       idb,
     );
     await saveCopy(copy({ types: { ...DEFAULT_TYPES, family: true } }), idb);
-    const record = async (n: string, d: unknown, epoch = 1) => {
+    /** Sella un registro; un aviso va firmado por quien dice (o por `signer`, o sin firma). */
+    const record = async (
+      n: string,
+      d: unknown,
+      epoch = 1,
+      signer?: Signer | null,
+    ) => {
       const id = await recordId(keys.id, n);
+      if (n.startsWith("notice:")) {
+        const nd = d as Parameters<typeof noticePayload>[1];
+        const by = signer === undefined ? signers[nd.by] : signer;
+        if (by) d = { ...nd, s: await sign(by, noticePayload(n, nd)) };
+      }
       const sealed = await seal(keys.enc, { n, d }, aadFor(FAMILY, epoch, id));
       return { id, kind: "item", ver: 1, seq: 5, ...sealed };
     };
@@ -203,8 +227,50 @@ describe("el trabajador abre el aviso de la familia con las llaves del teléfono
         requests.push({ url, init });
         return Response.json({ seq: 9, more: false, records }, { status });
       }) as unknown as typeof fetch;
-    return { keys, record, requests, serve };
+    return { keys, record, requests, serve, signers };
   }
+
+  it("solo un aviso firmado por alguien que puede avisar (S9): sin firma, con la llave de otro o de fuera del roster, el genérico", async () => {
+    const { record, serve, signers } = await familySetup();
+    const base = { text: "Inventado", name: "X", t: 70, date: "2026-11-16" };
+    const unsigned = await record("notice:u", { ...base, by: "p" }, 1, null);
+    const otherKey = await record(
+      "notice:o",
+      { ...base, by: "p", t: 71 },
+      1,
+      signers.a,
+    );
+    const outsider = await record(
+      "notice:n",
+      { ...base, by: "nutri", t: 72 },
+      1,
+      await newSigner(),
+    );
+    const sw = loadSw();
+    const n = await sw.onPush(at(15, 0), serve([unsigned, otherKey, outsider]));
+    expect(n.options.body).toBe("Hay un aviso nuevo de la familia.");
+    expect(n.title).toBe("Nutrikids");
+    // Y uno firmado por quien dice, sí.
+    const good = await record("notice:g", { ...base, by: "p", t: 73 });
+    const m = await loadSw().onPush(at(15, 1), serve([good]));
+    expect(m.title).toBe("Aviso de X");
+  });
+
+  it("sin la lista de quién puede avisar (familia sin roster), ningún texto: el genérico", async () => {
+    const { record, serve } = await familySetup();
+    await saveFamilyPointer(
+      { family: FAMILY, epoch: 1, seq: 4, self: "yo" },
+      idb,
+    );
+    const notice = await record("notice:z", {
+      text: "Inventado",
+      name: "X",
+      by: "p",
+      t: 80,
+    });
+    const n = await loadSw().onPush(at(15, 0), serve([notice]));
+    expect(n.options.body).toBe("Hay un aviso nuevo de la familia.");
+  });
 
   it("muestra «Aviso de <nombre>» con la nota; pide con el token, sin nada en claro", async () => {
     const { keys, record, requests, serve } = await familySetup();

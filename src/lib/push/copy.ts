@@ -37,6 +37,11 @@ export type FamilyPointer = {
   epoch: number;
   seq: number;
   self: string;
+  /**
+   * Quién puede avisar (S9 · ADR-013): id → llave pública, del roster. El trabajador solo
+   * muestra un aviso firmado por una de estas llaves; sin roster, ninguno (solo el genérico).
+   */
+  senders?: Record<string, string>;
 };
 
 function wrap<T>(req: IDBRequest<T>): Promise<T> {

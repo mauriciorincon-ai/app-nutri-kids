@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+import { logEventSchema } from "./log";
+import { opSchema } from "./roster";
+
 /**
  * Lo que este teléfono recuerda de su familia, sin secretos: el código, la época, hasta dónde
  * bajó, qué versión vio de cada registro y una huella de lo que el servidor ya tiene de él
@@ -27,6 +30,9 @@ export const familyStateSchema = z.object({
     z.object({
       name: z.string().max(30),
       seen: z.number().int().nonnegative(),
+      /** Su llave pública y la invitación con la que entró (S9), si las mandó firmadas. */
+      pub: z.string().optional(),
+      invite: z.string().optional(),
     }),
   ),
   /** Día (YYYY-MM-DD) en que quien usa este teléfono aceptó compartir. */
@@ -42,6 +48,39 @@ export const familyStateSchema = z.object({
   planTooBig: z.boolean(),
   /** Registros (días, perfil) que no caben en lo compartido y se quedan solo en este teléfono. */
   oversize: z.number().int().nonnegative().default(0),
+
+  // --- S9 · quién puede qué (ADR-013) -----------------------------------------------------
+  /** El roster aceptado en este teléfono: la cadena de cambios firmados. */
+  roster: z.array(opSchema).default([]),
+  /** Huella del génesis que trajo la invitación (o el propio, si creó la familia). */
+  pin: z.string().nullable().default(null),
+  /**
+   * Familia del S7 sin roster: el primer teléfono que abre esta versión firma el génesis con
+   * él como padre y suma como cuidadores a los teléfonos que ya conocía. Una familia nueva
+   * (creada o unida desde el S9) nace con `false`.
+   */
+  migrate: z.boolean().default(true),
+  /** Teléfonos que este conocía al migrar: entran como cuidadores cuando mandan su llave. */
+  legacy: z.array(z.string()).default([]),
+  /** La invitación con la que entró este teléfono (etiqueta), para que un padre la confirme. */
+  invite: z.string().nullable().default(null),
+  /** Firma guardada de registros enteros (plan, avisos), por nombre y huella del contenido. */
+  sigs: z
+    .record(z.string(), z.object({ h: z.string(), s: z.string() }))
+    .default({}),
+  /** La bitácora: la de este teléfono y la que vio de cada uno de los otros. */
+  log: z
+    .object({
+      own: z.array(logEventSchema).default([]),
+      others: z.record(z.string(), z.array(logEventSchema)).default({}),
+      /** Teléfonos cuya bitácora llegó reescrita (se conservó lo ya visto). */
+      rewritten: z.array(z.string()).default([]),
+    })
+    .default({ own: [], others: {}, rewritten: [] }),
+  /** Cambios que llegaron sin firma válida o sin permiso para su rol, y se descartaron. */
+  rejected: z.number().int().nonnegative().default(0),
+  /** El roster del servidor no coincide con la invitación o no encadena. */
+  rosterIssue: z.enum(["pin", "invalid"]).nullable().default(null),
 });
 
 export type FamilyState = z.infer<typeof familyStateSchema>;
@@ -74,6 +113,15 @@ export function freshFamilyState(
     locked: false,
     planTooBig: false,
     oversize: 0,
+    roster: [],
+    pin: null,
+    migrate: false,
+    legacy: [],
+    invite: null,
+    sigs: {},
+    log: { own: [], others: {}, rewritten: [] },
+    rejected: 0,
+    rosterIssue: null,
   };
 }
 

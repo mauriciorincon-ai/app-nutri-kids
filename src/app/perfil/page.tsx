@@ -7,10 +7,18 @@ import { FileText, PenLine, Trash2 } from "lucide-react";
 import { useToday } from "@/components/day-checklist/use-today";
 import { useDiet } from "@/components/diet-provider";
 import { Button } from "@/components/ui/button";
-import { useWho } from "@/components/family/use-family";
+import { RoleLimit } from "@/components/family/role-limit";
+import { useCan, useWho } from "@/components/family/use-family";
 import { useProfileNotes } from "@/components/use-profile-notes";
 import { fmt, useI18n } from "@/i18n";
 import { dateKey, isRestrictionActive } from "@/lib/diet/logic";
+import { avoidTexts } from "@/lib/diet/options";
+import {
+  fridgeCandidates,
+  fridgeKey,
+  fridgeKeyText,
+  fridgeMarks,
+} from "@/lib/diet/plan-b";
 import {
   NOTE_KINDS,
   PROFILE_NOTE_MAX,
@@ -77,7 +85,20 @@ export default function ProfilePage() {
   const today = useToday();
   const notes = useProfileNotes();
   const who = useWho();
+  const can = useCan();
+  const canTextures = can({ k: "textures" });
+  const canNotes = can({ k: "profile-note" });
   const [kind, setKind] = useState<NoteKind>("other");
+  const freeNotes = notes.notes.filter((n) => n.kind !== "fridge");
+  const fridgeNotes = notes.notes.filter((n) => n.kind === "fridge");
+  const fridgeList = today
+    ? fridgeCandidates(
+        diet,
+        today,
+        fridgeMarks(fridgeNotes),
+        avoidTexts(notes.notes),
+      )
+    : [];
   const [text, setText] = useState("");
   const [status, setStatus] = useState("");
 
@@ -254,6 +275,7 @@ export default function ProfilePage() {
                     type="button"
                     variant="outline"
                     aria-pressed={on}
+                    disabled={!canTextures}
                     className={cn(
                       "min-h-11 gap-1.5",
                       on && "border-2 border-foreground bg-muted font-semibold",
@@ -275,13 +297,72 @@ export default function ProfilePage() {
           </ul>
         </div>
 
+        <div
+          className="rounded-xl border bg-card px-4 py-3"
+          data-testid="fridge-marks"
+        >
+          <h3 className="font-heading text-base font-semibold">
+            {t.profile.fridgeTitle}
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t.profile.fridgeHint}
+          </p>
+          {fridgeList.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">
+              {t.profile.fridgeEmpty}
+            </p>
+          ) : (
+            <ul className="mt-2 flex flex-wrap gap-2">
+              {fridgeList.map((c) => {
+                const note = fridgeNotes.find(
+                  (n) => fridgeKeyText(n.text) === fridgeKey(c.name),
+                );
+                const on = c.marked !== null;
+                const locked = c.marked === "plan" || !canNotes;
+                return (
+                  <li key={fridgeKey(c.name)}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      aria-pressed={on}
+                      disabled={locked}
+                      aria-label={fmt(
+                        on ? t.profile.fridgeUnmark : t.profile.fridgeMark,
+                        { name: l(c.name) },
+                      )}
+                      className={cn(
+                        "min-h-11 gap-1.5",
+                        on &&
+                          "border-2 border-foreground bg-muted font-semibold",
+                      )}
+                      onClick={() => {
+                        if (note) removeProfileNote(note.id);
+                        else addProfileNote("fridge", c.name.es, new Date());
+                        notifyLocalStore();
+                      }}
+                    >
+                      <span aria-hidden>{on ? "✓" : "○"}</span>
+                      {l(c.name)}
+                      {c.marked === "plan" && (
+                        <span className="text-xs font-normal text-muted-foreground">
+                          · {t.profile.fridgePlan}
+                        </span>
+                      )}
+                    </Button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
         <ul className="flex flex-col gap-2" data-testid="profile-notes">
-          {notes.notes.length === 0 && (
+          {freeNotes.length === 0 && (
             <li className="text-sm text-muted-foreground">
               {t.profile.noteEmpty}
             </li>
           )}
-          {notes.notes.map((n) => (
+          {freeNotes.map((n) => (
             <li
               key={n.id}
               className="flex items-start justify-between gap-2 rounded-xl border bg-card px-4 py-3 text-sm"
@@ -298,55 +379,61 @@ export default function ProfilePage() {
                   {who(n.by) && ` · ${who(n.by)}`}
                 </p>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="min-h-11 min-w-11 shrink-0"
-                aria-label={fmt(t.profile.noteRemove, { text: n.text })}
-                onClick={() => onRemove(n.id)}
-              >
-                <Trash2 aria-hidden className="size-4" />
-              </Button>
+              {canNotes && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="min-h-11 min-w-11 shrink-0"
+                  aria-label={fmt(t.profile.noteRemove, { text: n.text })}
+                  onClick={() => onRemove(n.id)}
+                >
+                  <Trash2 aria-hidden className="size-4" />
+                </Button>
+              )}
             </li>
           ))}
         </ul>
 
-        <form onSubmit={onAdd} className="flex flex-col gap-2">
-          <label className="flex flex-col gap-1 text-sm font-semibold">
-            {t.profile.noteKindLabel}
-            <select
-              value={kind}
-              onChange={(e) => setKind(e.target.value as NoteKind)}
-              className="min-h-11 rounded-lg border bg-card px-3 font-normal"
+        <RoleLimit />
+
+        {canNotes && (
+          <form onSubmit={onAdd} className="flex flex-col gap-2">
+            <label className="flex flex-col gap-1 text-sm font-semibold">
+              {t.profile.noteKindLabel}
+              <select
+                value={kind}
+                onChange={(e) => setKind(e.target.value as NoteKind)}
+                className="min-h-11 rounded-lg border bg-card px-3 font-normal"
+              >
+                {NOTE_KINDS.filter((k) => k !== "fridge").map((k) => (
+                  <option key={k} value={k}>
+                    {t.profile[`noteKinds_${k}`]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-sm font-semibold">
+              {fmt(t.profile.noteLabel, { max: PROFILE_NOTE_MAX })}
+              <input
+                type="text"
+                value={text}
+                maxLength={PROFILE_NOTE_MAX}
+                onChange={(e) => setText(e.target.value)}
+                className="min-h-11 rounded-lg border bg-card px-3 font-normal"
+              />
+            </label>
+            <Button type="submit" size="lg" disabled={text.trim().length === 0}>
+              {t.profile.noteAdd}
+            </Button>
+            <p
+              role="status"
+              className="min-h-5 text-sm font-semibold text-tl-green"
             >
-              {NOTE_KINDS.map((k) => (
-                <option key={k} value={k}>
-                  {t.profile[`noteKinds_${k}`]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-1 text-sm font-semibold">
-            {fmt(t.profile.noteLabel, { max: PROFILE_NOTE_MAX })}
-            <input
-              type="text"
-              value={text}
-              maxLength={PROFILE_NOTE_MAX}
-              onChange={(e) => setText(e.target.value)}
-              className="min-h-11 rounded-lg border bg-card px-3 font-normal"
-            />
-          </label>
-          <Button type="submit" size="lg" disabled={text.trim().length === 0}>
-            {t.profile.noteAdd}
-          </Button>
-          <p
-            role="status"
-            className="min-h-5 text-sm font-semibold text-tl-green"
-          >
-            {status}
-          </p>
-        </form>
+              {status}
+            </p>
+          </form>
+        )}
       </section>
     </div>
   );

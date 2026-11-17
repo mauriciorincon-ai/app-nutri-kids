@@ -12,9 +12,14 @@ import {
 } from "@/lib/diet/day-log";
 import { addProfileNote, loadProfileNotes } from "@/lib/diet/profile-notes";
 import { clearAllData, importDiet } from "@/lib/diet/storage";
-import { familyApi } from "@/lib/family/client";
+import { familyApi, type FamilyApi } from "@/lib/family/client";
 import { createController, type ControllerDeps } from "@/lib/family/controller";
-import { clearKeys, loadKeys, saveKeys } from "@/lib/family/keystore";
+import {
+  clearKeys,
+  loadKeys,
+  loadSigner,
+  saveKeys,
+} from "@/lib/family/keystore";
 import { browserLocal } from "@/lib/family/local";
 import { handle } from "@/lib/family/server/handler";
 import { createMemoryStore } from "@/lib/family/server/memory";
@@ -48,9 +53,10 @@ function setup() {
     return new Response(JSON.stringify(out.json), { status: out.status });
   }) as unknown as typeof fetch;
   const notify = vi.fn();
+  const api = familyApi(fetcher);
   const controller = (over: Partial<ControllerDeps> = {}) =>
     createController({
-      api: familyApi(fetcher),
+      api,
       local: browserLocal(),
       state: {
         load: loadFamilyState,
@@ -61,6 +67,7 @@ function setup() {
         save: (f, k) => saveKeys(f, k),
         load: (f) => loadKeys(f),
         clear: () => clearKeys(),
+        signer: () => loadSigner(),
       },
       now: () => Date.now(),
       online: () => !offline,
@@ -70,6 +77,7 @@ function setup() {
     });
   return {
     store,
+    api,
     controller,
     notify,
     setOffline: (v: boolean) => (offline = v),
@@ -125,17 +133,21 @@ describe("el director de la familia en un teléfono", () => {
     clearDevice();
     (globalThis as { indexedDB: IDBFactory }).indexedDB = new IDBFactory();
     const b = controller();
-    const wrong = await b.join(created.code, "AAAAAAAAAAAAAAAAAAAA", "Abuela");
+    const wrong = await b.join(
+      created.invite,
+      "AAAAAAAAAAAAAAAAAAAA",
+      "Abuela",
+    );
     expect(wrong).toEqual({ ok: false, reason: "wrong-phrase" });
     expect(await b.join("ZZZZZZZZZZ", created.phrase, "Abuela")).toEqual({
       ok: false,
       reason: "wrong-code",
     });
-    expect(await b.join(created.code, created.phrase, "  ")).toEqual({
+    expect(await b.join(created.invite, created.phrase, "  ")).toEqual({
       ok: false,
       reason: "no-name",
     });
-    expect(await b.join(created.code, created.phrase, "Abuela")).toEqual({
+    expect(await b.join(created.invite, created.phrase, "Abuela")).toEqual({
       ok: true,
       keysSaved: true,
     });
@@ -222,6 +234,7 @@ describe("el director de la familia en un teléfono", () => {
         save: () => Promise.reject(new Error("QuotaExceededError")),
         load: () => Promise.resolve(null),
         clear: () => Promise.resolve(),
+        signer: () => loadSigner(),
       },
     });
     const created = await c.create("Mamá");
@@ -457,5 +470,203 @@ describe("el director: disparadores y bordes", () => {
     expect(loadFamilyState()).toBeNull();
     expect(c.getView().phase).toBe("off");
     expect(await loadKeys("ZZZZZZZZZZ")).toBeNull();
+  });
+});
+
+describe("roles en el director (S9 · ADR-013)", () => {
+  /** Dos teléfonos en el mismo proceso: cada uno con SU localStorage e IndexedDB. */
+  function devices() {
+    const saved = new Map<
+      string,
+      { ls: Record<string, string>; idb: IDBFactory }
+    >();
+    let current: string | null = null;
+    const use = (who: string) => {
+      if (current) {
+        saved.set(current, {
+          ls: { ...localStorage },
+          idb: (globalThis as { indexedDB: IDBFactory }).indexedDB,
+        });
+      }
+      localStorage.clear();
+      clearDevice(); // el id de este teléfono vive en memoria también
+      const s = saved.get(who);
+      if (s)
+        for (const [k, v] of Object.entries(s.ls)) localStorage.setItem(k, v);
+      (globalThis as { indexedDB: IDBFactory }).indexedDB =
+        s?.idb ?? new IDBFactory();
+      current = who;
+    };
+    return { use };
+  }
+
+  it("invitar con rol, confirmar con la huella, y lo que cada rol no puede hacer", async () => {
+    const { controller } = setup();
+    const { use } = devices();
+
+    use("A");
+    const a = controller();
+    const created = await a.create("Mamá");
+    if (!created.ok) throw new Error("create");
+    const idA = getDeviceId();
+    expect(a.getView().role).toBe("parent");
+    expect(a.getView().members).toEqual([
+      expect.objectContaining({ id: idA, role: "parent", self: true }),
+    ]);
+    const inv = await a.invite("school", ["almuerzo"]);
+    if (!inv.ok) throw new Error("invite");
+    expect(inv.invite).toMatch(/^[0-9A-Z]{5}-[0-9A-Z]{5}(-[0-9A-Z]{4}){4}$/);
+    expect(a.getView().log.map((l) => l.k)).toContain("roster");
+
+    use("B");
+    const b = controller();
+    expect(await b.join(inv.invite, created.phrase, "Colegio")).toMatchObject({
+      ok: true,
+    });
+    const idB = getDeviceId();
+    expect(b.getView().role).toBeNull();
+    const markB = b.getView().mark;
+    expect(markB).toMatch(/^[0-9A-Z]{4}-[0-9A-Z]{4}$/);
+    // Sin rol: ni avisa ni cambia a nadie.
+    expect(await b.sendNotice("hola")).toEqual({
+      ok: false,
+      reason: "not-allowed",
+    });
+    expect(await b.invite("caregiver")).toEqual({
+      ok: false,
+      reason: "not-allowed",
+    });
+
+    use("A");
+    await a.sync();
+    const waiting = a.getView().waiting;
+    expect(waiting).toEqual([
+      {
+        id: idB,
+        name: "Colegio",
+        invited: { role: "school", meals: ["almuerzo"] },
+        ready: true,
+        mark: markB,
+      },
+    ]);
+    expect(await a.setRole("NOBODY-00000", "caregiver")).toEqual({
+      ok: false,
+      reason: "invalid",
+    });
+    expect(await a.setRole(idB, "school", ["almuerzo"])).toEqual({ ok: true });
+    expect(a.getView().waiting).toEqual([]);
+    expect(a.getView().members.find((m) => m.id === idB)).toMatchObject({
+      role: "school",
+      meals: ["almuerzo"],
+      name: "Colegio",
+    });
+    expect(await a.removeMember(idA)).toEqual({ ok: false, reason: "invalid" });
+
+    use("B");
+    await b.sync();
+    expect(b.getView().role).toBe("school");
+    expect(b.getView().meals).toEqual(["almuerzo"]);
+    // El colegio avisa, pero no se sube de rol, no saca a nadie ni cambia la frase.
+    expect(await b.sendNotice("Llegó a las 12:40")).toMatchObject({ ok: true });
+    expect(await b.setRole(idB, "parent")).toEqual({
+      ok: false,
+      reason: "not-allowed",
+    });
+    expect(await b.removeMember(idA)).toEqual({
+      ok: false,
+      reason: "not-allowed",
+    });
+    expect(await b.rotate()).toEqual({ ok: false, reason: "not-allowed" });
+
+    use("A");
+    await a.sync();
+    expect(await a.setRole(idB, "nutritionist")).toEqual({ ok: true });
+    use("B");
+    await b.sync();
+    expect(b.getView().role).toBe("nutritionist");
+    expect(await b.sendNotice("otra")).toEqual({
+      ok: false,
+      reason: "not-allowed",
+    });
+
+    use("A");
+    await a.sync();
+    const log = a.getView().log;
+    expect(log.some((l) => l.by === idB && l.k === "notice")).toBe(true);
+    expect(log.find((l) => l.by === idB)).toMatchObject({
+      name: "Colegio",
+      role: "nutritionist",
+    });
+    const removed = await a.removeMember(idB);
+    expect(removed).toMatchObject({ ok: true });
+    expect(a.getView().members.map((m) => m.id)).toEqual([idA]);
+  });
+  it("turnos: dos cambios de roster seguidos, sin esperar, encadenan sin bifurcar", async () => {
+    const { controller } = setup();
+    const { use } = devices();
+    use("A");
+    const a = controller();
+    const created = await a.create("Mamá");
+    if (!created.ok) throw new Error("create");
+    const [one, two] = await Promise.all([
+      a.invite("caregiver"),
+      a.invite("nutritionist"),
+    ]);
+    expect(one.ok && two.ok).toBe(true);
+    // génesis + las dos invitaciones, con el número de cada una consecutivo: ninguna bifurcó.
+    const ops = loadFamilyState()!.roster;
+    expect(ops.map((o) => o.i)).toEqual([0, 1, 2]);
+  });
+
+  it("turnos: quitar a alguien mientras una sincronía lenta corre no se pierde cuando ella termina", async () => {
+    const { controller, api } = setup();
+    const { use } = devices();
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const slow: FamilyApi = {
+      ...api,
+      pull: async (...args) => {
+        await sleep(40);
+        return api.pull(...args);
+      },
+      push: async (...args) => {
+        await sleep(40);
+        return api.push(...args);
+      },
+    };
+
+    use("A");
+    const a = controller({ api: slow });
+    const created = await a.create("Mamá");
+    if (!created.ok) throw new Error("create");
+    const idA = getDeviceId();
+    const inv = await a.invite("caregiver");
+    if (!inv.ok) throw new Error("invite");
+
+    use("B");
+    const b = controller();
+    expect(await b.join(inv.invite, created.phrase, "Papá")).toMatchObject({
+      ok: true,
+    });
+    const idB = getDeviceId();
+
+    use("A");
+    await a.sync();
+    expect(await a.setRole(idB, "caregiver")).toEqual({ ok: true });
+    expect(
+      a
+        .getView()
+        .members.map((m) => m.id)
+        .sort(),
+    ).toEqual([idA, idB].sort());
+
+    // Una sincronía lenta en vuelo y, en medio, el padre quita a Papá.
+    const syncing = a.sync();
+    await sleep(10);
+    const removing = a.removeMember(idB);
+    await Promise.all([syncing, removing]);
+    expect(a.getView().members.map((m) => m.id)).toEqual([idA]);
+    expect(
+      loadFamilyState()!.roster.some((o) => o.body.type === "remove"),
+    ).toBe(true);
   });
 });

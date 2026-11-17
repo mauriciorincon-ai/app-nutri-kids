@@ -282,6 +282,64 @@ and who wrote it. The server keeps only the address, the time zone and label-fre
 empty push: the notice is built on your phone. **Stop receiving notices** and **Delete my data** both
 delete the subscription.
 
+### Roles y bitácora de la familia · desde Sprint 009
+
+- **Qué hace:** cada persona que entra a la familia tiene un **rol** que dice qué puede cambiar. Todos ven lo compartido; solo cambia lo que su rol permite. Cada cambio queda en la **bitácora**: quién, qué y cuándo.
+- **Los cuatro roles:** **Madre o padre** (todo: el plan, el perfil, la familia y los roles) · **Cuidador** (registra el día, deja notas y avisa a la familia) · **Colegio** (marca solo las comidas de sus horarios, deja notas en ellas y avisa) · **Nutricionista** (ve todo y deja notas del día y del perfil).
+- **Cómo se usa:** **Ajustes → Compartir con la familia**. Una madre o un padre, en **«Invitar con rol»**, elige el rol (y, para el colegio, qué comidas marca), crea la invitación y se la pasa a la persona junto con la frase. Cuando la persona entra, aparece en **«Esperando rol»**: se confirma con un toque, comparando la **huella** de su teléfono con la que ella ve en su pantalla (en persona o por llamada, no por el mismo mensaje en que llegó la invitación). Para cambiar el rol de alguien o sacarlo, en **«Personas de la familia»**.
+- **Con un rol que no lo permite:** la pantalla muestra el dato pero no el botón, y dice «Con tu rol (…) esto se ve, pero no se cambia». Un cambio que llegue sin la firma de quien dice haberlo hecho, o que su rol no permita, no se acepta, y la pantalla avisa cuántos se rechazaron.
+- **Bitácora:** al final de Compartir con la familia. Dice «Mamá marcó el desayuno (hoy)», «Papá le dio a Tía el rol Cuidador», «cambió una línea del plan unido». Está firmada y encadenada: si alguien la reescribe, este teléfono conserva lo que ya había visto y lo avisa.
+- **Limitaciones conocidas:** se aconseja invitar a una segunda madre o padre: si el único teléfono con ese rol se pierde, nadie podría cambiar los roles. Un teléfono con una versión anterior de la app entra sin rol hasta que se actualice.
+
+**In English — Roles and the family log (since Sprint 009).** Everyone who joins the family has a **role**
+that says what they can change; everyone sees what is shared. **Parent** (everything), **Caregiver**
+(logs the day, leaves notes, notifies the family), **School** (marks only its own meals, leaves notes on
+them, notifies) and **Nutritionist** (sees everything, leaves day and profile notes). A parent uses
+**Settings → Share with the family → Invite with a role**, then confirms the new person under **Waiting
+for a role** after comparing the phone's fingerprint on both screens (in person or by phone call, not in the same message as the invitation). With a role that does not allow it,
+the screen shows the data without the button. Every change goes in the signed, chained **log** (who, what,
+when); a change without its author's signature, or that their role does not allow, is rejected and the
+screen says how many. Tip: invite a second parent, so roles can still change if one phone is lost.
+
+### Plan B · desde Sprint 009
+
+- **Qué hace:** cuando algo falla —se acabó un alimento, no hay nevera o van tarde— te dice **qué sí** dar, **solo con lo que trae tu plan**. Nunca inventa un alimento ni propone algo prohibido o con restricción vigente. Si el plan no lo dice, te lo dice y te manda a tu profesional.
+- **Cómo se usa:** en **Hoy**, tarjeta **«Plan B»**: **«Se acabó algo»** (eliges el alimento y ves las opciones de tu plan, ordenadas por la textura que hoy acepta) · **«No hay nevera»** (las opciones que aguantan sin nevera) · **«Llegamos tarde»** (qué comida toca ahora y cómo se acomoda). El chat también contesta «no tengo X».
+- **Qué aguanta sin nevera:** lo dice tu plan o, si no, lo que quien cuida marcó en **Perfil → «Aguantan sin nevera»**. Lo que el plan ya marca no se puede quitar.
+- **Limitaciones conocidas:** si el plan no trae reemplazos para un alimento, la app no los busca fuera: lo dice.
+
+**In English — Plan B (since Sprint 009).** On **Today**, the **Plan B** card answers "we ran out of
+something", "no fridge" and "we're late" using only what the plan says; it never invents a food or
+suggests a forbidden one, and if the plan is silent it says so. Which options keep without a fridge comes
+from the plan or from what a caregiver marks in **Profile → Keep without a fridge**.
+
+### Días especiales · desde Sprint 009
+
+- **Qué hace:** una ficha para **cumpleaños**, **restaurante**, **emergencia** y **«le ofrecen algo que no puede»**: qué llevar o elegir, lo que no puede, qué decir (frases listas) y, en emergencia, la ficha a mano y a quién llamar. Todo sale del plan y se abre **sin señal**.
+- **Cómo se usa:** desde **Hoy**, «Días especiales», o la ruta **/escenarios**. Eliges el día y lees la ficha; «Avisar a la familia» y «Preguntar en el chat» están a un toque.
+- **Lo que no es:** no da indicaciones médicas ni inventa teléfonos: «los servicios de emergencia de tu zona» y el nombre de tu profesional si el plan lo trae. Lo que el plan no dice, se le pregunta a tu profesional.
+
+**In English — Special days (since Sprint 009).** A card for **birthday**, **restaurant**, **emergency**
+and **"someone offers something he can't have"**: what to bring, what to avoid, ready-made phrases and,
+for emergencies, the profile card and who to call. It comes from the plan, opens offline, and gives no
+medical instructions.
+
+### Varias dietas: unir dos planes · desde Sprint 009
+
+- **Qué hace:** si otro profesional te dio otro plan, lo agregas como **segundo plan** y la app te lo muestra lado a lado con el tuyo; si quieres, los **une en uno solo**. **Lo prohibido gana solo:** si un plan prohíbe algo, queda en rojo en el plan unido, marcado con el plan de donde viene; así el unido nunca es más flojo que ninguno. Las alergias se suman y la restricción con fecha usa la ventana más ancha.
+- **Cómo se usa:** **Cargar → «Agregar como segundo plan»** → **Dieta → «Varias dietas»** (o /unir). Lo que los dos planes dicen distinto (porciones, dosis, horarios…) lo eliges tú, uno por uno, con «Usar este»; con todo elegido, **«Unir los dos planes»**. El segundo plan vive solo en este teléfono y se descarta con **«Descartar el segundo plan»**.
+- **Cada línea dice de dónde salió:** en el detalle de cada alimento y en «De dónde salió cada línea».
+- **Cambiar una línea en rojo:** una madre o un padre puede cambiar cualquier línea del plan unido, también una prohibida. Ve los dos orígenes, confirma una vez («Confirmar el cambio») y queda en la bitácora; puede volver a cambiarla. Los demás roles ven la línea pero no la cambian.
+- **Limitaciones conocidas:** se une de a dos planes; para sumar un tercero, se une el resultado con el nuevo. El segundo plan no se comparte con la familia hasta que se une.
+
+**In English — Several diets: merging two plans (since Sprint 009).** Add another professional's plan as a
+**second plan** (**Load → Add as second plan**), see both side by side under **Diet → Several diets**, and
+merge them into one. **Forbidden wins on its own:** whatever either plan forbids stays red in the merged
+plan, tagged with its origin; allergies are added and a dated restriction takes the widest window. Where
+the plans differ you choose, one by one. Every line shows where it came from. A parent can change any
+line, even a red one: they see both origins, confirm once, and it goes in the log. Other roles can see
+but not change it.
+
 ### Idioma y borrar datos · desde Sprint 001
 
 - **Qué hace:** cambia la app entre español e inglés, muestra qué dieta está cargada, y permite
@@ -318,13 +376,14 @@ delete the subscription.
 
 ## Historial
 
-| Sprint | Features añadidas a este manual                                                                                                                                                                                                                                                                                                                                                   |
-| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 001    | Cargar dieta (archivo + pegar) · semáforo con reemplazos · checklist "Hoy" · suplementos de la semana · idioma ES/EN · borrar datos · instalación como app                                                                                                                                                                                                                        |
-| 002    | Chat "Pregúntale a la dieta": consultas "¿se puede?" al instante sin internet + preguntas abiertas con asistente de IA anclado al plan · nota de transparencia IA _(la parte de IA en la nube se reemplazó en el 004)_                                                                                                                                                            |
-| 003    | Registro del día: hora real al marcar + nota corta por comida (etiquetas + texto) · recordatorio "Ahora mismo" (qué toca y qué sigue; los avisos con la app cerrada llegaron en el 008) · "Ver días anteriores" (historial local de solo lectura) · borrar datos ahora cubre horas y notas                                                                                                                      |
-| 004    | Chat nuevo que contesta con tu plan **sin internet y sin enviar nada** ("no tengo X", "no quiso X", "¿qué le doy ahora?", "¿cuánta agua?", "tu plan no lo dice") · todas las pantallas abren sin internet · aviso de versión nueva con "Actualizar" / "Ahora no"                                                                                                                  |
-| 005    | Perfil de tu peque: lo del profesional **«según tu plan»** y lo anotado **«por quien cuida»** (texturas que hoy acepta y notas) · opciones de reemplazo ordenadas por textura, con la marca «textura que hoy no acepta» · el chat contesta sueño, actividad, alergias y medicamentos del plan · el plan guardado de antes se actualiza solo · la pantalla nueva abre sin internet |
-| 006    | **Tu PDF, vuelto app:** cargas el PDF de tu profesional, que se lee en tu teléfono sin internet y sin guardarse · «Revisa tu plan» parte por parte, con la página de cada dato («está bien», corregir o «mi plan no lo trae») · una revisión a medias se retoma · el JSON sigue funcionando y tus notas del Perfil se quedan                                                      |
-| 007    | **Compartir con la familia:** el plan, el día (marcas, horas y notas) y el perfil en todos los teléfonos de quienes cuidan, **cifrados de punta a punta** · cada dato dice quién lo hizo («Por Mamá») · funciona sin internet y sube al volver · cambiar la frase para sacar a un teléfono · salir y borrar lo compartido                                                         |
+| Sprint | Features añadidas a este manual                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 001    | Cargar dieta (archivo + pegar) · semáforo con reemplazos · checklist "Hoy" · suplementos de la semana · idioma ES/EN · borrar datos · instalación como app                                                                                                                                                                                                                                                                                                       |
+| 002    | Chat "Pregúntale a la dieta": consultas "¿se puede?" al instante sin internet + preguntas abiertas con asistente de IA anclado al plan · nota de transparencia IA _(la parte de IA en la nube se reemplazó en el 004)_                                                                                                                                                                                                                                           |
+| 003    | Registro del día: hora real al marcar + nota corta por comida (etiquetas + texto) · recordatorio "Ahora mismo" (qué toca y qué sigue; los avisos con la app cerrada llegaron en el 008) · "Ver días anteriores" (historial local de solo lectura) · borrar datos ahora cubre horas y notas                                                                                                                                                                       |
+| 004    | Chat nuevo que contesta con tu plan **sin internet y sin enviar nada** ("no tengo X", "no quiso X", "¿qué le doy ahora?", "¿cuánta agua?", "tu plan no lo dice") · todas las pantallas abren sin internet · aviso de versión nueva con "Actualizar" / "Ahora no"                                                                                                                                                                                                 |
+| 005    | Perfil de tu peque: lo del profesional **«según tu plan»** y lo anotado **«por quien cuida»** (texturas que hoy acepta y notas) · opciones de reemplazo ordenadas por textura, con la marca «textura que hoy no acepta» · el chat contesta sueño, actividad, alergias y medicamentos del plan · el plan guardado de antes se actualiza solo · la pantalla nueva abre sin internet                                                                                |
+| 006    | **Tu PDF, vuelto app:** cargas el PDF de tu profesional, que se lee en tu teléfono sin internet y sin guardarse · «Revisa tu plan» parte por parte, con la página de cada dato («está bien», corregir o «mi plan no lo trae») · una revisión a medias se retoma · el JSON sigue funcionando y tus notas del Perfil se quedan                                                                                                                                     |
+| 007    | **Compartir con la familia:** el plan, el día (marcas, horas y notas) y el perfil en todos los teléfonos de quienes cuidan, **cifrados de punta a punta** · cada dato dice quién lo hizo («Por Mamá») · funciona sin internet y sube al volver · cambiar la frase para sacar a un teléfono · salir y borrar lo compartido                                                                                                                                        |
 | 008    | **Avisos que llegan:** avisos en el teléfono a la hora de las comidas, el suplemento y el agua, con la app cerrada · se eligen 4 tipos por teléfono y se puede ocultar el detalle con el teléfono bloqueado · marcar antes de la hora evita ese aviso · «Avisar a la familia» con una nota cifrada de hasta 140 letras · el servidor solo guarda horas sin etiqueta y manda toques vacíos · «Dejar de recibir avisos» y «Borrar mis datos» quitan la suscripción |
+| 009    | **Coordinación:** roles (madre o padre, cuidador, colegio, nutricionista) con permisos y una bitácora firmada de quién cambió qué · **Plan B** (se acabó algo, no hay nevera, llegamos tarde) solo con lo que trae el plan · **Días especiales** (cumpleaños, restaurante, emergencia, «le ofrecen algo») sin señal · **Varias dietas:** unir dos planes, donde lo prohibido gana y cada línea dice de dónde salió                                               |

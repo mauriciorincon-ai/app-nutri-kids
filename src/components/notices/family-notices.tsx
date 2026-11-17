@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { BellRing } from "lucide-react";
 
-import { useFamily } from "@/components/family/use-family";
+import { useCan, useFamily } from "@/components/family/use-family";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { fmt, useI18n } from "@/i18n";
@@ -28,6 +28,7 @@ const hhmm = (ms: number) => {
  */
 export function FamilyNotices({ today }: { today: Date | null }) {
   const { t, locale } = useI18n();
+  const canSend = useCan()({ k: "notice" });
   const view = useFamily();
   const day = today ? dateKey(today) : "";
   const notices = useLocalStore(
@@ -141,7 +142,7 @@ export function FamilyNotices({ today }: { today: Date | null }) {
         </p>
       )}
 
-      {open ? (
+      {!canSend ? null : open ? (
         <div className="flex flex-col gap-2 rounded-xl border bg-card px-4 py-3">
           <label htmlFor={fieldId} className="text-sm font-semibold">
             {t.notices.label}

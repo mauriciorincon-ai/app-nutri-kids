@@ -3,8 +3,11 @@
 import { useRef, useState } from "react";
 import { CircleCheck, FileText, FileUp, TriangleAlert } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { useDiet } from "@/components/diet-provider";
+import { RoleLimit } from "@/components/family/role-limit";
+import { useCan } from "@/components/family/use-family";
 import { Button } from "@/components/ui/button";
 import { PlanReview } from "@/components/plan-review/plan-review";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,6 +22,12 @@ import {
   startReview,
   type ReviewState,
 } from "@/lib/diet/plan-review";
+import { parseDietJson } from "@/lib/diet/schema";
+import {
+  isLoadingSecond,
+  setLoadingSecond,
+  storeSecondPlan,
+} from "@/lib/diet/second-plan";
 import {
   hasStoredRealDiet,
   importDiet,
@@ -52,6 +61,10 @@ type UiState =
 export default function LoadPage() {
   const { source, refresh, ready } = useDiet();
   const { t } = useI18n();
+  const canPlan = useCan()({ k: "plan" });
+  const router = useRouter();
+  // «Agregar como segundo plan» (S9): el próximo plan que se cargue no reemplaza al activo.
+  const second = useLocalStore(isLoadingSecond, false);
   const [state, setState] = useState<UiState>({ phase: "idle" });
   const [pasted, setPasted] = useState("");
   const fileInput = useRef<HTMLInputElement>(null);
@@ -102,6 +115,16 @@ export default function LoadPage() {
     if (!review) return;
     const plan = buildPlan(review);
     if (!plan.ok) return setSaveFailed(true);
+    if (second) {
+      if (!storeSecondPlan(plan.diet))
+        return setState({ phase: "error", error: "no-storage" });
+      clearPlanDraft();
+      setLocal(null);
+      setResumed(false);
+      notifyLocalStore();
+      router.push("/unir");
+      return;
+    }
     const stored = storeDiet(plan.diet, "diet-saved-from-pdf");
     if (!stored.ok) return setState({ phase: "error", error: stored.error });
     clearPlanDraft();
@@ -114,6 +137,15 @@ export default function LoadPage() {
 
   const runImport = (text: string) => {
     setState({ phase: "validating" });
+    if (second) {
+      const parsed = parseDietJson(text);
+      if (!parsed.ok) return setState({ phase: "error", error: parsed.error });
+      if (!storeSecondPlan(parsed.diet))
+        return setState({ phase: "error", error: "no-storage" });
+      notifyLocalStore();
+      router.push("/unir");
+      return;
+    }
     // La validación es síncrona y rápida; el estado "validating" existe como
     // feedback si el archivo llega lento desde el picker del teléfono.
     const result = importDiet(text);
@@ -156,7 +188,9 @@ export default function LoadPage() {
     <div className="flex flex-col gap-5 pb-6">
       <h1 className="text-3xl">{t.load.title}</h1>
 
-      {state.phase === "success" ? (
+      {!canPlan ? (
+        <RoleLimit />
+      ) : state.phase === "success" ? (
         <section
           className="rounded-xl bg-tl-green-surface px-4 py-4 text-tl-green"
           role="status"
@@ -238,6 +272,33 @@ export default function LoadPage() {
                 onClick={discard}
               >
                 {t.load.resumeDiscard}
+              </Button>
+            </section>
+          )}
+          {ready && hasStoredRealDiet() && (
+            <section
+              className="flex flex-col gap-2 rounded-xl border bg-card px-4 py-4"
+              data-testid="second-plan-card"
+            >
+              <p className="font-heading text-lg font-semibold">
+                {second ? t.load.secondOnTitle : t.load.secondTitle}
+              </p>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {second ? t.load.secondOnBody : t.load.secondBody}
+              </p>
+              <Button
+                variant={second ? "outline" : "secondary"}
+                size="lg"
+                className="min-h-11"
+                onClick={() => {
+                  setLoadingSecond(!second);
+                  notifyLocalStore();
+                }}
+              >
+                {second ? t.load.secondCancel : t.load.secondAdd}
+              </Button>
+              <Button asChild variant="ghost" className="min-h-11">
+                <Link href="/unir">{t.load.secondOpen}</Link>
               </Button>
             </section>
           )}
