@@ -1,6 +1,6 @@
 import demoRaw from "../../../data/demo-diet.json";
 import { clearDevice, getDeviceId } from "../device";
-import { clearKeys } from "../family/keystore";
+import { clearKeys, clearSigner } from "../family/keystore";
 import { clearNotices } from "../family/notices";
 import { clearFamilyLocal } from "../family/state";
 import { log } from "../log";
@@ -254,7 +254,7 @@ export function clearAllData(): void {
   // Sale de la familia (las claves y el estado se van de este teléfono; lo compartido en el
   // servidor lo borra «Borrar lo compartido» en Ajustes) y olvida quién es este teléfono.
   clearFamilyLocal();
-  void clearKeys();
+  void clearKeys().then(() => clearSigner());
   clearDevice();
   // Avisos (S8): los de la familia y el estado de los de este teléfono. La suscripción y la
   // copia del trabajador las quita «Borrar datos» en Ajustes (necesitan red y IndexedDB).

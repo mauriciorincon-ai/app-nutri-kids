@@ -65,6 +65,8 @@ export type ProfileRegs = {
 const stamp = {
   t: z.number().int().nonnegative(),
   by: z.string().min(1).max(24),
+  /** Firma de quien la escribió (familia, S9); se conserva tal cual para volver a compartirla. */
+  s: z.string().max(100).optional(),
 };
 const noteValueSchema = noteSchema.omit({ id: true });
 const regsSchema = z.object({

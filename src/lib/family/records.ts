@@ -6,6 +6,9 @@ import { NOTE_KINDS, PROFILE_NOTE_MAX } from "@/lib/diet/profile-notes";
 import { textureSchema } from "@/lib/diet/schema";
 
 import { aadFor, open, recordId, seal, type FamilyKeys } from "./crypto";
+import { logSharedSchema } from "./log";
+import { rosterSchema } from "./roster";
+import { PUB_RE, SIG_RE } from "./sign";
 
 /**
  * Lo que viaja, ANTES de cifrarse (S7 · decisión 2 del G-Plan · ADR-011): el plan, el día
@@ -23,7 +26,10 @@ export { DEVICE_NAME_MAX };
 const stamp = {
   t: z.number().int().nonnegative(),
   by: z.string().min(1).max(24),
+  /** Firma de quien escribió (S9 · ADR-013); sin ella, los demás teléfonos la descartan. */
+  s: z.string().regex(SIG_RE).optional(),
 };
+const sig = z.string().regex(SIG_RE).optional();
 const reg = <T extends z.ZodType>(v: T) =>
   z.object({ ...stamp, v: v.nullable() });
 
@@ -57,6 +63,12 @@ export const deviceSchema = z.object({
   seen: z.number().int().nonnegative(),
   /** Consentimiento: fecha (YYYY-MM-DD) en que quien usa este teléfono aceptó compartir. */
   consent: z.string().regex(DATE),
+  /** Llave pública de firma de este teléfono (S9). */
+  pub: z.string().regex(PUB_RE).optional(),
+  /** Etiqueta de la invitación con la que entró (S9): un padre la confirma con su rol. */
+  invite: z.string().regex(/^[0-9A-HJKMNP-TV-Z]{4}$/).optional(),
+  /** Firma del propio teléfono sobre id, nombre, consentimiento, llave e invitación. */
+  s: sig,
 });
 
 /**
@@ -75,6 +87,8 @@ export const noticeSchema = z.object({
   t: z.number().int().nonnegative(),
   /** Día local (YYYY-MM-DD): «Hoy» muestra solo los de hoy. */
   date: z.string().regex(DATE),
+  /** Firma de quien la escribió (S9). */
+  s: sig,
 });
 export const NOTICE_ID = /^[0-9a-z]{6,24}$/;
 
@@ -83,13 +97,17 @@ export type ProfileShared = z.infer<typeof profileSchema>;
 export type PlanShared = z.infer<typeof planSchema>;
 export type DeviceShared = z.infer<typeof deviceSchema>;
 export type NoticeShared = z.infer<typeof noticeSchema>;
+export type { RosterShared } from "./roster";
+export type { LogShared } from "./log";
 
 export type Named =
   | { name: "plan"; data: PlanShared }
   | { name: "profile"; data: ProfileShared }
   | { name: `day:${string}`; data: DayShared }
   | { name: `device:${string}`; data: DeviceShared }
-  | { name: `notice:${string}`; data: NoticeShared };
+  | { name: `notice:${string}`; data: NoticeShared }
+  | { name: "roster"; data: z.infer<typeof rosterSchema> }
+  | { name: `log:${string}`; data: z.infer<typeof logSharedSchema> };
 
 /** Tipo que ve el servidor: solo distingue el plan (más grande) del resto. */
 export type Kind = "plan" | "item";
@@ -104,6 +122,9 @@ export function deviceName(id: string): `device:${string}` {
 }
 export function noticeName(id: string): `notice:${string}` {
   return `notice:${id}`;
+}
+export function logName(id: string): `log:${string}` {
+  return `log:${id}`;
 }
 
 /** Valida un registro descifrado según su nombre; null si no encaja. */
@@ -136,6 +157,16 @@ export function parseNamed(value: unknown): Named | null {
   if (n.startsWith("notice:") && NOTICE_ID.test(n.slice(7))) {
     const data = pick(noticeSchema);
     return data ? { name: n as `notice:${string}`, data } : null;
+  }
+  if (n === "roster") {
+    const data = pick(rosterSchema);
+    return data ? { name: "roster", data } : null;
+  }
+  if (n.startsWith("log:")) {
+    const data = pick(logSharedSchema);
+    return data && data.by === n.slice(4)
+      ? { name: n as `log:${string}`, data }
+      : null;
   }
   return null;
 }

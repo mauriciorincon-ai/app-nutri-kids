@@ -3,8 +3,9 @@ import { deriveKeys, newSalt, type FamilyKeys } from "./crypto";
 import {
   newFamilyCode,
   newPhrase,
-  normalizeCode,
   normalizePhrase,
+  parseInvite,
+  type Invitation,
 } from "./phrase";
 import { openNamed, sealNamed, type Named } from "./records";
 
@@ -58,15 +59,20 @@ export async function createFamily(
   return { ok: false, reason: "error" };
 }
 
-/** Entra con código y frase. Una frase equivocada no descifra ni autoriza: «wrong-phrase». */
+/**
+ * Entra con la invitación (código + huella [+ etiqueta]) y la frase. Una frase equivocada no
+ * descifra ni autoriza: «wrong-phrase». Una invitación sin huella no sirve (S9): sin ella, el
+ * teléfono nuevo tendría que creerle al roster que haya en el servidor.
+ */
 export async function joinFamily(
   api: FamilyApi,
   codeInput: string,
   phraseInput: string,
-): Promise<Res<FamilyCtx>> {
-  const family = normalizeCode(codeInput);
+): Promise<Res<{ ctx: FamilyCtx; invite: Invitation }>> {
+  const invite = parseInvite(codeInput);
   const phrase = normalizePhrase(phraseInput);
-  if (!family) return { ok: false, reason: "wrong-code" };
+  if (!invite) return { ok: false, reason: "wrong-code" };
+  const family = invite.family;
   if (!phrase) return { ok: false, reason: "wrong-phrase" };
   const meta = await api.join(family);
   if (!meta.ok) return { ok: false, reason: reason(meta.status, meta.error) };
@@ -86,7 +92,10 @@ export async function joinFamily(
           : reason(probe.status, probe.error),
     };
   }
-  return { ok: true, value: { family, epoch: meta.data.epoch, keys } };
+  return {
+    ok: true,
+    value: { ctx: { family, epoch: meta.data.epoch, keys }, invite },
+  };
 }
 
 export type Pulled = { named: Named; ver: number };

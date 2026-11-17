@@ -9,7 +9,7 @@ import type { FamilyStore } from "@/lib/family/server/store";
 import {
   createFamily,
   destroyFamily,
-  joinFamily,
+  joinFamily as joinRaw,
   pullSince,
   pushNamed,
   rotateFamily,
@@ -116,6 +116,18 @@ function assertNothingInClear(wire: Wire[], phrases: string[]) {
     // Ni las claves del registro en claro.
     expect(all).not.toMatch(/"marks"|"notes"|"diet"|"consent"|2026-11-15/);
   }
+}
+
+/** Entrar con la invitación del S9 (código + huella); aquí la huella no se comprueba aún. */
+const PIN = "ABCDEFGHJKMN";
+async function joinFamily(
+  api: Parameters<typeof joinRaw>[0],
+  code: string,
+  phrase: string,
+) {
+  const clean = code.replace(/-/g, "");
+  const r = await joinRaw(api, clean.length === 10 ? clean + PIN : clean, phrase);
+  return r.ok ? { ok: true as const, value: r.value.ctx } : r;
 }
 
 describe("la familia sobre la red, de punta a punta, contra el doble", () => {
