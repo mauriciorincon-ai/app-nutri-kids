@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { en } from "@/i18n/en";
 import { es } from "@/i18n/es";
 import { answerQuestion, detectIntent } from "@/lib/diet/answer";
 import { composeAnswer } from "@/lib/diet/answer-text";
@@ -171,6 +172,23 @@ describe("plan B · «llegamos tarde»", () => {
     const ids = new Set(d.dailyMenu.map((m) => m.id));
     for (const m of [p.current, p.prev, p.next])
       if (m) expect(ids.has(m.id)).toBe(true);
+  });
+
+  it("«llegamos tarde» no repite el punto del plan: nunca «..», en los dos idiomas", () => {
+    const p = planBLate(diet(), NOW);
+    if (p.kind !== "late") throw new Error();
+    for (const [dict, locale] of [
+      [es.answer, "es"],
+      [en.answer, "en"],
+    ] as const) {
+      const lead = composeAnswer(
+        { kind: "plan-b", plan: p },
+        dict,
+        locale,
+      ).lead;
+      expect(lead).not.toMatch(/\.\./);
+      expect(lead).toMatch(/\.$/);
+    }
   });
 
   it("planB() es la puerta única de no-fridge y late", () => {

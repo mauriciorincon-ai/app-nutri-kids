@@ -86,13 +86,14 @@ function composePlanB(
       required: [food],
     };
   }
-  // late
+  // late · el contenido del plan ya trae su punto final: la plantilla pone el suyo (nunca «..»)
+  const bare = (x: string) => x.replace(/[.\s]+$/, "");
   const meal = (m: NonNullable<typeof plan.current>) =>
     fill(t.planBLateMeal, {
       meal: m.name[locale],
       start: m.start,
       end: m.end,
-      content: m.content[locale],
+      content: bare(m.content[locale]),
     });
   const parts = [
     plan.current ? fill(t.planBLateNow, { text: meal(plan.current) }) : "",
@@ -101,7 +102,7 @@ function composePlanB(
       ? fill(t.planBLateNext, {
           meal: plan.next.name[locale],
           start: plan.next.start,
-          content: plan.next.content[locale],
+          content: bare(plan.next.content[locale]),
         })
       : t.planBLateNoNext,
   ].filter(Boolean);
