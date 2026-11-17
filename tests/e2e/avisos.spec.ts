@@ -563,7 +563,7 @@ test.describe("avisos en este teléfono", () => {
     // Papá entra y prende los avisos en su teléfono.
     await b.page.goto("/ajustes");
     await b.page.getByTestId("family-join").click();
-    await b.page.getByLabel("Código", { exact: true }).fill(code);
+    await b.page.getByLabel("Invitación", { exact: true }).fill(code);
     await b.page.getByLabel("Frase", { exact: true }).fill(phrase);
     await b.page.getByLabel(/Nombre de este teléfono/).fill(PAPA);
     await b.page
