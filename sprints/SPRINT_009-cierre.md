@@ -29,7 +29,7 @@ pr: pendiente
 - **Abierto:** el rechazo por peso del roster llega como `invalid` (mensaje genérico). **Decisión del dueño:** ¿lo pagamos en este PR (≈ 20 min, motivo nuevo `full` y copy en dos idiomas) o lo llevamos al ensayo general?
 
 **Desviaciones:** ninguna de alcance. **Deuda:** solo la decisión anterior.
-**Defaults técnicos:** hora futura en 5 min · cola de turnos única · tope de 64 KB cifrado por registro · huella comparada en persona · `second-plan` tolera almacén negado.
+**Defaults técnicos:** hora futura en 5 min · cola de turnos única · tope de 64 KB cifrado por registro · huella en persona · `second-plan` tolera almacén negado · **presupuesto de script 400→440 KB**: Lighthouse en rojo en `/ajustes` (432 485 B; el código de roles y plan B suma al bundle compartido). S8 hizo 380→400; la decisión del dueño es aceptar esto o bajar el bundle en el ensayo general.
 **Modelo por fase:** F1 Opus 5.5 · F2 y F3 Sonnet 5.5 · cierre Haiku 5.5 (pedido). Sin desvío. **Relevos:** 0.
 **Aprendizaje:** la e2e de axe y las capturas encontraron lo que las pruebas unitarias no (lista `dl` inválida, punto doble del plan B).
 **Recomendación:** ensayo general del dueño sobre `/escenarios`, `/unir` y roles con dos teléfonos reales.
