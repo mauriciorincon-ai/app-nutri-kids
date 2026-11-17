@@ -161,6 +161,9 @@ export async function addOp(
   if (st.roster.length >= ROSTER_MAX_OPS) return false;
   const op = await appendOp(st.roster, signer, own, now, body);
   const next = [...st.roster, op];
+  // El tope también es de peso: una cadena que no cabe en un registro haría que el servidor
+  // rechazara TODA la subida. Con los nombres y comidas más largos llegaría antes de las 120.
+  if (sealedSize({ ops: next }) > ITEM_MAX_CT) return false;
   const r = await foldRoster({ ops: next });
   if (!r) return false;
   st.roster = next;
@@ -436,14 +439,19 @@ export async function syncOnce(d: SyncDeps): Promise<SyncResult> {
         }
       } else if (named.name === "plan") {
         const plan = named.data as PlanSide & { s?: string };
-        if (await checkPlan(roster, plan)) remotePlan = plan;
+        if (await checkPlan(roster, plan, d.now())) remotePlan = plan;
         else {
           if (plan.by !== own) st.rejected++;
           // Un padre vuelve a subir el plan bueno para que nadie se quede con el falso.
           if (roster?.members[own]?.role === "parent") delete st.pushed.plan;
         }
       } else if (named.name === "profile") {
-        const c = await checkProfile(roster, named.data as ProfileRegs, own);
+        const c = await checkProfile(
+          roster,
+          named.data as ProfileRegs,
+          own,
+          d.now(),
+        );
         st.rejected += c.dropped;
         if (d.local.mergeProfile(c.regs)) changed = true;
         st.pushed.profile = await digest(named.data);
@@ -453,6 +461,7 @@ export async function syncOnce(d: SyncDeps): Promise<SyncResult> {
           named.name,
           named.data as DayRegs,
           own,
+          d.now(),
         );
         st.rejected += c.dropped;
         if (d.local.mergeDay(named.name.slice(4), c.regs)) changed = true;
@@ -460,7 +469,7 @@ export async function syncOnce(d: SyncDeps): Promise<SyncResult> {
       } else if (named.name.startsWith("notice:")) {
         const notice = named.data as NoticeShared;
         // Un aviso ajeno o el eco del propio: el almacén local solo suma lo nuevo.
-        if (await checkNotice(roster, named.name, notice)) {
+        if (await checkNotice(roster, named.name, notice, d.now())) {
           if (d.local.mergeNotice(named.name.slice(7), notice)) changed = true;
           st.pushed[named.name] = `${notice.t}`;
         } else {

@@ -12,7 +12,13 @@ import { useCan, useWho } from "@/components/family/use-family";
 import { useProfileNotes } from "@/components/use-profile-notes";
 import { fmt, useI18n } from "@/i18n";
 import { dateKey, isRestrictionActive } from "@/lib/diet/logic";
-import { fridgeCandidates, fridgeKey } from "@/lib/diet/plan-b";
+import { avoidTexts } from "@/lib/diet/options";
+import {
+  fridgeCandidates,
+  fridgeKey,
+  fridgeKeyText,
+  fridgeMarks,
+} from "@/lib/diet/plan-b";
 import {
   NOTE_KINDS,
   PROFILE_NOTE_MAX,
@@ -89,7 +95,8 @@ export default function ProfilePage() {
     ? fridgeCandidates(
         diet,
         today,
-        fridgeNotes.map((n) => n.text.trim().toLocaleLowerCase("es")),
+        fridgeMarks(fridgeNotes),
+        avoidTexts(notes.notes),
       )
     : [];
   const [text, setText] = useState("");
@@ -308,8 +315,7 @@ export default function ProfilePage() {
             <ul className="mt-2 flex flex-wrap gap-2">
               {fridgeList.map((c) => {
                 const note = fridgeNotes.find(
-                  (n) =>
-                    n.text.trim().toLocaleLowerCase("es") === fridgeKey(c.name),
+                  (n) => fridgeKeyText(n.text) === fridgeKey(c.name),
                 );
                 const on = c.marked !== null;
                 const locked = c.marked === "plan" || !canNotes;

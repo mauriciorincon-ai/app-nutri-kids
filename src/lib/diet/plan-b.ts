@@ -9,6 +9,7 @@
  */
 import { currentMealSlot, resolveItemStatus } from "./logic";
 import { isSafeOption, planOptionsFor, type Options } from "./options";
+import { normalizeText } from "./search";
 import type { DietPlan, LocalizedText, Meal, Texture } from "./schema";
 import { orderByTexture, type OrderedOption } from "./texture";
 
@@ -51,9 +52,25 @@ export type PlanB =
       food?: LocalizedText;
     };
 
-/** La clave con la que se marca una opción: su nombre en español, sin mayúsculas ni espacios de más. */
+/**
+ * La clave con la que se marca una opción: su nombre en español, sin mayúsculas, tildes,
+ * signos ni espacios de más. Quien marca y quien lee usan ESTA misma función, así que una
+ * marca escrita a mano («Pera », «PERA») sigue casando con la opción.
+ */
+export function fridgeKeyText(text: string): string {
+  return normalizeText(text, "es");
+}
 export function fridgeKey(name: LocalizedText): string {
-  return name.es.trim().toLocaleLowerCase("es");
+  return fridgeKeyText(name.es);
+}
+
+/** Las marcas «aguanta sin nevera» de las anotaciones de quien cuida, ya como clave. */
+export function fridgeMarks(
+  notes: readonly { kind: string; text: string }[],
+): string[] {
+  return notes
+    .filter((n) => n.kind === "fridge")
+    .map((n) => fridgeKeyText(n.text));
 }
 
 type Candidate = {
@@ -64,12 +81,16 @@ type Candidate = {
 };
 
 /** Toda opción segura del plan (equivalencias y verdes), sin repetir nombres. */
-function safeCandidates(diet: DietPlan, now: Date): Candidate[] {
+function safeCandidates(
+  diet: DietPlan,
+  now: Date,
+  avoid: readonly string[] = [],
+): Candidate[] {
   const seen = new Set<string>();
   const out: Candidate[] = [];
   const push = (c: Candidate) => {
     const key = fridgeKey(c.name);
-    if (seen.has(key) || !isSafeOption(diet, c.name, now)) return;
+    if (seen.has(key) || !isSafeOption(diet, c.name, now, avoid)) return;
     seen.add(key);
     out.push(c);
   };
@@ -95,9 +116,10 @@ export function fridgeCandidates(
   diet: DietPlan,
   now: Date,
   marks: readonly string[],
+  avoid: readonly string[] = [],
 ): { name: LocalizedText; marked: "plan" | "adult" | null }[] {
-  const adult = new Set(marks);
-  return safeCandidates(diet, now).map((c) => ({
+  const adult = new Set(marks.map(fridgeKeyText));
+  return safeCandidates(diet, now, avoid).map((c) => ({
     name: c.name,
     marked: c.keepsWithoutFridge
       ? "plan"
@@ -113,11 +135,12 @@ export function planBOut(
   itemId: string,
   now: Date,
   accepted: readonly Texture[] = [],
+  avoid: readonly string[] = [],
 ): PlanB {
   const status = resolveItemStatus(diet, itemId, now);
   if (!status)
     return { situation: "out", kind: "not-in-plan", reason: "unknown-food" };
-  const options = planOptionsFor(status, diet, now, accepted);
+  const options = planOptionsFor(status, diet, now, accepted, avoid);
   if (!options)
     return {
       situation: "out",
@@ -134,9 +157,10 @@ export function planBNoFridge(
   now: Date,
   marks: readonly string[] = [],
   accepted: readonly Texture[] = [],
+  avoid: readonly string[] = [],
 ): PlanB {
-  const adult = new Set(marks);
-  const marked = safeCandidates(diet, now).flatMap<{
+  const adult = new Set(marks.map(fridgeKeyText));
+  const marked = safeCandidates(diet, now, avoid).flatMap<{
     c: Candidate;
     by: "plan" | "adult";
   }>((c) =>
@@ -212,9 +236,19 @@ export function planB(
   situation: Exclude<Situation, "out">,
   diet: DietPlan,
   now: Date,
-  ctx: { marks?: readonly string[]; accepted?: readonly Texture[] } = {},
+  ctx: {
+    marks?: readonly string[];
+    accepted?: readonly Texture[];
+    avoid?: readonly string[];
+  } = {},
 ): PlanB {
   return situation === "no-fridge"
-    ? planBNoFridge(diet, now, ctx.marks ?? [], ctx.accepted ?? [])
+    ? planBNoFridge(
+        diet,
+        now,
+        ctx.marks ?? [],
+        ctx.accepted ?? [],
+        ctx.avoid ?? [],
+      )
     : planBLate(diet, now);
 }

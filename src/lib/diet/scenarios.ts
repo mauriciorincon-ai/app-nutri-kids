@@ -11,7 +11,8 @@
  * servicios de emergencia de la zona, sin número inventado.
  */
 import { isRestrictionActive, currentMealSlot } from "./logic";
-import { fridgeKey } from "./plan-b";
+import { avoidedByNotes, avoidTexts } from "./options";
+import { fridgeKey, fridgeMarks } from "./plan-b";
 import type { CaregiverNote } from "./answer";
 import type { DietPlan, LocalizedText, Meal } from "./schema";
 
@@ -25,8 +26,8 @@ export type ScenarioId = (typeof SCENARIO_IDS)[number];
 
 export type ScenarioAvoid = {
   name: LocalizedText;
-  /** red = rojo fijo · restricted = restricción vigente del plan. */
-  kind: "red" | "restricted";
+  /** red = rojo fijo · restricted = restricción vigente del plan · noted = lo anotó quien cuida (alergia o intolerancia). */
+  kind: "red" | "restricted" | "noted";
   why?: LocalizedText;
 };
 
@@ -93,18 +94,21 @@ export function buildScenario(
       name: i.name,
       kind: "red" as const,
     })),
+    // Lo que quien cuida anotó como alergia o intolerancia también es «lo que no puede».
+    ...avoidTexts(notes).map((text) => ({
+      name: { es: text, en: text },
+      kind: "noted" as const,
+    })),
   ];
+  const notedAvoid = avoidTexts(notes);
   const blocked = new Set(avoid.map((a) => fridgeKey(a.name)));
-  const marks = new Set(
-    notes
-      .filter((n) => n.kind === "fridge")
-      .map((n) => n.text.trim().toLocaleLowerCase("es")),
-  );
+  const marks = new Set(fridgeMarks(notes));
 
   // Verdes de cada grupo, nunca algo que hoy esté restringido o en rojo.
   const greens = diet.trafficLight.green.groups.flatMap((g) =>
     g.items
       .filter((i) => !blocked.has(fridgeKey(i.name)))
+      .filter((i) => !avoidedByNotes(i.name, notedAvoid))
       .map((i) => ({
         name: i.name,
         keepsWithoutFridge:

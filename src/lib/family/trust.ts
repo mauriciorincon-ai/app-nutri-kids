@@ -51,6 +51,14 @@ export const devicePayload = (d: DeviceShared) => ({
   invite: d.invite,
 });
 
+/**
+ * Una entrada con la hora en el futuro lejano ganaría para siempre la mezcla (gana la más
+ * reciente) y nadie, ni su autor, podría corregirla después: se descarta. Los relojes de dos
+ * teléfonos nunca coinciden al segundo, de ahí la holgura.
+ */
+export const FUTURE_SKEW_MS = 5 * 60_000;
+const fromTheFuture = (t: number, now: number) => t > now + FUTURE_SKEW_MS;
+
 const cache = new Map<string, Roster | null>();
 /** El roster que resulta de la cadena guardada (memorizado por su último eslabón). */
 export async function rosterOf(ops: { s: string }[]): Promise<Roster | null> {
@@ -69,9 +77,10 @@ async function allowed<T>(
   key: string,
   r: Reg<T>,
   w: Write,
+  now: number,
 ): Promise<boolean> {
   const m: Member | undefined = roster?.members[r.by];
-  if (!m || !may(m, w)) return false;
+  if (!m || !may(m, w) || fromTheFuture(r.t, now)) return false;
   return verify(m.pub, entryPayload(name, key, r), r.s);
 }
 
@@ -83,11 +92,12 @@ async function filterMap<T>(
   map: RegMap<T>,
   write: (key: string) => Write,
   own: string,
+  now: number,
 ): Promise<Checked<RegMap<T>>> {
   const out: RegMap<T> = {};
   let dropped = 0;
   for (const [k, r] of Object.entries(map)) {
-    if (await allowed(roster, name, k, r, write(k))) out[k] = r;
+    if (await allowed(roster, name, k, r, write(k), now)) out[k] = r;
     else if (r.by !== own) dropped++;
   }
   return { regs: out, dropped };
@@ -99,6 +109,7 @@ export async function checkDay(
   name: string,
   regs: DayRegs,
   own: string,
+  now = Date.now(),
 ): Promise<Checked<DayRegs>> {
   const marks = await filterMap(
     roster,
@@ -106,6 +117,7 @@ export async function checkDay(
     regs.marks,
     (check) => ({ k: "mark", check }),
     own,
+    now,
   );
   const notes = await filterMap(
     roster,
@@ -113,6 +125,7 @@ export async function checkDay(
     regs.notes,
     (check) => ({ k: "day-note", check }),
     own,
+    now,
   );
   return {
     regs: { marks: marks.regs, notes: notes.regs },
@@ -125,6 +138,7 @@ export async function checkProfile(
   roster: Roster | null,
   regs: ProfileRegs,
   own: string,
+  now = Date.now(),
 ): Promise<Checked<ProfileRegs>> {
   const notes = await filterMap(
     roster,
@@ -132,14 +146,20 @@ export async function checkProfile(
     regs.notes,
     () => ({ k: "profile-note" }),
     own,
+    now,
   );
   let dropped = notes.dropped;
   const out: ProfileRegs = { notes: notes.regs };
   if (regs.textures) {
     if (
-      await allowed(roster, "profile", "textures", regs.textures, {
-        k: "textures",
-      })
+      await allowed(
+        roster,
+        "profile",
+        "textures",
+        regs.textures,
+        { k: "textures" },
+        now,
+      )
     )
       out.textures = regs.textures;
     else if (regs.textures.by !== own) dropped++;
@@ -150,9 +170,10 @@ export async function checkProfile(
 export async function checkPlan(
   roster: Roster | null,
   plan: { t: number; by: string; diet: unknown; s?: string },
+  now = Date.now(),
 ): Promise<boolean> {
   const m = roster?.members[plan.by];
-  if (!m || !may(m, { k: "plan" })) return false;
+  if (!m || !may(m, { k: "plan" }) || fromTheFuture(plan.t, now)) return false;
   return verify(m.pub, planPayload(plan), plan.s);
 }
 
@@ -160,9 +181,10 @@ export async function checkNotice(
   roster: Roster | null,
   name: string,
   n: NoticeShared,
+  now = Date.now(),
 ): Promise<boolean> {
   const m = roster?.members[n.by];
-  if (!m || !may(m, { k: "notice" })) return false;
+  if (!m || !may(m, { k: "notice" }) || fromTheFuture(n.t, now)) return false;
   return verify(m.pub, noticePayload(name, n), n.s);
 }
 

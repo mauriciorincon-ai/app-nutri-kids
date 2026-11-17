@@ -160,6 +160,12 @@ function ScenarioBody({ data, l }: { data: ScenarioData; l: LocalizeFn }) {
                     {t.scenarios.restricted}
                   </span>
                 )}
+                {a.kind === "noted" && (
+                  <span className="text-muted-foreground">
+                    {" · "}
+                    {t.scenarios.notedAvoid}
+                  </span>
+                )}
                 {a.why && (
                   <span className="text-muted-foreground"> — {l(a.why)}</span>
                 )}

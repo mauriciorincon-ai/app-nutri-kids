@@ -10,7 +10,14 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/i18n";
 import type { OpenAnswer } from "@/lib/diet/answer";
 import { allItemIds, resolveItemStatus } from "@/lib/diet/logic";
-import { planB, planBOut, type PlanB, type Situation } from "@/lib/diet/plan-b";
+import { avoidTexts } from "@/lib/diet/options";
+import {
+  fridgeMarks,
+  planB,
+  planBOut,
+  type PlanB,
+  type Situation,
+} from "@/lib/diet/plan-b";
 import { cn } from "@/lib/utils";
 
 /** El plan B como una respuesta del chat: así Hoy y el chat dicen lo mismo, con las mismas palabras. */
@@ -38,9 +45,8 @@ export function PlanBCard() {
   const [open, setOpen] = useState<Situation | null>(null);
   const [answer, setAnswer] = useState<OpenAnswer | null>(null);
 
-  const marks = notes.notes
-    .filter((n) => n.kind === "fridge")
-    .map((n) => n.text.trim().toLocaleLowerCase("es"));
+  const marks = fridgeMarks(notes.notes);
+  const avoid = avoidTexts(notes.notes);
 
   const choose = (s: Situation) => {
     setOpen(s);
@@ -51,6 +57,7 @@ export function PlanBCard() {
             planB(s, diet, new Date(), {
               marks,
               accepted: notes.acceptedTextures,
+              avoid,
             }),
           ),
     );
@@ -122,6 +129,7 @@ export function PlanBCard() {
                         e.target.value,
                         new Date(),
                         notes.acceptedTextures,
+                        avoid,
                       ),
                     )
                   : null,

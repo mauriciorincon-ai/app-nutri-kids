@@ -14,8 +14,8 @@
  */
 import { currentMealSlot, waterGlassesTarget } from "./logic";
 import type { DietPlan, LocalizedText, Texture } from "./schema";
-import { planOptionsFor, type Options } from "./options";
-import { planBLate, planBNoFridge, type PlanB } from "./plan-b";
+import { avoidTexts, planOptionsFor, type Options } from "./options";
+import { fridgeMarks, planBLate, planBNoFridge, type PlanB } from "./plan-b";
 import {
   matchItem,
   matchLookup,
@@ -415,9 +415,6 @@ export type OpenAnswer =
  * Contesta una pregunta abierta con el plan. Devuelve null si el mensaje no
  * trae intención abierta (el llamador prueba el lookup).
  */
-/** La marca «aguanta sin nevera» viaja como anotación: su texto es el nombre (es) de la opción. */
-const fridgeNoteKey = (n: LocalizedText) => n.es.trim().toLocaleLowerCase("es");
-
 /** Lo mínimo que el chat necesita de una anotación de quien cuida. */
 export type CaregiverNote = { kind: string; text: string };
 
@@ -445,8 +442,9 @@ export function answerOpen(
         plan: planBNoFridge(
           diet,
           now,
-          notedTexts(notes, "fridge").map(fridgeNoteKey),
+          fridgeMarks(notes),
           accepted,
+          avoidTexts(notes),
         ),
       };
     case "late":
@@ -454,7 +452,13 @@ export function answerOpen(
     case "replacement": {
       const item = matchItem(diet, question, lang, now);
       if (!item) return { kind: "not-in-plan", reason: "unknown-food" };
-      const options = planOptionsFor(item, diet, now, accepted);
+      const options = planOptionsFor(
+        item,
+        diet,
+        now,
+        accepted,
+        avoidTexts(notes),
+      );
       if (!options)
         return { kind: "not-in-plan", reason: "no-options", food: item.name };
       return { kind: "replacement", food: item.name, options };
@@ -467,7 +471,9 @@ export function answerOpen(
         kind: "refused",
         food: item?.name ?? null,
         meal,
-        options: item ? planOptionsFor(item, diet, now, accepted) : null,
+        options: item
+          ? planOptionsFor(item, diet, now, accepted, avoidTexts(notes))
+          : null,
         next,
       };
     }

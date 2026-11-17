@@ -196,6 +196,22 @@ export function createController(deps: ControllerDeps) {
   let view: FamilyView = OFF_VIEW;
   let phase: FamilyPhase = "off";
   let running: Promise<void> | null = null;
+  /**
+   * Turno único para todo lo que lee el estado de la familia, espera la red o la firma y lo
+   * vuelve a guardar: una sincronía lenta y un cambio de roster (o dos seguidos) escribirían
+   * cada uno el estado que cargaron al empezar y el último borraría al primero (un `quitar`
+   * perdido dejaría con derechos a quien ya salió; dos ops con el mismo `n` bifurcarían la
+   * cadena del roster). En cola, cada uno carga el estado que dejó el anterior.
+   */
+  let turn: Promise<unknown> = Promise.resolve();
+  function exclusive<T>(fn: () => Promise<T>): Promise<T> {
+    const run = turn.then(fn, fn);
+    turn = run.then(
+      () => undefined,
+      () => undefined,
+    );
+    return run;
+  }
   const listeners = new Set<() => void>();
 
   async function render(): Promise<void> {
@@ -299,7 +315,7 @@ export function createController(deps: ControllerDeps) {
   /** Una pasada de sincronización; si ya hay una corriendo, espera a esa. */
   function sync(): Promise<void> {
     if (running) return running;
-    running = (async () => {
+    running = exclusive(async () => {
       const st = deps.state.load();
       if (!st) {
         await setPhase("off");
@@ -332,7 +348,7 @@ export function createController(deps: ControllerDeps) {
       // Un aviso propio acaba de subir: el servidor despierta a los demás (sin saber qué dice).
       if (r.ok && r.noticesPushed > 0 && ctx)
         await deps.touch?.(ctx).catch(() => null);
-    })().finally(() => {
+    }).finally(() => {
       running = null;
     });
     return running;
@@ -386,6 +402,12 @@ export function createController(deps: ControllerDeps) {
 
   /** Un cambio de roster firmado por este teléfono (solo si es padre). */
   async function rosterChange(body: OpBody): Promise<ActionResult> {
+    const r = await exclusive(() => rosterChangeNow(body));
+    if (r.ok) await sync();
+    return r;
+  }
+
+  async function rosterChangeNow(body: OpBody): Promise<ActionResult> {
     const st = deps.state.load();
     if (!st || !(await ensureCtx())) return { ok: false, reason: "no-family" };
     const roster = await rosterOf(st.roster);
@@ -396,7 +418,6 @@ export function createController(deps: ControllerDeps) {
     if (!ok) return { ok: false, reason: "invalid" };
     deps.state.save(st);
     await render();
-    await sync();
     return { ok: true };
   }
 
@@ -554,42 +575,55 @@ export function createController(deps: ControllerDeps) {
     async rotate(): Promise<
       ActionResult<{ phrase: string; keysSaved: boolean }>
     > {
-      const st = deps.state.load();
-      const here = await ensureCtx();
-      if (!st || !here) return { ok: false, reason: "no-family" };
-      const roster = await rosterOf(st.roster);
-      if (roster && roster.members[deps.local.deviceId()]?.role !== "parent")
-        return { ok: false, reason: "not-allowed" };
-      const keep = await collectShared(
-        {
-          api: deps.api,
-          ctx: here,
-          local: deps.local,
-          state: deps.state,
-          now: deps.now,
-          signer: deps.keys.signer,
+      const done = await exclusive(
+        async (): Promise<
+          ActionResult<{ phrase: string; keysSaved: boolean }>
+        > => {
+          const st = deps.state.load();
+          const here = await ensureCtx();
+          if (!st || !here) return { ok: false, reason: "no-family" };
+          const roster = await rosterOf(st.roster);
+          if (
+            roster &&
+            roster.members[deps.local.deviceId()]?.role !== "parent"
+          )
+            return { ok: false, reason: "not-allowed" };
+          const keep = await collectShared(
+            {
+              api: deps.api,
+              ctx: here,
+              local: deps.local,
+              state: deps.state,
+              now: deps.now,
+              signer: deps.keys.signer,
+            },
+            st,
+          );
+          const r = await rotateFamily(deps.api, here, keep);
+          if (!r.ok) {
+            if (r.reason === "denied") await setPhase("locked");
+            return r;
+          }
+          const keysSaved = await persistKeys(
+            r.value.ctx.family,
+            r.value.ctx.keys,
+          );
+          ctx = r.value.ctx;
+          // El roster, su huella, la bitácora y las firmas siguen: la familia es la misma.
+          deps.state.save({
+            ...freshFamilyState(st.family, r.value.ctx.epoch, st.consent),
+            planNotice: null,
+            roster: st.roster,
+            pin: st.pin,
+            sigs: st.sigs,
+            log: st.log,
+            legacy: st.legacy,
+          });
+          return { ok: true, phrase: r.value.phrase, keysSaved };
         },
-        st,
       );
-      const r = await rotateFamily(deps.api, here, keep);
-      if (!r.ok) {
-        if (r.reason === "denied") await setPhase("locked");
-        return r;
-      }
-      const keysSaved = await persistKeys(r.value.ctx.family, r.value.ctx.keys);
-      ctx = r.value.ctx;
-      // El roster, su huella, la bitácora y las firmas siguen: la familia es la misma.
-      deps.state.save({
-        ...freshFamilyState(st.family, r.value.ctx.epoch, st.consent),
-        planNotice: null,
-        roster: st.roster,
-        pin: st.pin,
-        sigs: st.sigs,
-        log: st.log,
-        legacy: st.legacy,
-      });
-      await sync();
-      return { ok: true, phrase: r.value.phrase, keysSaved };
+      if (done.ok) await sync();
+      return done;
     },
 
     /** Salir de la familia en este teléfono: sus datos se quedan, las claves se van. */

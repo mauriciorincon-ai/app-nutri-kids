@@ -6,6 +6,7 @@ import { Check, Copy, UserMinus } from "lucide-react";
 import { useDiet } from "@/components/diet-provider";
 import { Button } from "@/components/ui/button";
 import { fmt, useI18n, type Dictionary, type Locale } from "@/i18n";
+import { lineLabel } from "@/lib/diet/reconcile";
 import type { DietPlan } from "@/lib/diet/schema";
 import {
   getFamily,
@@ -572,7 +573,9 @@ export function describeLog(
     case "plan":
       return t.family.logPlan;
     case "plan-line":
-      return fmt(t.family.logPlanLine, { item: row.r });
+      return fmt(t.family.logPlanLine, {
+        item: lineLabel(diet, row.r)?.[locale] ?? t.family.logItemOther,
+      });
     case "notice":
       return t.family.logNotice;
     case "roster": {

@@ -105,6 +105,7 @@ export function FamilyPanel({
       )}
       {view.rejected > 0 && (
         <p
+          role="status"
           className="rounded-xl bg-tl-yellow-surface px-4 py-3 text-sm text-tl-yellow"
           data-testid="family-rejected"
         >

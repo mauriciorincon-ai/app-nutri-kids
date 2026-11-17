@@ -18,6 +18,39 @@ export type Options = {
   note?: LocalizedText;
 };
 
+/** Lo que quien cuida anotó que NO puede (alergia o intolerancia): texto libre, tal cual lo escribió. */
+export function avoidTexts(
+  notes: readonly { kind: string; text: string }[],
+): string[] {
+  return notes
+    .filter((n) => n.kind === "allergy" || n.kind === "intolerance")
+    .map((n) => n.text);
+}
+
+/**
+ * ¿Ese nombre choca con algo que quien cuida anotó como alergia o intolerancia? Se mira en los
+ * dos sentidos («maní» frente a «crema de maní» y «frutos secos» frente a «nueces») y en los dos
+ * idiomas. Ante la duda, no se propone: lo anotado por quien cuida es del mismo niño que el plan.
+ */
+export function avoidedByNotes(
+  name: LocalizedText,
+  avoid: readonly string[],
+): boolean {
+  for (const text of avoid) {
+    for (const locale of ["es", "en"] as const) {
+      const noted = toTokens(text, locale);
+      if (noted.length === 0) continue;
+      for (const side of ["es", "en"] as const) {
+        const hay = toTokens(name[side], side);
+        if (hay.length === 0) continue;
+        if (containsPhrase(hay, noted) || containsPhrase(noted, hay))
+          return true;
+      }
+    }
+  }
+  return false;
+}
+
 /**
  * ¿Ese nombre es hoy una opción segura (verde, o un nombre que el plan no clasifica)? Además de
  * «el nombre contiene un alimento del plan», se mira al revés: si el nombre de la opción es
@@ -28,7 +61,9 @@ export function isSafeOption(
   diet: DietPlan,
   name: LocalizedText,
   now: Date,
+  avoid: readonly string[] = [],
 ): boolean {
+  if (avoidedByNotes(name, avoid)) return false;
   for (const locale of ["es", "en"] as const) {
     const hit = matchItem(diet, name[locale], locale, now);
     if (hit && hit.kind !== "green") return false;
@@ -57,12 +92,14 @@ export function planOptionsFor(
   now: Date,
   /** Texturas que quien cuida marcó como aceptadas hoy (vacío = orden del plan). */
   accepted: readonly Texture[] = [],
+  /** Alergias e intolerancias anotadas por quien cuida (`avoidTexts`). */
+  avoid: readonly string[] = [],
 ): Options | null {
   const eq = status.equivalences[0];
   if (eq) {
     const items = status.equivalences
       .flatMap((e) => e.use)
-      .filter((u) => isSafeOption(diet, u.name, now));
+      .filter((u) => isSafeOption(diet, u.name, now, avoid));
     if (items.length > 0)
       return {
         source: "equivalence",
@@ -74,6 +111,7 @@ export function planOptionsFor(
     const items = status.group.items
       .filter((i) => i.id !== status.id)
       .filter((i) => resolveItemStatus(diet, i.id, now)?.kind === "green")
+      .filter((i) => !avoidedByNotes(i.name, avoid))
       .map((i) => ({ name: i.name }));
     if (items.length > 0)
       return { source: "group", items: orderByTexture(items, accepted) };

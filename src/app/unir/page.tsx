@@ -42,6 +42,31 @@ import { cn } from "@/lib/utils";
  * (la firma de la familia lo hace cumplir; aquí además se esconde lo que no toca).
  */
 
+type LocalizeFn = ReturnType<typeof useI18n>["l"];
+type Dict = ReturnType<typeof useI18n>["t"];
+
+/** El nombre de una línea del plan unido; si no es de un alimento, suplemento o franja, su nombre en llano (nunca la clave cruda). */
+function nameOfLine(
+  t: Dict,
+  l: LocalizeFn,
+  label: { es: string; en: string } | null,
+  key: string,
+): string {
+  if (label) return l(label);
+  switch (key) {
+    case "restrictions":
+      return t.merge.lineRestrictions;
+    case "hydration":
+      return t.merge.lineHydration;
+    case "goal:activity":
+      return t.merge.lineGoalActivity;
+    case "goal:sleep":
+      return t.merge.lineGoalSleep;
+    default:
+      return t.merge.lineOther;
+  }
+}
+
 function Counts({ plan }: { plan: DietPlan }) {
   const { t } = useI18n();
   const c = dietCounts(plan);
@@ -145,7 +170,7 @@ function MergePanel({ a, b }: { a: DietPlan; b: DietPlan }) {
                 {key === "restrictions"
                   ? t.merge.redWindow
                   : fmt(t.merge.redLine, {
-                      food: l(lineLabel(r.plan, key) ?? { es: key, en: key }),
+                      food: nameOfLine(t, l, lineLabel(r.plan, key), key),
                       origin: origin(
                         r.plan.merged!,
                         line.from === "b" ? "b" : "a",
@@ -337,7 +362,7 @@ function MergedView({ diet }: { diet: DietPlan }) {
               className="rounded-xl border bg-card px-3 py-3"
               data-testid={`line-${key}`}
             >
-              <p className="font-semibold">{label ? l(label) : key}</p>
+              <p className="font-semibold">{nameOfLine(t, l, label, key)}</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {originText(merged, line)}
               </p>

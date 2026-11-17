@@ -629,7 +629,7 @@ export const en: Dictionary = {
     waitingInvited: "Joined with the {role} invitation.",
     waitingNoInvite: "Joined without a role invitation.",
     waitingMark:
-      "Their phone's fingerprint: {mark}. Confirm only if it matches the one that person sees on their screen.",
+      "Their phone's fingerprint: {mark}. Confirm only if it matches the one that person sees on their screen; compare in person or by phone call, not in the same message as the invitation.",
     myMark:
       "This phone's fingerprint: {mark}. Whoever confirms you should see the same one.",
     waitingConfirm: "Confirm as {role}",
@@ -750,6 +750,11 @@ export const en: Dictionary = {
       "For dose changes or medical questions, check with your professional.",
   },
   merge: {
+    lineRestrictions: "Dated restrictions",
+    lineHydration: "Hydration",
+    lineGoalActivity: "Activity goal",
+    lineGoalSleep: "Sleep goal",
+    lineOther: "A line of the plan",
     title: "Several diets",
     intro:
       "If another professional gave you another plan, here you see both together and merge them into one. Each line remembers where it came from.",
@@ -854,6 +859,7 @@ export const en: Dictionary = {
     fridgeMark: "keeps without a fridge",
     avoidTitle: "What they can't have",
     avoidNone: "Your plan doesn't list forbidden foods.",
+    notedAvoid: "noted by a caregiver",
     restricted: "current restriction",
     limitsTitle: "In measured amounts",
     additivesTitle: "Additives your plan asks to avoid",

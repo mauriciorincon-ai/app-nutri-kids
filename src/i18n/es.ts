@@ -633,7 +633,7 @@ export const es = {
     waitingInvited: "Entró con la invitación de {role}.",
     waitingNoInvite: "Entró sin una invitación con rol.",
     waitingMark:
-      "Huella de su teléfono: {mark}. Confirma solo si es la misma que esa persona ve en su pantalla.",
+      "Huella de su teléfono: {mark}. Confirma solo si es la misma que esa persona ve en su pantalla; compárala en persona o por llamada, no por el mismo mensaje de la invitación.",
     myMark:
       "Huella de este teléfono: {mark}. Quien te confirme debe ver la misma.",
     waitingConfirm: "Confirmar como {role}",
@@ -754,6 +754,11 @@ export const es = {
       "Para cambios de dosis o dudas médicas, consulta a tu profesional.",
   },
   merge: {
+    lineRestrictions: "Restricciones con fecha",
+    lineHydration: "Hidratación",
+    lineGoalActivity: "Meta de actividad",
+    lineGoalSleep: "Meta de sueño",
+    lineOther: "Una línea del plan",
     title: "Varias dietas",
     intro:
       "Si otro profesional te dio otro plan, aquí los ves juntos y los unes en uno solo. Cada línea guarda de dónde salió.",
@@ -856,6 +861,7 @@ export const es = {
     fridgeMark: "aguanta sin nevera",
     avoidTitle: "Lo que no puede",
     avoidNone: "Tu plan no lista alimentos prohibidos.",
+    notedAvoid: "anotado por quien cuida",
     restricted: "restricción vigente",
     limitsTitle: "Con medida",
     additivesTitle: "Aditivos que tu plan pide evitar",
