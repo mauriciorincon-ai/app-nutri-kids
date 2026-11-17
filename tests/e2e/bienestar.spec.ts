@@ -25,6 +25,8 @@ const mood = (page: Page, meal: string) =>
 test("un teléfono: ánimo, aceptación, cómo está, hábitos con su fuente y el Historial", async ({
   page,
 }) => {
+  // Doce pasadas de axe en dos temas: en el runner de la CI no caben en los 30 s por defecto.
+  test.setTimeout(90_000);
   await page.clock.install({ time: MON_0730 });
   await page.addInitScript(() => {
     window.localStorage.setItem(
