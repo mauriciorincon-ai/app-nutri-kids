@@ -125,6 +125,8 @@ export type FamilyView = {
   /** Cambios que llegaron sin firma válida o sin permiso, y no se aceptaron. */
   rejected: number;
   rosterIssue: "pin" | "invalid" | null;
+  /** La lista de personas está llena: ya no admite cambios (lo ve el padre). */
+  rosterFull: boolean;
   /** Nombres de quienes reescribieron su bitácora (se conservó lo ya visto). */
   rewritten: string[];
 };
@@ -185,6 +187,7 @@ export const OFF_VIEW: FamilyView = {
   log: [],
   rejected: 0,
   rosterIssue: null,
+  rosterFull: false,
   rewritten: [],
 };
 
@@ -308,6 +311,7 @@ export function createController(deps: ControllerDeps) {
         log: logRows,
         rejected: st.rejected,
         rosterIssue: st.rosterIssue,
+        rosterFull: st.rosterFull,
         rewritten: st.log.rewritten.map(nameOf),
       };
     }
@@ -428,7 +432,12 @@ export function createController(deps: ControllerDeps) {
       deps.now(),
       body,
     );
-    if (done === "full") return { ok: false, reason: "roster-full" };
+    if (done === "full") {
+      st.rosterFull = true;
+      deps.state.save(st);
+      await render();
+      return { ok: false, reason: "roster-full" };
+    }
     if (done === "invalid") return { ok: false, reason: "invalid" };
     deps.state.save(st);
     await render();

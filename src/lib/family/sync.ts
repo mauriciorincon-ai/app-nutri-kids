@@ -403,7 +403,10 @@ export async function syncOnce(d: SyncDeps): Promise<SyncResult> {
           st.migrate = false;
           // Dos padres cambiaron a la vez y el de este teléfono perdió: lo firma de nuevo encima.
           for (const op of choice.replay)
-            await addOp(st, signer, own, d.now(), op.body);
+            if (
+              (await addOpResult(st, signer, own, d.now(), op.body)) === "full"
+            )
+              st.rosterFull = true; // ese cambio no cupo: el padre lo ve, no se pierde en silencio
           roster = await rosterOf(st.roster);
           changed = true;
         } else if (choice.take === "reject") {
@@ -522,7 +525,7 @@ export async function syncOnce(d: SyncDeps): Promise<SyncResult> {
         if (roster.members[id]) {
           st.legacy = st.legacy.filter((x) => x !== id);
         } else if (dev?.pub) {
-          const ok = await addOp(st, signer, own, d.now(), {
+          const done = await addOpResult(st, signer, own, d.now(), {
             type: "set",
             member: {
               id,
@@ -531,7 +534,8 @@ export async function syncOnce(d: SyncDeps): Promise<SyncResult> {
               pub: dev.pub,
             },
           });
-          if (ok) st.legacy = st.legacy.filter((x) => x !== id);
+          if (done === "ok") st.legacy = st.legacy.filter((x) => x !== id);
+          else if (done === "full") st.rosterFull = true;
         }
       }
       roster = await rosterOf(st.roster);
