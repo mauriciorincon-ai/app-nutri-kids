@@ -286,7 +286,7 @@ delete the subscription.
 
 - **Qué hace:** cada persona que entra a la familia tiene un **rol** que dice qué puede cambiar. Todos ven lo compartido; solo cambia lo que su rol permite. Cada cambio queda en la **bitácora**: quién, qué y cuándo.
 - **Los cuatro roles:** **Madre o padre** (todo: el plan, el perfil, la familia y los roles) · **Cuidador** (registra el día, deja notas y avisa a la familia) · **Colegio** (marca solo las comidas de sus horarios, deja notas en ellas y avisa) · **Nutricionista** (ve todo y deja notas del día y del perfil).
-- **Cómo se usa:** **Ajustes → Compartir con la familia**. Una madre o un padre, en **«Invitar con rol»**, elige el rol (y, para el colegio, qué comidas marca), crea la invitación y se la pasa a la persona junto con la frase. Cuando la persona entra, aparece en **«Esperando rol»**: se confirma con un toque, comparando la **huella** de su teléfono con la que ella ve en su pantalla. Para cambiar el rol de alguien o sacarlo, en **«Personas de la familia»**.
+- **Cómo se usa:** **Ajustes → Compartir con la familia**. Una madre o un padre, en **«Invitar con rol»**, elige el rol (y, para el colegio, qué comidas marca), crea la invitación y se la pasa a la persona junto con la frase. Cuando la persona entra, aparece en **«Esperando rol»**: se confirma con un toque, comparando la **huella** de su teléfono con la que ella ve en su pantalla (en persona o por llamada, no por el mismo mensaje en que llegó la invitación). Para cambiar el rol de alguien o sacarlo, en **«Personas de la familia»**.
 - **Con un rol que no lo permite:** la pantalla muestra el dato pero no el botón, y dice «Con tu rol (…) esto se ve, pero no se cambia». Un cambio que llegue sin la firma de quien dice haberlo hecho, o que su rol no permita, no se acepta, y la pantalla avisa cuántos se rechazaron.
 - **Bitácora:** al final de Compartir con la familia. Dice «Mamá marcó el desayuno (hoy)», «Papá le dio a Tía el rol Cuidador», «cambió una línea del plan unido». Está firmada y encadenada: si alguien la reescribe, este teléfono conserva lo que ya había visto y lo avisa.
 - **Limitaciones conocidas:** se aconseja invitar a una segunda madre o padre: si el único teléfono con ese rol se pierde, nadie podría cambiar los roles. Un teléfono con una versión anterior de la app entra sin rol hasta que se actualice.
@@ -296,7 +296,7 @@ that says what they can change; everyone sees what is shared. **Parent** (everyt
 (logs the day, leaves notes, notifies the family), **School** (marks only its own meals, leaves notes on
 them, notifies) and **Nutritionist** (sees everything, leaves day and profile notes). A parent uses
 **Settings → Share with the family → Invite with a role**, then confirms the new person under **Waiting
-for a role** after comparing the phone's fingerprint on both screens. With a role that does not allow it,
+for a role** after comparing the phone's fingerprint on both screens (in person or by phone call, not in the same message as the invitation). With a role that does not allow it,
 the screen shows the data without the button. Every change goes in the signed, chained **log** (who, what,
 when); a change without its author's signature, or that their role does not allow, is rejected and the
 screen says how many. Tip: invite a second parent, so roles can still change if one phone is lost.

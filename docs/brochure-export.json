@@ -19,7 +19,7 @@
     "ciclo": "H-2",
     "estado": "inicial",
     "sellado_en": null,
-    "sprints_cerrados": 3,
+    "sprints_cerrados": 9,
     "version_repo": "0.1.0"
   },
   "promesa": {
@@ -29,7 +29,7 @@
     "diferencial": "No califica al niño: sin calorías, peso, IMC ni percentiles, y sin convertir el «cumplimiento» en una nota. El chat contesta con tu plan dentro del teléfono y sin internet: no manda nada a ningún lado, ni siquiera para hacerle una pregunta. Lo que anotas del día, las horas y las notas sobre tu hijo solo viaja a tu familia si tú lo decides, y siempre cifrado desde el teléfono."
   },
   "funcionalidades": {
-    "total": 23,
+    "total": 27,
     "fuente_del_conteo": "docs/MANUAL-DE-USO.md",
     "descartadas": [],
     "grupos": [
@@ -155,7 +155,7 @@
           },
           {
             "id": "F15",
-            "nombre": "Plan B: el archivo .json o pegar el contenido",
+            "nombre": "Otro camino: el archivo .json o pegar el contenido",
             "que_hace": "Si te mandaron el archivo de la dieta (.json), lo eliges en Cargar; si no abre desde el teléfono, copias todo su contenido, lo pegas en una caja de texto y la app lo revisa y lo carga igual. Lo que anotaste en el perfil se queda.",
             "seccion_manual": "Cargar tu dieta · «Cómo se usa con el archivo»"
           },
@@ -210,14 +210,46 @@
             "seccion_manual": "Idioma y borrar datos"
           }
         ]
+      },
+      {
+        "orden": 6,
+        "estrella": false,
+        "nombre": "Entre varios, y cuando algo falla",
+        "linea": "Cada quien con su rol y una bitácora de quién cambió qué, un plan B hecho con tu plan, fichas para los días especiales y la unión de dos planes",
+        "features": [
+          {
+            "id": "F24",
+            "nombre": "Roles y bitácora de la familia",
+            "que_hace": "Una madre o un padre invita a cada persona con un rol: madre o padre, cuidador, colegio o nutricionista. Cada rol cambia solo lo suyo y lo demás se ve, pero no se cambia. Cada cambio queda en una bitácora firmada: quién, qué y cuándo.",
+            "seccion_manual": "Roles y bitácora de la familia"
+          },
+          {
+            "id": "F25",
+            "nombre": "Plan B: cuando algo falla",
+            "que_hace": "Se acabó algo, no hay nevera o llegamos tarde: la tarjeta de Hoy te dice qué sí darle, solo con lo que trae tu plan. Nunca inventa un alimento ni propone uno prohibido; si el plan no lo dice, te lo dice.",
+            "seccion_manual": "Plan B"
+          },
+          {
+            "id": "F26",
+            "nombre": "Días especiales",
+            "que_hace": "Una ficha para cumpleaños, restaurante, emergencia y «le ofrecen algo que no puede»: qué llevar, lo que no puede, qué decir y, en emergencia, la ficha a mano. Sale del plan, abre sin señal y no da indicaciones médicas.",
+            "seccion_manual": "Días especiales"
+          },
+          {
+            "id": "F27",
+            "nombre": "Varias dietas: unir dos planes",
+            "que_hace": "Agregas el plan de otro profesional como segundo plan y los ves lado a lado. Al unirlos, lo prohibido gana solo y lo que dicen distinto lo eliges tú. Cada línea guarda de qué plan salió, y una madre o un padre puede cambiar cualquiera, también una en rojo, confirmando una vez.",
+            "seccion_manual": "Varias dietas: unir dos planes"
+          }
+        ]
       }
     ]
   },
   "metricas": [
     {
       "clave": "funcionalidades",
-      "etiqueta": "Funcionalidades del MVP",
-      "valor": 22,
+      "etiqueta": "Funcionalidades",
+      "valor": 27,
       "unidad": "funcionalidades",
       "fuente": "medido",
       "detalle": "Contadas contra docs/MANUAL-DE-USO.md y verificadas por un test que compara el total con los bloques .feature del brochure. El marco no-médico (nota de primer uso y disclaimer permanente) no cuenta: es el encuadre de la app, no una funcionalidad."
@@ -225,42 +257,42 @@
     {
       "clave": "pantallas",
       "etiqueta": "Pantallas de la app",
-      "valor": 9,
+      "valor": 11,
       "unidad": "pantallas",
       "fuente": "medido",
-      "detalle": "Ocho rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes, perfil) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
+      "detalle": "Diez rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes, perfil, escenarios y unir) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
     },
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 932,
+      "valor": 1116,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-16 sobre la rama de los avisos que llegan (S8): 51 archivos, 932 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-16 sobre la rama de la coordinación (S9): 57 archivos, 1116 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 218,
+      "valor": 246,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-16 sobre la rama de los avisos que llegan (S8), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 218 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 216 en verde y 2 omitidas a propósito (el reloj firmado solo se prueba en el móvil, porque los dos proyectos comparten servidor); incluyen axe en los dos temas, el uso sin internet, los dos teléfonos con el centinela de texto en claro, el service worker real con el toque entregado por el protocolo del navegador y el reloj de 5 minutos con cinco firmas rechazadas."
+      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-16 sobre la rama de la coordinación (S9), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 246 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 244 en verde y 2 omitidas a propósito (el reloj firmado solo se prueba en el móvil, porque los dos proyectos comparten servidor); incluyen axe en los dos temas, el uso sin internet, los teléfonos con el centinela de texto en claro, los roles con firma, el plan B, los días especiales, la unión de dos planes, el service worker real con el toque entregado por el protocolo del navegador y el reloj de 5 minutos."
     },
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 97.7,
+      "valor": 96.77,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib el 2026-11-16 sobre la rama de los avisos que llegan (97,66 % de líneas en total; src/lib/family 97,24 % y su servidor 100 %; src/lib/push 96,56 % y su servidor 100 %), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
+      "detalle": "v8 sobre src/lib el 2026-11-16 sobre la rama de la coordinación (96,77 % de líneas en total; src/lib/family 97,02 % y su servidor 100 %; src/lib/push 96,56 % y su servidor 100 %), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
     },
     {
       "clave": "decisiones_registradas",
       "etiqueta": "Decisiones de arquitectura registradas",
-      "valor": 12,
+      "valor": 14,
       "unidad": "ADR",
       "fuente": "medido",
-      "detalle": "Archivos de decisions/ el 2026-11-16; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, y la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, y la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono."
+      "detalle": "Archivos de decisions/ el 2026-11-16; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono, la 013 fija los roles con firma por persona y la 014 el plan B, los días especiales y la unión de dos planes."
     },
     {
       "clave": "dependencias_runtime",
@@ -268,7 +300,7 @@
       "valor": 14,
       "unidad": "paquetes",
       "fuente": "medido",
-      "detalle": "Campo `dependencies` de package.json el 2026-11-16 sobre la rama del S8: sin dependencias nuevas (el cifrado y la firma VAPID son WebCrypto; el almacén y el push se llaman con fetch); sigue incluyendo pdfjs-dist, fijado y servido por la propia app (ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
+      "detalle": "Campo `dependencies` de package.json el 2026-11-16 sobre la rama del S9: sin dependencias nuevas (el cifrado y la firma VAPID son WebCrypto; el almacén y el push se llaman con fetch); sigue incluyendo pdfjs-dist, fijado y servido por la propia app (ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
     },
     {
       "clave": "requests_del_registro",
@@ -289,10 +321,10 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 81362,
+      "valor": 86697,
       "unidad": "bytes",
       "fuente": "medido",
-      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-16 sobre la rama del S8. Autocontenido: cero recursos externos, incluidas las cinco muestras de interfaz (SVG en línea, no imágenes)."
+      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-16 sobre la rama del S9. Autocontenido: cero recursos externos, incluidas las seis muestras de interfaz (SVG en línea, no imágenes)."
     }
   ],
   "stack": [

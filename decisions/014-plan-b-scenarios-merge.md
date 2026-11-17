@@ -34,4 +34,4 @@ Three VISION roadmap items remain after the roles: a **plan B** for when somethi
 
 - Plan B, scenarios and merge introduce no dependency, no network and no model.
 - **Known limits, declared:** (a) a third plan merges against the _merged_ plan as plan A; earlier origins are not carried beyond the `merged.from` pair. (b) Matching by normalized name can miss a synonym («queso» vs «queso fresco»); the miss leaves both lines, so nothing is lost, but a human may need to merge them. (c) Fridge marks by name depend on the option's Spanish text, so renaming it in a later plan drops the mark. (d) The second plan is not shared: only the merged result is.
-- `src/lib/diet/reconcile.ts` is the largest file in `lib/diet`; its tests (28) are the contract.
+- `src/lib/diet/reconcile.ts` is the largest file in `lib/diet`; its tests (30, `tests/unit/reconcile.test.ts`) are the contract.
