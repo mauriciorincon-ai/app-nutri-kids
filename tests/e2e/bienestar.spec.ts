@@ -42,6 +42,9 @@ test("un teléfono: ánimo, aceptación, cómo está, hábitos con su fuente y e
   await expect(
     breakfast.getByRole("button", { name: "Cansado" }),
   ).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    breakfast.getByRole("button", { name: "Cansado" }),
+  ).toContainText("✓");
   await axe(page, "Hoy con un ánimo elegido");
 
   // 2 · La bitácora de aceptación de esa comida: se abre bajo demanda.
@@ -81,7 +84,7 @@ test("un teléfono: ánimo, aceptación, cómo está, hábitos con su fuente y e
   await axe(page, "Bienestar vacío");
   await page
     .getByRole("group", { name: "Energía" })
-    .getByRole("button", { name: "Poca" })
+    .getByRole("button", { name: "Con poca energía" })
     .click();
   await page
     .getByRole("group", { name: "Reacciones" })
@@ -98,7 +101,7 @@ test("un teléfono: ánimo, aceptación, cómo está, hábitos con su fuente y e
 
   // 5 · Hábitos contra la referencia de su edad, con la fuente a la vista y sin rojo.
   const sleep = page.getByTestId("habit-sleep");
-  await sleep.getByLabel(/Sueño de anoche · Minutos/).fill("660");
+  await sleep.getByLabel(/Sueño de 24 h \(con siestas\) · Minutos/).fill("660");
   await sleep.getByRole("button", { name: "Guardar" }).click();
   await expect(page.getByTestId("habit-status-sleep")).toContainText(
     "Dentro de lo que se recomienda",
@@ -108,14 +111,30 @@ test("un teléfono: ánimo, aceptación, cómo está, hábitos con su fuente y e
   await screen.getByLabel(/Pantalla \(recreativa\) · Minutos/).fill("150");
   await screen.getByRole("button", { name: "Guardar" }).click();
   await expect(page.getByTestId("habit-status-screen")).toContainText(
-    "Un poco por encima de la referencia",
+    "Por encima de la referencia",
   );
   await expect(page.getByTestId("habit-source-screen")).toContainText("OMS");
   await expect(page.getByText(/no es un veredicto/i).first()).toBeVisible();
-  await axe(page, "Bienestar con hábitos dentro y un poco distinto");
+  await axe(page, "Bienestar con hábitos dentro y por encima de la referencia");
 
-  // 6 · El Historial lo muestra en las mismas palabras.
+  // 5b · También se anota desde la ficha del alimento, y el Historial lo recoge.
+  await page.goto("/dieta/pollo");
+  await page
+    .getByRole("button", { name: "Cómo le fue con los alimentos" })
+    .click();
+  const fichaLog = page.getByRole("group", {
+    name: "Cómo le fue con los alimentos",
+  });
+  await fichaLog.getByRole("button", { name: "Lo tocó" }).click();
+  await fichaLog.getByRole("button", { name: "Guardar", exact: true }).click();
+  await expect(fichaLog.getByTestId("food-entries")).toContainText("Lo tocó");
+  await axe(page, "ficha del alimento con la bitácora");
+
+  // 6 · El Historial lo muestra en las mismas palabras y enlaza a Bienestar.
   await page.goto("/historial");
+  await expect(
+    page.getByRole("link", { name: "Bienestar de hoy" }),
+  ).toHaveAttribute("href", "/bienestar");
   const block = page.getByTestId("history-wellbeing");
   await expect(block).toContainText("Desayuno: Cansado");
   await expect(block).toContainText("Reacciones: En la piel");
@@ -225,7 +244,7 @@ test("dos teléfonos y un colegio: cuidador anota, la madre lo ve y el colegio s
     await expect(
       b.page
         .getByRole("group", { name: "Energía" })
-        .getByRole("button", { name: "Poca" }),
+        .getByRole("button", { name: "Con poca energía" }),
     ).toBeDisabled();
     await expect(b.page.getByText(/lo anotan otras personas/)).toBeVisible();
     await axe(b.page, "Bienestar con rol de colegio: solo lectura");

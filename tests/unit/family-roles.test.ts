@@ -1224,6 +1224,71 @@ describe("bienestar contra el doble del servidor", () => {
     expect(c.state!.rejected).toBeGreaterThanOrEqual(3);
   });
 
+  it("un padre bien firmado, pero con claves mal formadas, una hora en el futuro o una franja inventada, se descarta", async () => {
+    const { a, c, forge, sync } = await family();
+    const sa = await a.signer;
+    const food = {
+      stage: "tasted",
+      verdict: null,
+      texture: null,
+      presentation: null,
+      isNew: false,
+    };
+    const signed = async <V>(key: string, v: V, t = 60) => {
+      const r = { t, by: a.id, v };
+      return { ...r, s: await sign(sa, entryPayload(`day:${DAY}`, key, r)) };
+    };
+    const malformed = ["a|b|c", "%zz|x", "|x", "x|", "a:b|c"];
+    const foodBad: Record<string, unknown> = {};
+    for (const k of malformed) foodBad[k] = await signed(k, food);
+    await forge(a, {
+      name: `day:${DAY}`,
+      data: {
+        marks: {},
+        notes: {},
+        food: foodBad as never,
+        moods: { "meal:": await signed("meal:", "happy") },
+        // Una hora a más de 5 minutos en el futuro, en cada mapa nuevo.
+        habits: {
+          sleep: await signed("sleep", 600, a.now.t + 6 * 60_000),
+        },
+        well: {
+          energy: await signed("energy", "low", a.now.t + 6 * 60_000),
+        },
+      },
+    });
+    await sync(c);
+    const got = c.data.days[DAY];
+    expect(got?.food).toBeUndefined();
+    expect(got?.moods).toBeUndefined();
+    expect(got?.habits).toBeUndefined();
+    expect(got?.well).toBeUndefined();
+    expect(c.state!.rejected).toBeGreaterThanOrEqual(8);
+
+    // Una franja fuera del vocabulario, firmada por el propio padre, tampoco se acepta.
+    const age = { t: 70, by: a.id, v: "7-9" };
+    await forge(a, {
+      name: "profile",
+      data: {
+        notes: {},
+        age: {
+          ...age,
+          s: await sign(sa, entryPayload("profile", "age", age)),
+        } as never,
+      },
+    });
+    await sync(c);
+    expect(c.data.profile.age?.v).not.toBe("7-9");
+  });
+
+  it("el colegio tampoco cambia la franja de edad", async () => {
+    const { s, a, sync } = await family();
+    s.data.profile = { notes: {}, age: { t: 80, by: s.id, v: "13-17" } };
+    await sync(s);
+    await sync(a);
+    expect(a.data.profile.age?.v).not.toBe("13-17");
+  });
+
   it("el servidor no ve tipos, nombres ni contenidos (centinela en todo lo que cruza la red)", async () => {
     const { net, c, sync } = await family();
     c.data.days[DAY] = { marks: {}, notes: {}, ...wb(c, T) };

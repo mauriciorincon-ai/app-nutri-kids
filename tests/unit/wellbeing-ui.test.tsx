@@ -55,7 +55,7 @@ describe("semáforo emocional", () => {
       expect(b.textContent?.trim().length).toBeGreaterThan(0);
       expect(b.querySelector("svg")).not.toBeNull();
     }
-    await userEvent.click(screen.getByRole("button", { name: "Cansado" }));
+    await userEvent.click(screen.getByRole("button", { name: /Cansado/ }));
     expect(onPick).toHaveBeenLastCalledWith("tired");
     rerender(
       <I18nProvider>
@@ -66,6 +66,8 @@ describe("semáforo emocional", () => {
     );
     const on = screen.getByRole("button", { name: /Cansado/ });
     expect(on).toHaveAttribute("aria-pressed", "true");
+    // El elegido se ve también por la marca ✓, no solo por el tono.
+    expect(on.textContent).toContain("✓");
     await userEvent.click(on);
     expect(onPick).toHaveBeenLastCalledWith(null);
   });
@@ -92,7 +94,7 @@ describe("hábitos contra la referencia", () => {
         const { text, source } = referenceLines(w, habit, band, ref);
         expect(text.length).toBeGreaterThan(0);
         if (ref.kind === "none") expect(source).toBeNull();
-        else expect(source).toContain(ref.source.cite);
+        else expect(source).toContain(ref.source.cite.es);
       }
     expect(
       referenceLines(w, "screen", "6-12", referenceFor("screen", "6-12")).text,
@@ -111,7 +113,7 @@ describe("hábitos contra la referencia", () => {
       />,
     );
     const status = screen.getByTestId("habit-status-sleep");
-    expect(status.textContent).toContain("por debajo");
+    expect(status.textContent).toContain("Por debajo");
     expect(status.querySelector("svg")).not.toBeNull();
     expect(status.className).not.toMatch(/tl-red|destructive/);
     expect(screen.getByTestId("habit-source-sleep").textContent).toContain(
@@ -290,7 +292,7 @@ describe("Historial", () => {
     );
     const block = screen.getByTestId("history-wellbeing");
     expect(block.textContent).toContain("Cansado");
-    expect(block.textContent).toContain("Energía: Poca");
+    expect(block.textContent).toContain("Energía: Con poca energía");
     expect(block.textContent).toContain("Durmió poco");
     expect(block.textContent).toContain("9 h 30 min");
     expect(block.textContent).toContain("Le encantó");

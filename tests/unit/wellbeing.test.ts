@@ -25,6 +25,7 @@ import {
   readProfileRegs,
   setAgeBand,
 } from "@/lib/diet/profile-notes";
+import { TEXTURES } from "@/lib/diet/schema";
 import { wellbeingText, type WellbeingText } from "@/i18n/wellbeing";
 import { foodIdsAnnotated, summarizeFood } from "@/lib/wellbeing/acceptance";
 import { AGE_RECHECK_MS, ageRecheckDue } from "@/lib/wellbeing/age";
@@ -38,6 +39,7 @@ import {
   AGE_BANDS,
   foodKey,
   FOOD_KEY_MAX,
+  FOOD_TEXTURES,
   HABITS,
   MAP_CAPS,
   MOODS,
@@ -110,6 +112,60 @@ describe("registro del día: bienestar", () => {
     expect(Object.keys(getWellbeing(DATE).moods)).toHaveLength(MAP_CAPS.moods);
     setMood(DATE, "meal:m0", "tired");
     expect(getWellbeing(DATE).moods["meal:m0"]).toBe("tired");
+  });
+
+  it("una clave como «constructor» en un día guardado no tira el resto del día", () => {
+    const me = getDeviceId();
+    window.localStorage.setItem(
+      DAY_LOG_KEY,
+      JSON.stringify({
+        [DAY]: {
+          marks: { "meal:desayuno": { t: 5, by: me, v: { at: "07:30" } } },
+          notes: {},
+          well: {
+            constructor: { t: 1, by: me, v: "low" },
+            toString: { t: 1, by: me, v: "low" },
+            energy: { t: 2, by: me, v: "low" },
+          },
+        },
+      }),
+    );
+    expect(getDayRecord(DATE).marks["meal:desayuno"].at).toBe("07:30");
+    expect(getWellbeing(DATE).well).toEqual({ energy: "low" });
+  });
+
+  it("una clave de alimento no canónica no entra (dos formas de la misma comida contarían dos veces)", () => {
+    setFood(DATE, "c|f", food());
+    setFood(DATE, "%63|f", food());
+    expect(Object.keys(getWellbeing(DATE).food)).toEqual(["c|f"]);
+  });
+
+  it("al llenarse un mapa, las lápidas se sueltan antes de negar una anotación nueva", () => {
+    for (let i = 0; i < MAP_CAPS.moods; i++)
+      setMood(DATE, `meal:m${i}`, "happy");
+    setMood(DATE, "meal:m0", null);
+    setMood(DATE, "meal:nuevo", "tired");
+    expect(getWellbeing(DATE).moods["meal:nuevo"]).toBe("tired");
+  });
+
+  it("al mezclar dos teléfonos pasados del tope, queda en el tope y no cambia al repetir", () => {
+    for (let i = 0; i < MAP_CAPS.moods; i++)
+      setMood(DATE, `meal:a${i}`, "happy");
+    const remote: Record<string, { t: number; by: string; v: "tired" }> = {};
+    for (let i = 0; i < MAP_CAPS.moods; i++)
+      remote[`meal:b${i}`] = { t: 1_000_000 + i, by: "otro", v: "tired" };
+    expect(mergeRemoteDay(DAY, { marks: {}, notes: {}, moods: remote })).toBe(
+      true,
+    );
+    expect(Object.keys(getWellbeing(DATE).moods)).toHaveLength(MAP_CAPS.moods);
+    expect(mergeRemoteDay(DAY, { marks: {}, notes: {}, moods: remote })).toBe(
+      false,
+    );
+  });
+
+  it("los topes y las texturas del bienestar siguen a sus fuentes", () => {
+    expect(MAP_CAPS.habits).toBe(HABITS.length);
+    expect([...FOOD_TEXTURES]).toEqual([...TEXTURES]);
   });
 
   it("un día guardado antes del S10 (sin los mapas nuevos) se lee igual y conserva marcas y notas", () => {
@@ -234,7 +290,12 @@ describe("referencias por edad", () => {
   const h = (n: number) => n * 60;
   it("cada referencia con cifra lleva su fuente y la tabla es la del § 2 del sprint", () => {
     for (const r of allReferences()) {
-      expect("source" in r && r.source.cite.length > 10).toBe(true);
+      expect(
+        "source" in r &&
+          r.source.cite.es.length > 10 &&
+          r.source.cite.en.length > 10 &&
+          r.source.where.es.length > 3,
+      ).toBe(true);
     }
     const sleep = (b: (typeof AGE_BANDS)[number]) => referenceFor("sleep", b);
     expect(sleep("1")).toMatchObject({ min: h(11), max: h(14) });
@@ -270,9 +331,26 @@ describe("referencias por edad", () => {
   });
 
   it("las fuentes dicen dónde están (la OMS 2020, con sus páginas)", () => {
-    expect(SOURCES["who-2020"].where).toContain("p. 25");
-    expect(SOURCES["who-2020"].where).toContain("p. 29");
-    expect(SOURCES["aasm-2016"].cite).toContain("785-786");
+    expect(SOURCES["who-2020"].where.es).toContain("p. 25");
+    expect(SOURCES["who-2020"].where.es).toContain("p. 29");
+    expect(SOURCES["who-2020"].where.en).toContain("p. 25");
+    expect(SOURCES["aasm-2016"].cite.es).toContain("785-786");
+    expect(SOURCES["aasm-2016"].cite.en).toContain("785-786");
+  });
+
+  it("en inglés ninguna fuente sale con palabras en español", () => {
+    for (const s of Object.values(SOURCES))
+      for (const text of [s.cite.en, s.where.en])
+        expect(text).not.toMatch(
+          /OMS|menores|respaldada|sección|recomendaciones/,
+        );
+  });
+
+  it("actividad de 5 a 17 años: la referencia es un promedio de la semana, un día suelto no se juzga", () => {
+    for (const b of ["5", "6-12", "13-17"] as const)
+      expect(readHabit("activity", b, 30).status).toBe("weekly-average");
+    // Hasta los 4 años la cifra de la OMS 2019 es diaria: sí se compara.
+    expect(readHabit("activity", "2", 30).status).toBe("below");
   });
 
   it("un hábito contra su referencia: dentro, un poco por debajo o por encima, nunca un veredicto", () => {
@@ -293,6 +371,7 @@ describe("referencias por edad", () => {
           "above",
           "not-recommended",
           "no-figure",
+          "weekly-average",
         ]).toContain(readHabit(habit, b, 60).status);
   });
 
@@ -430,7 +509,7 @@ describe("textos del bienestar (es/en)", () => {
 
   it("jamás una cifra de referencia escrita en el copy: salen del dato con su fuente", () => {
     // Solo llevan números las franjas de edad, el tope de la nota (140) y «1 vez».
-    const ALLOWED = /^(ageBands\.|wellNoteHint$|exposuresOne$)/;
+    const ALLOWED = /^(ageBands\.|wellNoteHint$|exposuresOne$|habitSleep24$)/;
     for (const [k, v] of [...es, ...en])
       if (!ALLOWED.test(k))
         expect(/\d/.test(v.replace(/\{\w+\}/g, "")), `${k}: ${v}`).toBe(false);
