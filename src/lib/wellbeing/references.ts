@@ -7,30 +7,48 @@ import type { AgeBand, HabitId } from "./values";
  * eso, una referencia: la app nunca la convierte en un puntaje ni en un veredicto.
  */
 
+type Bi = { es: string; en: string };
+
 export type Source = {
   id: "aasm-2016" | "who-2019" | "who-2020";
-  /** Cita corta, la misma en los dos idiomas (es bibliografía, no copy). */
-  cite: string;
+  /** Cita corta, redactada en cada idioma (el título del documento queda en su idioma original). */
+  cite: Bi;
   /** Dónde está en el documento. */
-  where: string;
+  where: Bi;
 };
 
 export const SOURCES: Record<Source["id"], Source> = {
   "aasm-2016": {
     id: "aasm-2016",
-    cite: "AASM 2016 · Paruthi et al., J Clin Sleep Med 12(6):785-786 (respaldada por la AAP)",
-    where: "785-786",
+    cite: {
+      es: "AASM 2016 · Paruthi et al., J Clin Sleep Med 12(6):785-786 (respaldada por la AAP)",
+      en: "AASM 2016 · Paruthi et al., J Clin Sleep Med 12(6):785-786 (endorsed by the AAP)",
+    },
+    where: { es: "pp. 785-786", en: "pp. 785-786" },
   },
   "who-2019": {
     id: "who-2019",
-    cite: "OMS 2019 · Guidelines on physical activity, sedentary behaviour and sleep for children under 5 years of age",
-    where: "menores de 5 años",
+    cite: {
+      es: "OMS 2019 · Guidelines on physical activity, sedentary behaviour and sleep for children under 5 years of age",
+      en: "WHO 2019 · Guidelines on physical activity, sedentary behaviour and sleep for children under 5 years of age",
+    },
+    // Sin número de página: el PDF oficial no se pudo abrir desde aquí (403); se cita la sección.
+    where: {
+      es: "sección de recomendaciones por edad",
+      en: "recommendations by age section",
+    },
   },
   "who-2020": {
     id: "who-2020",
-    cite: "OMS 2020 · WHO guidelines on physical activity and sedentary behaviour",
+    cite: {
+      es: "OMS 2020 · WHO guidelines on physical activity and sedentary behaviour",
+      en: "WHO 2020 · WHO guidelines on physical activity and sedentary behaviour",
+    },
     // Leído en el PDF oficial el 2026-11-17: actividad 5-17 en la p. 25; pantalla en la p. 29.
-    where: "p. 25 (actividad) · p. 29 (pantalla)",
+    where: {
+      es: "p. 25 (actividad) · p. 29 (pantalla)",
+      en: "p. 25 (activity) · p. 29 (screen)",
+    },
   },
 };
 

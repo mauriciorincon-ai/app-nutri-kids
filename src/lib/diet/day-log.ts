@@ -5,8 +5,10 @@ import {
   coerceHabit,
   coerceWell,
   FOOD_KEY_MAX,
+  foodKey,
   isMood,
   MAP_CAPS,
+  parseFoodKey,
   WELLBEING_MAPS,
   type FoodValue,
   type MoodId,
@@ -162,12 +164,34 @@ function coerceRegs(value: unknown): DayRegs {
   return regs;
 }
 
+/**
+ * Deja un mapa del bienestar dentro de su tope de forma DETERMINISTA (la misma en cada teléfono,
+ * para que converjan): primero se sueltan las lápidas, luego lo de sello más viejo (empate: la clave).
+ */
+function capMap(
+  map: Record<string, Reg<unknown>>,
+  cap: number,
+): Record<string, Reg<unknown>> {
+  const keys = Object.keys(map);
+  if (keys.length <= cap) return map;
+  const keep = keys
+    .sort((a, b) => {
+      const dead = Number(map[a].v === null) - Number(map[b].v === null);
+      return dead || map[b].t - map[a].t || (a < b ? -1 : 1);
+    })
+    .slice(0, cap);
+  return Object.fromEntries(keep.map((k) => [k, map[k]]));
+}
+
 /** Lee los mapas del bienestar de un día guardado: lo que no encaja se descarta, sin adivinar. */
 function coerceWellbeing(value: Record<string, unknown>, regs: DayRegs): void {
   const readers: Record<WellbeingMap, (key: string, raw: unknown) => unknown> =
     {
       moods: (_k, raw) => (isMood(raw) ? raw : null),
-      food: (_k, raw) => coerceFood(raw),
+      food: (k, raw) => {
+        const f = parseFoodKey(k);
+        return f && foodKey(f.mealId, f.foodId) === k ? coerceFood(raw) : null;
+      },
       well: coerceWell,
       habits: coerceHabit,
     };
@@ -176,7 +200,6 @@ function coerceWellbeing(value: Record<string, unknown>, regs: DayRegs): void {
     if (!obj(map)) continue;
     const out: Record<string, Reg<unknown>> = {};
     for (const [key, raw] of Object.entries(map)) {
-      if (Object.keys(out).length >= MAP_CAPS[name]) break;
       const st = coerceStamp(raw);
       if (!st) continue;
       const v = (raw as { v?: unknown }).v;
@@ -184,7 +207,9 @@ function coerceWellbeing(value: Record<string, unknown>, regs: DayRegs): void {
       if (v !== null && v !== undefined && ok === null) continue;
       out[key] = { ...st, v: ok };
     }
-    if (Object.keys(out).length) (regs as Record<string, unknown>)[name] = out;
+    const capped = capMap(out, MAP_CAPS[name]);
+    if (Object.keys(capped).length)
+      (regs as Record<string, unknown>)[name] = capped;
   }
 }
 
@@ -459,7 +484,9 @@ export function mergeRemoteDay(day: string, remote: DayRegs): boolean {
       (local[name] ?? {}) as RegMap<unknown>,
       (remote[name] ?? {}) as RegMap<unknown>,
     );
-    if (Object.keys(m).length) (merged as Record<string, unknown>)[name] = m;
+    const capped = capMap(m, MAP_CAPS[name]);
+    if (Object.keys(capped).length)
+      (merged as Record<string, unknown>)[name] = capped;
   }
   if (JSON.stringify(merged) === JSON.stringify(local)) return false;
   store[day] = merged;
@@ -557,10 +584,17 @@ function setWellbeing<N extends WellbeingMap>(
       {}) as RegMap<unknown>;
     const prev = map[key];
     if (value === null && !prev) return;
-    // Tope por mapa: un día no crece sin límite (cabe siempre en lo compartido).
-    if (!prev && Object.keys(map).length >= MAP_CAPS[name]) return;
+    // Tope por mapa: un día no crece sin límite (cabe siempre en lo compartido). Las lápidas
+    // no cuentan: se sueltan antes de negar una anotación nueva.
+    if (!prev && Object.keys(map).length >= MAP_CAPS[name]) {
+      const live = Object.values(map).filter((x) => x.v !== null).length;
+      if (live >= MAP_CAPS[name]) return;
+    }
     map[key] = { ...nextStamp(prev), v: value };
-    (r as Record<string, unknown>)[name] = map;
+    (r as Record<string, unknown>)[name] = capMap(
+      map as Record<string, Reg<unknown>>,
+      MAP_CAPS[name],
+    );
   });
 }
 

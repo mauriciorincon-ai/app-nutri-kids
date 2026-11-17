@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { NoteSummary } from "@/components/day-checklist/note-summary";
 import { useToday } from "@/components/day-checklist/use-today";
@@ -9,7 +9,7 @@ import { useDiet } from "@/components/diet-provider";
 import { useWho } from "@/components/family/use-family";
 import { TodayBadge } from "@/components/today-badge";
 import { WellbeingBlock } from "@/components/wellbeing/history-block";
-import { useWellbeingDays } from "@/components/wellbeing/use-wellbeing";
+import { useWellbeingDays, useWt } from "@/components/wellbeing/use-wellbeing";
 import { fmt, useI18n, type Dictionary, type Locale } from "@/i18n";
 import {
   listDayEntries,
@@ -34,6 +34,7 @@ export default function HistoryPage() {
   const { diet } = useDiet();
   const { t, locale } = useI18n();
   const hydrated = useHydrated();
+  const w = useWt();
   const today = useToday();
   const todayKey = today ? dateKey(today) : null;
 
@@ -47,6 +48,13 @@ export default function HistoryPage() {
     <div className="flex flex-col gap-5 pb-6">
       <h1 className="text-3xl">{t.history.title}</h1>
       <p className="-mt-2 text-muted-foreground">{t.history.intro}</p>
+      <Link
+        href="/bienestar"
+        className="inline-flex min-h-11 items-center gap-1 self-start text-sm font-medium text-primary hover:underline"
+      >
+        {w.open}
+        <ChevronRight aria-hidden className="size-4" />
+      </Link>
 
       {!hydrated ? (
         <div

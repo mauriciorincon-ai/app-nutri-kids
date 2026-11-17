@@ -20,6 +20,7 @@ import {
   isAgeBand,
   isHabit,
   isMood,
+  foodKey,
   parseFoodKey,
   WELLBEING_MAPS,
   type WellbeingMap,
@@ -134,7 +135,10 @@ const WELLBEING_RULES: Record<
   food: {
     write: (key) => {
       const f = parseFoodKey(key);
-      return f ? { k: "food", meal: f.mealId } : null;
+      // Solo la forma canónica: dos escrituras de la misma comida contarían dos exposiciones.
+      return f && foodKey(f.mealId, f.foodId) === key
+        ? { k: "food", meal: f.mealId }
+        : null;
     },
     valid: (_k, v) => v === null || coerceFood(v) !== null,
   },

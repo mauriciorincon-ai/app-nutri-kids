@@ -5,7 +5,7 @@ import { CircleCheck, CircleDot, Info, type LucideIcon } from "lucide-react";
 
 import { useWt } from "@/components/wellbeing/use-wellbeing";
 import { Button } from "@/components/ui/button";
-import { fmt } from "@/i18n";
+import { fmt, useI18n, type Locale } from "@/i18n";
 import type { WellbeingText } from "@/i18n/wellbeing";
 import {
   formatMinutes,
@@ -50,6 +50,11 @@ const STATUS: Record<
     tone: "bg-mood-other-surface text-mood-other",
     text: "statusNoFigure",
   },
+  "weekly-average": {
+    icon: Info,
+    tone: "bg-mood-other-surface text-mood-other",
+    text: "statusWeekly",
+  },
 };
 
 /** La frase de la referencia (con sus cifras tal cual del dato) y su fuente. */
@@ -58,6 +63,7 @@ export function referenceLines(
   habit: HabitId,
   band: AgeBand,
   ref: Reference,
+  locale: Locale = "es",
 ): { text: string; source: string | null } {
   let text = "";
   switch (ref.kind) {
@@ -92,7 +98,7 @@ export function referenceLines(
     ref.kind === "none"
       ? null
       : fmt(w.refSource, {
-          source: `${ref.source.cite} (${ref.source.where})`,
+          source: `${ref.source.cite[locale]} (${ref.source.where[locale]})`,
         });
   return { text, source };
 }
@@ -117,6 +123,7 @@ export function HabitRow({
   reference: (habit: HabitId, band: AgeBand) => Reference;
 }) {
   const w = useWt();
+  const { locale } = useI18n();
   const [draft, setDraft] = useState(minutes === null ? "" : String(minutes));
   const parsed = draft.trim() === "" ? null : Number(draft);
   const valid =
@@ -128,10 +135,15 @@ export function HabitRow({
   const reading =
     band && minutes !== null ? readHabit(habit, band, minutes) : null;
   const lines = band
-    ? referenceLines(w, habit, band, reference(habit, band))
+    ? referenceLines(w, habit, band, reference(habit, band), locale)
     : null;
   const look = reading ? STATUS[reading.status] : null;
   const inputId = `habit-${habit}`;
+  // Hasta los 5 años la referencia es el sueño total de 24 h con siestas, no solo la noche.
+  const label =
+    habit === "sleep" && band && band !== "6-12" && band !== "13-17"
+      ? w.habitSleep24
+      : w.habits[habit];
 
   return (
     <div
@@ -139,7 +151,7 @@ export function HabitRow({
       data-testid={`habit-${habit}`}
     >
       <label htmlFor={inputId} className="font-semibold">
-        {w.habits[habit]}
+        {label}
       </label>
       <div className="flex flex-wrap items-center gap-2">
         <input
@@ -151,7 +163,7 @@ export function HabitRow({
           value={draft}
           disabled={disabled}
           onChange={(e) => setDraft(e.target.value)}
-          aria-label={`${w.habits[habit]} · ${w.habitUnit}`}
+          aria-label={`${label} · ${w.habitUnit}`}
           className="min-h-11 w-28 rounded-lg border bg-background px-3 text-base"
         />
         <span className="text-sm text-muted-foreground">{w.habitUnit}</span>

@@ -92,7 +92,7 @@ export const MAP_CAPS: Record<WellbeingMap, number> = {
   moods: 16,
   food: 60,
   well: SYMPTOM_IDS.length + 2,
-  habits: 8,
+  habits: HABITS.length,
 };
 
 /** Franja de edad que un padre elige en el perfil (decisión 1a del G-Plan). Jamás una fecha. */
@@ -158,8 +158,9 @@ export function coerceWell(key: string, raw: unknown): string | null {
     const text = raw.trim().slice(0, WELL_NOTE_MAX);
     return text || null;
   }
+  if (!Object.hasOwn(SYMPTOMS, key)) return null;
   const options = (SYMPTOMS as Record<string, readonly string[]>)[key];
-  return options && options.includes(raw) ? raw : null;
+  return options.includes(raw) ? raw : null;
 }
 
 export function coerceHabit(key: string, raw: unknown): number | null {
@@ -173,4 +174,5 @@ export function coerceHabit(key: string, raw: unknown): number | null {
 }
 
 export const isHabit = (k: string): k is HabitId => has(HABITS, k);
-export const isSymptom = (k: string): k is SymptomId => k in SYMPTOMS;
+export const isSymptom = (k: string): k is SymptomId =>
+  Object.hasOwn(SYMPTOMS, k);

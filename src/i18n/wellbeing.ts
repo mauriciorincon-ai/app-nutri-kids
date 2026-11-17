@@ -15,11 +15,10 @@ const es = {
 
   // Semáforo emocional (antes de comer)
   moodQuestion: "¿Cómo llega a esta comida?",
-  moodChange: "Cambiar",
   moods: {
     happy: "Feliz",
-    tired: "Cansado",
-    anxious: "Ansioso",
+    tired: "Cansado/a",
+    anxious: "Ansioso/a",
     "not-hungry": "Sin hambre",
     other: "Otro",
   },
@@ -37,20 +36,29 @@ const es = {
     appetite: "Hambre y saciedad",
   },
   symptomOptions: {
-    energy: { high: "Con mucha", usual: "Como siempre", low: "Poca" },
+    energy: {
+      high: "Con mucha energía",
+      usual: "Como siempre",
+      low: "Con poca energía",
+    },
     sleep: { well: "Bien", "so-so": "Así así", badly: "Mal" },
     mood: {
-      cheerful: "Contento",
-      calm: "Tranquilo",
+      cheerful: "Contento/a",
+      calm: "Tranquilo/a",
       irritable: "Irritable",
-      down: "Decaído",
+      down: "Decaído/a",
     },
     stool: {
       usual: "Como siempre",
       different: "Distintas a lo usual",
       none: "No ha ido hoy",
     },
-    pain: { none: "Ninguno", tummy: "De barriga", head: "De cabeza", other: "Otro" },
+    pain: {
+      none: "Ninguno",
+      tummy: "De barriga",
+      head: "De cabeza",
+      other: "Otro",
+    },
     nausea: { none: "No", little: "Un poco", "a-lot": "Bastante" },
     reaction: {
       none: "Ninguna",
@@ -66,7 +74,6 @@ const es = {
       "fills-fast": "Se llena pronto",
     },
   },
-  clear: "Quitar",
   wellNote: "Nota corta (opcional)",
   wellNoteHint: "Hasta 140 letras. Lo que quieras que la familia sepa de hoy.",
   wellNoteSave: "Guardar nota",
@@ -101,7 +108,7 @@ const es = {
   exposuresHint:
     "Suele hacer falta ofrecerlo muchas veces, sin presión. Mirarlo y tocarlo también cuenta.",
   workedTextures: "Funcionó con: {list}",
-  workedPresentations: "Se lo comió mejor: {list}",
+  workedPresentations: "Lo aceptó: {list}",
   lastVerdict: "Última vez: {verdict}",
 
   // Hábitos
@@ -112,24 +119,26 @@ const es = {
     activity: "Actividad",
     sun: "Sol y naturaleza",
   },
+  habitSleep24: "Sueño de 24 h (con siestas)",
   habitUnit: "Minutos",
   habitSave: "Guardar",
   habitClear: "Quitar",
   waterTitle: "Agua",
   waterLine: "{done} de {target} vasos de hoy (la meta es la de su plan).",
   statusWithin: "Dentro de lo que se recomienda",
-  statusBelow: "Un poco por debajo de la referencia",
-  statusAbove: "Un poco por encima de la referencia",
+  statusBelow: "Por debajo de la referencia",
+  statusAbove: "Por encima de la referencia",
   statusNotRecommended: "La guía no la recomienda a esta edad",
   statusNoFigure: "Se anota; no hay una cifra oficial",
+  statusWeekly:
+    "Se anota; la referencia es un promedio de la semana, no de un día",
   refRange: "Referencia para su edad: entre {min} y {max}.",
   refMin: "Referencia para su edad: al menos {min}.",
   refMinMvpa: " De ellos, al menos {mvpa} de intensidad moderada a fuerte.",
   refMinMvpaAvg:
     " De intensidad moderada a fuerte, en promedio al día durante la semana.",
   refMax: "Referencia para su edad: hasta {max} (menos es mejor).",
-  refNotRecommended:
-    "La guía no recomienda pantallas recreativas a esta edad.",
+  refNotRecommended: "La guía no recomienda pantallas recreativas a esta edad.",
   refLimit: "La guía pide limitarla, sin dar una cifra.",
   refNone: "No hay una cifra oficial: se anota y ya.",
   refSleepNaps: " Incluye las siestas.",
@@ -155,19 +164,15 @@ const es = {
   ageRecheck: "Pasó un año. ¿Sigue en la franja de {band}?",
   ageSame: "Sí, sigue igual",
   ageChange: "Cambiar",
-  ageSaved: "Franja guardada.",
 
   // Pantalla y accesos
   open: "Bienestar de hoy",
-  today: "Hoy",
   readOnly: "Tú puedes verlo; lo anotan otras personas de la familia.",
-  saved: "Anotado.",
   // Historial
   historyMoods: "Cómo llegó:",
   historySymptoms: "Cómo estuvo:",
   historyHabits: "Hábitos:",
   historyFood: "Alimentos:",
-  noteBy: "por {name}",
 };
 
 const en: typeof es = {
@@ -177,7 +182,6 @@ const en: typeof es = {
     "This is noted so the family can see it together. It is not a diagnosis and does not replace your pediatrician.",
 
   moodQuestion: "How are they coming to this meal?",
-  moodChange: "Change",
   moods: {
     happy: "Happy",
     tired: "Tired",
@@ -227,9 +231,9 @@ const en: typeof es = {
       "fills-fast": "Fills up fast",
     },
   },
-  clear: "Remove",
   wellNote: "Short note (optional)",
-  wellNoteHint: "Up to 140 characters. Anything the family should know about today.",
+  wellNoteHint:
+    "Up to 140 characters. Anything the family should know about today.",
   wellNoteSave: "Save note",
   reactionHelp:
     "If there is a reaction, the family's emergency plan says who to call and which card to show.",
@@ -238,7 +242,11 @@ const en: typeof es = {
   foodTitle: "How foods went",
   foodPick: "Which food?",
   foodStage: "What did they do?",
-  foodStages: { looked: "Looked at it", touched: "Touched it", tasted: "Tasted it" },
+  foodStages: {
+    looked: "Looked at it",
+    touched: "Touched it",
+    tasted: "Tasted it",
+  },
   foodVerdict: "How did it go down?",
   foodVerdicts: {
     loves: "Loved it",
@@ -261,7 +269,7 @@ const en: typeof es = {
   exposuresHint:
     "It often takes offering it many times, with no pressure. Looking at it and touching it count too.",
   workedTextures: "Worked with: {list}",
-  workedPresentations: "Ate it better: {list}",
+  workedPresentations: "Accepted it: {list}",
   lastVerdict: "Last time: {verdict}",
 
   habitsTitle: "Habits",
@@ -271,16 +279,19 @@ const en: typeof es = {
     activity: "Activity",
     sun: "Sun and nature",
   },
+  habitSleep24: "Sleep in 24 h (naps included)",
   habitUnit: "Minutes",
   habitSave: "Save",
   habitClear: "Remove",
   waterTitle: "Water",
-  waterLine: "{done} of {target} glasses today (the goal is the one in their plan).",
+  waterLine:
+    "{done} of {target} glasses today (the goal is the one in their plan).",
   statusWithin: "Within what is recommended",
-  statusBelow: "A little below the reference",
-  statusAbove: "A little above the reference",
+  statusBelow: "Below the reference",
+  statusAbove: "Above the reference",
   statusNotRecommended: "The guideline does not recommend it at this age",
   statusNoFigure: "Noted; there is no official figure",
+  statusWeekly: "Noted; the reference is a weekly average, not a single day",
   refRange: "Reference for their age: between {min} and {max}.",
   refMin: "Reference for their age: at least {min}.",
   refMinMvpa: " Of that, at least {mvpa} at a moderate to vigorous intensity.",
@@ -307,23 +318,18 @@ const en: typeof es = {
     "6-12": "6–12 years",
     "13-17": "13–17 years",
   },
-  ageNone:
-    "A parent picks the age range in the Profile to see the references.",
+  ageNone: "A parent picks the age range in the Profile to see the references.",
   ageOnlyParent: "Only a parent picks the age range.",
   ageRecheck: "A year has passed. Are they still in the {band} range?",
   ageSame: "Yes, still the same",
   ageChange: "Change",
-  ageSaved: "Range saved.",
 
   open: "Today's wellbeing",
-  today: "Today",
   readOnly: "You can see it; other people in the family note it.",
-  saved: "Noted.",
   historyMoods: "How they arrived:",
   historySymptoms: "How they were:",
   historyHabits: "Habits:",
   historyFood: "Foods:",
-  noteBy: "by {name}",
 };
 
 export type WellbeingText = typeof es;

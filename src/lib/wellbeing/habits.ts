@@ -15,7 +15,9 @@ export type HabitStatus =
   /** La guía no recomienda esto a esta edad y hay minutos anotados. */
   | "not-recommended"
   /** Sin cifra oficial: se registra y se dice. */
-  | "no-figure";
+  | "no-figure"
+  /** La referencia es un promedio de la semana: un solo día no se compara. */
+  | "weekly-average";
 
 export type HabitReading = { status: HabitStatus; reference: Reference };
 
@@ -37,6 +39,9 @@ export function readHabit(
               : "within",
       };
     case "min":
+      // OMS 2020 (5-17 años): el 60 min es un PROMEDIO de la semana; un día suelto no se juzga.
+      if (reference.source.id === "who-2020")
+        return { reference, status: "weekly-average" };
       return {
         reference,
         status: minutes >= reference.min ? "within" : "below",

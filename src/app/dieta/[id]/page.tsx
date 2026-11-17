@@ -9,11 +9,14 @@ import { useDiet } from "@/components/diet-provider";
 import { OptionChip } from "@/components/traffic-light/option-chip";
 import { OriginBadge } from "@/components/merge/origin-badge";
 import { StatusChip } from "@/components/traffic-light/status-chip";
+import { useCan } from "@/components/family/use-family";
 import { useProfileNotes } from "@/components/use-profile-notes";
+import { FoodLogSlot } from "@/components/wellbeing/food-log-slot";
 import { fmt, useI18n } from "@/i18n";
 import { resolveItemStatus } from "@/lib/diet/logic";
 import { orderByTexture } from "@/lib/diet/texture";
 import { formatShortDate } from "@/lib/format";
+import { acceptableFoods } from "@/lib/wellbeing/foods";
 
 /**
  * Detalle de alimento: por qué está en ese color (palabras simples), cuánto,
@@ -29,6 +32,7 @@ export default function ItemDetailPage() {
   const { acceptedTextures } = useProfileNotes();
   const { t, l, locale } = useI18n();
   const today = useToday();
+  const can = useCan();
 
   const date = today ?? new Date(`${diet.restrictions.validFrom}T12:00:00`);
   const status = resolveItemStatus(diet, decodeURIComponent(rawId), date);
@@ -95,6 +99,18 @@ export default function ItemDetailPage() {
               </p>
             </section>
           )}
+
+          {today &&
+            (status.kind === "green" || status.kind === "yellow") &&
+            diet.dailyMenu.some((m) => can({ k: "food", meal: m.id })) && (
+              <FoodLogSlot
+                today={today}
+                meals={diet.dailyMenu.map((m) => ({ id: m.id, name: m.name }))}
+                foods={acceptableFoods(diet)}
+                foodId={status.id}
+                canWrite={(id) => can({ k: "food", meal: id })}
+              />
+            )}
 
           {status.equivalences.length > 0 && (
             <section className="flex flex-col gap-3">

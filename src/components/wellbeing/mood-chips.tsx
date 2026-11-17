@@ -88,6 +88,7 @@ export function MoodChips({
               )}
             >
               <Icon aria-hidden className={cn("size-4", !active && tone)} />
+              {active && <span aria-hidden>✓</span>}
               {w.moods[mood]}
             </button>
           );
