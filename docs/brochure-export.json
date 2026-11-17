@@ -265,26 +265,26 @@
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 1120,
+      "valor": 1122,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-16 sobre la rama de la coordinación (S9): 57 archivos, 1120 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-16 sobre la rama de la coordinación (S9): 57 archivos, 1122 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 246,
+      "valor": 248,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-16 sobre la rama de la coordinación (S9), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 246 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 244 en verde y 2 omitidas a propósito (el reloj firmado solo se prueba en el móvil, porque los dos proyectos comparten servidor); incluyen axe en los dos temas, el uso sin internet, los teléfonos con el centinela de texto en claro, los roles con firma, el plan B, los días especiales, la unión de dos planes, el service worker real con el toque entregado por el protocolo del navegador y el reloj de 5 minutos."
+      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-16 sobre la rama de la coordinación (S9), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 248 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 246 en verde y 2 omitidas a propósito (el reloj firmado solo se prueba en el móvil, porque los dos proyectos comparten servidor); incluyen axe en los dos temas, el uso sin internet, los teléfonos con el centinela de texto en claro, los roles con firma, el plan B, los días especiales, la unión de dos planes, el service worker real con el toque entregado por el protocolo del navegador y el reloj de 5 minutos."
     },
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 96.91,
+      "valor": 96.94,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib el 2026-11-16 sobre la rama de la coordinación (96,91 % de líneas en total; src/lib/family 97,03 % y su servidor 100 %; src/lib/push 96,56 % y su servidor 100 %), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
+      "detalle": "v8 sobre src/lib el 2026-11-16 sobre la rama de la coordinación (96,94 % de líneas en total; src/lib/family 97,13 % y su servidor 100 %; src/lib/push 96,56 % y su servidor 100 %), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
     },
     {
       "clave": "decisiones_registradas",
