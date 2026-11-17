@@ -16,6 +16,7 @@ import {
   may,
   ROLES,
   ROSTER_MAX_OPS,
+  WRITE_KINDS,
   type Member,
   type Op,
   type Role,
@@ -34,6 +35,7 @@ import { freshFamilyState } from "@/lib/family/state";
 import { addOp, addOpResult, sealedSize, syncOnce } from "@/lib/family/sync";
 import { ITEM_MAX_CT } from "@/lib/family/server/limits";
 import { entryPayload, noticePayload } from "@/lib/family/trust";
+import { foodKey, MAP_CAPS } from "@/lib/wellbeing/values";
 
 import { network, phone, setup } from "./family-harness";
 
@@ -980,5 +982,320 @@ describe("una familia del S7 migra sola, y la huella protege a quien entra", () 
     expect(await serverCopy("plan")).toMatchObject({ by: a.id });
     // El teléfono del padre contó el rechazo.
     expect(a.state!.rejected).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// S10 · bienestar (ADR-015): semáforo, aceptación, cómo está, hábitos y franja de edad
+// ---------------------------------------------------------------------------
+
+describe("bienestar: qué puede escribir cada rol", () => {
+  const writes: Write[] = [
+    { k: "mood", check: "meal:almuerzo" },
+    { k: "mood", check: "meal:cena" },
+    { k: "mood", check: "water:1" },
+    { k: "food", meal: "almuerzo" },
+    { k: "food", meal: "cena" },
+    { k: "well" },
+    { k: "habit" },
+    { k: "age" },
+  ];
+  const label = (w: Write) =>
+    "check" in w ? `${w.k}:${w.check}` : "meal" in w ? `${w.k}:${w.meal}` : w.k;
+  const expected: Record<Role, string[]> = {
+    parent: writes.map(label),
+    caregiver: [
+      "mood:meal:almuerzo",
+      "mood:meal:cena",
+      "mood:water:1",
+      "food:almuerzo",
+      "food:cena",
+      "well",
+      "habit",
+    ],
+    school: ["mood:meal:almuerzo", "food:almuerzo"],
+    nutritionist: [],
+  };
+  for (const role of ROLES)
+    it(`${role}: solo lo suyo`, () => {
+      const m = { role, meals: role === "school" ? ["almuerzo"] : undefined };
+      expect(writes.filter((w) => may(m, w)).map(label)).toEqual(
+        expected[role],
+      );
+    });
+
+  it("sin rol no escribe nada del bienestar, y la lista de clases de escritura no se queda corta", () => {
+    for (const w of writes) expect(may(null, w)).toBe(false);
+    const covered = new Set<string>([
+      ...writes.map((w) => w.k),
+      "plan",
+      "textures",
+      "profile-note",
+      "mark",
+      "day-note",
+      "notice",
+      "roster",
+    ]);
+    expect([...covered].sort()).toEqual([...WRITE_KINDS].sort());
+  });
+});
+
+describe("bienestar contra el doble del servidor", () => {
+  const T = 20;
+  const wb = (p: Phone, t: number) => ({
+    moods: { "meal:cena": { t, by: p.id, v: "tired" as const } },
+    food: {
+      [foodKey("cena", "brocoli")]: {
+        t,
+        by: p.id,
+        v: {
+          stage: "tasted" as const,
+          verdict: "accepts" as const,
+          texture: "soft" as const,
+          presentation: "apart" as const,
+          isNew: true,
+        },
+      },
+    },
+    well: {
+      energy: { t, by: p.id, v: "low" },
+      note: { t, by: p.id, v: "SENTINEL-NOTE durmió poco" },
+    },
+    habits: { sleep: { t, by: p.id, v: 570 } },
+  });
+
+  it("cada registro viaja de un cuidador al padre, firmado, y llega entero", async () => {
+    const { a, c, sync } = await family();
+    c.data.days[DAY] = { marks: {}, notes: {}, ...wb(c, T) };
+    await sync(c);
+    await sync(a);
+    const got = a.data.days[DAY];
+    expect(got.moods?.["meal:cena"]).toMatchObject({ by: c.id, v: "tired" });
+    expect(got.moods?.["meal:cena"].s).toBeTruthy();
+    expect(got.food?.[foodKey("cena", "brocoli")].v).toMatchObject({
+      stage: "tasted",
+      verdict: "accepts",
+      isNew: true,
+    });
+    expect(got.well?.energy.v).toBe("low");
+    expect(got.well?.note.v).toBe("SENTINEL-NOTE durmió poco");
+    expect(got.habits?.sleep.v).toBe(570);
+    expect(a.state!.rejected).toBe(0);
+  });
+
+  it("el padre anota la franja de edad y los demás la reciben; nadie más puede cambiarla", async () => {
+    const { a, c, n, sync } = await family();
+    a.data.profile = {
+      notes: {},
+      age: { t: T, by: a.id, v: "3-4" },
+    };
+    await sync(a);
+    await sync(c);
+    expect(c.data.profile.age?.v).toBe("3-4");
+    // La tía y la nutricionista intentan ponerla (más nueva): el padre la descarta.
+    c.data.profile = {
+      ...c.data.profile,
+      age: { t: T + 5, by: c.id, v: "13-17" },
+    };
+    n.data.profile = { notes: {}, age: { t: T + 6, by: n.id, v: "1" } };
+    await sync(c);
+    await sync(n);
+    await sync(a);
+    expect(a.data.profile.age).toMatchObject({ by: a.id, v: "3-4" });
+    // El perfil es un solo registro en el servidor: llega la última versión subida.
+    expect(a.state!.rejected).toBeGreaterThan(0);
+  });
+
+  it("la nutricionista no escribe nada del bienestar del día", async () => {
+    const { a, n, sync } = await family();
+    n.data.days[DAY] = { marks: {}, notes: {}, ...wb(n, T) };
+    await sync(n);
+    await sync(a);
+    const got = a.data.days[DAY];
+    expect(got?.moods).toBeUndefined();
+    expect(got?.food).toBeUndefined();
+    expect(got?.well).toBeUndefined();
+    expect(got?.habits).toBeUndefined();
+    expect(a.state!.rejected).toBe(5);
+  });
+
+  it("el colegio solo anota el semáforo y la aceptación de las comidas de su franja", async () => {
+    const { a, s, sync } = await family();
+    s.data.days[DAY] = {
+      marks: {},
+      notes: {},
+      moods: {
+        "meal:almuerzo": { t: T, by: s.id, v: "happy" },
+        "meal:cena": { t: T, by: s.id, v: "happy" },
+      },
+      food: {
+        [foodKey("almuerzo", "arroz")]: {
+          t: T,
+          by: s.id,
+          v: {
+            stage: "looked",
+            verdict: null,
+            texture: null,
+            presentation: null,
+            isNew: false,
+          },
+        },
+        [foodKey("cena", "arroz")]: {
+          t: T,
+          by: s.id,
+          v: {
+            stage: "looked",
+            verdict: null,
+            texture: null,
+            presentation: null,
+            isNew: false,
+          },
+        },
+      },
+      // Cómo está y los hábitos son de la casa: el colegio no los anota.
+      well: { energy: { t: T, by: s.id, v: "low" } },
+      habits: { screen: { t: T, by: s.id, v: 30 } },
+    };
+    await sync(s);
+    await sync(a);
+    const got = a.data.days[DAY];
+    expect(Object.keys(got.moods ?? {})).toEqual(["meal:almuerzo"]);
+    expect(Object.keys(got.food ?? {})).toEqual([foodKey("almuerzo", "arroz")]);
+    expect(got.well).toBeUndefined();
+    expect(got.habits).toBeUndefined();
+    expect(a.state!.rejected).toBe(4);
+  });
+
+  it("sin firma, con la firma de otra persona, con una clave inventada o con una opción que no existe, se descarta (aunque venga de un padre)", async () => {
+    const { a, c, forge, sync } = await family();
+    const sc = await c.signer;
+    const unsigned = { t: 50, by: c.id, v: "happy" as const };
+    const posing = { t: 51, by: a.id, v: "anxious" as const };
+    const posingSig = await sign(
+      sc,
+      entryPayload(`day:${DAY}`, "meal:desayuno", posing),
+    );
+    await forge(c, {
+      name: `day:${DAY}`,
+      data: {
+        marks: {},
+        notes: {},
+        moods: {
+          "meal:cena": unsigned,
+          "meal:desayuno": { ...posing, s: posingSig },
+        },
+      },
+    });
+    await sync(a);
+    expect(a.data.days[DAY]?.moods).toBeUndefined();
+    // Solo cuenta lo ajeno: la que dice ser del propio padre y no lo es se descarta sin contar.
+    expect(a.state!.rejected).toBe(1);
+
+    // Un padre, bien firmado, pero con una clave que no es de nada y una opción inexistente.
+    const sa = await a.signer;
+    const sign1 = async <V>(_map: string, key: string, v: V) => {
+      const r = { t: 60, by: a.id, v };
+      return { ...r, s: await sign(sa, entryPayload(`day:${DAY}`, key, r)) };
+    };
+    await forge(a, {
+      name: `day:${DAY}`,
+      data: {
+        marks: {},
+        notes: {},
+        food: {
+          sin_separador: await sign1("food", "sin_separador", {
+            stage: "tasted",
+            verdict: null,
+            texture: null,
+            presentation: null,
+            isNew: false,
+          }),
+        } as never,
+        habits: {
+          "ritmo-cardiaco": await sign1("habits", "ritmo-cardiaco", 70),
+        },
+        well: { pain: await sign1("well", "pain", "muy-fuerte") },
+      },
+    });
+    await sync(c);
+    expect(c.data.days[DAY]?.food).toBeUndefined();
+    expect(c.data.days[DAY]?.habits).toBeUndefined();
+    expect(c.data.days[DAY]?.well).toBeUndefined();
+    expect(c.state!.rejected).toBeGreaterThanOrEqual(3);
+  });
+
+  it("el servidor no ve tipos, nombres ni contenidos (centinela en todo lo que cruza la red)", async () => {
+    const { net, c, sync } = await family();
+    c.data.days[DAY] = { marks: {}, notes: {}, ...wb(c, T) };
+    c.data.profile = { notes: {}, age: { t: T, by: c.id, v: "5" } };
+    await sync(c);
+    const wire = net.wire.join("\n");
+    for (const word of [
+      "SENTINEL-NAME",
+      "SENTINEL-NOTE",
+      "tired",
+      "brocoli",
+      "accepts",
+      "moods",
+      "habits",
+      "energy",
+      "wellbeing",
+      "3-4",
+    ])
+      expect(wire).not.toContain(word);
+  });
+
+  it("un día muy lleno, con los mapas del bienestar al tope, sigue cabiendo en un registro (64 KB cifrados)", () => {
+    const s = "A".repeat(86);
+    const regs = { marks: {}, notes: {} } as Record<string, unknown>;
+    const fill = (n: number, key: (i: number) => string, v: () => unknown) =>
+      Object.fromEntries(
+        Array.from({ length: n }, (_, i) => [
+          key(i),
+          { t: 1_800_000_000_000, by: "PHONE-0000000000000000", s, v: v() },
+        ]),
+      );
+    const long = "x".repeat(40);
+    // Un día muy lleno: 24 marcas y 8 notas de 140 letras, más TODOS los mapas del bienestar al tope.
+    regs.marks = fill(
+      24,
+      (i) => `meal:${long}-${i}`,
+      () => ({ at: "12:30" }),
+    );
+    regs.notes = fill(
+      8,
+      (i) => `meal:${long}-${i}`,
+      () => ({
+        chips: ["rejected", "pain", "craving", "other"],
+        text: "x".repeat(140),
+      }),
+    );
+    regs.moods = fill(
+      MAP_CAPS.moods,
+      (i) => `meal:${long}-${i}`,
+      () => "not-hungry",
+    );
+    regs.food = fill(
+      MAP_CAPS.food,
+      (i) => foodKey(`${long}-${i}`, `${long}-${i}`).slice(0, 160),
+      () => ({
+        stage: "tasted",
+        verdict: "accepts",
+        texture: "crunchy",
+        presentation: "with-favorite",
+        isNew: true,
+      }),
+    );
+    regs.well = fill(
+      MAP_CAPS.well,
+      (i) => `k${i}`,
+      () => "x".repeat(140),
+    );
+    regs.habits = fill(
+      MAP_CAPS.habits,
+      (i) => `h${i}`,
+      () => 1440,
+    );
+    expect(sealedSize(regs)).toBeLessThan(ITEM_MAX_CT);
   });
 });
