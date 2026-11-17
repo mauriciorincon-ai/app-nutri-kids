@@ -289,7 +289,7 @@ delete the subscription.
 - **Cómo se usa:** **Ajustes → Compartir con la familia**. Una madre o un padre, en **«Invitar con rol»**, elige el rol (y, para el colegio, qué comidas marca), crea la invitación y se la pasa a la persona junto con la frase. Cuando la persona entra, aparece en **«Esperando rol»**: se confirma con un toque, comparando la **huella** de su teléfono con la que ella ve en su pantalla (en persona o por llamada, no por el mismo mensaje en que llegó la invitación). Para cambiar el rol de alguien o sacarlo, en **«Personas de la familia»**.
 - **Con un rol que no lo permite:** la pantalla muestra el dato pero no el botón, y dice «Con tu rol (…) esto se ve, pero no se cambia». Un cambio que llegue sin la firma de quien dice haberlo hecho, o que su rol no permita, no se acepta, y la pantalla avisa cuántos se rechazaron.
 - **Bitácora:** al final de Compartir con la familia. Dice «Mamá marcó el desayuno (hoy)», «Papá le dio a Tía el rol Cuidador», «cambió una línea del plan unido». Está firmada y encadenada: si alguien la reescribe, este teléfono conserva lo que ya había visto y lo avisa.
-- **Limitaciones conocidas:** se aconseja invitar a una segunda madre o padre: si el único teléfono con ese rol se pierde, nadie podría cambiar los roles. Un teléfono con una versión anterior de la app entra sin rol hasta que se actualice.
+- **Limitaciones conocidas:** se aconseja invitar a una segunda madre o padre: si el único teléfono con ese rol se pierde, nadie podría cambiar los roles. Un teléfono con una versión anterior de la app entra sin rol hasta que se actualice. La lista de personas guarda hasta 120 cambios (o menos, si los nombres y las comidas del colegio son muy largos): cuando se llena, el padre ve «La lista de personas de la familia está llena…» y, para seguir, sale de la familia en ese teléfono y crea una nueva (los datos se quedan; se invita de nuevo a quien haga falta).
 
 **In English — Roles and the family log (since Sprint 009).** Everyone who joins the family has a **role**
 that says what they can change; everyone sees what is shared. **Parent** (everything), **Caregiver**
@@ -299,7 +299,7 @@ them, notifies) and **Nutritionist** (sees everything, leaves day and profile no
 for a role** after comparing the phone's fingerprint on both screens (in person or by phone call, not in the same message as the invitation). With a role that does not allow it,
 the screen shows the data without the button. Every change goes in the signed, chained **log** (who, what,
 when); a change without its author's signature, or that their role does not allow, is rejected and the
-screen says how many. Tip: invite a second parent, so roles can still change if one phone is lost.
+screen says how many. Tip: invite a second parent, so roles can still change if one phone is lost. The list of people keeps up to 120 changes (fewer if names and school meals are very long): when it is full, a parent sees "The family's list of people is full…" and, to go on, leaves the family on that phone and creates a new one (the data stays; invite again whoever needs it).
 
 ### Plan B · desde Sprint 009
 
