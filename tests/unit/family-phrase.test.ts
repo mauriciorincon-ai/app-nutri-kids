@@ -5,12 +5,15 @@ import {
   ALPHABET,
   CODE_LENGTH,
   PHRASE_LENGTH,
+  PIN_LENGTH,
   formatCode,
+  formatInvite,
   newDeviceId,
   newFamilyCode,
   newPhrase,
   normalizeCode,
   normalizePhrase,
+  parseInvite,
 } from "@/lib/family/phrase";
 
 describe("código y frase de la familia", () => {
@@ -60,5 +63,23 @@ describe("código y frase de la familia", () => {
     expect(normalizePhrase("UUUU-UUUU-UUUU-UUUU-UUUU")).toBeNull();
     expect(normalizeCode("A1B2C-D3E4")).toBeNull();
     expect(normalizeCode("A1B2C-D3E4!")).toBeNull();
+  });
+});
+
+describe("invitación: la huella mide siempre 12 (60 bits)", () => {
+  const FAMILY = "A1B2CD3E4F";
+  const PIN = "0123456789AB";
+  it("va y vuelve con huella de 12, con o sin etiqueta", () => {
+    expect(PIN_LENGTH).toBe(12);
+    expect(parseInvite(formatInvite(FAMILY, PIN))).toEqual({
+      family: FAMILY,
+      pin: PIN,
+      tag: null,
+    });
+    expect(parseInvite(formatInvite(FAMILY, PIN, "ABCD"))?.pin.length).toBe(12);
+  });
+  it("una huella más corta o más larga no se acepta", () => {
+    expect(parseInvite(formatInvite(FAMILY, PIN.slice(0, 11)))).toBeNull();
+    expect(parseInvite(formatInvite(FAMILY, PIN + "C", "A"))).toBeNull();
   });
 });

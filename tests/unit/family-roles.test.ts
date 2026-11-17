@@ -15,6 +15,7 @@ import {
   foldRoster,
   may,
   ROLES,
+  ROSTER_MAX_OPS,
   type Member,
   type Op,
   type Role,
@@ -30,8 +31,9 @@ import {
 } from "@/lib/family/session";
 import { keyMark, newSigner, sign, verify } from "@/lib/family/sign";
 import { freshFamilyState } from "@/lib/family/state";
-import { addOp, syncOnce } from "@/lib/family/sync";
-import { entryPayload } from "@/lib/family/trust";
+import { addOp, sealedSize, syncOnce } from "@/lib/family/sync";
+import { ITEM_MAX_CT } from "@/lib/family/server/limits";
+import { entryPayload, noticePayload } from "@/lib/family/trust";
 
 import { network, phone } from "./family-harness";
 
@@ -563,6 +565,67 @@ describe("roles contra el doble del servidor (cada teléfono descarta lo que no 
     expect(a.state!.rejected).toBe(1); // la que dice ser propia no se cuenta como ajena
   });
 
+  it("una marca con la hora en el futuro lejano no gana para siempre: se descarta y la de ahora se queda", async () => {
+    const { a, c, sync } = await family();
+    const FAR = a.now.t + 6 * 60_000; // pasa de la holgura de 5 min
+    c.mark(DAY, "meal:almuerzo", "08:00", FAR);
+    await sync(c);
+    a.mark(DAY, "meal:almuerzo", "12:30", a.now.t + 500);
+    await sync(a);
+    expect(a.data.days[DAY]!.marks["meal:almuerzo"]!.v).toEqual({
+      at: "12:30",
+    });
+    expect(a.state!.rejected).toBe(1);
+    // Con la hora dentro de la holgura (relojes que no coinciden) sí vale.
+    c.mark(DAY, "meal:cena", "19:00", a.now.t + 60_000);
+    await sync(c);
+    await sync(a);
+    expect(a.data.days[DAY]!.marks["meal:cena"]!.v).toEqual({ at: "19:00" });
+  });
+
+  it("alguien que sabe la frase pero no está en el roster (llave propia) no escribe marcas ni avisos", async () => {
+    const { a, forge, sync } = await family();
+    const ghost = await newSigner();
+    const mark = { t: 60, by: "GHOST-0009", v: { at: "07:00" } };
+    const notice = {
+      text: "inventado",
+      name: "SENTINEL-NAME Intruso",
+      by: "GHOST-0009",
+      t: 61,
+      date: DAY,
+    };
+    await forge(
+      // cualquier teléfono con la frase sirve para subir bytes; lo que cuenta es la firma
+      a,
+      {
+        name: `day:${DAY}`,
+        data: {
+          marks: {
+            "meal:desayuno": {
+              ...mark,
+              s: await sign(
+                ghost,
+                entryPayload(`day:${DAY}`, "meal:desayuno", mark),
+              ),
+            },
+          },
+          notes: {},
+        },
+      },
+    );
+    await forge(a, {
+      name: "notice:fantasma1",
+      data: {
+        ...notice,
+        s: await sign(ghost, noticePayload("notice:fantasma1", notice)),
+      },
+    });
+    await sync(a);
+    expect(a.data.days[DAY]?.marks ?? {}).toEqual({});
+    expect(Object.keys(a.data.notices)).toEqual([]);
+    expect(a.state!.rejected).toBe(2);
+  });
+
   it("un roster alterado (la tía se sube a sí misma) no se adopta, y el bueno vuelve al servidor", async () => {
     const { a, c, n, forge, sync, serverCopy } = await family();
     const sc = await c.signer;
@@ -684,6 +747,54 @@ describe("roles contra el doble del servidor (cada teléfono descarta lo que no 
       "meal:cena",
     ])
       expect(wire).not.toContain(word);
+  });
+});
+
+describe("el tope del roster también es de peso", () => {
+  it("120 cambios corrientes caben en un registro; el 121 no entra", async () => {
+    const { a } = await family();
+    const sa = await a.signer;
+    const st = a.state!;
+    let n = st.roster.length;
+    while (n < ROSTER_MAX_OPS) {
+      const ok = await addOp(st, sa, a.id, 10 + n, {
+        type: "invite",
+        tag: "ABCD",
+        role: "caregiver",
+      });
+      expect(ok).toBe(true);
+      n = st.roster.length;
+    }
+    expect(sealedSize({ ops: st.roster })).toBeLessThan(ITEM_MAX_CT);
+    expect(
+      await addOp(st, sa, a.id, 999, {
+        type: "invite",
+        tag: "ABCD",
+        role: "caregiver",
+      }),
+    ).toBe(false);
+    expect(st.roster.length).toBe(ROSTER_MAX_OPS);
+  });
+
+  it("con los nombres y comidas más largos, para antes de pasar el peso y nunca lo pasa", async () => {
+    const { a } = await family();
+    const sa = await a.signer;
+    const st = a.state!;
+    let added = 0;
+    for (let i = 0; i < ROSTER_MAX_OPS; i++) {
+      const member = {
+        id: `GUEST-${i}`,
+        name: "N".repeat(30),
+        role: "school" as const,
+        pub: (await newSigner()).pub,
+        meals: Array.from({ length: 12 }, (_, k) => `${k}`.padEnd(60, "m")),
+      };
+      if (!(await addOp(st, sa, a.id, 10 + i, { type: "set", member }))) break;
+      added++;
+    }
+    expect(added).toBeGreaterThan(0);
+    expect(added).toBeLessThan(ROSTER_MAX_OPS - 4);
+    expect(sealedSize({ ops: st.roster })).toBeLessThanOrEqual(ITEM_MAX_CT);
   });
 });
 

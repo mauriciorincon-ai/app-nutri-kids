@@ -130,6 +130,23 @@ describe("buildScenario", () => {
     expect(s2.safe[0]!.keepsWithoutFridge).toBe(true);
   });
 
+  it("lo que quien cuida anotó como alergia o intolerancia es «lo que no puede» y no se sugiere", () => {
+    const d = diet();
+    const first = d.trafficLight.green.groups[0]!.items[0]!;
+    const base = buildScenario("birthday", d, NOW);
+    expect(base.safe.map((x) => x.name.es)).toContain(first.name.es);
+    for (const id of SCENARIO_IDS) {
+      const s = buildScenario(id, d, NOW, [
+        { kind: "allergy", text: first.name.es },
+        { kind: "intolerance", text: "lactosa" },
+        { kind: "other", text: "le gusta el azul" },
+      ]);
+      expect(s.safe.map((x) => x.name.es)).not.toContain(first.name.es);
+      const noted = s.avoid.filter((a) => a.kind === "noted");
+      expect(noted.map((a) => a.name.es)).toEqual([first.name.es, "lactosa"]);
+    }
+  });
+
   it("sin restricción vigente, esa restricción no aparece en «lo que no puede»", () => {
     const d = diet();
     const inWindow = buildScenario("offered", d, NOW);

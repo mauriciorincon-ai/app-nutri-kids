@@ -12,7 +12,7 @@ import {
 } from "@/lib/diet/day-log";
 import { addProfileNote, loadProfileNotes } from "@/lib/diet/profile-notes";
 import { clearAllData, importDiet } from "@/lib/diet/storage";
-import { familyApi } from "@/lib/family/client";
+import { familyApi, type FamilyApi } from "@/lib/family/client";
 import { createController, type ControllerDeps } from "@/lib/family/controller";
 import {
   clearKeys,
@@ -53,9 +53,10 @@ function setup() {
     return new Response(JSON.stringify(out.json), { status: out.status });
   }) as unknown as typeof fetch;
   const notify = vi.fn();
+  const api = familyApi(fetcher);
   const controller = (over: Partial<ControllerDeps> = {}) =>
     createController({
-      api: familyApi(fetcher),
+      api,
       local: browserLocal(),
       state: {
         load: loadFamilyState,
@@ -76,6 +77,7 @@ function setup() {
     });
   return {
     store,
+    api,
     controller,
     notify,
     setOffline: (v: boolean) => (offline = v),
@@ -598,5 +600,73 @@ describe("roles en el director (S9 · ADR-013)", () => {
     const removed = await a.removeMember(idB);
     expect(removed).toMatchObject({ ok: true });
     expect(a.getView().members.map((m) => m.id)).toEqual([idA]);
+  });
+  it("turnos: dos cambios de roster seguidos, sin esperar, encadenan sin bifurcar", async () => {
+    const { controller } = setup();
+    const { use } = devices();
+    use("A");
+    const a = controller();
+    const created = await a.create("Mamá");
+    if (!created.ok) throw new Error("create");
+    const [one, two] = await Promise.all([
+      a.invite("caregiver"),
+      a.invite("nutritionist"),
+    ]);
+    expect(one.ok && two.ok).toBe(true);
+    // génesis + las dos invitaciones, con el número de cada una consecutivo: ninguna bifurcó.
+    const ops = loadFamilyState()!.roster;
+    expect(ops.map((o) => o.i)).toEqual([0, 1, 2]);
+  });
+
+  it("turnos: quitar a alguien mientras una sincronía lenta corre no se pierde cuando ella termina", async () => {
+    const { controller, api } = setup();
+    const { use } = devices();
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const slow: FamilyApi = {
+      ...api,
+      pull: async (...args) => {
+        await sleep(40);
+        return api.pull(...args);
+      },
+      push: async (...args) => {
+        await sleep(40);
+        return api.push(...args);
+      },
+    };
+
+    use("A");
+    const a = controller({ api: slow });
+    const created = await a.create("Mamá");
+    if (!created.ok) throw new Error("create");
+    const idA = getDeviceId();
+    const inv = await a.invite("caregiver");
+    if (!inv.ok) throw new Error("invite");
+
+    use("B");
+    const b = controller();
+    expect(await b.join(inv.invite, created.phrase, "Papá")).toMatchObject({
+      ok: true,
+    });
+    const idB = getDeviceId();
+
+    use("A");
+    await a.sync();
+    expect(await a.setRole(idB, "caregiver")).toEqual({ ok: true });
+    expect(
+      a
+        .getView()
+        .members.map((m) => m.id)
+        .sort(),
+    ).toEqual([idA, idB].sort());
+
+    // Una sincronía lenta en vuelo y, en medio, el padre quita a Papá.
+    const syncing = a.sync();
+    await sleep(10);
+    const removing = a.removeMember(idB);
+    await Promise.all([syncing, removing]);
+    expect(a.getView().members.map((m) => m.id)).toEqual([idA]);
+    expect(
+      loadFamilyState()!.roster.some((o) => o.body.type === "remove"),
+    ).toBe(true);
   });
 });

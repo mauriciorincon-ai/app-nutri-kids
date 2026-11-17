@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import demoRaw from "../../data/demo-diet.json";
 import {
@@ -81,5 +81,28 @@ describe("storeDiet: el sello del plan", () => {
       .t as number;
     expect(t).toBeGreaterThanOrEqual(before);
     clearAllData();
+  });
+});
+
+describe("segundo plan con el almacén negado (modo privado, datos bloqueados)", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it("ninguna operación lanza: se lee «no hay» y guardar dice que no cupo", () => {
+    vi.spyOn(window, "localStorage", "get").mockImplementation(() => {
+      throw new DOMException("denied", "SecurityError");
+    });
+    expect(loadSecondPlan()).toBeNull();
+    expect(storeSecondPlan(plan("x"))).toBe(false);
+    expect(isLoadingSecond()).toBe(false);
+    expect(() => setLoadingSecond(true)).not.toThrow();
+    expect(() => clearSecondPlan()).not.toThrow();
+  });
+
+  it("con la cuota llena la marca no lanza y el plan no se guarda", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("full", "QuotaExceededError");
+    });
+    expect(() => setLoadingSecond(true)).not.toThrow();
+    expect(storeSecondPlan(plan("x"))).toBe(false);
   });
 });

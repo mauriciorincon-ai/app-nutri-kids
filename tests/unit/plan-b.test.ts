@@ -3,8 +3,10 @@ import { describe, expect, it } from "vitest";
 import { es } from "@/i18n/es";
 import { answerQuestion, detectIntent } from "@/lib/diet/answer";
 import { composeAnswer } from "@/lib/diet/answer-text";
+import { avoidTexts } from "@/lib/diet/options";
 import {
   fridgeCandidates,
+  fridgeMarks,
   planB,
   planBLate,
   planBNoFridge,
@@ -235,3 +237,120 @@ describe("plan B en el chat", () => {
     });
   });
 });
+
+describe("plan B · lo que quien cuida anotó como alergia o intolerancia", () => {
+  it("avoidTexts toma solo alergias e intolerancias", () => {
+    expect(
+      avoidTexts([
+        { kind: "allergy", text: "kiwi" },
+        { kind: "intolerance", text: "fresas" },
+        { kind: "other", text: "pera" },
+        { kind: "fridge", text: "uvas" },
+      ]),
+    ).toEqual(["kiwi", "fresas"]);
+  });
+
+  it("«se acabó»: la opción que choca con lo anotado no se propone (en ninguno de los dos idiomas)", () => {
+    const base = planBOut(diet(), "manzana", NOW);
+    expect(names(base)).toContain("kiwi");
+    for (const noted of ["kiwi", "Kiwi ", "KIWI"]) {
+      const p = planBOut(diet(), "manzana", NOW, [], [noted]);
+      expect(names(p)).not.toContain("kiwi");
+      expect(names(p)).toContain("pera");
+    }
+  });
+
+  it("se mira en los dos sentidos: lo anotado puede ser un pedazo del nombre, o el nombre, un pedazo de lo anotado", () => {
+    const d = diet();
+    d.equivalences[0].use.push({
+      name: { es: "crema de almendra", en: "almond butter" },
+      texture: "soft",
+    });
+    expect(names(planBOut(d, "manzana", NOW))).toContain("crema de almendra");
+    expect(names(planBOut(d, "manzana", NOW, [], ["almendra"]))).not.toContain(
+      "crema de almendra",
+    );
+    expect(
+      names(planBOut(d, "manzana", NOW, [], ["crema de almendra tostada"])),
+    ).not.toContain("crema de almendra");
+  });
+
+  it("si todas las opciones chocan, no hay opciones: «consúltalo con tu profesional», jamás una a ciegas", () => {
+    const all = ["pera", "kiwi", "uvas", "fresas"];
+    expect(planBOut(diet(), "manzana", NOW, [], all)).toMatchObject({
+      kind: "not-in-plan",
+      reason: "no-options",
+    });
+  });
+
+  it("un verde que se acabó: sus hermanos del grupo también se filtran", () => {
+    const p = planBOut(diet(), "pollo", NOW, [], ["huevos"]);
+    expect(p.kind).toBe("options");
+    expect(names(p)).not.toContain("huevos");
+    expect(names(planBOut(diet(), "pollo", NOW))).toContain("huevos");
+  });
+
+  it("«no hay nevera»: una opción marcada que choca con lo anotado no sale", () => {
+    const d = diet();
+    expect(names(planBNoFridge(d, NOW, ["kiwi"]))).toContain("kiwi");
+    expect(planBNoFridge(d, NOW, ["kiwi"], [], ["kiwi"])).toMatchObject({
+      kind: "not-in-plan",
+      reason: "no-marks",
+    });
+    expect(
+      planB("no-fridge", d, NOW, { marks: ["kiwi"], avoid: ["kiwi"] }),
+    ).toMatchObject({ reason: "no-marks" });
+  });
+
+  it("el chat respeta lo anotado igual que la tarjeta", () => {
+    const notes = [{ kind: "allergy", text: "kiwi" }];
+    const chat = answerQuestion(
+      "se acabó la manzana, ¿qué le doy?",
+      diet(),
+      NOW,
+      "es",
+      [],
+      notes,
+    );
+    expect(JSON.stringify(chat).toLowerCase()).not.toContain("kiwi");
+  });
+});
+
+describe("plan B · marcas «aguanta sin nevera» escritas a mano", () => {
+  it("casan sin importar mayúsculas, tildes, signos ni espacios", () => {
+    const d = diet();
+    d.equivalences[0].use[0].name = {
+      es: "Sándwich de pavo",
+      en: "Turkey sandwich",
+    };
+    for (const mark of [
+      "sándwich de pavo",
+      "  SANDWICH   de pavo ",
+      "Sandwich de pavo.",
+    ]) {
+      const p = planBNoFridge(
+        d,
+        NOW,
+        fridgeMarks([{ kind: "fridge", text: mark }]),
+      );
+      expect(names(p)).toContain("sándwich de pavo");
+    }
+    const list = fridgeCandidates(d, NOW, ["SANDWICH de pavo"]);
+    expect(list.find((c) => c.name.es === "Sándwich de pavo")?.marked).toBe(
+      "adult",
+    );
+  });
+
+  it("solo cuentan las anotaciones de tipo «aguanta sin nevera»", () => {
+    expect(
+      fridgeMarks([
+        { kind: "fridge", text: "Kiwi" },
+        { kind: "other", text: "pera" },
+      ]),
+    ).toEqual(["kiwi"]);
+  });
+});
+
+function names(p: PlanB): string[] {
+  return namesOf(p).map((n) => n.toLowerCase());
+}

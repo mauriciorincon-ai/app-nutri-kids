@@ -153,12 +153,12 @@ describe("brochure: reglas de la pieza", () => {
     // la que habla. Dibujadas en SVG a propósito: una captura incrustada engordaría el
     // archivo, envejecería en silencio y podría arrastrar píxeles no revisados.
     const muestras = brochure.match(/<figure class="muestra">/g) ?? [];
-    expect(muestras.length).toBe(5);
+    expect(muestras.length).toBe(6);
     expect(brochure).not.toMatch(/data:image/i);
     expect(brochure).not.toMatch(/<img\b/i);
     // El SVG es ilustración: el sentido lo carga el pie, en palabras.
     const pies = brochure.match(/<figcaption>/g) ?? [];
-    expect(pies.length).toBe(5);
+    expect(pies.length).toBe(6);
   });
 
   it("el peso declarado en el export es el del archivo de verdad", () => {

@@ -242,6 +242,10 @@ test.describe("varias dietas", () => {
     // 4 · Se unen: un solo plan, y cada línea dice de dónde salió.
     await page.getByTestId("merge-do").click();
     await expect(page.getByTestId("merged-lines")).toBeVisible();
+    // Ninguna línea enseña su clave interna (food:…, goal:…): siempre un nombre en llano.
+    await expect(page.getByTestId("merged-lines")).not.toContainText(
+      /\b(food|supplement|meal|goal|allergy|medication):/,
+    );
     await axe(page, "unir · plan unido y sus orígenes");
 
     // La restricción que un plan decía y el otro no se conserva: lentejas, en rojo en la dieta.

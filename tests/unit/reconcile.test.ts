@@ -190,11 +190,15 @@ describe("reconcile · lo prohibido gana solo", () => {
     expect(r.plan.trafficLight.red.alsoAvoid.length).toBe(2);
   });
 
-  it.each([["a"], ["b"]] as const)(
-    "invariante: con cada elección «%s» en todo, jamás es menos estricto en lo rojo",
-    (side) => {
-      const a = A();
-      const b = B();
+  it.each([
+    ["a", false],
+    ["b", false],
+    ["a", true],
+    ["b", true],
+  ] as const)(
+    "invariante: con cada elección «%s» en todo (planes al revés: %s), jamás es menos estricto en lo rojo",
+    (side, swapped) => {
+      const [a, b] = swapped ? [B(), A()] : [A(), B()];
       const first = reconcile(a, b);
       const r = reconcile(
         a,
