@@ -31,7 +31,7 @@ import {
 } from "@/lib/family/session";
 import { keyMark, newSigner, sign, verify } from "@/lib/family/sign";
 import { freshFamilyState } from "@/lib/family/state";
-import { addOp, sealedSize, syncOnce } from "@/lib/family/sync";
+import { addOp, addOpResult, sealedSize, syncOnce } from "@/lib/family/sync";
 import { ITEM_MAX_CT } from "@/lib/family/server/limits";
 import { entryPayload, noticePayload } from "@/lib/family/trust";
 
@@ -774,6 +774,50 @@ describe("el tope del roster también es de peso", () => {
       }),
     ).toBe(false);
     expect(st.roster.length).toBe(ROSTER_MAX_OPS);
+  });
+
+  it("addOpResult dice por qué: «full» al llenarse (por número y por peso), «invalid» si el cambio no vale", async () => {
+    const { a } = await family();
+    const sa = await a.signer;
+    const st = a.state!;
+    // No vale: quitar a alguien que no es de la familia.
+    expect(
+      await addOpResult(st, sa, a.id, 5, { type: "remove", id: "NADIE-9999" }),
+    ).toBe("invalid");
+    expect(st.roster.length).toBe(1);
+    // Por número.
+    while (st.roster.length < ROSTER_MAX_OPS)
+      expect(
+        await addOpResult(st, sa, a.id, 10 + st.roster.length, {
+          type: "invite",
+          tag: "ABCD",
+          role: "caregiver",
+        }),
+      ).toBe("ok");
+    expect(
+      await addOpResult(st, sa, a.id, 999, {
+        type: "invite",
+        tag: "ABCD",
+        role: "caregiver",
+      }),
+    ).toBe("full");
+    // Por peso (la lista no llega a 120 con nombres y comidas largos): también «full».
+    const heavy = await family();
+    const sh = await heavy.a.signer;
+    let last: Awaited<ReturnType<typeof addOpResult>> = "ok";
+    for (let i = 0; i < ROSTER_MAX_OPS && last === "ok"; i++)
+      last = await addOpResult(heavy.a.state!, sh, heavy.a.id, 10 + i, {
+        type: "set",
+        member: {
+          id: `GUEST-${i}`,
+          name: "N".repeat(30),
+          role: "school",
+          pub: (await newSigner()).pub,
+          meals: Array.from({ length: 12 }, (_, k) => `${k}`.padEnd(60, "m")),
+        },
+      });
+    expect(last).toBe("full");
+    expect(heavy.a.state!.roster.length).toBeLessThan(ROSTER_MAX_OPS);
   });
 
   it("con los nombres y comidas más largos, para antes de pasar el peso y nunca lo pasa", async () => {
