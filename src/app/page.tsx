@@ -12,6 +12,7 @@ import { useDiet } from "@/components/diet-provider";
 import { RoleLimit } from "@/components/family/role-limit";
 import { useCan, useWho } from "@/components/family/use-family";
 import { FamilyNotices } from "@/components/notices/family-notices";
+import { PlanBCard } from "@/components/plan-b/plan-b-card";
 import { fmt, useI18n } from "@/i18n";
 import {
   buildDayChecklist,
@@ -218,6 +219,8 @@ export default function TodayPage() {
         )}
       </section>
 
+      <PlanBCard />
+
       <Link
         href="/perfil"
         className="inline-flex min-h-11 items-center gap-1 self-start text-sm font-medium text-primary hover:underline"
@@ -231,6 +234,14 @@ export default function TodayPage() {
         className="inline-flex min-h-11 items-center gap-1 self-start text-sm font-medium text-primary hover:underline"
       >
         {t.today.historyLink}
+        <ChevronRight aria-hidden className="size-4" />
+      </Link>
+
+      <Link
+        href="/escenarios"
+        className="inline-flex min-h-11 items-center gap-1 self-start text-sm font-medium text-primary hover:underline"
+      >
+        {t.scenarios.link}
         <ChevronRight aria-hidden className="size-4" />
       </Link>
     </div>

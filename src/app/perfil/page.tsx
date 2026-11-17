@@ -12,6 +12,7 @@ import { useCan, useWho } from "@/components/family/use-family";
 import { useProfileNotes } from "@/components/use-profile-notes";
 import { fmt, useI18n } from "@/i18n";
 import { dateKey, isRestrictionActive } from "@/lib/diet/logic";
+import { fridgeCandidates, fridgeKey } from "@/lib/diet/plan-b";
 import {
   NOTE_KINDS,
   PROFILE_NOTE_MAX,
@@ -82,6 +83,15 @@ export default function ProfilePage() {
   const canTextures = can({ k: "textures" });
   const canNotes = can({ k: "profile-note" });
   const [kind, setKind] = useState<NoteKind>("other");
+  const freeNotes = notes.notes.filter((n) => n.kind !== "fridge");
+  const fridgeNotes = notes.notes.filter((n) => n.kind === "fridge");
+  const fridgeList = today
+    ? fridgeCandidates(
+        diet,
+        today,
+        fridgeNotes.map((n) => n.text.trim().toLocaleLowerCase("es")),
+      )
+    : [];
   const [text, setText] = useState("");
   const [status, setStatus] = useState("");
 
@@ -280,13 +290,73 @@ export default function ProfilePage() {
           </ul>
         </div>
 
+        <div
+          className="rounded-xl border bg-card px-4 py-3"
+          data-testid="fridge-marks"
+        >
+          <h3 className="font-heading text-base font-semibold">
+            {t.profile.fridgeTitle}
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t.profile.fridgeHint}
+          </p>
+          {fridgeList.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">
+              {t.profile.fridgeEmpty}
+            </p>
+          ) : (
+            <ul className="mt-2 flex flex-wrap gap-2">
+              {fridgeList.map((c) => {
+                const note = fridgeNotes.find(
+                  (n) =>
+                    n.text.trim().toLocaleLowerCase("es") === fridgeKey(c.name),
+                );
+                const on = c.marked !== null;
+                const locked = c.marked === "plan" || !canNotes;
+                return (
+                  <li key={fridgeKey(c.name)}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      aria-pressed={on}
+                      disabled={locked}
+                      aria-label={fmt(
+                        on ? t.profile.fridgeUnmark : t.profile.fridgeMark,
+                        { name: l(c.name) },
+                      )}
+                      className={cn(
+                        "min-h-11 gap-1.5",
+                        on &&
+                          "border-2 border-foreground bg-muted font-semibold",
+                      )}
+                      onClick={() => {
+                        if (note) removeProfileNote(note.id);
+                        else addProfileNote("fridge", c.name.es, new Date());
+                        notifyLocalStore();
+                      }}
+                    >
+                      <span aria-hidden>{on ? "✓" : "○"}</span>
+                      {l(c.name)}
+                      {c.marked === "plan" && (
+                        <span className="text-xs font-normal text-muted-foreground">
+                          · {t.profile.fridgePlan}
+                        </span>
+                      )}
+                    </Button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
         <ul className="flex flex-col gap-2" data-testid="profile-notes">
-          {notes.notes.length === 0 && (
+          {freeNotes.length === 0 && (
             <li className="text-sm text-muted-foreground">
               {t.profile.noteEmpty}
             </li>
           )}
-          {notes.notes.map((n) => (
+          {freeNotes.map((n) => (
             <li
               key={n.id}
               className="flex items-start justify-between gap-2 rounded-xl border bg-card px-4 py-3 text-sm"
@@ -330,7 +400,7 @@ export default function ProfilePage() {
                 onChange={(e) => setKind(e.target.value as NoteKind)}
                 className="min-h-11 rounded-lg border bg-card px-3 font-normal"
               >
-                {NOTE_KINDS.map((k) => (
+                {NOTE_KINDS.filter((k) => k !== "fridge").map((k) => (
                   <option key={k} value={k}>
                     {t.profile[`noteKinds_${k}`]}
                   </option>

@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { useToday } from "@/components/day-checklist/use-today";
 import { useDiet } from "@/components/diet-provider";
 import { OptionChip } from "@/components/traffic-light/option-chip";
+import { OriginBadge } from "@/components/merge/origin-badge";
 import { StatusChip } from "@/components/traffic-light/status-chip";
 import { useProfileNotes } from "@/components/use-profile-notes";
 import { fmt, useI18n } from "@/i18n";
@@ -53,6 +54,7 @@ export default function ItemDetailPage() {
             <h1 className="text-3xl">{l(status.name)}</h1>
             <StatusChip color={status.color} />
           </div>
+          <OriginBadge merged={diet.merged} lineKey={`food:${status.id}`} />
 
           {status.kind === "restricted" && (
             <section className="rounded-xl bg-tl-red-surface px-4 py-3 text-tl-red">

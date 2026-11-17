@@ -1,5 +1,5 @@
 {
-  "_comment": "Rutas auditadas por Lighthouse CI contra perf-budget.json. Añadir aquí cada ruta nueva con LCP-sensibilidad (S1: / y /dieta; S2: +/chat; S3: +/historial; entrega brochure: +/conoce; S6: +/cargar, el PDF se lee con pdf.js cargado solo al elegirlo; S7: +/ajustes, donde vive compartir con la familia). Todas son públicas en preview.",
+  "_comment": "Rutas auditadas por Lighthouse CI contra perf-budget.json. Añadir aquí cada ruta nueva con LCP-sensibilidad (S1: / y /dieta; S2: +/chat; S3: +/historial; entrega brochure: +/conoce; S6: +/cargar, el PDF se lee con pdf.js cargado solo al elegirlo; S7: +/ajustes, donde vive compartir con la familia; S9: +/escenarios, offline y sin red). Todas son públicas en preview.",
   "urls": [
     "http://127.0.0.1:3600",
     "http://127.0.0.1:3600/dieta",
@@ -7,6 +7,7 @@
     "http://127.0.0.1:3600/historial",
     "http://127.0.0.1:3600/conoce",
     "http://127.0.0.1:3600/cargar",
-    "http://127.0.0.1:3600/ajustes"
+    "http://127.0.0.1:3600/ajustes",
+    "http://127.0.0.1:3600/escenarios"
   ]
 }

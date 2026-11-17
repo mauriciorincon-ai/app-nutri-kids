@@ -24,6 +24,8 @@ export const SHELL_ROUTES = [
   "/chat",
   "/historial",
   "/conoce",
+  "/escenarios",
+  "/unir",
 ];
 
 /** Cascarón del detalle de alimento: sirve de respaldo a `/dieta/<id>` sin visita previa. */
