@@ -129,9 +129,15 @@ export async function digest(value: unknown): Promise<string> {
 
 const planKey = (p: { t: number; by: string }) => `${p.t}.${p.by}`;
 const hasDay = (r: DayRegs) =>
-  Object.keys(r.marks).length > 0 || Object.keys(r.notes).length > 0;
+  Object.keys(r.marks).length > 0 ||
+  Object.keys(r.notes).length > 0 ||
+  [r.moods, r.food, r.well, r.habits].some(
+    (m) => m && Object.keys(m).length > 0,
+  );
 const hasProfile = (r: ProfileRegs) =>
-  r.textures !== undefined || Object.keys(r.notes).length > 0;
+  r.textures !== undefined ||
+  r.age !== undefined ||
+  Object.keys(r.notes).length > 0;
 
 type Candidate = { named: Named; hash: string };
 type CandidateDeps = Omit<SyncDeps, "api" | "ctx" | "signer"> & {

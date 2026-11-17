@@ -1,5 +1,18 @@
 import { getDeviceId } from "@/lib/device";
 import { mergeMap, type Reg, type RegMap } from "@/lib/family/merge";
+import {
+  coerceFood,
+  coerceHabit,
+  coerceWell,
+  FOOD_KEY_MAX,
+  isMood,
+  MAP_CAPS,
+  WELLBEING_MAPS,
+  type FoodValue,
+  type MoodId,
+  type WellbeingMap,
+  type WellbeingMaps,
+} from "@/lib/wellbeing/values";
 
 import { clockLabel, dateKey } from "./logic";
 
@@ -50,10 +63,22 @@ export type DayRecord = {
   notes: Record<string, DayNote>;
 };
 
-/** Lo que se guarda y se comparte: marcas y notas con sello y lápidas. */
+/**
+ * Lo que se guarda y se comparte: marcas y notas con sello y lápidas. Desde el S10 también el
+ * bienestar (semáforo, aceptación, cómo está, hábitos): mapas OPCIONALES, así un día anotado
+ * antes del S10 se lee igual y se mezcla sin pérdida (ADR-015).
+ */
 export type DayRegs = {
   marks: RegMap<MarkValue>;
   notes: RegMap<DayNote>;
+} & Partial<WellbeingMaps>;
+
+/** Lo vivo del bienestar de un día, sin sellos ni lápidas. */
+export type DayWellbeing = {
+  moods: Record<string, MoodId>;
+  food: Record<string, FoodValue>;
+  well: Record<string, string>;
+  habits: Record<string, number>;
 };
 type DayLogStore = Record<string, DayRegs>;
 
@@ -133,7 +158,34 @@ function coerceRegs(value: unknown): DayRegs {
       regs.notes[checkId] = { ...st, v: note };
     }
   }
+  coerceWellbeing(value, regs);
   return regs;
+}
+
+/** Lee los mapas del bienestar de un día guardado: lo que no encaja se descarta, sin adivinar. */
+function coerceWellbeing(value: Record<string, unknown>, regs: DayRegs): void {
+  const readers: Record<WellbeingMap, (key: string, raw: unknown) => unknown> =
+    {
+      moods: (_k, raw) => (isMood(raw) ? raw : null),
+      food: (_k, raw) => coerceFood(raw),
+      well: coerceWell,
+      habits: coerceHabit,
+    };
+  for (const name of WELLBEING_MAPS) {
+    const map = value[name];
+    if (!obj(map)) continue;
+    const out: Record<string, Reg<unknown>> = {};
+    for (const [key, raw] of Object.entries(map)) {
+      if (Object.keys(out).length >= MAP_CAPS[name]) break;
+      const st = coerceStamp(raw);
+      if (!st) continue;
+      const v = (raw as { v?: unknown }).v;
+      const ok = v === null || v === undefined ? null : readers[name](key, v);
+      if (v !== null && v !== undefined && ok === null) continue;
+      out[key] = { ...st, v: ok };
+    }
+    if (Object.keys(out).length) (regs as Record<string, unknown>)[name] = out;
+  }
 }
 
 function coerceStore(parsed: unknown): DayLogStore {
@@ -288,6 +340,34 @@ export function getNote(date: Date, checkId: string): DayNote | null {
   return getDayRecord(date).notes[checkId] ?? null;
 }
 
+/** Lo vivo del bienestar de un día (amanece vacío). */
+function toWellbeing(regs: DayRegs | undefined): DayWellbeing {
+  const out: DayWellbeing = { moods: {}, food: {}, well: {}, habits: {} };
+  if (!regs) return out;
+  for (const name of WELLBEING_MAPS)
+    for (const [k, r] of Object.entries(regs[name] ?? {}))
+      if (r.v !== null) (out[name] as Record<string, unknown>)[k] = r.v;
+  return out;
+}
+
+const wellbeingIsEmpty = (w: DayWellbeing) =>
+  WELLBEING_MAPS.every((n) => Object.keys(w[n]).length === 0);
+
+export function getWellbeing(date: Date): DayWellbeing {
+  return toWellbeing(readStore()[dateKey(date)]);
+}
+
+/** Días con bienestar anotado, del más reciente al más antiguo (para el historial y la aceptación). */
+export function listWellbeingDays(): {
+  day: string;
+  wellbeing: DayWellbeing;
+}[] {
+  return Object.entries(readStore())
+    .map(([day, regs]) => ({ day, wellbeing: toWellbeing(regs) }))
+    .filter(({ wellbeing }) => !wellbeingIsEmpty(wellbeing))
+    .sort((a, b) => (a.day < b.day ? 1 : a.day > b.day ? -1 : 0));
+}
+
 export type RecordedDay = { day: string; record: DayRecord };
 
 /**
@@ -298,11 +378,18 @@ export type RecordedDay = { day: string; record: DayRecord };
 export function listRecordedEntries(): RecordedDay[] {
   const store = readStore();
   return Object.entries(store)
-    .map(([day, regs]) => ({ day, record: toRecord(regs) }))
+    .map(([day, regs]) => ({
+      day,
+      record: toRecord(regs),
+      wb: !wellbeingIsEmpty(toWellbeing(regs)),
+    }))
     .filter(
-      ({ record: r }) =>
-        Object.keys(r.marks).length > 0 || Object.keys(r.notes).length > 0,
+      ({ record: r, wb }) =>
+        wb ||
+        Object.keys(r.marks).length > 0 ||
+        Object.keys(r.notes).length > 0,
     )
+    .map(({ day, record }) => ({ day, record }))
     .sort((a, b) => (a.day < b.day ? 1 : a.day > b.day ? -1 : 0));
 }
 
@@ -367,6 +454,13 @@ export function mergeRemoteDay(day: string, remote: DayRegs): boolean {
     marks: mergeMap(local.marks, remote.marks),
     notes: mergeMap(local.notes, remote.notes),
   };
+  for (const name of WELLBEING_MAPS) {
+    const m = mergeMap(
+      (local[name] ?? {}) as RegMap<unknown>,
+      (remote[name] ?? {}) as RegMap<unknown>,
+    );
+    if (Object.keys(m).length) (merged as Record<string, unknown>)[name] = m;
+  }
   if (JSON.stringify(merged) === JSON.stringify(local)) return false;
   store[day] = merged;
   return writeStore(store);
@@ -449,6 +543,67 @@ export function setNote(
       },
     };
   });
+}
+
+/** Fija o quita (null) una entrada de un mapa del bienestar, con su sello; sin previa y sin valor, nada. */
+function setWellbeing<N extends WellbeingMap>(
+  date: Date,
+  name: N,
+  key: string,
+  value: NonNullable<WellbeingMaps[N][string]["v"]> | null,
+): void {
+  mutateDay(date, (r) => {
+    const map = ((r[name] as RegMap<unknown> | undefined) ??
+      {}) as RegMap<unknown>;
+    const prev = map[key];
+    if (value === null && !prev) return;
+    // Tope por mapa: un día no crece sin límite (cabe siempre en lo compartido).
+    if (!prev && Object.keys(map).length >= MAP_CAPS[name]) return;
+    map[key] = { ...nextStamp(prev), v: value };
+    (r as Record<string, unknown>)[name] = map;
+  });
+}
+
+/** Cómo llega a una comida (`checkId` = «meal:<id>»). `null` lo quita. */
+export function setMood(
+  date: Date,
+  checkId: string,
+  mood: MoodId | null,
+): void {
+  if (mood !== null && !isMood(mood)) return;
+  setWellbeing(date, "moods", checkId, mood);
+}
+
+/** Lo que hizo con un alimento en una comida. `null` lo quita. */
+export function setFood(
+  date: Date,
+  key: string,
+  value: FoodValue | null,
+): void {
+  const v = value === null ? null : coerceFood(value);
+  if (value !== null && v === null) return;
+  // Una clave más larga que la que acepta la familia haría que los otros teléfonos
+  // descartaran el día entero: mejor no guardarla.
+  if (key.length > FOOD_KEY_MAX) return;
+  setWellbeing(date, "food", key, v);
+}
+
+/** Una opción de «cómo está» (o la nota del día). Una opción o texto inválido no se guarda. */
+export function setWell(date: Date, key: string, value: string | null): void {
+  const v = value === null ? null : coerceWell(key, value);
+  if (value !== null && v === null) return;
+  setWellbeing(date, "well", key, v);
+}
+
+/** Minutos de un hábito del día (el sueño, de anoche). */
+export function setHabit(
+  date: Date,
+  key: string,
+  minutes: number | null,
+): void {
+  const v = minutes === null ? null : coerceHabit(key, minutes);
+  if (minutes !== null && v === null) return;
+  setWellbeing(date, "habits", key, v);
 }
 
 /** Limpieza total (la usa "borrar datos"): borra el store activo y cualquier versión vieja. */

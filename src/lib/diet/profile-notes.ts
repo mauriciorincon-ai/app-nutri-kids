@@ -3,6 +3,8 @@ import { z } from "zod";
 import { getDeviceId } from "@/lib/device";
 import { mergeMap, mergeReg, type Reg, type RegMap } from "@/lib/family/merge";
 
+import { AGE_BANDS, type AgeBand } from "@/lib/wellbeing/values";
+
 import { TEXTURES, textureSchema, type Texture } from "./schema";
 
 /**
@@ -61,6 +63,8 @@ export const EMPTY_NOTES: ProfileNotes = { acceptedTextures: [], notes: [] };
 type NoteValue = Omit<z.infer<typeof noteSchema>, "id">;
 export type ProfileRegs = {
   textures?: Reg<Texture[]>;
+  /** S10 (decisión 1a): la franja de edad que un padre eligió. Nunca una fecha de nacimiento. */
+  age?: Reg<AgeBand>;
   notes: RegMap<NoteValue>;
 };
 
@@ -75,6 +79,7 @@ const regsSchema = z.object({
   textures: z
     .object({ ...stamp, v: z.array(textureSchema).nullable() })
     .optional(),
+  age: z.object({ ...stamp, v: z.enum(AGE_BANDS).nullable() }).optional(),
   notes: z.record(
     z.string().min(1).max(40),
     z.object({ ...stamp, v: noteValueSchema.nullable() }),
@@ -150,8 +155,10 @@ export function loadProfileNotes(): ProfileNotes {
 export function mergeRemoteProfile(remote: ProfileRegs): boolean {
   const local = readProfileRegs();
   const textures = mergeReg(local.textures, remote.textures);
+  const age = mergeReg(local.age, remote.age);
   const merged: ProfileRegs = {
     ...(textures ? { textures } : {}),
+    ...(age ? { age } : {}),
     notes: mergeMap(local.notes, remote.notes),
   };
   if (JSON.stringify(merged) === JSON.stringify(local)) return false;
@@ -183,6 +190,20 @@ export function toggleTexture(
     textures: { t, by, v: TEXTURES.filter((x) => set.has(x)) },
   });
   return loadProfileNotes();
+}
+
+/** La franja de edad elegida y cuándo (para preguntar una vez al año si sigue igual). */
+export function getAgeBand(): { band: AgeBand; t: number } | null {
+  const age = readProfileRegs().age;
+  return age?.v ? { band: age.v, t: age.t } : null;
+}
+
+/** Elige (o confirma: vuelve a sellar el mismo valor) la franja de edad. */
+export function setAgeBand(band: AgeBand, now = Date.now()): void {
+  if (!AGE_BANDS.includes(band)) return;
+  const regs = readProfileRegs();
+  const { t, by } = nextStamp(regs.age?.t, now);
+  writeRegs({ ...regs, age: { t, by, v: band } });
 }
 
 /** Agrega una anotación; texto vacío o demasiado largo ⇒ no se guarda (null). */

@@ -663,6 +663,7 @@ export const en: Dictionary = {
     logRemove: "removed {name} from the family",
     logInvite: "invited someone as {role}",
     logNotice: "alerted the family",
+    logWellbeing: "noted how the day is going ({date})",
     logItemWater: "a glass of water",
     logItemOther: "an entry",
     oneParent:

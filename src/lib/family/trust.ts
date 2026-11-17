@@ -12,6 +12,18 @@ import {
   type Write,
 } from "./roster";
 import { sign, verify, type Signer } from "./sign";
+import { WELL_KEYS } from "./records";
+import {
+  coerceFood,
+  coerceHabit,
+  coerceWell,
+  isAgeBand,
+  isHabit,
+  isMood,
+  parseFoodKey,
+  WELLBEING_MAPS,
+  type WellbeingMap,
+} from "@/lib/wellbeing/values";
 
 /**
  * Firmar lo propio y comprobar lo ajeno (S9 · ADR-013). Cada marca, nota y cambio del perfil
@@ -90,18 +102,51 @@ async function filterMap<T>(
   roster: Roster | null,
   name: string,
   map: RegMap<T>,
-  write: (key: string) => Write,
+  write: (key: string) => Write | null,
   own: string,
   now: number,
+  /** Además de quién escribe: ¿la clave y el valor tienen la forma de lo que dice ser? */
+  valid: (key: string, v: T | null) => boolean = () => true,
 ): Promise<Checked<RegMap<T>>> {
   const out: RegMap<T> = {};
   let dropped = 0;
   for (const [k, r] of Object.entries(map)) {
-    if (await allowed(roster, name, k, r, write(k), now)) out[k] = r;
+    const w = write(k);
+    if (w && valid(k, r.v) && (await allowed(roster, name, k, r, w, now)))
+      out[k] = r;
     else if (r.by !== own) dropped++;
   }
   return { regs: out, dropped };
 }
+
+/** Qué se necesita para escribir en cada mapa del bienestar, y qué forma debe tener. */
+const WELLBEING_RULES: Record<
+  WellbeingMap,
+  {
+    write: (key: string) => Write | null;
+    valid: (key: string, v: unknown) => boolean;
+  }
+> = {
+  moods: {
+    write: (key) => (/^meal:.+/.test(key) ? { k: "mood", check: key } : null),
+    valid: (_k, v) => v === null || isMood(v),
+  },
+  food: {
+    write: (key) => {
+      const f = parseFoodKey(key);
+      return f ? { k: "food", meal: f.mealId } : null;
+    },
+    valid: (_k, v) => v === null || coerceFood(v) !== null,
+  },
+  well: {
+    write: (key) => (WELL_KEYS.includes(key) ? { k: "well" } : null),
+    valid: (k, v) => v === null || coerceWell(k, v) !== null,
+  },
+  habits: {
+    write: (key) => (isHabit(key) ? { k: "habit" } : null),
+    valid: (k, v) => v === null || coerceHabit(k, v) !== null,
+  },
+};
 
 /** Lo que vale de un día que llegó. */
 export async function checkDay(
@@ -127,10 +172,26 @@ export async function checkDay(
     own,
     now,
   );
-  return {
-    regs: { marks: marks.regs, notes: notes.regs },
-    dropped: marks.dropped + notes.dropped,
-  };
+  const out: DayRegs = { marks: marks.regs, notes: notes.regs };
+  let dropped = marks.dropped + notes.dropped;
+  for (const m of WELLBEING_MAPS) {
+    const map = regs[m];
+    if (!map) continue;
+    const rule = WELLBEING_RULES[m];
+    const checked = await filterMap(
+      roster,
+      name,
+      map as RegMap<unknown>,
+      rule.write,
+      own,
+      now,
+      rule.valid,
+    );
+    dropped += checked.dropped;
+    if (Object.keys(checked.regs).length)
+      (out as Record<string, unknown>)[m] = checked.regs;
+  }
+  return { regs: out, dropped };
 }
 
 /** Lo que vale del perfil que llegó. */
@@ -163,6 +224,14 @@ export async function checkProfile(
     )
       out.textures = regs.textures;
     else if (regs.textures.by !== own) dropped++;
+  }
+  if (regs.age) {
+    if (
+      (regs.age.v === null || isAgeBand(regs.age.v)) &&
+      (await allowed(roster, "profile", "age", regs.age, { k: "age" }, now))
+    )
+      out.age = regs.age;
+    else if (regs.age.by !== own) dropped++;
   }
   return { regs: out, dropped };
 }
@@ -245,6 +314,15 @@ export async function signOwn(
     const name = `day:${day}`;
     const signed: DayRegs = { marks: {}, notes: {} };
     let any = false;
+    for (const m of WELLBEING_MAPS)
+      for (const [k, r] of Object.entries((regs[m] ?? {}) as RegMap<unknown>))
+        if (r.by === own && !r.s) {
+          const map = (((signed as Record<string, unknown>)[m] as
+            RegMap<unknown> | undefined) ??= {});
+          map[k] = { ...r, s: await sign(signer, entryPayload(name, k, r)) };
+          await note(r.t, "wellbeing", `${day}|${m}`);
+          any = true;
+        }
     for (const [k, r] of Object.entries(regs.marks))
       if (r.by === own && !r.s) {
         signed.marks[k] = {
@@ -288,6 +366,14 @@ export async function signOwn(
       ),
     };
     await note(profile.textures.t, "textures", "textures");
+    anyP = true;
+  }
+  if (profile.age && profile.age.by === own && !profile.age.s) {
+    p.age = {
+      ...profile.age,
+      s: await sign(signer, entryPayload("profile", "age", profile.age)),
+    };
+    await note(profile.age.t, "profile-note", "age");
     anyP = true;
   }
   if (anyP) {

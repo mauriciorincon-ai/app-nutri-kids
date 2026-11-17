@@ -23,6 +23,8 @@ export const LOG_KINDS = [
   "plan-line",
   "roster",
   "notice",
+  // S10: semáforo, aceptación, cómo está y hábitos (el detalle está en su día, no en la bitácora).
+  "wellbeing",
 ] as const;
 export type LogKind = (typeof LOG_KINDS)[number];
 /** Eventos que se guardan por teléfono (los más nuevos). */
