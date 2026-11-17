@@ -341,19 +341,19 @@ function MergedView({ diet }: { diet: DietPlan }) {
               <p className="mt-1 text-xs text-muted-foreground">
                 {originText(merged, line)}
               </p>
-              <dl className="mt-2 flex flex-col gap-1 text-sm">
+              <ul className="mt-2 flex flex-col gap-1 text-sm">
                 {(["a", "b"] as const).map((side) => {
                   const said = line[side] as LocalizedText | undefined;
                   return said ? (
-                    <div key={side}>
+                    <li key={side}>
                       {fmt(t.merge.says, {
                         origin: origin(merged, side),
                         text: l(said),
                       })}
-                    </div>
+                    </li>
                   ) : null;
                 })}
-              </dl>
+              </ul>
               {canPlan && switchable.has(key) && !isConfirming && (
                 <Button
                   type="button"
