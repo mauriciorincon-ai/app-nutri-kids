@@ -752,4 +752,31 @@ describe("una familia del S7 migra sola, y la huella protege a quien entra", () 
     expect(x.state!.roster).toEqual([]);
     expect(x.state!.rosterIssue).toBe("pin");
   });
+
+  it("un padre que cambia una línea del plan unido deja `plan-line` con la línea en la bitácora; un cuidador no puede subir un plan unido", async () => {
+    const { a, c, sync, serverCopy } = await family();
+    const merged = {
+      v: "plan unido",
+      merged: { last: { key: "food:SENTINEL-LINE", t: 40 } },
+    };
+    a.data.plan = { t: 40, by: a.id, diet: merged };
+    await sync(a);
+    const ev = a.state!.log.own.at(-1)!;
+    expect(ev.k).toBe("plan-line");
+    expect(ev.r).toBe("food:SENTINEL-LINE");
+    await sync(c);
+    expect(c.data.plan?.diet).toEqual(merged);
+    // La tía, con un cliente modificado, sube otra versión del plan unido: el padre la descarta.
+    c.data.plan = {
+      t: 90,
+      by: c.id,
+      diet: { v: "plan unido, falso", merged: { last: { key: "x", t: 90 } } },
+    };
+    await sync(c);
+    await sync(a);
+    expect(a.data.plan?.diet).toEqual(merged);
+    expect(await serverCopy("plan")).toMatchObject({ by: a.id });
+    // El teléfono del padre contó el rechazo.
+    expect(a.state!.rejected).toBeGreaterThan(0);
+  });
 });
