@@ -627,6 +627,7 @@ describe("roles en el director (S9 · ADR-013)", () => {
     const r = await a.invite("caregiver");
     expect(r).toEqual({ ok: false, reason: "roster-full" });
     expect(loadFamilyState()!.roster.length).toBe(ROSTER_MAX_OPS);
+    expect(a.getView().rosterFull).toBe(true); // el padre lo ve en Compartir, no solo el error
     // Marcar el día y sincronizar siguen funcionando con la lista llena.
     markDone(DAY, "meal:desayuno", "07:30");
     await a.sync();

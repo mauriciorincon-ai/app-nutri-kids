@@ -35,7 +35,7 @@ import { addOp, addOpResult, sealedSize, syncOnce } from "@/lib/family/sync";
 import { ITEM_MAX_CT } from "@/lib/family/server/limits";
 import { entryPayload, noticePayload } from "@/lib/family/trust";
 
-import { network, phone } from "./family-harness";
+import { network, phone, setup } from "./family-harness";
 
 /**
  * Roles con permisos, firmados (S9 · ADR-013), probados como atacante: un registro sin firma,
@@ -818,6 +818,53 @@ describe("el tope del roster también es de peso", () => {
       });
     expect(last).toBe("full");
     expect(heavy.a.state!.roster.length).toBeLessThan(ROSTER_MAX_OPS);
+  });
+
+  it("un teléfono del S7 que no cabe en la lista llena no se pierde en silencio: queda pendiente y el padre lo ve", async () => {
+    const { a, sync } = await family();
+    const sa = await a.signer;
+    const st = a.state!;
+    while (st.roster.length < ROSTER_MAX_OPS)
+      await addOp(st, sa, a.id, 10 + st.roster.length, {
+        type: "invite",
+        tag: "ABCD",
+        role: "caregiver",
+      });
+    st.legacy = ["LEGACY-0009"];
+    st.devices["LEGACY-0009"] = {
+      name: "Tía vieja",
+      seen: 1,
+      pub: (await newSigner()).pub,
+    };
+    expect(st.rosterFull).toBe(false);
+    await sync(a);
+    expect(a.state!.rosterFull).toBe(true);
+    expect(a.state!.legacy).toEqual(["LEGACY-0009"]); // se reintenta, no se descarta
+    expect(a.state!.roster.length).toBe(ROSTER_MAX_OPS);
+  });
+
+  it("dos padres cambian a la vez con la lista a un paso de llenarse: el que pierde no se queda en silencio, el padre ve el aviso", async () => {
+    const { a, b, net, ctxA, ctxB } = await setup();
+    const sa = await a.signer;
+    const sb = await b.signer;
+    const body = (tag: string) => ({
+      type: "invite" as const,
+      tag,
+      role: "caregiver" as const,
+    });
+    // Los dos parten de la misma cadena de 119 cambios.
+    while (a.state!.roster.length < ROSTER_MAX_OPS - 1)
+      await addOp(a.state!, sa, a.id, 2 + a.state!.roster.length, body("ABCD"));
+    b.state!.roster = [...a.state!.roster];
+    b.state!.pin = a.state!.pin;
+    // A llena la lista primero y la sube; B hizo otro cambio distinto, más tarde, sin subirlo.
+    expect(await addOp(a.state!, sa, a.id, 1000, body("AAAA"))).toBe(true);
+    expect(await addOp(b.state!, sb, b.id, 2000, body("BBBB"))).toBe(true);
+    expect((await syncOnce(a.deps(net.api, ctxA))).ok).toBe(true);
+    expect((await syncOnce(b.deps(net.api, ctxB))).ok).toBe(true);
+    // B adopta la cadena de A (más temprana), y su cambio ya no cabe para volver a firmarlo.
+    expect(b.state!.roster.at(-1)!.s).toBe(a.state!.roster.at(-1)!.s);
+    expect(b.state!.rosterFull).toBe(true);
   });
 
   it("con los nombres y comidas más largos, para antes de pasar el peso y nunca lo pasa", async () => {
