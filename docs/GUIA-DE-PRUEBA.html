@@ -6,9 +6,9 @@
 <title>Guía de prueba — Nutrikids</title>
 <!--
   GUÍA DE PRUEBA VIVA Y ACUMULATIVA de Nutrikids. PRIMERA guía de la app (v1), pero ACUMULATIVA:
-  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil), S6 (PDF), S7 (familia) y S8 (avisos). Autocontenida
+  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil), S6 (PDF), S7 (familia), S8 (avisos) y S9 (roles, plan B, días especiales, unir dos planes). Autocontenida
   (cero CDNs). Origen por línea (S1/S2 heredadas ⇒ regresión · Nuevo/Mejorado · S3). Gate mínimo ⭐
-  = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s8.
+  = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s9.
 -->
 <style>
   :root {
@@ -410,6 +410,91 @@
       te apure o te culpe; o un permiso que se pida sin que toques el botón.</p></div>
   </section>
 
+  <!-- ============================ N · ROLES ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">N</span><h2>Roles y bitácora de la familia</h2></div>
+    <p class="meta-bloque chica suave">~8 min · <strong>dos teléfonos</strong> en la misma familia (como en L) · pantalla <strong>Ajustes</strong>.</p>
+    <ul class="pasos">
+      <li data-origen="nuevo"><input type="checkbox" id="n1"><label for="n1">En A (madre o padre) abre <strong>Ajustes → Compartir con la familia → «Invitar con rol»</strong>, elige
+        <strong>Cuidador</strong> y toca <strong>«Crear invitación»</strong>. En B entra con el código, la frase y esa
+        invitación. En A aparece <strong>«Esperando rol»</strong> con una <strong>huella</strong>: confírmala solo si es la
+        misma que B ve en su pantalla.
+        <span class="origen origen-nuevo">Nuevo · S9</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="n2"><label for="n2">En B (cuidador) marca una comida y deja una nota: funciona y A la ve «Por …». Busca cambiar el plan o
+        dar un rol: no hay botón y dice <strong>«Con tu rol (Cuidador) esto se ve, pero no se cambia»</strong>.
+        <span class="origen origen-nuevo">Nuevo · S9</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="n3"><label for="n3">En A, en la <strong>Bitácora</strong>, lee «marcó el desayuno», «le dio a … el rol Cuidador». Cada línea dice quién y
+        cuándo; nada te apura ni te culpa.
+        <span class="origen origen-nuevo">Nuevo · S9</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="n4"><label for="n4">Invita un rol <strong>Colegio</strong> con una sola comida: desde ese teléfono solo puede marcar esa comida (y avisar),
+        no las demás.
+        <span class="origen origen-nuevo">Nuevo · S9</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> un rol que pueda cambiar algo que su descripción no
+      dice; una persona que entre sin que nadie confirme su huella; una línea de la bitácora que cambie o desaparezca.</p></div>
+  </section>
+
+  <!-- ============================ O · PLAN B ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">O</span><h2>Plan B: cuando algo falla</h2></div>
+    <p class="meta-bloque chica suave">~4 min · pantalla <strong>Hoy</strong> · todo sale del plan cargado.</p>
+    <ul class="pasos">
+      <li data-origen="nuevo"><input type="checkbox" id="o1"><label for="o1">En <strong>Hoy</strong>, tarjeta <strong>«Plan B»</strong> → <strong>«Se acabó algo»</strong> → elige un alimento verde de tu
+        plan: salen <strong>solo opciones que tu plan trae</strong>, con la textura que hoy acepta primero. Elige un alimento
+        sin reemplazos en el plan: dice que el plan no lo dice y te manda a tu profesional.
+        <span class="origen origen-nuevo">Nuevo · S9</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="o2"><label for="o2">Toca <strong>«No hay nevera»</strong>: salen las opciones que aguantan (las que el plan marca y las que tú marcaste en
+        <strong>Perfil → «Aguantan sin nevera»</strong>). Si el plan no dice cuáles, lo dice.
+        <span class="origen origen-nuevo">Nuevo · S9</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="o3"><label for="o3">Toca <strong>«Llegamos tarde»</strong>: dice qué comida toca y cómo acomodarla. Ninguna opción es algo prohibido,
+        ni siquiera uno con restricción vigente.
+        <span class="origen origen-nuevo">Nuevo · S9</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> un alimento que sugiera y tu plan no traiga; algo en rojo
+      o restringido dentro de las opciones; una indicación médica.</p></div>
+  </section>
+
+  <!-- ============================ P · DÍAS ESPECIALES ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">P</span><h2>Días especiales</h2></div>
+    <p class="meta-bloque chica suave">~5 min · ruta <strong>/escenarios</strong> (enlace en Hoy) · prueba también con el modo avión.</p>
+    <ul class="pasos">
+      <li data-origen="nuevo"><input type="checkbox" id="p1"><label for="p1">Abre <strong>Días especiales</strong> y recorre <strong>Cumpleaños</strong>, <strong>Restaurante</strong>,
+        <strong>Emergencia</strong> y <strong>«Le ofrecen algo que no puede»</strong>: cada ficha trae qué llevar o elegir,
+        lo que no puede y una frase lista para decir.
+        <span class="origen origen-nuevo">Nuevo · S9</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="p2"><label for="p2">En <strong>Emergencia</strong> lee la ficha a mano y <strong>«A quién llamar»</strong>: dice los servicios de emergencia de tu
+        zona y el nombre de tu profesional si el plan lo trae; no inventa números ni da indicaciones médicas
+        («Aquí no hay indicaciones médicas…»).
+        <span class="origen origen-nuevo">Nuevo · S9</span></label></li>
+      <li data-origen="nuevo" data-minimo><input type="checkbox" id="p3"><label for="p3">Con el modo avión puesto, abre cada ficha otra vez: se ve igual (sale del plan guardado).
+        <span class="origen origen-nuevo">Nuevo · S9</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> un teléfono o contacto que no sea tuyo; un alimento que el
+      plan prohíbe dentro de «qué llevar»; una frase que te apure o te culpe.</p></div>
+  </section>
+
+  <!-- ============================ Q · VARIAS DIETAS ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">Q</span><h2>Varias dietas: unir dos planes</h2></div>
+    <p class="meta-bloque chica suave">~8 min · <strong>Cargar → Dieta → «Varias dietas»</strong> · usa dos planes inventados (la demo y otro JSON de prueba).</p>
+    <ul class="pasos">
+      <li data-origen="nuevo"><input type="checkbox" id="q1"><label for="q1">Con tu plan cargado, en <strong>Cargar</strong> elige un JSON y toca <strong>«Agregar como segundo plan»</strong>: tu plan
+        sigue igual. En <strong>Dieta → «Varias dietas»</strong> ves el <strong>Plan A y el Plan B lado a lado</strong>.
+        <span class="origen origen-nuevo">Nuevo · S9</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="q2"><label for="q2">Lee <strong>«Lo prohibido gana solo»</strong>: lo que un plan prohíbe aparece en rojo con «viene del Plan …».
+        En <strong>«Esto lo eliges tú»</strong> elige uno por uno con <strong>«Usar este»</strong>; con todo elegido toca
+        <strong>«Unir los dos planes»</strong>.
+        <span class="origen origen-nuevo">Nuevo · S9</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="q3"><label for="q3">Abre un alimento del plan unido: dice <strong>«Viene del Plan …»</strong>. En «De dónde salió cada línea» una línea en
+        rojo ofrece <strong>«Cambiar al otro origen»</strong> (solo una madre o un padre): ves los dos orígenes, confirmas una vez
+        y aparece en la <strong>Bitácora</strong>, sin alarma ni culpa.
+        <span class="origen origen-nuevo">Nuevo · S9</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> una restricción de un plan que se pierda al unir; un plan unido
+      más flojo que alguno de los dos; un cambio de una línea sin pedir confirmación o sin quedar en la bitácora.</p></div>
+  </section>
+
   <!-- ============================ J · SIN INTERNET ============================ -->
   <section class="bloque">
     <div class="bloque-cabeza"><span class="letra">J</span><h2>Sin internet y versión nueva</h2></div>
@@ -487,12 +572,15 @@
 
   <footer>
     <p class="chica suave">Guía <strong>viva y acumulativa</strong>: contiene TODAS las pruebas vigentes
-      de Nutrikids (S1 a S8) con su origen visible; una prueba solo se elimina cuando su feature
+      de Nutrikids (S1 a S9) con su origen visible; una prueba solo se elimina cuando su feature
       dejó de existir. Archivo autocontenido — se abre sin internet, se versiona con el repo y se comparte
       tal cual.</p>
     <details class="chica">
       <summary>Historial de la guía</summary>
       <ul>
+        <li><strong>S9 · 2026-11-16 (v7):</strong> nacen los bloques N (roles y bitácora de la familia), O (plan B),
+          P (días especiales) y Q (varias dietas: unir dos planes). Mejorado: L (cada persona tiene un rol) y K
+          («Aguantan sin nevera»). Ninguna prueba eliminada.</li>
         <li><strong>S8 · 2026-11-16 (v6):</strong> nace el bloque M (avisos que llegan: activar con una explicación y un
           solo permiso, el aviso con el detalle a la hora del plan, «ocultar el detalle», «Avisar a la familia»
           entre dos teléfonos y dejar de recibir o borrar). Mejorado: L (la familia ahora también avisa) y G
@@ -525,9 +613,9 @@
 
 <script>
   (function () {
-    // NS VERSIONADO POR SPRINT (regla dura): s8. Una regresión sin correr no aparece marcada por
+    // NS VERSIONADO POR SPRINT (regla dura): s9. Una regresión sin correr no aparece marcada por
     // una versión anterior de la guía.
-    var NS = "guia-nutri-kids:s8:";
+    var NS = "guia-nutri-kids:s9:";
     var casillas = Array.prototype.slice.call(document.querySelectorAll('input[type="checkbox"]'));
     var barra = document.getElementById("barra-avance");
     var contador = document.getElementById("contador");
