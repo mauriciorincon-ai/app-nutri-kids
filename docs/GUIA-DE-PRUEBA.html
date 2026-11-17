@@ -6,9 +6,9 @@
 <title>Guía de prueba — Nutrikids</title>
 <!--
   GUÍA DE PRUEBA VIVA Y ACUMULATIVA de Nutrikids. PRIMERA guía de la app (v1), pero ACUMULATIVA:
-  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil), S6 (PDF), S7 (familia), S8 (avisos) y S9 (roles, plan B, días especiales, unir dos planes). Autocontenida
+  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil), S6 (PDF), S7 (familia), S8 (avisos), S9 (roles, plan B, días especiales, unir dos planes) y S10 (bienestar: ánimo, aceptación, cómo está, hábitos). Autocontenida
   (cero CDNs). Origen por línea (S1/S2 heredadas ⇒ regresión · Nuevo/Mejorado · S3). Gate mínimo ⭐
-  = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s9.
+  = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s10.
 -->
 <style>
   :root {
@@ -495,6 +495,36 @@
       más flojo que alguno de los dos; un cambio de una línea sin pedir confirmación o sin quedar en la bitácora.</p></div>
   </section>
 
+  <!-- ============================ R · BIENESTAR ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">R</span><h2>Bienestar: cómo llega, qué acepta, cómo está, sus hábitos</h2></div>
+    <p class="meta-bloque chica suave">~8 min · pantallas <strong>Hoy</strong>, <strong>Bienestar</strong>, <strong>Perfil</strong> e <strong>Historial</strong> · el rol Colegio pide los dos teléfonos de L.</p>
+    <ul class="pasos">
+      <li data-origen="nuevo"><input type="checkbox" id="r1"><label for="r1">En <strong>Hoy</strong>, bajo una comida, toca <strong>«Cansado»</strong>: queda marcado con ✓ y se lee por símbolo y palabra, no
+        solo por color (ninguno es rojo). Tócalo otra vez: se quita. Luego abre <strong>«Cómo le fue con los alimentos»</strong>, elige un alimento,
+        <strong>«Lo probó»</strong> y <strong>«Lo aceptó»</strong>, marca «Es un alimento nuevo» y guarda: sale <strong>«Lo ha mirado, tocado o probado 1 vez»</strong>
+        con «suele hacer falta ofrecerlo muchas veces, sin presión».
+        <span class="origen origen-nuevo">Nuevo · S10</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="r2"><label for="r2">En <strong>Perfil → «Franja de edad»</strong> elige una (por ejemplo 3–4 años): dice que solo guarda la franja, nunca la fecha de
+        nacimiento. En <strong>Hoy → «Bienestar de hoy»</strong> responde «Energía», «Sueño» y «Reacciones → En la piel»: aparece el enlace al
+        <strong>plan de emergencia</strong>, sin ninguna indicación. Escribe una nota corta y guárdala.
+        <span class="origen origen-nuevo">Nuevo · S10</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="r3"><label for="r3">En <strong>Hábitos</strong> anota 660 minutos de sueño → <strong>«Dentro de lo que se recomienda»</strong> con la fuente a la vista (AASM). Anota
+        150 minutos de pantalla → <strong>«Un poco por encima de la referencia»</strong> con su fuente (OMS), sin rojo y con
+        «una referencia no es un veredicto». El agua dice cuántos vasos van de la meta de tu plan.
+        <span class="origen origen-nuevo">Nuevo · S10</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="r4"><label for="r4">En <strong>Historial</strong>, el día muestra «Cómo llegó», «Cómo estuvo», «Hábitos» y «Alimentos» con lo que anotaste, sin sumas,
+        puntajes ni interpretación.
+        <span class="origen origen-nuevo">Nuevo · S10</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="r5"><label for="r5">Con dos teléfonos (bloque L): el cuidador anota un ánimo y «Sueño: Mal» y la madre lo ve en su Historial. El cuidador no puede cambiar
+        la franja de edad. Si la madre lo pasa a <strong>Colegio</strong> solo para el almuerzo, ese teléfono anota solo el almuerzo; las demás comidas y
+        «Cómo está hoy» se ven pero no se tocan.
+        <span class="origen origen-nuevo">Nuevo · S10</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> un texto que diagnostique, culpe o alarme; una cifra sin su fuente; un estado que solo se
+      distinga por color; una anotación que un rol no permitido pueda cambiar; o la fecha de nacimiento pedida en cualquier parte.</p></div>
+  </section>
+
   <!-- ============================ J · SIN INTERNET ============================ -->
   <section class="bloque">
     <div class="bloque-cabeza"><span class="letra">J</span><h2>Sin internet y versión nueva</h2></div>
@@ -572,12 +602,14 @@
 
   <footer>
     <p class="chica suave">Guía <strong>viva y acumulativa</strong>: contiene TODAS las pruebas vigentes
-      de Nutrikids (S1 a S9) con su origen visible; una prueba solo se elimina cuando su feature
+      de Nutrikids (S1 a S10) con su origen visible; una prueba solo se elimina cuando su feature
       dejó de existir. Archivo autocontenido — se abre sin internet, se versiona con el repo y se comparte
       tal cual.</p>
     <details class="chica">
       <summary>Historial de la guía</summary>
       <ul>
+        <li><strong>S10 · 2026-11-17 (v8):</strong> nace el bloque R (bienestar: el semáforo emocional, la bitácora de aceptación, cómo está hoy,
+          hábitos contra la referencia de su edad con su fuente, la franja de edad y lo visto en el Historial y por rol). Ninguna prueba eliminada.</li>
         <li><strong>S9 · 2026-11-16 (v7):</strong> nacen los bloques N (roles y bitácora de la familia), O (plan B),
           P (días especiales) y Q (varias dietas: unir dos planes). Mejorado: L (cada persona tiene un rol) y K
           («Aguantan sin nevera»). Ninguna prueba eliminada.</li>
@@ -613,9 +645,9 @@
 
 <script>
   (function () {
-    // NS VERSIONADO POR SPRINT (regla dura): s9. Una regresión sin correr no aparece marcada por
+    // NS VERSIONADO POR SPRINT (regla dura): s10. Una regresión sin correr no aparece marcada por
     // una versión anterior de la guía.
-    var NS = "guia-nutri-kids:s9:";
+    var NS = "guia-nutri-kids:s10:";
     var casillas = Array.prototype.slice.call(document.querySelectorAll('input[type="checkbox"]'));
     var barra = document.getElementById("barra-avance");
     var contador = document.getElementById("contador");

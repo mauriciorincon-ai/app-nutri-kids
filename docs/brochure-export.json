@@ -12,14 +12,14 @@
     "enlaces.produccion": "null cuando la app no tiene URL pública. `razon` explica por qué, y es lo que la vitrina muestra en lugar del enlace. Nunca se rellena con un enlace de repositorio ni con una promesa."
   },
   "schema_version": "1.0.0",
-  "actualizado": "2026-11-16",
+  "actualizado": "2026-11-17",
   "app": {
     "slug": "nutri-kids",
     "nombre": "Nutrikids",
     "ciclo": "H-2",
     "estado": "inicial",
     "sellado_en": null,
-    "sprints_cerrados": 9,
+    "sprints_cerrados": 10,
     "version_repo": "0.1.0"
   },
   "promesa": {
@@ -29,7 +29,7 @@
     "diferencial": "No califica al niño: sin calorías, peso, IMC ni percentiles, y sin convertir el «cumplimiento» en una nota. El chat contesta con tu plan dentro del teléfono y sin internet: no manda nada a ningún lado, ni siquiera para hacerle una pregunta. Lo que anotas del día, las horas y las notas sobre tu hijo solo viaja a tu familia si tú lo decides, y siempre cifrado desde el teléfono."
   },
   "funcionalidades": {
-    "total": 27,
+    "total": 31,
     "fuente_del_conteo": "docs/MANUAL-DE-USO.md",
     "descartadas": [],
     "grupos": [
@@ -106,6 +106,30 @@
             "nombre": "El calendario de suplementos",
             "que_hace": "Sabes qué suplemento toca hoy, en qué dosis y en qué momento. El calendario de lunes a domingo resalta el día de hoy, y la marca de «ya lo tomó» es la misma de la lista del día.",
             "seccion_manual": "Suplementos de la semana"
+          },
+          {
+            "id": "F28",
+            "nombre": "Cómo llega a la mesa",
+            "que_hace": "Bajo cada comida anotas con un toque cómo llega: feliz, cansado, ansioso, sin hambre u otro, con símbolo y palabra, sin rojo. Solo se anota; la app no lo interpreta.",
+            "seccion_manual": "Bienestar: cómo llega, qué acepta, cómo está y sus hábitos"
+          },
+          {
+            "id": "F29",
+            "nombre": "Qué acepta: la bitácora de alimentos",
+            "que_hace": "Anotas si lo miró, lo tocó o lo probó, cómo le cayó y con qué textura o presentación funcionó. En un alimento nuevo, la app cuenta las veces y recuerda que suele hacer falta ofrecerlo muchas veces, sin presión.",
+            "seccion_manual": "Bienestar: cómo llega, qué acepta, cómo está y sus hábitos"
+          },
+          {
+            "id": "F30",
+            "nombre": "Cómo está hoy",
+            "que_hace": "Ocho preguntas de pocas opciones en palabras de casa y una nota corta. Si anotas una reacción, ofrece el enlace al plan de emergencia de la familia; nunca dice qué hacer.",
+            "seccion_manual": "Bienestar: cómo llega, qué acepta, cómo está y sus hábitos"
+          },
+          {
+            "id": "F31",
+            "nombre": "Hábitos, con su referencia",
+            "que_hace": "Sueño, pantalla, actividad, sol y agua, comparados con la referencia de la franja de edad que elige una madre o un padre (nunca la fecha de nacimiento), con su fuente a la vista y sin veredicto.",
+            "seccion_manual": "Bienestar: cómo llega, qué acepta, cómo está y sus hábitos"
           }
         ]
       },
@@ -249,7 +273,7 @@
     {
       "clave": "funcionalidades",
       "etiqueta": "Funcionalidades",
-      "valor": 27,
+      "valor": 31,
       "unidad": "funcionalidades",
       "fuente": "medido",
       "detalle": "Contadas contra docs/MANUAL-DE-USO.md y verificadas por un test que compara el total con los bloques .feature del brochure. El marco no-médico (nota de primer uso y disclaimer permanente) no cuenta: es el encuadre de la app, no una funcionalidad."
@@ -257,42 +281,42 @@
     {
       "clave": "pantallas",
       "etiqueta": "Pantallas de la app",
-      "valor": 11,
+      "valor": 12,
       "unidad": "pantallas",
       "fuente": "medido",
-      "detalle": "Diez rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes, perfil, escenarios y unir) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
+      "detalle": "Once rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes, perfil, escenarios, unir y bienestar) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
     },
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 1122,
+      "valor": 1171,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-16 sobre la rama de la coordinación (S9): 57 archivos, 1122 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-17 sobre la rama del bienestar (S10): 59 archivos, 1171 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 248,
+      "valor": 254,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-16 sobre la rama de la coordinación (S9), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 248 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 246 en verde y 2 omitidas a propósito (el reloj firmado solo se prueba en el móvil, porque los dos proyectos comparten servidor); incluyen axe en los dos temas, el uso sin internet, los teléfonos con el centinela de texto en claro, los roles con firma, el plan B, los días especiales, la unión de dos planes, el service worker real con el toque entregado por el protocolo del navegador y el reloj de 5 minutos."
+      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-17 sobre la rama del bienestar (S10), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 254 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 252 en verde y 2 omitidas a propósito (el reloj firmado solo se prueba en el móvil, porque los dos proyectos comparten servidor); incluyen axe en los dos temas, el uso sin internet, los teléfonos con el centinela de texto en claro, los roles con firma, el plan B, los días especiales, la unión de dos planes, el bienestar con un cuidador y un colegio, el service worker real con el toque entregado por el protocolo del navegador y el reloj de 5 minutos. La corrida completa dejó 4 rojas en el brochure (el 27 fijo) que se corrigieron y se repitieron en verde (34 de 34)."
     },
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 96.94,
+      "valor": 96.99,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib el 2026-11-16 sobre la rama de la coordinación (96,94 % de líneas en total; src/lib/family 97,13 % y su servidor 100 %; src/lib/push 96,56 % y su servidor 100 %), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
+      "detalle": "v8 sobre src/lib el 2026-11-17 sobre la rama del bienestar (96,99 % de líneas en total; src/lib/family 97,25 % y su servidor 100 %; src/lib/push 96,56 % y su servidor 100 %), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
     },
     {
       "clave": "decisiones_registradas",
       "etiqueta": "Decisiones de arquitectura registradas",
-      "valor": 14,
+      "valor": 15,
       "unidad": "ADR",
       "fuente": "medido",
-      "detalle": "Archivos de decisions/ el 2026-11-16; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono, la 013 fija los roles con firma por persona y la 014 el plan B, los días especiales y la unión de dos planes."
+      "detalle": "Archivos de decisions/ el 2026-11-17; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono, la 013 fija los roles con firma por persona la 014 el plan B, los días especiales y la unión de dos planes, y la 015 el bienestar (se anota, nunca se interpreta, con la franja de edad en vez de la fecha de nacimiento)."
     },
     {
       "clave": "dependencias_runtime",
@@ -300,7 +324,7 @@
       "valor": 14,
       "unidad": "paquetes",
       "fuente": "medido",
-      "detalle": "Campo `dependencies` de package.json el 2026-11-16 sobre la rama del S9: sin dependencias nuevas (el cifrado y la firma VAPID son WebCrypto; el almacén y el push se llaman con fetch); sigue incluyendo pdfjs-dist, fijado y servido por la propia app (ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
+      "detalle": "Campo `dependencies` de package.json el 2026-11-17 sobre la rama del S10: sin dependencias nuevas (el cifrado y la firma VAPID son WebCrypto; el almacén y el push se llaman con fetch); sigue incluyendo pdfjs-dist, fijado y servido por la propia app (ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
     },
     {
       "clave": "requests_del_registro",
@@ -321,10 +345,10 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 86697,
+      "valor": 88899,
       "unidad": "bytes",
       "fuente": "medido",
-      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-16 sobre la rama del S9. Autocontenido: cero recursos externos, incluidas las seis muestras de interfaz (SVG en línea, no imágenes)."
+      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-17 sobre la rama del S10. Autocontenido: cero recursos externos, incluidas las seis muestras de interfaz (SVG en línea, no imágenes)."
     }
   ],
   "stack": [
