@@ -463,7 +463,7 @@ export const en: Dictionary = {
       "So everyone who looks after your little one sees the same thing: the plan, what's ticked off today and what each person noted.",
     travelsTitle: "What is shared",
     travels:
-      "The plan, the day (ticks, times and notes) and the profile with its notes, allergies and medications. Each phone also shares its name, so you can see “By Mum”.",
+      "The plan, the day (ticks, times and notes) and the profile with its notes, allergies and medications. Each phone also shares its name, its role and its signing key, so you can see “By Mum” and nobody can write in someone else's name.",
     staysTitle: "What stays on each phone",
     stays: "The language, the theme and each phone's own settings.",
     privacy:
@@ -487,20 +487,21 @@ export const en: Dictionary = {
     createSubmit: "Create the family",
     creating: "Creating…",
     cancel: "Cancel",
-    secretsTitle: "Write down the code and the phrase",
+    secretsTitle: "Write down the invitation and the phrase",
     secretsBody:
-      "Another phone needs both to join. The phrase is shown only now and isn't saved: if it's lost, you change it for a new one.",
-    codeLabel: "Family code",
+      "Another phone needs both to join. The invitation carries the family code and its fingerprint; the phrase is shown only now and isn't saved: if it's lost, you change it for a new one.",
+    codeLabel: "Invitation",
     phraseLabel: "Family phrase",
     savedCheck: "I've written them down somewhere safe",
     secretsDone: "Done",
     joinTitle: "Join a family",
-    joinBody: "Ask whoever created the family for the code and the phrase.",
-    joinCode: "Code",
+    joinBody: "Ask a parent in the family for the invitation and the phrase.",
+    joinCode: "Invitation",
     joinPhrase: "Phrase",
     joinSubmit: "Join",
     joining: "Joining…",
-    errWrongCode: "We couldn't find a family with that code.",
+    errWrongCode:
+      "That invitation isn't valid, or the family no longer exists.",
     errWrongPhrase: "That isn't the family's phrase.",
     errOffline: "You're offline. Try again when internet is back.",
     errUnavailable: "Sharing isn't responding right now.",
@@ -527,7 +528,7 @@ export const en: Dictionary = {
     lastSync: "Last synced: {when}",
     neverSynced: "First sync pending",
     pending: "Changes waiting to send: {n}",
-    codeShown: "Family code: {code}",
+    codeShown: "Family invitation: {code}",
     phonesTitle: "The family's phones",
     youTag: "This phone",
     seenAt: "Seen {when}",
@@ -536,8 +537,8 @@ export const en: Dictionary = {
     removeButton: "Remove {name}",
     removeTitle: "Remove {name}?",
     removeBody:
-      "The family phrase is changed: {name} loses access and the other phones join again with the new phrase. What {name} already has on their phone stays there.",
-    removeYes: "Change the phrase and remove",
+      "{name} leaves the family list and the phrase is changed: they lose access, and the other phones join again with the new phrase. What {name} already has on their phone stays there.",
+    removeYes: "Remove and change the phrase",
     rotateTitle: "Change the phrase",
     rotateBody:
       "Use it if you lost the phrase or want to remove someone. The other phones join again with the new phrase.",
@@ -577,8 +578,79 @@ export const en: Dictionary = {
       "{n} records couldn't be opened on this phone and were left as they were.",
     lockedTitle: "Join again",
     lockedBody:
-      "Ask whoever changed the phrase for the new one. The code is the same.",
+      "Ask whoever changed the phrase for the new one. The invitation is the same.",
     by: "By {name}",
+    roleParent: "Parent",
+    roleCaregiver: "Caregiver",
+    roleSchool: "School",
+    roleNutritionist: "Nutritionist",
+    roleParentCan:
+      "Everything: the plan, the profile, the family and the roles.",
+    roleCaregiverCan: "Logs the day, leaves notes and alerts the family.",
+    roleSchoolCan:
+      "Ticks the meals in its hours, leaves notes on them and alerts the family.",
+    roleNutritionistCan:
+      "Sees everything and leaves notes on the day and the profile.",
+    yourRole: "Your role: {role}",
+    noRoleYet:
+      "Waiting for a parent to give you a role. Meanwhile you can see everything shared, but not change it.",
+    peopleTitle: "People in the family",
+    roleFor: "{name}'s role",
+    roleSave: "Save role",
+    roleSaved: "Role saved.",
+    mealsFor: "Meals {name} ticks",
+    waitingTitle: "Waiting for a role",
+    waitingInvited: "Joined with the {role} invitation.",
+    waitingNoInvite: "Joined without a role invitation.",
+    waitingMark:
+      "Their phone's fingerprint: {mark}. Confirm only if it matches the one that person sees on their screen.",
+    myMark:
+      "This phone's fingerprint: {mark}. Whoever confirms you should see the same one.",
+    waitingConfirm: "Confirm as {role}",
+    waitingOld:
+      "Their app predates roles: once it updates, you can give them one here.",
+    inviteTitle: "Invite with a role",
+    inviteBody:
+      "Choose what the person will be able to do. Give them this invitation together with the family phrase.",
+    inviteRole: "Role",
+    inviteMeals: "Meals the school will tick",
+    inviteNoMeals:
+      "The plan has no meals with times: the school will be able to send alerts, but not tick.",
+    inviteCreate: "Create invitation",
+    inviteReady: "Invitation for {role}:",
+    inviteHint:
+      "Valid for 7 days. When the person joins, they show up under “Waiting for a role” and you confirm them with one tap.",
+    onlyParents: "Only a parent can change this.",
+    roleBlocked: "With your role ({role}) you can see this, but not change it.",
+    logTitle: "Change log",
+    logBody: "Who changed what and when, across all phones.",
+    logEmpty: "No changes yet.",
+    logMark: "ticked {item} ({date})",
+    logUnmark: "unticked {item} ({date})",
+    logDayNote: "added a note on {item} ({date})",
+    logProfileNote: "changed a profile note",
+    logTextures: "changed the accepted textures",
+    logPlan: "changed the plan",
+    logPlanLine: "changed a line of the merged plan ({item})",
+    logGenesis: "created the family",
+    logSet: "gave {name} the {role} role",
+    logRemove: "removed {name} from the family",
+    logInvite: "invited someone as {role}",
+    logNotice: "alerted the family",
+    logItemWater: "a glass of water",
+    logItemOther: "an entry",
+    oneParent:
+      "Tip: invite another parent. If this phone is lost, nobody else could change the roles.",
+    rejected:
+      "{n} incoming change(s) were not accepted: they lacked the signature of who they claim to be, or their role doesn't allow it.",
+    rosterPin:
+      "The family online doesn't match your invitation. For safety, this phone won't accept its roles: ask a parent for a new invitation.",
+    rosterInvalid:
+      "A list of roles arrived that doesn't fit; this phone ignored it.",
+    rewritten:
+      "{names}'s change log arrived altered; this phone kept what it had already seen.",
+    errNotAllowed: "Your role doesn't allow this.",
+    errInvalid: "That change couldn't be made.",
   },
   a11y: {
     mainNav: "Main navigation",

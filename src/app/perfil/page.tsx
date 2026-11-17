@@ -7,7 +7,8 @@ import { FileText, PenLine, Trash2 } from "lucide-react";
 import { useToday } from "@/components/day-checklist/use-today";
 import { useDiet } from "@/components/diet-provider";
 import { Button } from "@/components/ui/button";
-import { useWho } from "@/components/family/use-family";
+import { RoleLimit } from "@/components/family/role-limit";
+import { useCan, useWho } from "@/components/family/use-family";
 import { useProfileNotes } from "@/components/use-profile-notes";
 import { fmt, useI18n } from "@/i18n";
 import { dateKey, isRestrictionActive } from "@/lib/diet/logic";
@@ -77,6 +78,9 @@ export default function ProfilePage() {
   const today = useToday();
   const notes = useProfileNotes();
   const who = useWho();
+  const can = useCan();
+  const canTextures = can({ k: "textures" });
+  const canNotes = can({ k: "profile-note" });
   const [kind, setKind] = useState<NoteKind>("other");
   const [text, setText] = useState("");
   const [status, setStatus] = useState("");
@@ -254,6 +258,7 @@ export default function ProfilePage() {
                     type="button"
                     variant="outline"
                     aria-pressed={on}
+                    disabled={!canTextures}
                     className={cn(
                       "min-h-11 gap-1.5",
                       on && "border-2 border-foreground bg-muted font-semibold",
@@ -298,55 +303,61 @@ export default function ProfilePage() {
                   {who(n.by) && ` · ${who(n.by)}`}
                 </p>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="min-h-11 min-w-11 shrink-0"
-                aria-label={fmt(t.profile.noteRemove, { text: n.text })}
-                onClick={() => onRemove(n.id)}
-              >
-                <Trash2 aria-hidden className="size-4" />
-              </Button>
+              {canNotes && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="min-h-11 min-w-11 shrink-0"
+                  aria-label={fmt(t.profile.noteRemove, { text: n.text })}
+                  onClick={() => onRemove(n.id)}
+                >
+                  <Trash2 aria-hidden className="size-4" />
+                </Button>
+              )}
             </li>
           ))}
         </ul>
 
-        <form onSubmit={onAdd} className="flex flex-col gap-2">
-          <label className="flex flex-col gap-1 text-sm font-semibold">
-            {t.profile.noteKindLabel}
-            <select
-              value={kind}
-              onChange={(e) => setKind(e.target.value as NoteKind)}
-              className="min-h-11 rounded-lg border bg-card px-3 font-normal"
+        <RoleLimit />
+
+        {canNotes && (
+          <form onSubmit={onAdd} className="flex flex-col gap-2">
+            <label className="flex flex-col gap-1 text-sm font-semibold">
+              {t.profile.noteKindLabel}
+              <select
+                value={kind}
+                onChange={(e) => setKind(e.target.value as NoteKind)}
+                className="min-h-11 rounded-lg border bg-card px-3 font-normal"
+              >
+                {NOTE_KINDS.map((k) => (
+                  <option key={k} value={k}>
+                    {t.profile[`noteKinds_${k}`]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-sm font-semibold">
+              {fmt(t.profile.noteLabel, { max: PROFILE_NOTE_MAX })}
+              <input
+                type="text"
+                value={text}
+                maxLength={PROFILE_NOTE_MAX}
+                onChange={(e) => setText(e.target.value)}
+                className="min-h-11 rounded-lg border bg-card px-3 font-normal"
+              />
+            </label>
+            <Button type="submit" size="lg" disabled={text.trim().length === 0}>
+              {t.profile.noteAdd}
+            </Button>
+            <p
+              role="status"
+              className="min-h-5 text-sm font-semibold text-tl-green"
             >
-              {NOTE_KINDS.map((k) => (
-                <option key={k} value={k}>
-                  {t.profile[`noteKinds_${k}`]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-1 text-sm font-semibold">
-            {fmt(t.profile.noteLabel, { max: PROFILE_NOTE_MAX })}
-            <input
-              type="text"
-              value={text}
-              maxLength={PROFILE_NOTE_MAX}
-              onChange={(e) => setText(e.target.value)}
-              className="min-h-11 rounded-lg border bg-card px-3 font-normal"
-            />
-          </label>
-          <Button type="submit" size="lg" disabled={text.trim().length === 0}>
-            {t.profile.noteAdd}
-          </Button>
-          <p
-            role="status"
-            className="min-h-5 text-sm font-semibold text-tl-green"
-          >
-            {status}
-          </p>
-        </form>
+              {status}
+            </p>
+          </form>
+        )}
       </section>
     </div>
   );

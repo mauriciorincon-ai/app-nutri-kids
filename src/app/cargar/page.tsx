@@ -5,6 +5,8 @@ import { CircleCheck, FileText, FileUp, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 
 import { useDiet } from "@/components/diet-provider";
+import { RoleLimit } from "@/components/family/role-limit";
+import { useCan } from "@/components/family/use-family";
 import { Button } from "@/components/ui/button";
 import { PlanReview } from "@/components/plan-review/plan-review";
 import { Textarea } from "@/components/ui/textarea";
@@ -52,6 +54,7 @@ type UiState =
 export default function LoadPage() {
   const { source, refresh, ready } = useDiet();
   const { t } = useI18n();
+  const canPlan = useCan()({ k: "plan" });
   const [state, setState] = useState<UiState>({ phase: "idle" });
   const [pasted, setPasted] = useState("");
   const fileInput = useRef<HTMLInputElement>(null);
@@ -156,7 +159,9 @@ export default function LoadPage() {
     <div className="flex flex-col gap-5 pb-6">
       <h1 className="text-3xl">{t.load.title}</h1>
 
-      {state.phase === "success" ? (
+      {!canPlan ? (
+        <RoleLimit />
+      ) : state.phase === "success" ? (
         <section
           className="rounded-xl bg-tl-green-surface px-4 py-4 text-tl-green"
           role="status"

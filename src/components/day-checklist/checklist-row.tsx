@@ -17,6 +17,7 @@ export function ChecklistRow({
   time,
   by,
   ariaLabel,
+  disabled = false,
 }: {
   done: boolean;
   onToggle: () => void;
@@ -26,20 +27,24 @@ export function ChecklistRow({
   /** «Por Mamá»: quién la marcó (solo si hay familia). */
   by?: string;
   ariaLabel: string;
+  /** Con un rol que no marca esto (S9): se ve, no se cambia. */
+  disabled?: boolean;
 }) {
   const id = useId();
   return (
     <label
       htmlFor={id}
       className={cn(
-        "flex min-h-14 cursor-pointer items-start gap-3 rounded-xl border bg-card px-4 py-3 transition-colors",
-        done ? "border-transparent bg-muted" : "hover:bg-accent",
+        "flex min-h-14 items-start gap-3 rounded-xl border bg-card px-4 py-3 transition-colors",
+        disabled ? "cursor-default" : "cursor-pointer",
+        done ? "border-transparent bg-muted" : !disabled && "hover:bg-accent",
       )}
     >
       <Checkbox
         id={id}
         checked={done}
         onCheckedChange={onToggle}
+        disabled={disabled}
         aria-label={ariaLabel}
         className="mt-0.5 size-6 rounded-md"
       />

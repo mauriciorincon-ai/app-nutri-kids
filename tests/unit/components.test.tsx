@@ -49,6 +49,35 @@ describe("NoteEditor", () => {
     );
     expect(screen.getByTestId("note-by").textContent).toContain("Por Mamá");
   });
+
+  it("con un rol que no anota aquí (S9), la nota se ve y no se edita", () => {
+    const note = { chips: [], text: "Nota de ejemplo" };
+    withProviders(
+      <NoteEditor mealName="Desayuno" note={note} onSave={() => {}} readOnly />,
+    );
+    expect(screen.getByText("Nota de ejemplo")).toBeInTheDocument();
+    expect(screen.queryByRole("button")).toBeNull();
+  });
+});
+
+describe("ChecklistRow con un rol que no marca esto (S9)", () => {
+  it("se ve, no se cambia", async () => {
+    const user = userEvent.setup();
+    const onToggle = vi.fn();
+    withProviders(
+      <ChecklistRow
+        done={false}
+        onToggle={onToggle}
+        title="Cena"
+        ariaLabel="Marcar cena"
+        disabled
+      />,
+    );
+    const box = screen.getByRole("checkbox", { name: "Marcar cena" });
+    expect(box).toBeDisabled();
+    await user.click(box);
+    expect(onToggle).not.toHaveBeenCalled();
+  });
 });
 
 describe("ChecklistRow", () => {

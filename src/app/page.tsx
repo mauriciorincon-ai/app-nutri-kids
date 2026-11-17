@@ -9,7 +9,8 @@ import { NoteEditor } from "@/components/day-checklist/note-editor";
 import { ReminderCard } from "@/components/day-checklist/reminder-card";
 import { useDayLog, useToday } from "@/components/day-checklist/use-today";
 import { useDiet } from "@/components/diet-provider";
-import { useWho } from "@/components/family/use-family";
+import { RoleLimit } from "@/components/family/role-limit";
+import { useCan, useWho } from "@/components/family/use-family";
 import { FamilyNotices } from "@/components/notices/family-notices";
 import { fmt, useI18n } from "@/i18n";
 import {
@@ -34,6 +35,7 @@ export default function TodayPage() {
   const { diet } = useDiet();
   const { t, l, locale } = useI18n();
   const who = useWho();
+  const can = useCan();
   const today = useToday();
   const { record, doneIds, toggle, saveNote } = useDayLog(today);
 
@@ -95,6 +97,7 @@ export default function TodayPage() {
         <ChecklistRow
           done={done}
           onToggle={() => toggle(item.checkId)}
+          disabled={!can({ k: "mark", check: item.checkId })}
           title={l(item.meal.name)}
           detail={l(item.meal.content)}
           time={time}
@@ -114,6 +117,7 @@ export default function TodayPage() {
           note={record.notes[item.checkId] ?? null}
           by={who(record.notes[item.checkId]?.by)}
           onSave={(note) => saveNote(item.checkId, note)}
+          readOnly={!can({ k: "day-note", check: item.checkId })}
         />
       </div>
     );
@@ -124,6 +128,7 @@ export default function TodayPage() {
       key={item.checkId}
       done={item.done}
       onToggle={() => toggle(item.checkId)}
+      disabled={!can({ k: "mark", check: item.checkId })}
       title={l(item.supplement.name)}
       detail={`${l(item.supplement.dose)} · ${l(item.supplement.when)}`}
       time={doneTimeLabel(item.checkId, item.done)}
@@ -139,6 +144,7 @@ export default function TodayPage() {
       key={item.checkId}
       done={item.done}
       onToggle={() => toggle(item.checkId)}
+      disabled={!can({ k: "mark", check: item.checkId })}
       title={fmt(t.today.waterGlass, { n: item.index })}
       by={who(record.marks[item.checkId]?.by)}
       ariaLabel={fmt(item.done ? t.today.markUndone : t.today.markDone, {
@@ -154,6 +160,8 @@ export default function TodayPage() {
       <ReminderCard diet={diet} doneIds={doneIds} />
 
       <FamilyNotices today={today} />
+
+      <RoleLimit />
 
       {checklist ? (
         <DaySummary checklist={checklist} labelFor={labelFor} />

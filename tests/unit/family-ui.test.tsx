@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ChecklistRow } from "@/components/day-checklist/checklist-row";
 import { FamilySection } from "@/components/family/family-section";
 import { useWho } from "@/components/family/use-family";
+import { DietProvider } from "@/components/diet-provider";
 import { I18nProvider } from "@/i18n";
 import { clearDevice } from "@/lib/device";
 import { getFamily } from "@/lib/family/controller";
@@ -53,7 +54,9 @@ function stubNetwork(net: Net) {
 function renderSection() {
   return render(
     <I18nProvider>
-      <FamilySection />
+      <DietProvider>
+        <FamilySection />
+      </DietProvider>
     </I18nProvider>,
   );
 }
@@ -153,7 +156,7 @@ describe("Compartir con la familia (Ajustes)", () => {
 
     const secrets = await screen.findByTestId("family-secrets");
     expect(within(secrets).getByTestId("family-code")).toHaveTextContent(
-      /^[0-9A-Z]{5}-[0-9A-Z]{5}$/,
+      /^[0-9A-Z]{5}-[0-9A-Z]{5}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}$/,
     );
     expect(within(secrets).getByTestId("family-phrase")).toHaveTextContent(
       /^[0-9A-Z]{4}(-[0-9A-Z]{4}){4}$/,
@@ -221,7 +224,7 @@ describe("Compartir con la familia (Ajustes)", () => {
     );
     await user.click(screen.getByTestId("family-join"));
     const submit = screen.getByRole("button", { name: "Entrar" });
-    await user.type(await screen.findByLabelText("Código"), "ZZZZZ-ZZZZZ");
+    await user.type(await screen.findByLabelText("Invitación"), "ZZZZZ-ZZZZZ-ZZZZ-ZZZZ-ZZZZ");
     await user.type(await screen.findByLabelText("Frase"), secrets.phrase);
     await user.type(
       await screen.findByLabelText(/Nombre de este teléfono/),
@@ -232,11 +235,11 @@ describe("Compartir con la familia (Ajustes)", () => {
     );
     await user.click(submit);
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "No encontramos una familia con ese código.",
+      "Esa invitación no es válida o la familia ya no existe.",
     );
 
-    await user.clear(screen.getByLabelText("Código"));
-    await user.type(await screen.findByLabelText("Código"), secrets.code);
+    await user.clear(screen.getByLabelText("Invitación"));
+    await user.type(await screen.findByLabelText("Invitación"), secrets.code);
     await user.clear(screen.getByLabelText("Frase"));
     await user.type(
       await screen.findByLabelText("Frase"),
@@ -292,7 +295,7 @@ describe("Compartir con la familia (Ajustes)", () => {
       ),
     );
     const form = screen.getByTestId("family-join-form");
-    expect(within(form).getByLabelText("Código")).toHaveAttribute("readonly");
+    expect(within(form).getByLabelText("Invitación")).toHaveAttribute("readonly");
     expect(within(form).queryByLabelText(/Nombre de este teléfono/)).toBeNull();
   });
 
