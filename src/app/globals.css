@@ -18,6 +18,17 @@
   --color-tl-yellow-surface: var(--tl-yellow-surface);
   --color-tl-red: var(--tl-red);
   --color-tl-red-surface: var(--tl-red-surface);
+  /* Bienestar (S10): sus propios tonos, lejos del semáforo y nunca rojos. SOLO refuerzan: símbolo+texto mandan */
+  --color-mood-happy: var(--mood-happy);
+  --color-mood-happy-surface: var(--mood-happy-surface);
+  --color-mood-tired: var(--mood-tired);
+  --color-mood-tired-surface: var(--mood-tired-surface);
+  --color-mood-anxious: var(--mood-anxious);
+  --color-mood-anxious-surface: var(--mood-anxious-surface);
+  --color-mood-quiet: var(--mood-quiet);
+  --color-mood-quiet-surface: var(--mood-quiet-surface);
+  --color-mood-other: var(--mood-other);
+  --color-mood-other-surface: var(--mood-other-surface);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -83,6 +94,16 @@
   --tl-yellow-surface: oklch(0.96 0.05 85);
   --tl-red: oklch(0.5 0.17 25);
   --tl-red-surface: oklch(0.95 0.025 25);
+  --mood-happy: oklch(0.4 0.08 185);
+  --mood-happy-surface: oklch(0.95 0.03 185);
+  --mood-tired: oklch(0.4 0.08 255);
+  --mood-tired-surface: oklch(0.95 0.03 255);
+  --mood-anxious: oklch(0.4 0.08 310);
+  --mood-anxious-surface: oklch(0.95 0.03 310);
+  --mood-quiet: oklch(0.4 0.05 70);
+  --mood-quiet-surface: oklch(0.95 0.03 70);
+  --mood-other: oklch(0.4 0.015 60);
+  --mood-other-surface: oklch(0.95 0.01 60);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -100,6 +121,16 @@
 }
 
 .dark {
+  --mood-happy: oklch(0.86 0.08 185);
+  --mood-happy-surface: oklch(0.3 0.04 185);
+  --mood-tired: oklch(0.86 0.08 255);
+  --mood-tired-surface: oklch(0.3 0.04 255);
+  --mood-anxious: oklch(0.86 0.08 310);
+  --mood-anxious-surface: oklch(0.3 0.04 310);
+  --mood-quiet: oklch(0.86 0.05 70);
+  --mood-quiet-surface: oklch(0.3 0.04 70);
+  --mood-other: oklch(0.86 0.015 60);
+  --mood-other-surface: oklch(0.3 0.02 60);
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);

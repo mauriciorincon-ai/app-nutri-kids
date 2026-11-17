@@ -8,11 +8,14 @@ import { useToday } from "@/components/day-checklist/use-today";
 import { useDiet } from "@/components/diet-provider";
 import { useWho } from "@/components/family/use-family";
 import { TodayBadge } from "@/components/today-badge";
+import { WellbeingBlock } from "@/components/wellbeing/history-block";
+import { useWellbeingDays } from "@/components/wellbeing/use-wellbeing";
 import { fmt, useI18n, type Dictionary, type Locale } from "@/i18n";
 import {
   listDayEntries,
   listRecordedEntries,
   type DayRecord,
+  type DayWellbeing,
   type RecordedDay,
 } from "@/lib/diet/day-log";
 import { dateKey, resolveCheckTarget } from "@/lib/diet/logic";
@@ -36,6 +39,9 @@ export default function HistoryPage() {
 
   // Una sola lectura del store (no getDayRecord por día en el render).
   const entries = useLocalStore(listRecordedEntries, NO_ENTRIES, "");
+  const wellbeingByDay = new Map(
+    useWellbeingDays().map((d) => [d.day, d.wellbeing]),
+  );
 
   return (
     <div className="flex flex-col gap-5 pb-6">
@@ -60,6 +66,7 @@ export default function HistoryPage() {
               day={day}
               isToday={day === todayKey}
               record={record}
+              wellbeing={wellbeingByDay.get(day)}
               diet={diet}
               locale={locale}
               t={t}
@@ -83,6 +90,7 @@ function DayCard({
   day,
   isToday,
   record,
+  wellbeing,
   diet,
   locale,
   t,
@@ -90,6 +98,7 @@ function DayCard({
   day: string;
   isToday: boolean;
   record: DayRecord;
+  wellbeing: DayWellbeing | undefined;
   diet: DietPlan;
   locale: Locale;
   t: Dictionary;
@@ -159,6 +168,10 @@ function DayCard({
           </li>
         ))}
       </ul>
+
+      {wellbeing && (
+        <WellbeingBlock wellbeing={wellbeing} diet={diet} mealLabel={label} />
+      )}
     </li>
   );
 }

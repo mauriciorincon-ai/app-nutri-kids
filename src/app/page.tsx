@@ -13,6 +13,13 @@ import { RoleLimit } from "@/components/family/role-limit";
 import { useCan, useWho } from "@/components/family/use-family";
 import { FamilyNotices } from "@/components/notices/family-notices";
 import { PlanBCard } from "@/components/plan-b/plan-b-card";
+import { FoodLogSlot } from "@/components/wellbeing/food-log-slot";
+import { MoodChips } from "@/components/wellbeing/mood-chips";
+import {
+  useWellbeing,
+  useWt,
+  wellbeingChanged,
+} from "@/components/wellbeing/use-wellbeing";
 import { fmt, useI18n } from "@/i18n";
 import {
   buildDayChecklist,
@@ -21,7 +28,9 @@ import {
   waterGlassesTarget,
   type ChecklistItem,
 } from "@/lib/diet/logic";
+import { setMood } from "@/lib/diet/day-log";
 import { formatTime } from "@/lib/format";
+import { acceptableFoods } from "@/lib/wellbeing/foods";
 
 type Row = ChecklistItem & { done: boolean };
 
@@ -39,6 +48,10 @@ export default function TodayPage() {
   const can = useCan();
   const today = useToday();
   const { record, doneIds, toggle, saveNote } = useDayLog(today);
+  const w = useWt();
+  const wellbeing = useWellbeing(today);
+  const mealOptions = diet.dailyMenu.map((m) => ({ id: m.id, name: m.name }));
+  const foodOptions = acceptableFoods(diet);
 
   // Con fecha real: checklist completo. Sin ella (prerender): comidas + agua
   // estáticas, sin marcas — el HTML inicial ya contiene el candidato LCP.
@@ -107,6 +120,16 @@ export default function TodayPage() {
             item: l(item.meal.name),
           })}
         />
+        <MoodChips
+          mealName={l(item.meal.name)}
+          value={wellbeing.moods[item.checkId] ?? null}
+          disabled={!can({ k: "mood", check: item.checkId })}
+          onPick={(mood) => {
+            if (!today) return;
+            setMood(new Date(), item.checkId, mood);
+            wellbeingChanged();
+          }}
+        />
         {/* La nota se renderiza SIEMPRE (también en el prerender) para reservar
             su altura → cero CLS al hidratar. Pre-hidratación `saveNote` es no-op
             (no hay día) y no hay nota que mostrar. key por día: al cruzar
@@ -120,6 +143,15 @@ export default function TodayPage() {
           onSave={(note) => saveNote(item.checkId, note)}
           readOnly={!can({ k: "day-note", check: item.checkId })}
         />
+        {today && can({ k: "food", meal: item.meal.id }) && (
+          <FoodLogSlot
+            today={today}
+            meals={mealOptions}
+            foods={foodOptions}
+            mealId={item.meal.id}
+            canWrite={(id) => can({ k: "food", meal: id })}
+          />
+        )}
       </div>
     );
   };
@@ -220,6 +252,14 @@ export default function TodayPage() {
       </section>
 
       <PlanBCard />
+
+      <Link
+        href="/bienestar"
+        className="inline-flex min-h-11 items-center gap-1 self-start text-sm font-medium text-primary hover:underline"
+      >
+        {w.open}
+        <ChevronRight aria-hidden className="size-4" />
+      </Link>
 
       <Link
         href="/perfil"

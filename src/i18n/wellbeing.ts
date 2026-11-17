@@ -163,10 +163,10 @@ const es = {
   readOnly: "Tú puedes verlo; lo anotan otras personas de la familia.",
   saved: "Anotado.",
   // Historial
-  historyMoods: "Cómo llegó: {list}",
-  historySymptoms: "Cómo estuvo",
-  historyHabits: "Hábitos",
-  historyFood: "Alimentos",
+  historyMoods: "Cómo llegó:",
+  historySymptoms: "Cómo estuvo:",
+  historyHabits: "Hábitos:",
+  historyFood: "Alimentos:",
   noteBy: "por {name}",
 };
 
@@ -319,10 +319,10 @@ const en: typeof es = {
   today: "Today",
   readOnly: "You can see it; other people in the family note it.",
   saved: "Noted.",
-  historyMoods: "How they arrived: {list}",
-  historySymptoms: "How they were",
-  historyHabits: "Habits",
-  historyFood: "Foods",
+  historyMoods: "How they arrived:",
+  historySymptoms: "How they were:",
+  historyHabits: "Habits:",
+  historyFood: "Foods:",
   noteBy: "by {name}",
 };
 

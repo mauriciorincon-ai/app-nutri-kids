@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -16,6 +16,13 @@ import {
 } from "@/lib/diet/scenarios";
 import { cn } from "@/lib/utils";
 
+const noSubscribe = () => () => {};
+/** El escenario que pide el enlace (`?e=emergency`, desde Bienestar): se lee tras hidratar. */
+const linkedScenario = (): ScenarioId | null => {
+  const e = new URLSearchParams(window.location.search).get("e");
+  return SCENARIO_IDS.find((s) => s === e) ?? null;
+};
+
 /**
  * Días especiales (S9 · ADR-014): cumpleaños, restaurante, emergencia y «le ofrecen algo que
  * no puede». Todo sale del plan guardado en este teléfono (por eso se abre sin señal) y
@@ -25,7 +32,9 @@ export default function ScenariosPage() {
   const { diet } = useDiet();
   const { t, l } = useI18n();
   const notes = useProfileNotes();
-  const [id, setId] = useState<ScenarioId | null>(null);
+  const linked = useSyncExternalStore(noSubscribe, linkedScenario, () => null);
+  const [picked, setId] = useState<ScenarioId | null | undefined>(undefined);
+  const id = picked === undefined ? linked : picked;
 
   const labels: Record<ScenarioId, string> = {
     birthday: t.scenarios.birthday,
