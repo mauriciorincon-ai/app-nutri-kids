@@ -151,3 +151,8 @@ El "por qué" del semáforo siempre en palabras simples.
 - **Light-only en S1.** El modo oscuro se diseñará con su propia paleta AA (no inversión
   automática) cuando un sprint lo priorice; queda anotado como extensión, no deuda.
 - Orientación: portrait (uso teléfono); desktop ≥1024 = misma app centrada con nav lateral simple.
+
+## Bienestar (S10 · ADR-015)
+
+- **Tonos del ánimo:** `--mood-{happy,tired,anxious,quiet,other}` y su `-surface` (claro y `.dark`), mapeados como `--color-mood-*`. Lejos del semáforo de alimentos y **nunca rojo**: «dentro» usa `happy`, «por debajo / por encima» usa `tired`, «sin cifra» usa `other`.
+- **Elegido = marca ✓ + borde + relleno.** Ningún estado de bienestar se distingue solo por color (regla 4).

@@ -289,10 +289,10 @@
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 1171,
+      "valor": 1180,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-17 sobre la rama del bienestar (S10): 59 archivos, 1171 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-17 sobre la rama del bienestar (S10), tras pagar la auditoría: 59 archivos, 1180 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
@@ -300,15 +300,15 @@
       "valor": 254,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-17 sobre la rama del bienestar (S10), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 254 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 252 en verde y 2 omitidas a propósito (el reloj firmado solo se prueba en el móvil, porque los dos proyectos comparten servidor); incluyen axe en los dos temas, el uso sin internet, los teléfonos con el centinela de texto en claro, los roles con firma, el plan B, los días especiales, la unión de dos planes, el bienestar con un cuidador y un colegio, el service worker real con el toque entregado por el protocolo del navegador y el reloj de 5 minutos. La corrida completa dejó 4 rojas en el brochure (el 27 fijo) que se corrigieron y se repitieron en verde (34 de 34)."
+      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-17 sobre la rama del bienestar (S10), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 254 pruebas en dos proyectos (corrida completa tras pagar la auditoría) (móvil Pixel 7 y escritorio), 252 en verde y 2 omitidas a propósito (el reloj firmado solo se prueba en el móvil, porque los dos proyectos comparten servidor); incluyen axe en los dos temas, el uso sin internet, los teléfonos con el centinela de texto en claro, los roles con firma, el plan B, los días especiales, la unión de dos planes, el bienestar con un cuidador y un colegio, el service worker real con el toque entregado por el protocolo del navegador y el reloj de 5 minutos."
     },
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 96.99,
+      "valor": 97.02,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib el 2026-11-17 sobre la rama del bienestar (96,99 % de líneas en total; src/lib/family 97,25 % y su servidor 100 %; src/lib/push 96,56 % y su servidor 100 %), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
+      "detalle": "v8 sobre src/lib el 2026-11-17 sobre la rama del bienestar (97,02 % de líneas en total; src/lib/wellbeing 98,09 %; src/lib/family 97,25 % y su servidor 100 %; src/lib/push 96,56 % y su servidor 100 %), con umbrales del 80 % en vitest.config.ts (incluido src/lib/wellbeing) y del 90 % para src/lib/family y src/lib/push."
     },
     {
       "clave": "decisiones_registradas",
@@ -316,7 +316,7 @@
       "valor": 15,
       "unidad": "ADR",
       "fuente": "medido",
-      "detalle": "Archivos de decisions/ el 2026-11-17; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono, la 013 fija los roles con firma por persona la 014 el plan B, los días especiales y la unión de dos planes, y la 015 el bienestar (se anota, nunca se interpreta, con la franja de edad en vez de la fecha de nacimiento)."
+      "detalle": "Archivos de decisions/ el 2026-11-17; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono, la 013 fija los roles con firma por persona, la 014 el plan B, los días especiales y la unión de dos planes, y la 015 el bienestar (se anota, nunca se interpreta, con la franja de edad en vez de la fecha de nacimiento)."
     },
     {
       "clave": "dependencias_runtime",
@@ -345,7 +345,7 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 88899,
+      "valor": 88926,
       "unidad": "bytes",
       "fuente": "medido",
       "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-17 sobre la rama del S10. Autocontenido: cero recursos externos, incluidas las seis muestras de interfaz (SVG en línea, no imágenes)."
