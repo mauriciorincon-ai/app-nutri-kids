@@ -66,7 +66,11 @@ const greenGroupSchema = z.object({
   id: z.string().min(1),
   name: localizedTextSchema,
   portion: localizedTextSchema,
-  items: z.array(namedItemSchema).min(1),
+  items: z
+    .array(
+      namedItemSchema.extend({ keepsWithoutFridge: z.boolean().optional() }),
+    )
+    .min(1),
 });
 
 /**
@@ -87,6 +91,8 @@ export const textureSchema = z.enum(TEXTURES);
 const optionSchema = z.object({
   name: localizedTextSchema,
   texture: textureSchema.optional(),
+  /** El plan dice que esta opción aguanta sin nevera (S9). Quien cuida también puede marcarla. */
+  keepsWithoutFridge: z.boolean().optional(),
 });
 
 const equivalenceFields = {
@@ -211,6 +217,77 @@ export const dietPlanV1Schema = z.object({
   equivalences: z.array(equivalenceV1Schema),
 });
 
+// ---------------------------------------------------------------------------
+// Plan unido (S9, ADR-014): de dónde salió cada línea y la otra cara de cada choque
+// ---------------------------------------------------------------------------
+
+const planRefSchema = z.object({
+  id: z.string().min(1),
+  title: localizedTextSchema,
+  source: localizedTextSchema,
+});
+
+/** Busca un elemento de una lista por uno de sus campos (los planes no tienen índices estables). */
+const selectorSchema = z.object({
+  k: z.enum(["id", "whenMissing", "code", "nameEs", "eq"]),
+  v: z.string().min(1),
+});
+
+/** Dónde queda un alimento: la lista del semáforo y lo que esa lista guarda de él. */
+export const PLACE_COLORS = [
+  "restricted",
+  "red",
+  "alsoAvoid",
+  "yellow",
+  "green",
+] as const;
+const placeSchema = z.object({
+  color: z.enum(PLACE_COLORS),
+  id: z.string().min(1),
+  name: localizedTextSchema,
+  why: localizedTextSchema.optional(),
+  limit: localizedTextSchema.optional(),
+  group: z
+    .object({
+      id: z.string().min(1),
+      name: localizedTextSchema,
+      portion: localizedTextSchema,
+    })
+    .optional(),
+  keepsWithoutFridge: z.boolean().optional(),
+});
+
+/** La otra cara de una línea: o un alimento en otra lista, o campos de un registro del plan. */
+const altSchema = z.discriminatedUnion("t", [
+  z.object({ t: z.literal("place"), place: placeSchema }),
+  z.object({
+    t: z.literal("patch"),
+    path: z.array(z.union([z.string(), selectorSchema])).min(1),
+    patch: z.record(z.string(), z.unknown()),
+  }),
+]);
+
+export const LINE_RULES = ["only", "same", "red", "picked", "parent"] as const;
+const mergedLineSchema = z.object({
+  /** De cuál plan salió lo que hoy dice la línea. */
+  from: z.enum(["a", "b", "both"]),
+  /** only = estaba en uno · same = en los dos, igual · red = lo prohibido ganó solo · picked = lo eligió un padre al unir · parent = un padre la cambió después. */
+  rule: z.enum(LINE_RULES),
+  /** Qué decía cada plan (solo cuando decían cosas distintas). */
+  a: localizedTextSchema.optional(),
+  b: localizedTextSchema.optional(),
+  alt: altSchema.optional(),
+});
+
+const mergedSchema = z.object({
+  from: z.tuple([planRefSchema, planRefSchema]),
+  lines: z.record(z.string().min(1).max(100), mergedLineSchema),
+  /** El último cambio de un padre a una línea: la sincronía lo anota en la bitácora como `plan-line`. */
+  last: z
+    .object({ key: z.string().min(1).max(100), t: z.number().int() })
+    .optional(),
+});
+
 export const dietPlanSchema = z.object({
   schemaVersion: z.literal(2),
   ...planFields,
@@ -222,6 +299,8 @@ export const dietPlanSchema = z.object({
    * plan se leyó de un PDF (ADR-010). Opcional: un JSON v2 sin ella sigue igual.
    */
   pages: z.record(z.string(), z.number().int().positive()).optional(),
+  /** Solo en un plan unido de dos (S9): el origen de cada línea. */
+  merged: mergedSchema.optional(),
 });
 
 export type LocalizedText = z.infer<typeof localizedTextSchema>;
@@ -229,6 +308,11 @@ export type Weekday = z.infer<typeof weekdaySchema>;
 export type DietPlan = z.infer<typeof dietPlanSchema>;
 export type DietPlanV1 = z.infer<typeof dietPlanV1Schema>;
 export type Texture = z.infer<typeof textureSchema>;
+export type MergedInfo = z.infer<typeof mergedSchema>;
+export type MergedLine = z.infer<typeof mergedLineSchema>;
+export type MergedAlt = z.infer<typeof altSchema>;
+export type Place = z.infer<typeof placeSchema>;
+export type PathSeg = string | z.infer<typeof selectorSchema>;
 export type PlanOption = z.infer<typeof optionSchema>;
 export type Profile = z.infer<typeof profileSchema>;
 export type Medication = z.infer<typeof medicationSchema>;

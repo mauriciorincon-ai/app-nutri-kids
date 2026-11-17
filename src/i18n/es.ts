@@ -188,6 +188,24 @@ export const es = {
     medicationTitle: "Medicamentos de tu plan",
     notInPlanFood:
       "Tu plan no trae reemplazos para {food}. Pregúntale a tu profesional.",
+    planBFridgeLead:
+      "Sin nevera, estas opciones de tu plan están marcadas como que aguantan:",
+    planBFridgeTitle: "Aguantan sin nevera",
+    planBMarkedPlan: "lo dice tu plan",
+    planBMarkedAdult: "lo marcó quien cuida",
+    planBNoMarks:
+      "Tu plan no dice cuáles opciones aguantan sin nevera. Pregúntale a tu profesional, y en Perfil puedes marcar las que ya sabes que aguantan.",
+    planBNoMenu:
+      "Tu plan no trae menú del día, así que no puedo decir qué toca.",
+    planBLateMeal: "{meal} ({start}–{end}): {content}",
+    planBLateNow: "Ahora corre esta franja de tu plan: {text}.",
+    planBLatePrev: "La última franja que pasó fue: {text}.",
+    planBLateNext: "Lo que sigue es {meal}, a las {start}: {content}.",
+    planBLateNoNext:
+      "Por hoy ya no quedan más franjas en tu plan; mañana empieza como siempre.",
+    planBLateRuleTitle: "Lo que tu plan no dice",
+    planBLateRule:
+      "Tu plan no dice si una comida atrasada se recupera o se salta. Pregúntale a tu profesional.",
   },
   detail: {
     whyTitle: "¿Por qué?",
@@ -342,6 +360,15 @@ export const es = {
     activeReal: "tu dieta",
     useDemo: "Usar la demo",
     useReal: "Usar tu dieta",
+    secondTitle: "¿Tienes un segundo plan?",
+    secondBody:
+      "Si otro profesional te dio otro plan, agrégalo como segundo plan: se queda aparte, lo ves junto al primero y, si quieres, los unes en uno solo. Lo que cualquiera de los dos prohíbe sigue prohibido.",
+    secondAdd: "Agregar como segundo plan",
+    secondOnTitle: "El próximo plan será el segundo",
+    secondOnBody:
+      "Elige el PDF o el JSON del otro plan. No reemplaza al que ya tienes: queda aparte hasta que lo unas o lo descartes.",
+    secondCancel: "Mejor no, volver",
+    secondOpen: "Ver mis planes y unirlos",
   },
   settings: {
     profileTitle: "Perfil de tu peque",
@@ -715,8 +742,160 @@ export const es = {
     noteKinds_intolerance: "Intolerancia",
     noteKinds_medication: "Medicamento",
     noteKinds_other: "Otra nota",
+    noteKinds_fridge: "Aguanta sin nevera",
+    fridgeTitle: "Aguantan sin nevera",
+    fridgeHint:
+      "Marca las opciones de tu plan que ya sabes que aguantan sin nevera (lonchera, paseo, viaje). El plan B las usa cuando dices «no hay nevera»; las que el plan ya marca no se pueden quitar.",
+    fridgePlan: "lo dice tu plan",
+    fridgeMark: "Marcar {name}: aguanta sin nevera",
+    fridgeUnmark: "Quitar la marca de {name}",
+    fridgeEmpty: "Tu plan no trae opciones que se puedan marcar.",
     medicalReminder:
       "Para cambios de dosis o dudas médicas, consulta a tu profesional.",
+  },
+  merge: {
+    title: "Varias dietas",
+    intro:
+      "Si otro profesional te dio otro plan, aquí los ves juntos y los unes en uno solo. Cada línea guarda de dónde salió.",
+    navLink: "Varias dietas",
+    noSecondTitle: "No hay un segundo plan",
+    noSecondBody:
+      "Agrega el otro plan desde Cargar, con «Agregar como segundo plan». Mientras no lo unas, tu plan de siempre sigue igual.",
+    goLoad: "Ir a Cargar",
+    needReal:
+      "Para unir dos planes primero carga el tuyo: la demo no se une con nada.",
+    planA: "Plan A",
+    planB: "Plan B",
+    planAActive: "Plan A · el que tienes activo",
+    planBSecond: "Plan B · el segundo plan",
+    sideTitle: "Los dos planes, lado a lado",
+    redTitle: "Lo prohibido gana solo",
+    redBody:
+      "Si un plan prohíbe algo, queda prohibido en el plan unido y se marca de cuál viene. Así el plan unido nunca es más flojo que ninguno de los dos.",
+    redNone: "Los dos planes coinciden en lo prohibido.",
+    redLine: "{food}: queda en rojo (viene del {origin})",
+    redWindow: "La restricción con fecha usa la ventana más ancha.",
+    pickTitle: "Esto lo eliges tú, uno por uno",
+    pickBody:
+      "Aquí los dos planes dicen cosas distintas y solo tú sabes cuál va. Mira los dos lados y elige.",
+    pickNone: "No hay nada que elegir: los dos planes no chocan.",
+    pickUse: "Usar este",
+    pickChosen: "Elegido",
+    pendingCount: "Te faltan {n} por elegir.",
+    allChosen: "Todo elegido. Ya puedes unir.",
+    mergeBtn: "Unir los dos planes",
+    discardBtn: "Descartar el segundo plan",
+    discarded: "Segundo plan descartado.",
+    merging:
+      "Unir crea un solo plan en este teléfono y borra el segundo; lo puedes volver a cargar si lo necesitas.",
+    invalid:
+      "Con estas elecciones el plan unido no queda completo. Revisa los dos planes antes de unir.",
+    merged: "Listo: tus dos planes ya son uno. Cada línea dice de dónde salió.",
+    storeError: "No se pudo guardar el plan unido en este teléfono.",
+    mineTitle: "Tu plan unido",
+    mineFrom: "Une el {a} y el {b}.",
+    linesTitle: "De dónde salió cada línea",
+    linesBody:
+      "Una madre o un padre puede cambiar cualquier línea cuando lo necesite, también una en rojo. Ves los dos orígenes, confirmas una vez y queda anotado en la bitácora.",
+    linesNone: "Todas las líneas vienen de un solo lado o coinciden.",
+    originOnly: "solo en el {origin}",
+    originSame: "en los dos planes",
+    originRed: "ganó lo prohibido · {origin}",
+    originPicked: "lo elegiste · {origin}",
+    originParent: "cambiado por una madre o un padre · {origin}",
+    originBoth: "los dos",
+    says: "{origin} dice: {text}",
+    change: "Cambiar al otro origen",
+    changeConfirmTitle: "Cambiar esta línea",
+    changeConfirmBody:
+      "Hoy el plan unido mantiene esto como prohibido porque un plan lo dice. Si tú lo cambias, queda como dice el otro plan. Se anota en la bitácora; puedes volver a cambiarlo.",
+    changeConfirm: "Confirmar el cambio",
+    changeCancel: "Cancelar",
+    changed: "Cambio guardado y anotado en la bitácora.",
+    changeFailed: "No se pudo cambiar esta línea.",
+    onlyParents: "Solo una madre o un padre puede cambiar el plan unido.",
+    badgeFrom: "Viene del {origin}",
+    kinds_color: "Color",
+    kinds_limit: "Cuánto",
+    kinds_portion: "Porción",
+    kinds_dose: "Dosis",
+    kinds_schedule: "Horario",
+    kinds_texture: "Textura",
+    kinds_content: "Qué se come",
+    kinds_hydration: "Agua",
+    kinds_text: "Texto del plan",
+  },
+  planB: {
+    title: "Plan B",
+    intro:
+      "Cuando algo falla, tu plan te dice qué sí. Solo con lo que trae tu plan: si no lo dice, te lo dice.",
+    out: "Se acabó algo",
+    fridge: "No hay nevera",
+    late: "Llegamos tarde",
+    pickFood: "¿Qué se acabó?",
+    pickPlaceholder: "Elige un alimento de tu plan",
+  },
+  scenarios: {
+    title: "Días especiales",
+    intro:
+      "Cumpleaños, restaurante, emergencia o alguien que le ofrece algo. Todo sale de tu plan y se abre sin señal. No son indicaciones médicas.",
+    link: "Días especiales: cumpleaños, restaurante, emergencia",
+    pick: "¿Qué día es?",
+    birthday: "Cumpleaños",
+    restaurant: "Restaurante",
+    emergency: "Emergencia",
+    offered: "Le ofrecen algo que no puede",
+    birthdayIntro: "Para llegar a la fiesta con el plan en la mano.",
+    restaurantIntro: "Para pedir sin dudas y sin tener que explicar de más.",
+    emergencyIntro:
+      "Esto no da indicaciones médicas: reúne lo que tu plan y quien cuida anotaron, para tenerlo a mano.",
+    offeredIntro: "Frases cortas para decir que no sin incomodar a nadie.",
+    bringTitle: "Qué llevar o elegir",
+    bringHint: "Las que aguantan sin nevera van primero.",
+    bringNone: "Tu plan no trae opciones verdes para sugerir.",
+    fridgeMark: "aguanta sin nevera",
+    avoidTitle: "Lo que no puede",
+    avoidNone: "Tu plan no lista alimentos prohibidos.",
+    restricted: "restricción vigente",
+    limitsTitle: "Con medida",
+    additivesTitle: "Aditivos que tu plan pide evitar",
+    mealsTitle: "Las comidas de tu plan",
+    mealFocusNow: "Ahora corre esta franja de tu plan.",
+    mealFocusNext: "La franja que sigue.",
+    sayTitle: "Qué decir",
+    sayBirthday:
+      "«{alias} sigue un plan de alimentación que le cuida la salud. No puede comer: {avoid}. Llevamos lo suyo para compartir con todos.»",
+    sayRestaurant:
+      "«{alias} sigue un plan de alimentación. Necesitamos pedir sin: {avoid}. ¿Nos ayudan a elegir algo que sí pueda?»",
+    sayOffered:
+      "«Gracias, qué amable. {alias} no puede comer eso, pero muchas gracias por pensar en él.»",
+    sayOfferedAlt:
+      "Si quieres ofrecer una alternativa: «Mejor le damos lo suyo: {safe}.»",
+    sayNoAvoid:
+      "Tu plan no lista alimentos prohibidos, así que no hay una lista que decir.",
+    askTitle: "Qué pedir",
+    askRestaurant:
+      "Pregunta cómo se prepara cada plato y pide lo más simple: sin salsas ni aditivos que tu plan evita.",
+    askRestaurantSafe: "Del plan, lo más fácil de encontrar: {safe}.",
+    doubt:
+      "Si dudas de un alimento, no se lo des: búscalo en el chat, que contesta con tu plan.",
+    chat: "Preguntar en el chat",
+    cardTitle: "Ficha a mano",
+    cardCondition: "Condición según tu plan",
+    cardAllergies: "Alergias",
+    cardIntolerances: "Intolerancias",
+    cardMedications: "Medicamentos",
+    cardNoted: "Anotado por quien cuida",
+    cardNone: "Tu plan no lo dice.",
+    callTitle: "A quién llamar",
+    callEmergency: "Los servicios de emergencia de tu zona.",
+    callProfessional: "Tu profesional: {name}.",
+    callNote: "Tu plan no trae su número: tenlo guardado en tus contactos.",
+    notifyTitle: "Avisar a la familia",
+    notifyBody: "Manda un aviso para que los demás sepan qué pasa.",
+    offline: "Se abre sin señal: sale del plan guardado en este teléfono.",
+    notMedical:
+      "Aquí no hay indicaciones médicas: lo que no dice tu plan, se le pregunta a tu profesional.",
   },
 } as const;
 

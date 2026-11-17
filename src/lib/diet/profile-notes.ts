@@ -27,6 +27,8 @@ export const NOTE_KINDS = [
   "intolerance",
   "medication",
   "other",
+  // S9: el texto es el nombre (es) de una opción del plan que «aguanta sin nevera».
+  "fridge",
 ] as const;
 export type NoteKind = (typeof NOTE_KINDS)[number];
 

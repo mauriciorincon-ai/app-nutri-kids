@@ -4,6 +4,7 @@
  */
 import type { Dictionary } from "@/i18n/es";
 import type { OpenAnswer, OptionItem } from "./answer";
+import type { PlanB } from "./plan-b";
 import type { LocalizedText } from "./schema";
 import type { Locale } from "./search";
 
@@ -41,6 +42,80 @@ const toItems = (items: OptionItem[], locale: Locale) =>
 const listOf = (names: LocalizedText[], locale: Locale) =>
   names.map((n) => n[locale]).join(", ");
 
+type Base = Pick<
+  ComposedAnswer,
+  "items" | "itemsTitle" | "next" | "required" | "notInPlan"
+>;
+
+function composePlanB(
+  plan: PlanB,
+  t: AnswerTemplates,
+  locale: Locale,
+  base: Base,
+): ComposedAnswer {
+  if (plan.kind === "not-in-plan") {
+    const lead =
+      plan.reason === "no-marks"
+        ? t.planBNoMarks
+        : plan.reason === "no-menu"
+          ? t.planBNoMenu
+          : plan.food
+            ? fill(t.notInPlanFood, { food: lower(plan.food[locale], locale) })
+            : t.notInPlan;
+    return { ...base, lead, notInPlan: true };
+  }
+  if (plan.kind === "options" && plan.situation === "no-fridge") {
+    return {
+      ...base,
+      lead: t.planBFridgeLead,
+      items: plan.items.map((i) => ({
+        text: `${i.name[locale]} · ${i.marked === "plan" ? t.planBMarkedPlan : t.planBMarkedAdult}`,
+        marked: i.notAccepted,
+      })),
+      itemsTitle: t.planBFridgeTitle,
+      required: plan.items.map((i) => i.name[locale]),
+    };
+  }
+  if (plan.kind === "options") {
+    const food = lower(plan.food[locale], locale);
+    return {
+      ...base,
+      lead: fill(t.replacementLead, { food }),
+      items: toItems(plan.options.items, locale),
+      itemsTitle: t.optionsTitle,
+      required: [food],
+    };
+  }
+  // late
+  const meal = (m: NonNullable<typeof plan.current>) =>
+    fill(t.planBLateMeal, {
+      meal: m.name[locale],
+      start: m.start,
+      end: m.end,
+      content: m.content[locale],
+    });
+  const parts = [
+    plan.current ? fill(t.planBLateNow, { text: meal(plan.current) }) : "",
+    plan.prev ? fill(t.planBLatePrev, { text: meal(plan.prev) }) : "",
+    plan.next
+      ? fill(t.planBLateNext, {
+          meal: plan.next.name[locale],
+          start: plan.next.start,
+          content: plan.next.content[locale],
+        })
+      : t.planBLateNoNext,
+  ].filter(Boolean);
+  const shown = [plan.current, plan.prev, plan.next].filter(
+    (m): m is NonNullable<typeof m> => m !== null,
+  );
+  return {
+    ...base,
+    lead: parts.join(" "),
+    next: { title: t.planBLateRuleTitle, text: t.planBLateRule },
+    required: shown.flatMap((m) => [m.name[locale], m.start]),
+  };
+}
+
 export function composeAnswer(
   answer: OpenAnswer,
   t: AnswerTemplates,
@@ -54,6 +129,8 @@ export function composeAnswer(
     notInPlan: false,
   };
   switch (answer.kind) {
+    case "plan-b":
+      return composePlanB(answer.plan, t, locale, base);
     case "replacement": {
       const food = lower(answer.food[locale], locale);
       const lead =

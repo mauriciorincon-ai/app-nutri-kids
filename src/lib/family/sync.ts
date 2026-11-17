@@ -192,11 +192,20 @@ async function candidates(
       if (!s && signer && plan.by === own) {
         s = await sign(signer, planPayload(plan));
         st.sigs.plan = { h: key, s };
+        // Un padre que cambió una línea del plan unido deja `merged.last` con el mismo
+        // sello del plan: la bitácora lo anota como `plan-line` (ADR-014), con la línea.
+        const last = (
+          plan.diet as { merged?: { last?: { key?: unknown; t?: unknown } } }
+        )?.merged?.last;
+        const line =
+          last && last.t === plan.t && typeof last.key === "string"
+            ? last.key.slice(0, 100)
+            : null;
         st.log.own = await appendEvent(
           st.log.own,
           plan.t || d.now(),
-          "plan",
-          "plan",
+          line ? "plan-line" : "plan",
+          line ?? "plan",
         );
       }
       out.push({ named: { name: "plan", data: { ...plan, s } }, hash: key });
