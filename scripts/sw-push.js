@@ -10,6 +10,9 @@
  *     mostrar algo en cada toque) — salvo que haya una nota nueva de la familia: esa gana.
  *  2. Si no, es un aviso de la familia: baja lo nuevo, lo descifra AQUÍ con las llaves no
  *     exportables del teléfono y muestra «Aviso de <nombre>». Si no puede, «Hay un aviso nuevo».
+ *  3. (S9 · ADR-013) Solo cuenta un aviso FIRMADO por alguien del roster que puede avisar: la
+ *     página deja en el puntero sus llaves públicas (`senders`). Sin firma válida no se muestra
+ *     su texto ni su nombre. La firma se comprueba igual que en `src/lib/family/sign.ts`.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const NK_PUSH = (() => {
@@ -86,6 +89,47 @@ const NK_PUSH = (() => {
     let s = "";
     for (const b of bytes) s += String.fromCharCode(b);
     return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+
+  // --- Firma (contrato con src/lib/family/sign.ts y trust.ts: noticePayload) -------------
+  const SIG_DOMAIN = "nutrikids/family/v1/sig";
+  const SIG_RE = /^[A-Za-z0-9_-]{86}$/;
+  const PUB_RE = /^[A-Za-z0-9_-]{87}$/;
+
+  function canon(value) {
+    if (Array.isArray(value)) return `[${value.map(canon).join(",")}]`;
+    if (value !== null && typeof value === "object")
+      return `{${Object.keys(value)
+        .sort()
+        .filter((k) => value[k] !== undefined)
+        .map((k) => `${JSON.stringify(k)}:${canon(value[k])}`)
+        .join(",")}}`;
+    const out = JSON.stringify(value);
+    return out === undefined ? "null" : out;
+  }
+
+  async function verifySig(pub, payload, sig) {
+    try {
+      if (typeof pub !== "string" || !PUB_RE.test(pub)) return false;
+      if (typeof sig !== "string" || !SIG_RE.test(sig)) return false;
+      const raw = fromB64u(pub);
+      if (raw.length !== 65 || raw[0] !== 4) return false;
+      const key = await crypto.subtle.importKey(
+        "raw",
+        raw,
+        { name: "ECDSA", namedCurve: "P-256" },
+        false,
+        ["verify"],
+      );
+      return await crypto.subtle.verify(
+        { name: "ECDSA", hash: "SHA-256" },
+        key,
+        fromB64u(sig),
+        te.encode(`${SIG_DOMAIN}\n${canon(payload)}`),
+      );
+    } catch {
+      return false;
+    }
   }
 
   function localNow(date) {
@@ -169,7 +213,7 @@ const NK_PUSH = (() => {
     }
   }
 
-  function validNotice(env, self) {
+  async function validNotice(env, self, senders) {
     if (!env || !env.n.startsWith("notice:")) return null;
     const d = env.d;
     if (!d || typeof d !== "object") return null;
@@ -187,6 +231,19 @@ const NK_PUSH = (() => {
       return null;
     if (typeof d.t !== "number" || typeof d.by !== "string") return null;
     if (d.by === self) return null;
+    const pub =
+      senders && typeof senders === "object" && Object.hasOwn(senders, d.by)
+        ? senders[d.by]
+        : null;
+    const payload = {
+      n: env.n,
+      text: d.text,
+      name: d.name,
+      by: d.by,
+      t: d.t,
+      date: d.date,
+    };
+    if (!(await verifySig(pub, payload, d.s))) return null;
     return { text: d.text.trim(), name: d.name.trim(), t: d.t };
   }
 
@@ -240,7 +297,7 @@ const NK_PUSH = (() => {
     let best = null;
     for (const rec of page.records) {
       const env = await openRecord(row, ptr.family, ptr.epoch, rec);
-      const notice = validNotice(env, ptr.self);
+      const notice = await validNotice(env, ptr.self, ptr.senders);
       if (notice && notice.t > seen && (!best || notice.t > best.t))
         best = notice;
     }
