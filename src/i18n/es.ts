@@ -681,6 +681,8 @@ export const es = {
       "La bitácora de {names} llegó cambiada; se conservó lo que este teléfono ya había visto.",
     errNotAllowed: "Tu rol no permite hacer esto.",
     errInvalid: "Ese cambio no se pudo hacer.",
+    errRosterFull:
+      "La lista de personas de la familia está llena y ya no admite más cambios. Para seguir, una madre o un padre sale de la familia en este teléfono y crea una nueva: los datos se quedan aquí y se invita de nuevo a quien haga falta.",
   },
   a11y: {
     mainNav: "Navegación principal",

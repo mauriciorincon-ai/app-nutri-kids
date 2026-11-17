@@ -81,6 +81,8 @@ export const familyStateSchema = z.object({
   rejected: z.number().int().nonnegative().default(0),
   /** El roster del servidor no coincide con la invitación o no encadena. */
   rosterIssue: z.enum(["pin", "invalid"]).nullable().default(null),
+  /** La lista de personas ya no admite más cambios (tope de número o de peso): no se deshace sola. */
+  rosterFull: z.boolean().default(false),
 });
 
 export type FamilyState = z.infer<typeof familyStateSchema>;
@@ -122,6 +124,7 @@ export function freshFamilyState(
     log: { own: [], others: {}, rewritten: [] },
     rejected: 0,
     rosterIssue: null,
+    rosterFull: false,
   };
 }
 

@@ -677,6 +677,8 @@ export const en: Dictionary = {
       "{names}'s change log arrived altered; this phone kept what it had already seen.",
     errNotAllowed: "Your role doesn't allow this.",
     errInvalid: "That change couldn't be made.",
+    errRosterFull:
+      "The family's list of people is full and takes no more changes. To go on, a parent leaves the family on this phone and creates a new one: the data stays here and you invite again whoever needs it.",
   },
   a11y: {
     mainNav: "Main navigation",

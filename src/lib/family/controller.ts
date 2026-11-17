@@ -36,6 +36,7 @@ import {
 } from "./state";
 import {
   addOp,
+  addOpResult,
   collectShared,
   countPending,
   syncOnce,
@@ -124,6 +125,8 @@ export type FamilyView = {
   /** Cambios que llegaron sin firma válida o sin permiso, y no se aceptaron. */
   rejected: number;
   rosterIssue: "pin" | "invalid" | null;
+  /** La lista de personas está llena: ya no admite cambios (lo ve el padre). */
+  rosterFull: boolean;
   /** Nombres de quienes reescribieron su bitácora (se conservó lo ya visto). */
   rewritten: string[];
 };
@@ -154,7 +157,13 @@ export type ActionResult<T = object> =
   | ({ ok: true } & T)
   | {
       ok: false;
-      reason: Failure | "no-family" | "no-name" | "not-allowed" | "invalid";
+      reason:
+        | Failure
+        | "no-family"
+        | "no-name"
+        | "not-allowed"
+        | "invalid"
+        | "roster-full";
     };
 
 export const OFF_VIEW: FamilyView = {
@@ -178,6 +187,7 @@ export const OFF_VIEW: FamilyView = {
   log: [],
   rejected: 0,
   rosterIssue: null,
+  rosterFull: false,
   rewritten: [],
 };
 
@@ -301,6 +311,7 @@ export function createController(deps: ControllerDeps) {
         log: logRows,
         rejected: st.rejected,
         rosterIssue: st.rosterIssue,
+        rosterFull: st.rosterFull,
         rewritten: st.log.rewritten.map(nameOf),
       };
     }
@@ -414,8 +425,20 @@ export function createController(deps: ControllerDeps) {
     if (roster?.members[deps.local.deviceId()]?.role !== "parent")
       return { ok: false, reason: "not-allowed" };
     const signer = await deps.keys.signer();
-    const ok = await addOp(st, signer, deps.local.deviceId(), deps.now(), body);
-    if (!ok) return { ok: false, reason: "invalid" };
+    const done = await addOpResult(
+      st,
+      signer,
+      deps.local.deviceId(),
+      deps.now(),
+      body,
+    );
+    if (done === "full") {
+      st.rosterFull = true;
+      deps.state.save(st);
+      await render();
+      return { ok: false, reason: "roster-full" };
+    }
+    if (done === "invalid") return { ok: false, reason: "invalid" };
     deps.state.save(st);
     await render();
     return { ok: true };

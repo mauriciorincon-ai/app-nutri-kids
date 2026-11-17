@@ -354,3 +354,35 @@ test.describe("varias dietas", () => {
     }
   });
 });
+
+test.describe("la lista de la familia llena", () => {
+  test("el padre lo ve en Compartir con qué hacer, con símbolo y texto, en los dos temas", async ({
+    browser,
+    baseURL,
+  }) => {
+    test.setTimeout(90_000);
+    const a = await phone(browser, baseURL!);
+    const secrets = await createFamily(a);
+    expect(secrets.code.length).toBeGreaterThan(0);
+    await finishSecrets(a.page);
+    await expect(a.page.getByTestId("family-roster-full")).toHaveCount(0);
+
+    // Llenar 120 cambios por la pantalla tardaría; el estado que lo marca (que las pruebas
+    // unitarias producen llenando de verdad la cadena) se pone aquí y se recarga.
+    await a.page.evaluate(() => {
+      const raw = window.localStorage.getItem("nutrikids.family.v1")!;
+      const st = JSON.parse(raw);
+      st.rosterFull = true;
+      window.localStorage.setItem("nutrikids.family.v1", JSON.stringify(st));
+    });
+    await a.page.goto("/ajustes");
+    const banner = a.page.getByTestId("family-roster-full");
+    await expect(banner).toBeVisible();
+    await expect(banner).toContainText("⚠");
+    await expect(banner).toContainText(
+      /lista de personas de la familia está llena/,
+    );
+    await expect(banner).toContainText(/crea una nueva/);
+    await axe(a.page, "lista de la familia llena");
+  });
+});

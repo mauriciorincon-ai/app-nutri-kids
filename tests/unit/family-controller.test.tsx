@@ -21,6 +21,7 @@ import {
   saveKeys,
 } from "@/lib/family/keystore";
 import { browserLocal } from "@/lib/family/local";
+import { ROSTER_MAX_OPS } from "@/lib/family/roster";
 import { handle } from "@/lib/family/server/handler";
 import { createMemoryStore } from "@/lib/family/server/memory";
 import {
@@ -29,6 +30,7 @@ import {
   loadFamilyState,
   saveFamilyState,
 } from "@/lib/family/state";
+import { addOp } from "@/lib/family/sync";
 
 import demoRaw from "../../data/demo-diet.json";
 
@@ -601,6 +603,37 @@ describe("roles en el director (S9 · ADR-013)", () => {
     expect(removed).toMatchObject({ ok: true });
     expect(a.getView().members.map((m) => m.id)).toEqual([idA]);
   });
+  it("lista de la familia llena: el padre recibe «roster-full» (no «invalid»), nada cambia y lo demás sigue", async () => {
+    const { controller } = setup();
+    const { use } = devices();
+    use("A");
+    const a = controller();
+    const created = await a.create("Mamá");
+    if (!created.ok) throw new Error("create");
+    // Se llena la cadena hasta el tope, como lo haría una familia que cambió roles muchas veces.
+    const st = loadFamilyState()!;
+    const signer = await loadSigner();
+    if (!signer) throw new Error("signer");
+    while (st.roster.length < ROSTER_MAX_OPS)
+      expect(
+        await addOp(st, signer, getDeviceId(), Date.now(), {
+          type: "invite",
+          tag: "ABCD",
+          role: "caregiver",
+        }),
+      ).toBe(true);
+    saveFamilyState(st);
+
+    const r = await a.invite("caregiver");
+    expect(r).toEqual({ ok: false, reason: "roster-full" });
+    expect(loadFamilyState()!.roster.length).toBe(ROSTER_MAX_OPS);
+    expect(a.getView().rosterFull).toBe(true); // el padre lo ve en Compartir, no solo el error
+    // Marcar el día y sincronizar siguen funcionando con la lista llena.
+    markDone(DAY, "meal:desayuno", "07:30");
+    await a.sync();
+    expect(a.getView().phase).toBe("idle");
+  });
+
   it("turnos: dos cambios de roster seguidos, sin esperar, encadenan sin bifurcar", async () => {
     const { controller } = setup();
     const { use } = devices();

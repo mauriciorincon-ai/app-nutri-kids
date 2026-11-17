@@ -124,6 +124,15 @@ export function FamilyPanel({
             : t.family.rosterInvalid}
         </p>
       )}
+      {view.rosterFull && view.role === "parent" && (
+        <p
+          role="status"
+          className="rounded-xl bg-tl-yellow-surface px-4 py-3 text-sm text-tl-yellow"
+          data-testid="family-roster-full"
+        >
+          ⚠ {t.family.errRosterFull}
+        </p>
+      )}
       {view.rewritten.length > 0 && (
         <p className="rounded-xl bg-tl-yellow-surface px-4 py-3 text-sm text-tl-yellow">
           ⚠ {fmt(t.family.rewritten, { names: view.rewritten.join(", ") })}
