@@ -296,6 +296,30 @@ describe("recetas propias · el mismo cotejo con el plan", () => {
     expect(a.blocked[0]).toMatchObject({ text: "maní molido", why: "allergy" });
   });
 
+  it("un rojo que el plan nombra en lista («Gaseosas y jugos de caja») bloquea la receta propia aunque lleve cantidad o palabras extra", () => {
+    const d = diet();
+    d.trafficLight.red.items[0].name = {
+      es: "Gaseosas y jugos de caja",
+      en: "Soda and boxed juice",
+    };
+    const inp = input({ diet: d });
+    for (const line of [
+      "1 taza de gaseosa",
+      "Gaseosa de cola",
+      "jugo de caja",
+    ]) {
+      const r = reviewOwn({ ingredients: ["papa", line] }, inp);
+      expect(r.state, line).toBe("blocked");
+    }
+    expect(reviewOwn({ ingredients: ["soda with lime"] }, inp).state).toBe(
+      "blocked",
+    );
+    // Una alternativa solo cuenta como parcial: un verde exacto sigue ganando y lo desconocido sigue desconocido.
+    expect(
+      reviewOwn({ ingredients: ["papa", "ingrediente raro"] }, inp).state,
+    ).toBe("unknown");
+  });
+
   it("lo que el plan no nombra queda «no está en tu plan»: jamás verde", () => {
     const r = reviewOwn({ ingredients: ["papa", "ingrediente raro"] }, input());
     expect(r.state).toBe("unknown");

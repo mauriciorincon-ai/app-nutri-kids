@@ -55,6 +55,9 @@ function overlap(a: string[], b: string[]): 0 | 1 | 2 {
   return containsPhrase(a, b) || containsPhrase(b, a) ? 1 : 0;
 }
 
+/** «Gaseosas y jugos de caja» nombra dos cosas: cada alternativa también cuenta (como parcial). */
+const ALTERNATIVES = /\s*(?:,|\/|;|\by\b|\be\b|\band\b|\bor\b|\bo\b|\bu\b)\s*/i;
+
 /** El mejor cotejo de un nombre del plan (en los dos idiomas) con las formas del ingrediente. */
 function matchLevel(ing: string[][], name: LocalizedText): 0 | 1 | 2 {
   let best: 0 | 1 | 2 = 0;
@@ -63,6 +66,14 @@ function matchLevel(ing: string[][], name: LocalizedText): 0 | 1 | 2 {
     if (planTokens.length === 0) continue;
     for (const f of ing)
       best = Math.max(best, overlap(f, planTokens)) as 0 | 1 | 2;
+    // Cada alternativa del nombre cuenta como mucho como parcial: nunca desplaza a un exacto.
+    for (const part of name[locale].split(ALTERNATIVES)) {
+      const partTokens = toTokens(part, locale);
+      if (partTokens.length === 0 || partTokens.length === planTokens.length)
+        continue;
+      for (const f of ing)
+        if (overlap(f, partTokens)) best = Math.max(best, 1) as 0 | 1 | 2;
+    }
   }
   return best;
 }

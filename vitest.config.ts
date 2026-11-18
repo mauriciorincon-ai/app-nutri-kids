@@ -22,6 +22,11 @@ export default defineConfig({
         "src/lib/family/**",
         "src/lib/push/**",
         "src/lib/wellbeing/**",
+        // S11: lonchera, recetario, viaje y lo local del día a día (regla 2: > 80 %).
+        "src/lib/lunchbox/**",
+        "src/lib/recipes/**",
+        "src/lib/travel/**",
+        "src/lib/day-to-day/**",
       ],
       thresholds: {
         lines: 80,
