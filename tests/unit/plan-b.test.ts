@@ -19,7 +19,19 @@ import { getDemoDiet } from "@/lib/diet/storage";
 
 // Plan inventado del repo; la ventana de la restricción cubre este día.
 const NOW = new Date("2026-08-10T12:40:00");
-const diet = (): DietPlan => structuredClone(getDemoDiet());
+/**
+ * El plan de estas pruebas NO marca nada «aguanta sin nevera»: así cada caso pone SOLO la marca
+ * que prueba. El plan de ejemplo del repo sí trae marcas (S11, para la lonchera); su propia
+ * prueba está al final del archivo.
+ */
+const diet = (): DietPlan => {
+  const d = structuredClone(getDemoDiet());
+  for (const g of d.trafficLight.green.groups)
+    for (const i of g.items) delete i.keepsWithoutFridge;
+  for (const e of d.equivalences)
+    for (const u of e.use) delete u.keepsWithoutFridge;
+  return d;
+};
 
 /** Todo nombre que el plan trae (equivalencias y verdes): lo ÚNICO que un plan B puede decir. */
 function planNames(d: DietPlan): Set<string> {
@@ -372,3 +384,28 @@ describe("plan B · marcas «aguanta sin nevera» escritas a mano", () => {
 function names(p: PlanB): string[] {
   return namesOf(p).map((n) => n.toLowerCase());
 }
+
+describe("plan B · «no hay nevera» con el plan de ejemplo del repo", () => {
+  it("el plan de ejemplo marca al menos cuatro opciones que aguantan sin nevera", () => {
+    const p = planBNoFridge(structuredClone(getDemoDiet()), NOW);
+    if (p.kind !== "options" || p.situation !== "no-fridge") throw new Error();
+    const planMarked = p.items.filter((i) => i.marked === "plan");
+    expect(planMarked.length).toBeGreaterThanOrEqual(4);
+    expect(planMarked.map((i) => i.name.es.toLowerCase())).toEqual(
+      expect.arrayContaining(["pera", "kiwi", "zanahoria"]),
+    );
+  });
+
+  it("la marca de un verde no se pierde porque una equivalencia lo nombró primero", () => {
+    // «pera» está en las equivalencias de la manzana (sin marca) y en el grupo de frutas (con marca).
+    const d = diet();
+    d.trafficLight.green.groups[2].items.find(
+      (i) => i.id === "pera",
+    )!.keepsWithoutFridge = true;
+    const p = planBNoFridge(d, NOW);
+    if (p.kind !== "options" || p.situation !== "no-fridge") throw new Error();
+    expect(p.items.map((i) => [i.name.es, i.marked])).toEqual([
+      ["pera", "plan"],
+    ]);
+  });
+});

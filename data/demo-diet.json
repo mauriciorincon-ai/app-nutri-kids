@@ -246,7 +246,8 @@
               "name": {
                 "es": "Zanahoria",
                 "en": "Carrot"
-              }
+              },
+              "keepsWithoutFridge": true
             },
             {
               "id": "brocoli",
@@ -287,14 +288,16 @@
               "name": {
                 "es": "Pera",
                 "en": "Pear"
-              }
+              },
+              "keepsWithoutFridge": true
             },
             {
               "id": "kiwi",
               "name": {
                 "es": "Kiwi",
                 "en": "Kiwi"
-              }
+              },
+              "keepsWithoutFridge": true
             },
             {
               "id": "uvas",
@@ -426,7 +429,8 @@
             "es": "palomitas caseras",
             "en": "homemade popcorn"
           },
-          "texture": "crunchy"
+          "texture": "crunchy",
+          "keepsWithoutFridge": true
         },
         {
           "name": {
@@ -440,7 +444,8 @@
             "es": "tostadas de arroz",
             "en": "rice cakes"
           },
-          "texture": "crunchy"
+          "texture": "crunchy",
+          "keepsWithoutFridge": true
         }
       ]
     }

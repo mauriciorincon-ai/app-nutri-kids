@@ -86,12 +86,20 @@ function safeCandidates(
   now: Date,
   avoid: readonly string[] = [],
 ): Candidate[] {
-  const seen = new Set<string>();
+  const seen = new Map<string, Candidate>();
   const out: Candidate[] = [];
   const push = (c: Candidate) => {
     const key = fridgeKey(c.name);
-    if (seen.has(key) || !isSafeOption(diet, c.name, now, avoid)) return;
-    seen.add(key);
+    const prior = seen.get(key);
+    if (prior) {
+      // El mismo alimento nombrado dos veces (una equivalencia y su grupo): si cualquiera de las
+      // dos lo marca «aguanta sin nevera», la marca no se pierde por llegar segunda.
+      if (c.keepsWithoutFridge && !prior.keepsWithoutFridge)
+        prior.keepsWithoutFridge = true;
+      return;
+    }
+    if (!isSafeOption(diet, c.name, now, avoid)) return;
+    seen.set(key, c);
     out.push(c);
   };
   for (const eq of diet.equivalences)
