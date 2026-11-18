@@ -1,6 +1,5 @@
 import { readFileSync } from "node:fs";
 
-import AxeBuilder from "@axe-core/playwright";
 import {
   expect,
   test,
@@ -8,6 +7,8 @@ import {
   type BrowserContext,
   type Page,
 } from "@playwright/test";
+
+import { axe } from "./phones";
 
 /**
  * Compartir con la familia (S7 · ADR-011), con DOS teléfonos reales (dos contextos) contra
@@ -70,27 +71,6 @@ async function phone(
     );
   }, locale);
   return { context, page, wire, net };
-}
-
-async function axe(page: Page, scope = "axe") {
-  for (const colorScheme of ["light", "dark"] as const) {
-    await page.emulateMedia({ colorScheme, reducedMotion: "reduce" });
-    // Un botón que acaba de habilitarse aún transita de color: axe mediría el tono a medias.
-    await page.evaluate(() =>
-      // Una animación cancelada (el diálogo al cambiar a «menos movimiento») no es un error.
-      Promise.all(
-        document.getAnimations().map((a) => a.finished.catch(() => null)),
-      ),
-    );
-    const results = await new AxeBuilder({ page }).analyze();
-    // Resumen legible: regla, nodo y por qué (el volcado completo de axe tapa la causa).
-    const found = results.violations.map(
-      (v) =>
-        `${v.id}: ${v.nodes.map((n) => `${n.target.join(" ")} — ${n.failureSummary?.split("\n")[1]?.trim()}`).join(" | ")}`,
-    );
-    expect(found, `${scope} · ${colorScheme}`).toEqual([]);
-  }
-  await page.emulateMedia({ colorScheme: "light" });
 }
 
 async function createFamily(a: Phone, name = MAMA) {

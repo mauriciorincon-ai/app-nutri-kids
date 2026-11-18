@@ -27,6 +27,10 @@ async function openAt(page: Page, path = "/", time: Date = MON_0730) {
   await page.clock.install({ time });
   await seedPrefs(page);
   await page.goto(path);
+  // Sin esto, el primer toque podía caer ANTES de que React hidratara la casilla y perderse
+  // (intermitente en el runner desde el S10: con el service worker bloqueado y todo el
+  // tráfico interceptado, la hidratación tarda más). Mismo patrón que el resto de las e2e.
+  await page.waitForLoadState("networkidle");
 }
 
 test.describe("registro sin red (service worker bloqueado)", () => {
@@ -148,6 +152,8 @@ test("medianoche con la pestaña abierta: el día rota SIN reload", async ({
   await page.clock.install({ time: new Date("2026-07-06T23:58:00") });
   await seedPrefs(page);
   await page.goto("/");
+  // El toque antes de la hidratación se pierde (intermitente en el runner): igual que `openAt`.
+  await page.waitForLoadState("networkidle");
   await page.getByRole("checkbox", { name: /Vaso 1/ }).click();
   await expect(page.getByRole("checkbox", { name: /Vaso 1/ })).toBeChecked();
 

@@ -5,6 +5,7 @@ import { clearNotices } from "../family/notices";
 import { clearFamilyLocal } from "../family/state";
 import { log } from "../log";
 import { clearPushState } from "../push/state";
+import { clearDayToDay } from "../day-to-day/store";
 import {
   dietCounts,
   dietPlanSchema,
@@ -259,6 +260,7 @@ export function clearAllData(): void {
   clearProfileNotes();
   clearPlanDraft();
   clearSecondPlan();
+  clearDayToDay();
   // Sale de la familia (las claves y el estado se van de este teléfono; lo compartido en el
   // servidor lo borra «Borrar lo compartido» en Ajustes) y olvida quién es este teléfono.
   clearFamilyLocal();
@@ -275,8 +277,12 @@ export function clearAllData(): void {
 // Preferencias (idioma, disclaimer visto) — no son datos del niño.
 // ---------------------------------------------------------------------------
 
+export type ThemePref = "system" | "light" | "dark";
+
 export type Prefs = {
   locale: "es" | "en";
+  /** Tema elegido en Ajustes (S11): «sistema» sigue al teléfono. Tampoco es dato del niño. */
+  theme: ThemePref;
   disclaimerSeen: boolean;
   /** Nota de transparencia IA del chat vista (Sprint 002). */
   chatIntroSeen: boolean;
@@ -284,6 +290,7 @@ export type Prefs = {
 
 const DEFAULT_PREFS: Prefs = {
   locale: "es",
+  theme: "system",
   disclaimerSeen: false,
   chatIntroSeen: false,
 };
@@ -295,6 +302,10 @@ export function loadPrefs(): Prefs {
     const parsed = JSON.parse(raw) as Partial<Prefs>;
     return {
       locale: parsed.locale === "en" ? "en" : "es",
+      theme:
+        parsed.theme === "light" || parsed.theme === "dark"
+          ? parsed.theme
+          : "system",
       disclaimerSeen: parsed.disclaimerSeen === true,
       chatIntroSeen: parsed.chatIntroSeen === true,
     };

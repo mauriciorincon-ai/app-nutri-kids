@@ -365,6 +365,48 @@ verdict: if something worries you, ask the pediatrician. The app only records; i
 advises. Parent: everything · Caregiver: mood, foods, how they are and habits · School: mood and foods of its
 own meals · Nutritionist: sees it and leaves day notes. It all shows in **History**.
 
+### Lonchera, recetas y modo viaje · desde Sprint 011
+
+- **Qué hacen:** tres pantallas para el día a día fuera del plato, todas armadas **con tu plan** y **en tu teléfono**: nada se inventa, nada se envía y las tres abren **sin señal**. Se llega a ellas desde **Hoy**, en la fila **«Para el día a día»**. No son un consejo médico: organizan lo que dice tu plan.
+- **Lonchera (/lonchera):** elige el día (hoy y los seis siguientes) y ves las **opciones para llevar**: solo alimentos que tu plan acepta, en **verde o con medida**, que **aguantan sin nevera** (porque tu plan lo marca o porque quien cuida lo marcó en **Perfil → «Aguantan sin nevera»**) y con una textura que hoy acepta. Cada una dice quién la marcó. **Nunca** salen un alimento rojo, uno con restricción vigente, una alergia ni una intolerancia. Si algo se queda fuera porque **hoy no acepta esa textura** o **lo rechazó la última vez**, la pantalla lo dice abajo en **«Hoy se quedan fuera»**. Con **Empacar** lo pones en el día; luego **«Se lo comió»** o **«Volvió a casa»** (con símbolo y palabra), y **Quitar** lo deshace. Las **compras de la semana** se arman solas con lo que empacaste. Si tu plan no marca nada que aguante sin nevera, la pantalla lo dice y te manda al Perfil: no inventa opciones.
+- **Etiqueta con QR:** **«Etiqueta de la lonchera»** junta lo que no puede comer (alergias, intolerancias) y lo que lleva hoy, con un **código QR que guarda solo texto, nunca un enlace**, y se lee sin internet. El **nombre** va únicamente si un padre lo escribe en esa pantalla (se queda en este teléfono). **«Imprimir etiqueta»** abre el cuadro de impresión de tu teléfono y solo sale la hoja; no se envía nada. Si no cabe todo en el código, se acorta la lista de lo que lleva, nunca la de lo que no puede comer.
+- **Recetas (/recetas):** un recetario inicial de más de 30 recetas sencillas, **revisadas contra tu plan**. Cada una dice su estado con símbolo y palabra: **«Con lo de tu plan»**, **«Con medida»** (el plan limita algo) o **«Algo no está en tu plan»** (se dice cuál; pregunta a tu profesional). Una receta con algo rojo, con restricción vigente o con una alergia **no se muestra**, y **«Ver por qué algunas no se muestran»** dice cuál ingrediente y por qué. Si hoy no acepta una textura, la receta lo avisa (depende de cómo la prepares). **Ver receta** abre ingredientes y pasos. Filtros por **tiempo**, **costo** y **«Con lo que le gusta»**.
+- **«¿Qué cocino con lo que tengo?»:** marca lo que hay en casa y la app separa las que puedes hacer **ya**, las que salen **con un reemplazo de tu plan** (solo si tu plan lo trae como equivalencia) y las que **casi** salen. La despensa se queda en este teléfono.
+- **Mis recetas:** escribe las tuyas (nombre, ingredientes uno por línea, pasos opcionales). Se revisan contra tu plan igual que las demás. **Se guardan solo en este teléfono: no se comparten con la familia.**
+- **Modo viaje (/viaje):** elige **Carretera** o **Avión**. Te da la lista **«Para llevar»** sacada de tu plan (la comida que aguanta sin nevera, los suplementos, los medicamentos anotados y lo que no puede), que puedes ir marcando; un **día de viaje** ordenado con las franjas de comida de tu plan (sin horas inventadas) y un **documento del viaje en español e inglés** con lo que tu plan y lo que anotaste dicen. El documento se arma **en tu teléfono, sin internet**, e **incluye datos de salud del niño**: guárdalo con cuidado. Lleva el nombre solo si un padre lo escribió para la etiqueta. **«Imprimir documento»** saca solo la hoja.
+- **Quién la usa:** madre o padre, todo · cuidador, la lonchera y lo anotado en ella · colegio, ve la lonchera solo si su acceso incluye comidas (si no, la pantalla dice «Tu acceso no incluye comidas de la lonchera») · nutricionista, no la anota. Lo empacado viaja cifrado entre los teléfonos de la familia, como el resto del día.
+- **Limitaciones conocidas:** el cotejo de una receta con tu plan es **por nombre**: si tu plan llama distinto a un alimento, la receta dirá «no está en tu plan» en vez de un verde dudoso. La despensa, las recetas propias y la lista del viaje no se comparten entre teléfonos. Un día guarda hasta 14 alimentos en la lonchera. Todos los teléfonos de la familia deben tener esta versión: uno antiguo descartaría lo empacado al volver a subirlo.
+
+**In English — Lunchbox, recipes and travel mode (since Sprint 011).** Three screens for everyday life, built
+**from your plan** and **on your phone**: nothing is invented, nothing is sent, and all three open **without
+signal**. Find them on **Today**, in the **"For everyday life"** row. They organise what your plan says; they
+are not medical advice. **Lunchbox:** pick a day (today and the next six) and see the **options to take**:
+only foods your plan accepts, green or with a limit, that **keep without a fridge** (your plan says so, or a
+caregiver marked them in **Profile → Keep without a fridge**) and in a texture they accept today. A red food,
+a current restriction, an allergy or an intolerance never shows up; what is left out because of texture or
+because they refused it last time is listed under "Left out today". **Pack** it, then **Ate it** or **Came
+back home**; the **weekly shopping list** builds itself from what you packed. The **label** lists what they
+cannot eat and what goes today, with a **QR that holds text only, never a link**; the name appears only if a
+parent types it (it stays on this phone); **Print label** prints just the sheet. **Recipes:** 30+ simple
+recipes **checked against your plan** (**"With your plan"**, **"With a limit"**, **"Something is not in your
+plan"**); a recipe with a red food, a current restriction or an allergy is hidden and the reason is one tap
+away; filters for time, cost and what they like; **"What can I cook with what I have?"** sorts recipes into
+make-it-now, with-a-swap-from-your-plan and almost; **My recipes** are reviewed the same way and **stay only on
+this phone**. **Travel mode:** by road or by plane, a packing list from your plan, a travel day built from your
+plan's meal windows (no invented times) and a **Spanish + English document** built on the phone without
+internet; it **contains the child's health data**, so keep it safe. Matching a recipe to your plan is by name:
+if your plan names a food differently the recipe says "not in your plan" instead of a doubtful green.
+
+### Tema: claro, oscuro o el del teléfono · desde Sprint 011
+
+- **Qué hace:** la app puede verse en **claro**, en **oscuro** o seguir al teléfono. El oscuro es de verdad: el fondo, el semáforo (símbolo + palabra + color) y todo el texto se ven bien y se leen con el mismo contraste.
+- **Cómo se usa:** **Ajustes → «Tema»** → **Sistema**, **Claro** u **Oscuro**. «Sistema» cambia solo cuando cambia tu teléfono. La elección se queda en este teléfono y no se pierde al cambiar de idioma.
+- **Limitaciones conocidas:** cada teléfono de la familia elige el suyo; no se comparte.
+
+**In English — Theme: light, dark or the phone's (since Sprint 011).** **Settings → "Theme"** → **System**,
+**Light** or **Dark**. Dark is real: background, traffic light (symbol + word + colour) and text keep the
+same contrast. "System" follows the phone; the choice stays on this phone and survives a language change.
+
 ### Idioma y borrar datos · desde Sprint 001
 
 - **Qué hace:** cambia la app entre español e inglés, muestra qué dieta está cargada, y permite
@@ -412,3 +454,5 @@ own meals · Nutritionist: sees it and leaves day notes. It all shows in **Histo
 | 007    | **Compartir con la familia:** el plan, el día (marcas, horas y notas) y el perfil en todos los teléfonos de quienes cuidan, **cifrados de punta a punta** · cada dato dice quién lo hizo («Por Mamá») · funciona sin internet y sube al volver · cambiar la frase para sacar a un teléfono · salir y borrar lo compartido                                                                                                                                        |
 | 008    | **Avisos que llegan:** avisos en el teléfono a la hora de las comidas, el suplemento y el agua, con la app cerrada · se eligen 4 tipos por teléfono y se puede ocultar el detalle con el teléfono bloqueado · marcar antes de la hora evita ese aviso · «Avisar a la familia» con una nota cifrada de hasta 140 letras · el servidor solo guarda horas sin etiqueta y manda toques vacíos · «Dejar de recibir avisos» y «Borrar mis datos» quitan la suscripción |
 | 009    | **Coordinación:** roles (madre o padre, cuidador, colegio, nutricionista) con permisos y una bitácora firmada de quién cambió qué · **Plan B** (se acabó algo, no hay nevera, llegamos tarde) solo con lo que trae el plan · **Días especiales** (cumpleaños, restaurante, emergencia, «le ofrecen algo») sin señal · **Varias dietas:** unir dos planes, donde lo prohibido gana y cada línea dice de dónde salió                                               |
+| 010    | **Bienestar:** cómo llega a cada comida (5 opciones con símbolo y palabra) · qué hizo con cada alimento · cómo está hoy (8 preguntas y una nota) · hábitos con su referencia y su fuente, sin alarmas · franja de edad en el Perfil · el Historial lo muestra                                                                                                                                                                                                    |
+| 011    | **El día a día:** **Lonchera** con opciones del plan que aguantan sin nevera, qué se empacó y se comió, compras de la semana y etiqueta imprimible con QR de solo texto · **Recetas** (más de 30, revisadas contra tu plan) con «lo que tengo» y recetas propias · **Modo viaje** con lista, día de viaje y documento ES+EN sin internet · **tema oscuro** de verdad en Ajustes                                                                                  |

@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+
+import { analyze } from "./theme";
 
 /**
  * Perfil (S5, ADR-009): lo del profesional «según tu plan», lo de quien cuida
@@ -234,13 +235,13 @@ for (const colorScheme of ["light", "dark"] as const) {
     await expect(page.getByTestId("profile-notes")).toContainText(
       "Nota de prueba",
     );
-    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    expect((await analyze(page)).violations).toEqual([]);
 
     await page.goto("/dieta/manzana");
     await expect(
       page.locator('[data-not-accepted="true"]').first(),
     ).toBeVisible();
-    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    expect((await analyze(page)).violations).toEqual([]);
 
     await page.goto("/chat");
     await ask(page, "¿la manzana se puede?");
@@ -251,6 +252,6 @@ for (const colorScheme of ["light", "dark"] as const) {
     await ask(page, "¿Es alérgico al kiwi?");
     await ask(page, "¿Qué medicamentos toma?");
     await expect(page.locator('[data-answer="medication"]')).toBeVisible();
-    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    expect((await analyze(page)).violations).toEqual([]);
   });
 }

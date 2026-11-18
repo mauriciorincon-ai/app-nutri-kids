@@ -1,36 +1,47 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
 
 import { useDiet } from "@/components/diet-provider";
 import { FamilySection } from "@/components/family/family-section";
 import { PushSection } from "@/components/push/push-section";
-import { CheckLine, errorText } from "@/components/family/parts";
+import { errorText } from "@/components/family/parts";
 import { useFamily } from "@/components/family/use-family";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { fmt, useI18n, type Locale } from "@/i18n";
-import { clearAllData } from "@/lib/diet/storage";
+import {
+  clearAllData,
+  loadPrefs,
+  savePrefs,
+  type ThemePref,
+} from "@/lib/diet/storage";
+import { notifyLocalStore, useLocalStore } from "@/lib/local-store";
 import { getFamily } from "@/lib/family/controller";
 import { getPush } from "@/lib/push/controller";
 import { formatShortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-/** Ajustes: idioma ES/EN, dieta cargada, borrar datos (confirmación) y disclaimer completo. */
+// El diálogo se baja al pulsar «Borrar mis datos», no al abrir Ajustes.
+const ClearDataDialog = dynamic(
+  () => import("@/components/settings/clear-data-dialog"),
+  { ssr: false },
+);
+
+/** Ajustes: idioma ES/EN, tema, dieta cargada, borrar datos (confirmación) y disclaimer completo. */
 export default function SettingsPage() {
   const { diet, source, refresh } = useDiet();
   const { t, l, locale, setLocale } = useI18n();
+  const theme = useLocalStore(() => loadPrefs().theme, "system");
+  // `loadPrefs()` primero: guardar solo el tema borraría el idioma (y al revés).
+  const setTheme = (next: ThemePref) => {
+    savePrefs({ ...loadPrefs(), theme: next });
+    notifyLocalStore();
+  };
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [dialogMounted, setDialogMounted] = useState(false);
   const [cleared, setCleared] = useState(false);
 
   const family = useFamily();
@@ -93,6 +104,40 @@ export default function SettingsPage() {
               )}
               onClick={() => setLocale(key as Locale)}
             >
+              {locale === key && <span aria-hidden>✓ </span>}
+              {label}
+            </Button>
+          ))}
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-lg">{t.settings.theme}</h2>
+        <div
+          className="flex gap-2"
+          role="group"
+          aria-label={t.settings.theme}
+          data-testid="theme-group"
+        >
+          {(
+            [
+              { key: "system", label: t.settings.themeSystem },
+              { key: "light", label: t.settings.themeLight },
+              { key: "dark", label: t.settings.themeDark },
+            ] as const
+          ).map(({ key, label }) => (
+            <Button
+              key={key}
+              variant={theme === key ? "default" : "outline"}
+              aria-pressed={theme === key}
+              data-testid={`theme-${key}`}
+              className={cn(
+                "min-h-11 flex-1",
+                theme !== key && "bg-transparent",
+              )}
+              onClick={() => setTheme(key)}
+            >
+              {theme === key && <span aria-hidden>✓ </span>}
               {label}
             </Button>
           ))}
@@ -141,50 +186,30 @@ export default function SettingsPage() {
             {t.settings.clearedToast}
           </p>
         )}
-        <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-          <DialogTrigger asChild>
-            <Button variant="destructive" size="lg" className="w-full">
-              <Trash2 aria-hidden className="size-5" />
-              {t.settings.clearButton}
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle className="font-heading text-xl">
-                {t.settings.clearConfirmTitle}
-              </DialogTitle>
-              <DialogDescription className="text-base leading-relaxed">
-                {t.settings.clearConfirmBody}
-              </DialogDescription>
-            </DialogHeader>
-            {inFamily && (
-              <CheckLine checked={alsoShared} onChange={setAlsoShared}>
-                {t.settings.clearAlsoShared}
-              </CheckLine>
-            )}
-            {clearError && (
-              <p role="alert" className="text-sm font-semibold text-tl-red">
-                ⚠ {clearError}
-              </p>
-            )}
-            <DialogFooter className="flex-col gap-2 sm:flex-col">
-              <Button
-                variant="destructive"
-                size="lg"
-                onClick={() => void onClear()}
-              >
-                {t.settings.clearConfirmYes}
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => setConfirmOpen(false)}
-              >
-                {t.settings.clearConfirmNo}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Button
+          variant="destructive"
+          size="lg"
+          className="w-full"
+          aria-haspopup="dialog"
+          onClick={() => {
+            setDialogMounted(true);
+            setConfirmOpen(true);
+          }}
+        >
+          <Trash2 aria-hidden className="size-5" />
+          {t.settings.clearButton}
+        </Button>
+        {dialogMounted && (
+          <ClearDataDialog
+            open={confirmOpen}
+            onOpenChange={setConfirmOpen}
+            inFamily={inFamily}
+            alsoShared={alsoShared}
+            onAlsoShared={setAlsoShared}
+            error={clearError}
+            onConfirm={() => void onClear()}
+          />
+        )}
       </section>
 
       <section className="flex flex-col gap-2">

@@ -1,10 +1,11 @@
-import AxeBuilder from "@axe-core/playwright";
 import {
   expect,
   type Browser,
   type BrowserContext,
   type Page,
 } from "@playwright/test";
+
+import { analyze, summarize } from "./theme";
 
 /**
  * Ayudantes de las e2e de Coordinación (S9): dos teléfonos reales (dos contextos) contra el
@@ -75,12 +76,7 @@ export async function axe(page: Page, scope = "axe") {
         document.getAnimations().map((a) => a.finished.catch(() => null)),
       ),
     );
-    const results = await new AxeBuilder({ page }).analyze();
-    // Resumen legible: regla, nodo y por qué (el volcado completo de axe tapa la causa).
-    const found = results.violations.map(
-      (v) =>
-        `${v.id}: ${v.nodes.map((n) => `${n.target.join(" ")} — ${n.failureSummary?.split("\n")[1]?.trim()}`).join(" | ")}`,
-    );
+    const found = summarize((await analyze(page, colorScheme)).violations);
     expect(found, `${scope} · ${colorScheme}`).toEqual([]);
   }
   await page.emulateMedia({ colorScheme: "light" });

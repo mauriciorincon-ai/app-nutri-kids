@@ -246,7 +246,8 @@
               "name": {
                 "es": "Zanahoria",
                 "en": "Carrot"
-              }
+              },
+              "keepsWithoutFridge": true
             },
             {
               "id": "brocoli",
@@ -287,14 +288,16 @@
               "name": {
                 "es": "Pera",
                 "en": "Pear"
-              }
+              },
+              "keepsWithoutFridge": true
             },
             {
               "id": "kiwi",
               "name": {
                 "es": "Kiwi",
                 "en": "Kiwi"
-              }
+              },
+              "keepsWithoutFridge": true
             },
             {
               "id": "uvas",
@@ -426,7 +429,8 @@
             "es": "palomitas caseras",
             "en": "homemade popcorn"
           },
-          "texture": "crunchy"
+          "texture": "crunchy",
+          "keepsWithoutFridge": true
         },
         {
           "name": {
@@ -440,7 +444,47 @@
             "es": "tostadas de arroz",
             "en": "rice cakes"
           },
-          "texture": "crunchy"
+          "texture": "crunchy",
+          "keepsWithoutFridge": true
+        }
+      ]
+    },
+    {
+      "whenMissing": "pollo",
+      "title": {
+        "es": "En vez de pollo (almuerzo)",
+        "en": "Instead of chicken (lunch)"
+      },
+      "use": [
+        {
+          "name": {
+            "es": "huevos",
+            "en": "eggs"
+          },
+          "texture": "soft"
+        },
+        {
+          "name": {
+            "es": "lentejas",
+            "en": "lentils"
+          },
+          "texture": "soft"
+        }
+      ]
+    },
+    {
+      "whenMissing": "arroz",
+      "title": {
+        "es": "En vez de arroz (almuerzo)",
+        "en": "Instead of rice (lunch)"
+      },
+      "use": [
+        {
+          "name": {
+            "es": "papa cocida",
+            "en": "boiled potato"
+          },
+          "texture": "soft"
         }
       ]
     }

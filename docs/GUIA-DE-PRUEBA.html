@@ -6,9 +6,9 @@
 <title>Guía de prueba — Nutrikids</title>
 <!--
   GUÍA DE PRUEBA VIVA Y ACUMULATIVA de Nutrikids. PRIMERA guía de la app (v1), pero ACUMULATIVA:
-  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil), S6 (PDF), S7 (familia), S8 (avisos), S9 (roles, plan B, días especiales, unir dos planes) y S10 (bienestar: ánimo, aceptación, cómo está, hábitos). Autocontenida
+  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil), S6 (PDF), S7 (familia), S8 (avisos), S9 (roles, plan B, días especiales, unir dos planes), S10 (bienestar: ánimo, aceptación, cómo está, hábitos) y S11 (lonchera, recetas, viaje y tema oscuro). Autocontenida
   (cero CDNs). Origen por línea (S1/S2 heredadas ⇒ regresión · Nuevo/Mejorado · S3). Gate mínimo ⭐
-  = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s10.
+  = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s11.
 -->
 <style>
   :root {
@@ -525,6 +525,33 @@
       distinga por color; una anotación que un rol no permitido pueda cambiar; o la fecha de nacimiento pedida en cualquier parte.</p></div>
   </section>
 
+  <!-- ============================ S · EL DÍA A DÍA ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">S</span><h2>El día a día: lonchera, recetas, viaje y tema</h2></div>
+    <p class="meta-bloque chica suave">~9 min · pantallas <strong>Hoy</strong>, <strong>Lonchera</strong>, <strong>Recetas</strong>, <strong>Viaje</strong> y <strong>Ajustes</strong> · todo se arma en el teléfono; prueba también con el modo avión puesto.</p>
+    <ul class="pasos">
+      <li data-origen="nuevo"><input type="checkbox" id="s1"><label for="s1">En <strong>Hoy</strong>, fila <strong>«Para el día a día»</strong>, abre <strong>Lonchera</strong>. Salen solo opciones verdes o con medida que tu plan marca como «aguanta
+        sin nevera», cada una con quién la marcó; ninguna roja, con restricción vigente ni con alergia. Toca <strong>«Empacar»</strong> en una: queda <strong>«Empacado»</strong> con símbolo y palabra y
+        suma a las <strong>compras de la semana</strong>. Luego <strong>«Se lo comió»</strong>: sale de las compras. Recarga: se queda.
+        <span class="origen origen-nuevo">Nuevo · S11</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="s2"><label for="s2">Abajo, la <strong>etiqueta</strong> dice lo que no puede comer y lo que lleva hoy, con un código QR; ningún texto es un enlace. Escribe un nombre y
+        <strong>«Guardar nombre»</strong>: aparece en la etiqueta solo porque tú lo escribiste. <strong>«Imprimir etiqueta»</strong> abre la impresión y en la vista previa solo sale la hoja.
+        <span class="origen origen-nuevo">Nuevo · S11</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="s3"><label for="s3">Abre <strong>Recetas</strong>: cada una dice <strong>«Con lo de tu plan»</strong>, <strong>«Con medida»</strong> o <strong>«Algo no está en tu plan»</strong>.
+        <strong>«Ver receta»</strong> abre ingredientes y pasos. Filtra por <strong>«Rápidas»</strong>. En <strong>«¿Qué cocino con lo que tengo?»</strong> marca pollo y arroz: salen las que se pueden hacer ya
+        o con un reemplazo de tu plan. En <strong>«Mis recetas»</strong> escribe una con «Snacks de paquete» (rojo en la demo): lo dice y no la da por buena; se queda solo en este teléfono.
+        <span class="origen origen-nuevo">Nuevo · S11</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="s4"><label for="s4">Abre <strong>Viaje</strong> con el modo avión puesto. Marca algo de <strong>«Para llevar»</strong>, cambia entre <strong>Carretera</strong> y <strong>Avión</strong> y mira el día de viaje con las franjas
+        de tu plan (sin horas inventadas). El <strong>documento</strong> sale en español e inglés, con el aviso de que contiene datos de salud; <strong>«Imprimir documento»</strong> saca solo la hoja.
+        <span class="origen origen-nuevo">Nuevo · S11</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="s5"><label for="s5">En <strong>Ajustes → «Tema»</strong> elige <strong>Oscuro</strong>: todo cambia al instante, el semáforo sigue leyéndose por símbolo y palabra, y no hay destello al recargar.
+        Vuelve a <strong>Sistema</strong>. Cambia el idioma: el tema se queda. Recorre Hoy, Dieta, Lonchera, Recetas y Viaje en oscuro y claro: ningún texto se pierde ni se sale de la pantalla.
+        <span class="origen origen-nuevo">Nuevo · S11</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> una opción de lonchera o una receta que lleve algo rojo, una alergia o una textura que no acepta sin decirlo; un código QR o un
+      documento con un enlace o con el nombre sin que un padre lo haya escrito; un texto que dé un consejo médico, culpe o alarme; un estado que solo se distinga por color; o un texto ilegible en el tema oscuro.</p></div>
+  </section>
+
   <!-- ============================ J · SIN INTERNET ============================ -->
   <section class="bloque">
     <div class="bloque-cabeza"><span class="letra">J</span><h2>Sin internet y versión nueva</h2></div>
@@ -602,12 +629,14 @@
 
   <footer>
     <p class="chica suave">Guía <strong>viva y acumulativa</strong>: contiene TODAS las pruebas vigentes
-      de Nutrikids (S1 a S10) con su origen visible; una prueba solo se elimina cuando su feature
+      de Nutrikids (S1 a S11) con su origen visible; una prueba solo se elimina cuando su feature
       dejó de existir. Archivo autocontenido — se abre sin internet, se versiona con el repo y se comparte
       tal cual.</p>
     <details class="chica">
       <summary>Historial de la guía</summary>
       <ul>
+        <li><strong>S11 · 2026-11-18 (v9):</strong> nace el bloque S (el día a día: la lonchera con su etiqueta de QR de solo texto, el recetario revisado contra el plan con «lo que tengo»
+          y recetas propias, el modo viaje con su documento ES+EN y el tema oscuro). Mejorado: O («No hay nevera» ahora sale de lo que marca el plan). Ninguna prueba eliminada.</li>
         <li><strong>S10 · 2026-11-17 (v8):</strong> nace el bloque R (bienestar: el semáforo emocional, la bitácora de aceptación, cómo está hoy,
           hábitos contra la referencia de su edad con su fuente, la franja de edad y lo visto en el Historial y por rol). Ninguna prueba eliminada.</li>
         <li><strong>S9 · 2026-11-16 (v7):</strong> nacen los bloques N (roles y bitácora de la familia), O (plan B),
@@ -645,9 +674,9 @@
 
 <script>
   (function () {
-    // NS VERSIONADO POR SPRINT (regla dura): s10. Una regresión sin correr no aparece marcada por
+    // NS VERSIONADO POR SPRINT (regla dura): s11. Una regresión sin correr no aparece marcada por
     // una versión anterior de la guía.
-    var NS = "guia-nutri-kids:s10:";
+    var NS = "guia-nutri-kids:s11:";
     var casillas = Array.prototype.slice.call(document.querySelectorAll('input[type="checkbox"]'));
     var barra = document.getElementById("barra-avance");
     var contador = document.getElementById("contador");

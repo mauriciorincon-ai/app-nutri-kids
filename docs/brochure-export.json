@@ -12,14 +12,14 @@
     "enlaces.produccion": "null cuando la app no tiene URL pública. `razon` explica por qué, y es lo que la vitrina muestra en lugar del enlace. Nunca se rellena con un enlace de repositorio ni con una promesa."
   },
   "schema_version": "1.0.0",
-  "actualizado": "2026-11-17",
+  "actualizado": "2026-11-18",
   "app": {
     "slug": "nutri-kids",
     "nombre": "Nutrikids",
     "ciclo": "H-2",
     "estado": "inicial",
     "sellado_en": null,
-    "sprints_cerrados": 10,
+    "sprints_cerrados": 11,
     "version_repo": "0.1.0"
   },
   "promesa": {
@@ -29,7 +29,7 @@
     "diferencial": "No califica al niño: sin calorías, peso, IMC ni percentiles, y sin convertir el «cumplimiento» en una nota. El chat contesta con tu plan dentro del teléfono y sin internet: no manda nada a ningún lado, ni siquiera para hacerle una pregunta. Lo que anotas del día, las horas y las notas sobre tu hijo solo viaja a tu familia si tú lo decides, y siempre cifrado desde el teléfono."
   },
   "funcionalidades": {
-    "total": 31,
+    "total": 35,
     "fuente_del_conteo": "docs/MANUAL-DE-USO.md",
     "descartadas": [],
     "grupos": [
@@ -63,7 +63,7 @@
         "orden": 2,
         "estrella": false,
         "nombre": "El día de hoy, en orden",
-        "linea": "Qué toca ahora, qué ya pasó y cómo fue cada comida, anotado en segundos",
+        "linea": "Qué toca ahora, qué llevar, qué ya pasó y cómo fue cada comida, anotado en segundos",
         "features": [
           {
             "id": "F4",
@@ -130,6 +130,30 @@
             "nombre": "Hábitos, con su referencia",
             "que_hace": "Sueño, pantalla, actividad, sol y agua, comparados con la referencia de la franja de edad que elige una madre o un padre (nunca la fecha de nacimiento), con su fuente a la vista y sin veredicto.",
             "seccion_manual": "Bienestar: cómo llega, qué acepta, cómo está y sus hábitos"
+          },
+          {
+            "id": "F32",
+            "nombre": "La lonchera, sin sorpresas",
+            "que_hace": "Ves, para hoy y los seis días siguientes, solo lo que tu plan acepta y marca como «aguanta sin nevera»: en verde o con medida, jamás un rojo, una restricción vigente ni una alergia. Empacas, marcas «se lo comió» o «volvió a casa», las compras de la semana se arman solas y la etiqueta imprimible lleva lo que no puede comer y un QR que guarda solo texto, nunca un enlace.",
+            "seccion_manual": "Lonchera, recetas y modo viaje"
+          },
+          {
+            "id": "F33",
+            "nombre": "Recetas revisadas contra tu plan",
+            "que_hace": "Más de 30 recetas sencillas con su estado en símbolo y palabra: con lo de tu plan, con medida o algo no está en tu plan. Lo que tu plan evita no aparece y se dice por qué. Marcas lo que tienes en casa y salen las que puedes hacer ya o con un reemplazo de tu plan; las recetas propias se quedan en tu teléfono.",
+            "seccion_manual": "Lonchera, recetas y modo viaje"
+          },
+          {
+            "id": "F34",
+            "nombre": "Modo viaje",
+            "que_hace": "Por carretera o en avión: una lista para llevar sacada de tu plan, el día de viaje con las franjas de tu plan y un documento en español e inglés para quien cuide al niño fuera de casa, armado en tu teléfono sin internet y con el aviso de que contiene datos de salud.",
+            "seccion_manual": "Lonchera, recetas y modo viaje"
+          },
+          {
+            "id": "F35",
+            "nombre": "Claro, oscuro o el de tu teléfono",
+            "que_hace": "En Ajustes eliges el tema: claro, oscuro o el que use tu teléfono. El semáforo se lee igual en los dos, con símbolo, palabra y color, y no hay destello al abrir.",
+            "seccion_manual": "Tema: claro, oscuro o el del teléfono"
           }
         ]
       },
@@ -273,7 +297,7 @@
     {
       "clave": "funcionalidades",
       "etiqueta": "Funcionalidades",
-      "valor": 31,
+      "valor": 35,
       "unidad": "funcionalidades",
       "fuente": "medido",
       "detalle": "Contadas contra docs/MANUAL-DE-USO.md y verificadas por un test que compara el total con los bloques .feature del brochure. El marco no-médico (nota de primer uso y disclaimer permanente) no cuenta: es el encuadre de la app, no una funcionalidad."
@@ -281,50 +305,50 @@
     {
       "clave": "pantallas",
       "etiqueta": "Pantallas de la app",
-      "valor": 12,
+      "valor": 15,
       "unidad": "pantallas",
       "fuente": "medido",
-      "detalle": "Once rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes, perfil, escenarios, unir y bienestar) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
+      "detalle": "Catorce rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes, perfil, escenarios, unir, bienestar, lonchera, recetas y viaje) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
     },
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 1190,
+      "valor": 1291,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-17 sobre la rama del bienestar (S10), tras pagar la auditoría, el parche de picomatch y aligerar Hoy: 61 archivos, 1190 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-18 sobre la rama del día a día (S11), tras pagar la auditoría: 67 archivos, 1291 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 254,
+      "valor": 320,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-17 sobre la rama del bienestar (S10), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 254 pruebas en dos proyectos (corrida completa tras pagar la auditoría) (móvil Pixel 7 y escritorio), 252 en verde y 2 omitidas a propósito (el reloj firmado solo se prueba en el móvil, porque los dos proyectos comparten servidor); incluyen axe en los dos temas, el uso sin internet, los teléfonos con el centinela de texto en claro, los roles con firma, el plan B, los días especiales, la unión de dos planes, el bienestar con un cuidador y un colegio, el service worker real con el toque entregado por el protocolo del navegador y el reloj de 5 minutos."
+      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-18 sobre la rama del día a día (S11), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 320 pruebas en dos proyectos (corrida completa tras pagar la auditoría) (móvil Pixel 7 y escritorio), 318 en verde y 2 omitidas a propósito (el reloj firmado solo se prueba en el móvil, porque los dos proyectos comparten servidor); incluyen axe en los dos temas reales (claro y oscuro), la lonchera, el recetario y el modo viaje, el uso sin internet, los teléfonos con el centinela de texto en claro, los roles con firma, el plan B, los días especiales, la unión de dos planes, el bienestar con un cuidador y un colegio, el service worker real con el toque entregado por el protocolo del navegador y el reloj de 5 minutos."
     },
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 97.02,
+      "valor": 97.11,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib el 2026-11-17 sobre la rama del bienestar (97,02 % de líneas en total; src/lib/wellbeing 98,09 %; src/lib/family 97,25 % y su servidor 100 %; src/lib/push 96,56 % y su servidor 100 %), con umbrales del 80 % en vitest.config.ts (incluido src/lib/wellbeing) y del 90 % para src/lib/family y src/lib/push."
+      "detalle": "v8 sobre src/lib el 2026-11-18 sobre la rama del día a día (97,11 % de líneas en total; src/lib/lunchbox 100 %, src/lib/recipes 100 %, src/lib/travel 100 %, src/lib/day-to-day 95,83 %), con umbrales del 80 % en vitest.config.ts (incluidas las cuatro carpetas del S11) y del 90 % para src/lib/family y src/lib/push."
     },
     {
       "clave": "decisiones_registradas",
       "etiqueta": "Decisiones de arquitectura registradas",
-      "valor": 15,
+      "valor": 17,
       "unidad": "ADR",
       "fuente": "medido",
-      "detalle": "Archivos de decisions/ el 2026-11-17; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono, la 013 fija los roles con firma por persona, la 014 el plan B, los días especiales y la unión de dos planes, y la 015 el bienestar (se anota, nunca se interpreta, con la franja de edad en vez de la fecha de nacimiento)."
+      "detalle": "Archivos de decisions/ el 2026-11-18; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono, la 013 fija los roles con firma por persona, la 014 el plan B, los días especiales y la unión de dos planes, y la 015 el bienestar (se anota, nunca se interpreta, con la franja de edad en vez de la fecha de nacimiento). La 016 fija el tema oscuro (se elige en Ajustes, se recuerda y no destella) y la 017 la lonchera, el recetario y el modo viaje: todo se arma con el plan y en el teléfono."
     },
     {
       "clave": "dependencias_runtime",
       "etiqueta": "Dependencias en tiempo de ejecución",
-      "valor": 14,
+      "valor": 15,
       "unidad": "paquetes",
       "fuente": "medido",
-      "detalle": "Campo `dependencies` de package.json el 2026-11-17 sobre la rama del S10: sin dependencias nuevas (el cifrado y la firma VAPID son WebCrypto; el almacén y el push se llaman con fetch); sigue incluyendo pdfjs-dist, fijado y servido por la propia app (ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
+      "detalle": "Campo `dependencies` de package.json el 2026-11-18 sobre la rama del S11: una dependencia nueva, qrcode-generator 2.0.4 (publicada el 2025-08-07, licencia MIT, sin dependencias propias), que dibuja el QR de la etiqueta en el teléfono y solo con texto, nunca un enlace (ADR-017); sigue incluyendo pdfjs-dist, fijado y servido por la propia app (ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
     },
     {
       "clave": "requests_del_registro",
@@ -345,10 +369,10 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 88926,
+      "valor": 91393,
       "unidad": "bytes",
       "fuente": "medido",
-      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-17 sobre la rama del S10. Autocontenido: cero recursos externos, incluidas las seis muestras de interfaz (SVG en línea, no imágenes)."
+      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-18 sobre la rama del S11. Autocontenido: cero recursos externos, incluidas las seis muestras de interfaz (SVG en línea, no imágenes)."
     }
   ],
   "stack": [

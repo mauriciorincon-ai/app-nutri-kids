@@ -82,7 +82,7 @@ export function phone(id: string, name: string, now = { t: 1_000 }) {
         notes: mergeMap(cur.notes, regs.notes),
       };
       // S10: los cuatro mapas del bienestar se mezclan igual que las marcas y las notas.
-      for (const m of ["moods", "food", "well", "habits"] as const) {
+      for (const m of ["moods", "food", "well", "habits", "lunch"] as const) {
         const merged = mergeMap(
           (cur[m] ?? {}) as RegMap<unknown>,
           (regs[m] ?? {}) as RegMap<unknown>,

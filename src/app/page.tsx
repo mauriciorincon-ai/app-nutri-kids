@@ -273,6 +273,35 @@ const TodayView = memo(function TodayView({ today }: { today: Date | null }) {
         <ChevronRight aria-hidden className="size-4" />
       </Link>
 
+      <nav
+        aria-labelledby="day-to-day-label"
+        className="flex flex-wrap items-center gap-x-4"
+        data-testid="day-to-day-links"
+      >
+        <span
+          id="day-to-day-label"
+          className="w-full text-sm font-semibold text-muted-foreground"
+        >
+          {t.today.dayToDayLabel}
+        </span>
+        {(
+          [
+            ["/lonchera", t.today.dayToDayLunchbox],
+            ["/recetas", t.today.dayToDayRecipes],
+            ["/viaje", t.today.dayToDayTravel],
+          ] as const
+        ).map(([href, label]) => (
+          <Link
+            key={href}
+            href={href}
+            className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-primary hover:underline"
+          >
+            {label}
+            <ChevronRight aria-hidden className="size-4" />
+          </Link>
+        ))}
+      </nav>
+
       <Link
         href="/perfil"
         className="inline-flex min-h-11 items-center gap-1 self-start text-sm font-medium text-primary hover:underline"

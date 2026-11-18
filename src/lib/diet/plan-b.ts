@@ -8,7 +8,12 @@
  * Puro: la hora y las marcas entran por parámetro; no lee storage ni red.
  */
 import { currentMealSlot, resolveItemStatus } from "./logic";
-import { isSafeOption, planOptionsFor, type Options } from "./options";
+import {
+  avoidedByNotes,
+  isSafeOption,
+  planOptionsFor,
+  type Options,
+} from "./options";
 import { normalizeText } from "./search";
 import type { DietPlan, LocalizedText, Meal, Texture } from "./schema";
 import { orderByTexture, type OrderedOption } from "./texture";
@@ -86,12 +91,20 @@ function safeCandidates(
   now: Date,
   avoid: readonly string[] = [],
 ): Candidate[] {
-  const seen = new Set<string>();
+  const seen = new Map<string, Candidate>();
   const out: Candidate[] = [];
   const push = (c: Candidate) => {
     const key = fridgeKey(c.name);
-    if (seen.has(key) || !isSafeOption(diet, c.name, now, avoid)) return;
-    seen.add(key);
+    const prior = seen.get(key);
+    if (prior) {
+      // El mismo alimento nombrado dos veces (una equivalencia y su grupo): si cualquiera de las
+      // dos lo marca «aguanta sin nevera», la marca no se pierde por llegar segunda.
+      if (c.keepsWithoutFridge && !prior.keepsWithoutFridge)
+        prior.keepsWithoutFridge = true;
+      return;
+    }
+    if (!isSafeOption(diet, c.name, now, avoid)) return;
+    seen.set(key, c);
     out.push(c);
   };
   for (const eq of diet.equivalences)
@@ -119,14 +132,25 @@ export function fridgeCandidates(
   avoid: readonly string[] = [],
 ): { name: LocalizedText; marked: "plan" | "adult" | null }[] {
   const adult = new Set(marks.map(fridgeKeyText));
-  return safeCandidates(diet, now, avoid).map((c) => ({
+  const out = safeCandidates(diet, now, avoid).map((c) => ({
     name: c.name,
-    marked: c.keepsWithoutFridge
+    marked: (c.keepsWithoutFridge
       ? "plan"
       : adult.has(fridgeKey(c.name))
         ? "adult"
-        : null,
+        : null) as "plan" | "adult" | null,
   }));
+  // Los amarillos (con su medida) también se pueden marcar: solo la lonchera (S11) los usa; el plan B
+  // «no hay nevera» sigue ofreciendo únicamente verdes y opciones de equivalencia.
+  for (const y of diet.trafficLight.yellow.items) {
+    if (resolveItemStatus(diet, y.id, now)?.kind !== "yellow") continue;
+    if (avoidedByNotes(y.name, avoid)) continue;
+    out.push({
+      name: y.name,
+      marked: adult.has(fridgeKey(y.name)) ? "adult" : null,
+    });
+  }
+  return out;
 }
 
 /** «Se acabó X»: los reemplazos del plan para X, o `not-in-plan`. */

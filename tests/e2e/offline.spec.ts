@@ -1,5 +1,6 @@
-import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+
+import { analyze } from "./theme";
 
 /**
  * «La dieta responde sin internet» (S4): tras una visita con señal, TODAS las
@@ -157,8 +158,7 @@ test("versión nueva en inglés", async ({ page }) => {
   await expect(notice.getByRole("button", { name: "Update" })).toBeVisible();
 });
 
-// Nota: el sistema de diseño es solo claro (no hay tema oscuro real); «dark» es una guarda:
-// si algún día se agrega un tema oscuro, esta e2e ya lo cubre con axe.
+// Los dos temas reales (S11): `analyze` falla si la página no está en el tema que se mide.
 for (const colorScheme of ["light", "dark"] as const) {
   test(`axe limpio con el aviso de versión visible · tema ${colorScheme}`, async ({
     page,
@@ -167,7 +167,7 @@ for (const colorScheme of ["light", "dark"] as const) {
     await firstVisit(page);
     await publishNewVersion(page);
     await expect(page.getByTestId("sw-update-notice")).toBeVisible();
-    const results = await new AxeBuilder({ page }).analyze();
+    const results = await analyze(page);
     expect(results.violations).toEqual([]);
   });
 }

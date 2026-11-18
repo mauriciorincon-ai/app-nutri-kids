@@ -393,6 +393,7 @@ describe("aceptación por alimento", () => {
       food: f,
       well: {},
       habits: {},
+      lunch: {},
     });
     return [
       {

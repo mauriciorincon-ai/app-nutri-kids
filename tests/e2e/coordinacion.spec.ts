@@ -109,16 +109,19 @@ test.describe("plan B", () => {
     await axe(page, "plan B · el plan no lo dice");
   });
 
-  test("no hay nevera: el plan no lo dice; con la marca del Perfil, sí", async ({
+  test("no hay nevera: el plan marca algunas; la marca del Perfil suma otra", async ({
     page,
   }) => {
     await openDay(page);
     await page.getByTestId("planb-no-fridge").click();
     const answer = page.getByTestId("planb-answer");
-    await expect(answer).toContainText(/no dice cuáles opciones aguantan/i);
-    await axe(page, "plan B · sin nevera, el plan no lo dice");
+    // El plan de ejemplo marca opciones que aguantan sin nevera (S11): salen de entrada.
+    await expect(answer).toContainText(/Aguantan sin nevera/);
+    await expect(answer).toContainText(/pera/i);
+    await expect(answer).not.toContainText(/no dice cuáles/i);
+    await axe(page, "plan B · sin nevera, con lo que marca el plan");
 
-    // Quien cuida marca una opción que ya sabe que aguanta (en el Perfil).
+    // Quien cuida suma otra que ya sabe que aguanta (en el Perfil).
     await page.goto("/perfil");
     const marks = page.getByTestId("fridge-marks");
     await expect(marks).toBeVisible();
@@ -136,9 +139,6 @@ test.describe("plan B", () => {
     await page.getByTestId("planb-no-fridge").click();
     await expect(page.getByTestId("planb-answer")).toContainText(
       /Aguantan sin nevera/,
-    );
-    await expect(page.getByTestId("planb-answer")).not.toContainText(
-      /no dice cuáles/i,
     );
     await axe(page, "plan B · sin nevera, con la marca de quien cuida");
   });

@@ -175,6 +175,8 @@ test.describe("brochure /conoce", () => {
   test("M1 · abre en cuanto cruza la línea, AÚN SIN DETENERTE (bajada continua)", async ({
     page,
   }) => {
+    // ~180 golpes con su lectura de estado: en el runner no siempre caben en los 30 s por defecto.
+    test.setTimeout(60_000);
     await page.goto("/conoce");
     await page.waitForTimeout(900);
     const alto = page.viewportSize()!.height;
@@ -182,11 +184,18 @@ test.describe("brochure /conoce", () => {
     // Bajada continua, sin una sola pausa de lectura: el despliegue no puede depender del
     // reposo (el modelo anterior abría solo al detenerse o en un tick periódico, y las
     // aperturas caían en posiciones arbitrarias — el usuario: «no se percibe»).
+    // Se baja hasta que abran las seis o hasta el final de la página, no un número fijo de
+    // golpes: cada golpe avanza lo que el scroll suave quiera (~18 px de 60) y el alto de las
+    // tarjetas abiertas depende de las fuentes (en Linux parten más líneas que en macOS). Con
+    // un tope fijo de 170, sumar funcionalidades a una tarjeta dejaba a la sexta sin llegar.
     const aperturas = new Map<number, number>();
     let previos = Array(6).fill("false");
-    for (let i = 0; i < 170 && aperturas.size < 6; i++) {
+    let quieto = 0;
+    for (let i = 0; i < 600 && aperturas.size < 6 && quieto < 10; i++) {
+      const antes = await alturaY(page);
       await page.mouse.wheel(0, 60);
       await page.waitForTimeout(40);
+      quieto = (await alturaY(page)) === antes ? quieto + 1 : 0;
       const ahora = await estados(page);
       for (let k = 0; k < 6; k++) {
         if (previos[k] === "false" && ahora[k] === "true") {
@@ -433,7 +442,7 @@ test.describe("brochure /conoce", () => {
     expect(await arbol()).toContain("El checklist del día");
   });
 
-  test("el pie declara las 31 funcionalidades y el clímax es texto visible", async ({
+  test("el pie declara las 35 funcionalidades y el clímax es texto visible", async ({
     page,
   }) => {
     await page.goto("/conoce");
@@ -444,8 +453,8 @@ test.describe("brochure /conoce", () => {
     ).toBeVisible();
     await expect(page.getByText(/Marcar el día no es un examen/)).toBeVisible();
 
-    await expect(page.locator("#conteo-cifra")).toHaveText("31");
-    await expect(page.locator(".feature")).toHaveCount(31);
+    await expect(page.locator("#conteo-cifra")).toHaveText("35");
+    await expect(page.locator(".feature")).toHaveCount(35);
   });
 
   test("todas las rutas del mapa existen de verdad", async ({
@@ -542,7 +551,7 @@ test.describe("brochure con prefers-reduced-motion", () => {
 
     // Los números llegan en su valor final: no se cuentan solos.
     await expect(page.locator("#marcador-cifra")).toHaveText("7");
-    await expect(page.locator("#conteo-cifra")).toHaveText("31");
+    await expect(page.locator("#conteo-cifra")).toHaveText("35");
 
     // Los iconos de trazo están dibujados enteros (no a medio dibujar).
     const sinDibujar = await page

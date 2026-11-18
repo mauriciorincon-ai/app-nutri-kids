@@ -999,6 +999,9 @@ describe("bienestar: qué puede escribir cada rol", () => {
     { k: "well" },
     { k: "habit" },
     { k: "age" },
+    // S11 · lonchera: la pone un padre o quien cuida; el nombre de la etiqueta, solo un padre.
+    { k: "lunch" },
+    { k: "lunch-label" },
   ];
   const label = (w: Write) =>
     "check" in w ? `${w.k}:${w.check}` : "meal" in w ? `${w.k}:${w.meal}` : w.k;
@@ -1012,6 +1015,7 @@ describe("bienestar: qué puede escribir cada rol", () => {
       "food:cena",
       "well",
       "habit",
+      "lunch",
     ],
     school: ["mood:meal:almuerzo", "food:almuerzo"],
     nutritionist: [],
@@ -1362,6 +1366,97 @@ describe("bienestar contra el doble del servidor", () => {
       (i) => `h${i}`,
       () => 1440,
     );
+    regs.lunch = fill(
+      MAP_CAPS.lunch,
+      (i) => `opt:${long}-${long}-${i}`.slice(0, 100),
+      () => "back",
+    );
     expect(sealedSize(regs)).toBeLessThan(ITEM_MAX_CT);
+  });
+});
+
+describe("lonchera contra el doble del servidor (S11)", () => {
+  const T = 30;
+  const lunch = (p: Phone, key = "pera", v = "packed") => ({
+    [key]: { t: T, by: p.id, v },
+  });
+
+  it("lo que empaca un cuidador llega al padre, firmado y entero", async () => {
+    const { a, c, sync } = await family();
+    c.data.days[DAY] = { marks: {}, notes: {}, lunch: lunch(c) } as never;
+    await sync(c);
+    await sync(a);
+    const got = a.data.days[DAY].lunch as Record<
+      string,
+      { v: string; by: string; s?: string }
+    >;
+    expect(got.pera).toMatchObject({ v: "packed", by: c.id });
+    expect(got.pera.s).toBeTruthy();
+    expect(a.state!.rejected).toBe(0);
+  });
+
+  it("el colegio y la nutricionista no empacan: el teléfono del padre lo descarta", async () => {
+    for (const who of ["s", "n"] as const) {
+      const f = await family();
+      const p = f[who];
+      p.data.days[DAY] = {
+        marks: {},
+        notes: {},
+        lunch: lunch(p, "zanahoria", "eaten"),
+      } as never;
+      await f.sync(p);
+      await f.sync(f.a);
+      expect(f.a.data.days[DAY]?.lunch).toBeUndefined();
+      expect(f.a.state!.rejected, who).toBe(1);
+    }
+  });
+
+  it("un padre bien firmado con un estado que no existe o una clave demasiado larga: el registro no se abre y nada de eso se aplica", async () => {
+    const bad = [
+      ["pera", "comido-a-medias"],
+      ["k".repeat(101), "packed"],
+    ] as const;
+    for (const [key, state] of bad) {
+      const { a, c, forge, sync } = await family();
+      const sa = await a.signer;
+      const r = { t: 60, by: a.id, v: state };
+      await forge(a, {
+        name: `day:${DAY}`,
+        data: {
+          marks: {},
+          notes: {},
+          lunch: {
+            [key]: {
+              ...r,
+              s: await sign(sa, entryPayload(`day:${DAY}`, key, r)),
+            },
+          },
+        } as never,
+      });
+      await sync(c);
+      expect(c.data.days[DAY]?.lunch, state).toBeUndefined();
+      expect(c.state!.rejected + c.state!.unreadable, state).toBeGreaterThan(0);
+    }
+  });
+
+  it("el servidor no ve qué lleva ni los nombres (centinela en todo lo que cruza la red)", async () => {
+    const { net, c, sync } = await family();
+    c.data.days[DAY] = {
+      marks: {},
+      notes: {},
+      lunch: lunch(c, "opt:SENTINEL-FOOD", "packed"),
+    } as never;
+    await sync(c);
+    // Sin esto el test pasaría con una red vacía: tiene que haber subido algo de verdad.
+    expect(net.wire.length).toBeGreaterThan(0);
+    const wire = net.wire.join("\n");
+    for (const word of [
+      "SENTINEL-FOOD",
+      "SENTINEL-NAME",
+      "lunch",
+      "packed",
+      "eaten",
+    ])
+      expect(wire).not.toContain(word);
   });
 });

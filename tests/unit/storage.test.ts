@@ -255,7 +255,12 @@ describe("clearAllData ('borrar datos')", () => {
   it("removes imported diet AND day-log, keeps locale pref, returns to demo", () => {
     importDiet(fakeRealDiet);
     toggleDone(day1, "meal:desayuno");
-    savePrefs({ locale: "en", disclaimerSeen: true, chatIntroSeen: false });
+    savePrefs({
+      locale: "en",
+      theme: "dark",
+      disclaimerSeen: true,
+      chatIntroSeen: false,
+    });
 
     clearAllData();
 
@@ -263,6 +268,7 @@ describe("clearAllData ('borrar datos')", () => {
     expect(hasStoredRealDiet()).toBe(false);
     expect(getDoneIds(day1)).toEqual([]);
     expect(loadPrefs().locale).toBe("en"); // el idioma no es dato del niño
+    expect(loadPrefs().theme).toBe("dark"); // ni el tema
   });
 });
 
@@ -270,24 +276,59 @@ describe("prefs", () => {
   it("defaults to es + flags not seen, and survives corrupt data", () => {
     expect(loadPrefs()).toEqual({
       locale: "es",
+      theme: "system",
       disclaimerSeen: false,
       chatIntroSeen: false,
     });
     window.localStorage.setItem(STORAGE_KEYS.prefs, "###");
     expect(loadPrefs()).toEqual({
       locale: "es",
+      theme: "system",
       disclaimerSeen: false,
       chatIntroSeen: false,
     });
   });
 
   it("persists locale, disclaimer and chat-intro flags", () => {
-    savePrefs({ locale: "en", disclaimerSeen: true, chatIntroSeen: true });
-    expect(loadPrefs()).toEqual({
+    savePrefs({
       locale: "en",
+      theme: "light",
       disclaimerSeen: true,
       chatIntroSeen: true,
     });
+    expect(loadPrefs()).toEqual({
+      locale: "en",
+      theme: "light",
+      disclaimerSeen: true,
+      chatIntroSeen: true,
+    });
+  });
+});
+
+describe("prefs · tema (S11)", () => {
+  it("acepta solo system, light y dark; lo demás es «sistema»", () => {
+    for (const theme of ["system", "light", "dark"] as const) {
+      window.localStorage.setItem(
+        STORAGE_KEYS.prefs,
+        JSON.stringify({ theme }),
+      );
+      expect(loadPrefs().theme).toBe(theme);
+    }
+    for (const bad of ["blue", 3, null, true]) {
+      window.localStorage.setItem(
+        STORAGE_KEYS.prefs,
+        JSON.stringify({ theme: bad }),
+      );
+      expect(loadPrefs().theme).toBe("system");
+    }
+  });
+
+  it("guardar el idioma no pierde el tema, y guardar el tema no pierde el idioma", () => {
+    savePrefs({ ...loadPrefs(), theme: "dark" });
+    savePrefs({ ...loadPrefs(), locale: "en" });
+    expect(loadPrefs()).toMatchObject({ locale: "en", theme: "dark" });
+    savePrefs({ ...loadPrefs(), theme: "light" });
+    expect(loadPrefs()).toMatchObject({ locale: "en", theme: "light" });
   });
 });
 

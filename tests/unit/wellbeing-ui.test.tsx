@@ -294,6 +294,7 @@ describe("Historial", () => {
           },
           well: { energy: "low", note: "Durmió poco" },
           habits: { sleep: 570 },
+          lunch: {},
         }}
       />,
     );
