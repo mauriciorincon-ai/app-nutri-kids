@@ -20,16 +20,28 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { fmt, useI18n, type Locale } from "@/i18n";
-import { clearAllData } from "@/lib/diet/storage";
+import {
+  clearAllData,
+  loadPrefs,
+  savePrefs,
+  type ThemePref,
+} from "@/lib/diet/storage";
+import { notifyLocalStore, useLocalStore } from "@/lib/local-store";
 import { getFamily } from "@/lib/family/controller";
 import { getPush } from "@/lib/push/controller";
 import { formatShortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-/** Ajustes: idioma ES/EN, dieta cargada, borrar datos (confirmación) y disclaimer completo. */
+/** Ajustes: idioma ES/EN, tema, dieta cargada, borrar datos (confirmación) y disclaimer completo. */
 export default function SettingsPage() {
   const { diet, source, refresh } = useDiet();
   const { t, l, locale, setLocale } = useI18n();
+  const theme = useLocalStore(() => loadPrefs().theme, "system");
+  // `loadPrefs()` primero: guardar solo el tema borraría el idioma (y al revés).
+  const setTheme = (next: ThemePref) => {
+    savePrefs({ ...loadPrefs(), theme: next });
+    notifyLocalStore();
+  };
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cleared, setCleared] = useState(false);
 
@@ -92,6 +104,41 @@ export default function SettingsPage() {
                 locale !== key && "bg-transparent",
               )}
               onClick={() => setLocale(key as Locale)}
+            >
+              {label}
+            </Button>
+          ))}
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-lg">{t.settings.theme}</h2>
+        <p className="-mt-1 text-sm leading-relaxed text-muted-foreground">
+          {t.settings.themeHelp}
+        </p>
+        <div
+          className="flex gap-2"
+          role="group"
+          aria-label={t.settings.theme}
+          data-testid="theme-group"
+        >
+          {(
+            [
+              { key: "system", label: t.settings.themeSystem },
+              { key: "light", label: t.settings.themeLight },
+              { key: "dark", label: t.settings.themeDark },
+            ] as const
+          ).map(({ key, label }) => (
+            <Button
+              key={key}
+              variant={theme === key ? "default" : "outline"}
+              aria-pressed={theme === key}
+              data-testid={`theme-${key}`}
+              className={cn(
+                "min-h-11 flex-1",
+                theme !== key && "bg-transparent",
+              )}
+              onClick={() => setTheme(key)}
             >
               {label}
             </Button>

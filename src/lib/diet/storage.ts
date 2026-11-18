@@ -275,8 +275,12 @@ export function clearAllData(): void {
 // Preferencias (idioma, disclaimer visto) — no son datos del niño.
 // ---------------------------------------------------------------------------
 
+export type ThemePref = "system" | "light" | "dark";
+
 export type Prefs = {
   locale: "es" | "en";
+  /** Tema elegido en Ajustes (S11): «sistema» sigue al teléfono. Tampoco es dato del niño. */
+  theme: ThemePref;
   disclaimerSeen: boolean;
   /** Nota de transparencia IA del chat vista (Sprint 002). */
   chatIntroSeen: boolean;
@@ -284,6 +288,7 @@ export type Prefs = {
 
 const DEFAULT_PREFS: Prefs = {
   locale: "es",
+  theme: "system",
   disclaimerSeen: false,
   chatIntroSeen: false,
 };
@@ -295,6 +300,10 @@ export function loadPrefs(): Prefs {
     const parsed = JSON.parse(raw) as Partial<Prefs>;
     return {
       locale: parsed.locale === "en" ? "en" : "es",
+      theme:
+        parsed.theme === "light" || parsed.theme === "dark"
+          ? parsed.theme
+          : "system",
       disclaimerSeen: parsed.disclaimerSeen === true,
       chatIntroSeen: parsed.chatIntroSeen === true,
     };

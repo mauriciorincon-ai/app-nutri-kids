@@ -7,10 +7,12 @@ import { BottomNav } from "@/components/app-shell/bottom-nav";
 import { DisclaimerFooter } from "@/components/app-shell/disclaimer-footer";
 import { FirstUseDialog } from "@/components/app-shell/first-use-dialog";
 import { SwRegister } from "@/components/app-shell/sw-register";
+import { ThemeSync } from "@/components/app-shell/theme-sync";
 import { DietProvider } from "@/components/diet-provider";
 import { FamilySync } from "@/components/family/family-sync";
 import { PushSync } from "@/components/push/push-sync";
 import { I18nProvider } from "@/i18n";
+import { THEME_COLORS, THEME_SCRIPT } from "@/lib/theme";
 
 // Presupuesto de fuentes (gate LCP): 2 familias variables sin ejes extra y
 // display OPTIONAL — con swap, el repaint al llegar el webfont movía el LCP a
@@ -40,8 +42,13 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
 };
 
+// Dos colores de barra, uno por esquema del teléfono; `THEME_SCRIPT` los iguala si el
+// usuario eligió un tema a mano (ADR-016).
 export const viewport: Viewport = {
-  themeColor: "#faf7f0",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: THEME_COLORS.light },
+    { media: "(prefers-color-scheme: dark)", color: THEME_COLORS.dark },
+  ],
 };
 
 export default function RootLayout({
@@ -59,11 +66,11 @@ export default function RootLayout({
       className={`${fraunces.variable} ${nunitoSans.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        {/* Pre-paint: oculta el overlay de primer uso si ya fue aceptado (cero flash).
+        {/* Pre-paint: el tema (clase `dark`, color-scheme y barra) y oculta el overlay de primer uso si ya fue aceptado (cero flash).
             Debe correr ANTES de pintar — por eso es inline y síncrono. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var p=JSON.parse(localStorage.getItem("nutrikids.prefs.v1")||"{}");if(p.disclaimerSeen)document.documentElement.setAttribute("data-first-use-seen","");if(p.chatIntroSeen)document.documentElement.setAttribute("data-chat-intro-seen","")}catch(e){}`,
+            __html: `${THEME_SCRIPT}try{var p=JSON.parse(localStorage.getItem("nutrikids.prefs.v1")||"{}");if(p.disclaimerSeen)document.documentElement.setAttribute("data-first-use-seen","");if(p.chatIntroSeen)document.documentElement.setAttribute("data-chat-intro-seen","")}catch(e){}`,
           }}
         />
         <I18nProvider>
@@ -77,6 +84,7 @@ export default function RootLayout({
             </div>
             <BottomNav />
             <FirstUseDialog />
+            <ThemeSync />
             <SwRegister />
             <FamilySync />
             <PushSync />
