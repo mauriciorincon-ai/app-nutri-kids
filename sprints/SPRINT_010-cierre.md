@@ -14,11 +14,11 @@ pr: 16
 - **Resultado:** ADR-015. Semáforo emocional por comida, bitácora de aceptación (también desde la ficha del alimento), «Bienestar de hoy» (`/bienestar`), hábitos contra referencia con fuente, franja de edad elegida por un padre con pregunta anual, lo visto en Historial, permisos por rol.
 - **Estado:** construido y auditado; PR #16 abierto, pendiente de merge. No completado: ninguno del alcance.
 - **Tiempo:** estimado 4,5 h · real 2,1 h activas (`node scripts/horas-sprint.mjs`, 10 commits, 2 sesiones). Diferencia −2,4 h (−53 %): sin medida.
-| Fase | Commits | Horas activas |
-|---|---:|---:|
-| F1 registro + ADR | 3 | 0,5 h |
-| F2 pantallas | 2 | 0,6 h |
-| F3 pruebas, docs, auditoría | 5 | 1,0 h |
+  | Fase | Commits | Horas activas |
+  |---|---:|---:|
+  | F1 registro + ADR | 3 | 0,5 h |
+  | F2 pantallas | 2 | 0,6 h |
+  | F3 pruebas, docs, auditoría | 5 | 1,0 h |
 
 - **Entregables:** `src/lib/wellbeing/`, `src/components/wellbeing/`, `src/app/bienestar/`, `src/i18n/wellbeing.ts`, tests unit (1190) y e2e (`bienestar.spec.ts`), manual, guía (bloque R), BLUEPRINT, brochure (31 funcionalidades), export.
 - **Verde:** vitest 1190 / 1190 (cobertura líneas 97,02 %); Playwright 252 verdes y 2 omitidas a propósito; tsc, eslint, cero-enlaces limpios.
@@ -36,5 +36,5 @@ pr: 16
   - Seguridad y privacidad: sin hallazgos (permisos por rol, firma, sentinela de red, sin fecha de nacimiento, sin secretos).
   - Frases caducadas: sin promesas aplazadas; cifras de evidencia recontadas tras pagar (1190 / 254 / 97,02 %).
 - **Modelo por fase:** F1–F3 Sonnet 5.5 (high, medium, medium) · auditoría Sonnet 5.5 high · cierre Haiku 5.5 low. **Relevo:** la CI del #16 (Haiku) → Opus 5.5 high en el PR #17 (depuración y seguridad, por tabla); ahí, al 2.º intento fallido (diferir Sentry) se paró y decidió el dueño. `/compact`: 2.
-- **Servidores al STOP:** `lsof` LISTEN en este repo: 0.
+- **Servidores al STOP:** `lsof` LISTEN en este repo: 0 abiertos por el builder (el 3600 cerrado); quedan dos que no abrió: Claude Code y el servidor de pruebas de Playwright de VS Code (PID 70525), reportados.
 - Para mergear: squash y borrar la rama; después `/cierre-sprint nutri-kids`.
