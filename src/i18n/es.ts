@@ -667,6 +667,7 @@ export const es = {
     logRemove: "sacó a {name} de la familia",
     logInvite: "invitó a alguien como {role}",
     logNotice: "avisó a la familia",
+    logWellbeing: "anotó cómo va el día ({date})",
     logItemWater: "un vaso de agua",
     logItemOther: "un registro",
     oneParent:

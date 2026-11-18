@@ -251,7 +251,30 @@ export type Write =
   | { k: "mark"; check: string }
   | { k: "day-note"; check: string }
   | { k: "notice" }
-  | { k: "roster" };
+  | { k: "roster" }
+  // S10 · bienestar (ADR-015): el semáforo y la aceptación van con su comida; cómo está y los
+  // hábitos son del día; la franja de edad es del perfil.
+  | { k: "mood"; check: string }
+  | { k: "food"; meal: string }
+  | { k: "well" }
+  | { k: "habit" }
+  | { k: "age" };
+
+/** Todas las clases de escritura, para la prueba de permisos de cada rol contra cada una. */
+export const WRITE_KINDS = [
+  "plan",
+  "textures",
+  "profile-note",
+  "mark",
+  "day-note",
+  "notice",
+  "roster",
+  "mood",
+  "food",
+  "well",
+  "habit",
+  "age",
+] as const satisfies readonly Write["k"][];
 
 /** El corazón de los permisos: lo usan la pantalla (esconde) y la sincronía (descarta). */
 export function may(
@@ -263,13 +286,23 @@ export function may(
     case "parent":
       return true;
     case "caregiver":
-      return w.k === "mark" || w.k === "day-note" || w.k === "notice";
+      return (
+        w.k === "mark" ||
+        w.k === "day-note" ||
+        w.k === "notice" ||
+        w.k === "mood" ||
+        w.k === "food" ||
+        w.k === "well" ||
+        w.k === "habit"
+      );
     case "school":
       if (w.k === "notice") return true;
-      if (w.k === "mark" || w.k === "day-note") {
+      if (w.k === "mark" || w.k === "day-note" || w.k === "mood") {
         const m = /^meal:(.+)$/.exec(w.check);
         return !!m && (member.meals ?? []).includes(m[1]);
       }
+      // La aceptación se anota con la comida a la que pertenece: solo las de su franja.
+      if (w.k === "food") return (member.meals ?? []).includes(w.meal);
       return false;
     case "nutritionist":
       return w.k === "day-note" || w.k === "profile-note";

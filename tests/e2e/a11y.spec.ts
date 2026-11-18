@@ -32,6 +32,7 @@ const ROUTES = [
   "/perfil",
   "/escenarios",
   "/unir",
+  "/bienestar",
 ];
 
 for (const route of ROUTES) {

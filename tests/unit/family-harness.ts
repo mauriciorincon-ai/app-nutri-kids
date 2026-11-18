@@ -2,7 +2,7 @@
 import type { DayRegs } from "@/lib/diet/day-log";
 import type { ProfileRegs } from "@/lib/diet/profile-notes";
 import { familyApi } from "@/lib/family/client";
-import { mergeMap, mergeReg } from "@/lib/family/merge";
+import { mergeMap, mergeReg, type RegMap } from "@/lib/family/merge";
 import { handle } from "@/lib/family/server/handler";
 import { createMemoryStore } from "@/lib/family/server/memory";
 import type { FamilyStore } from "@/lib/family/server/store";
@@ -77,10 +77,19 @@ export function phone(id: string, name: string, now = { t: 1_000 }) {
     days: () => data.days,
     mergeDay(day, regs) {
       const cur = data.days[day] ?? { marks: {}, notes: {} };
-      const next = {
+      const next: DayRegs = {
         marks: mergeMap(cur.marks, regs.marks),
         notes: mergeMap(cur.notes, regs.notes),
       };
+      // S10: los cuatro mapas del bienestar se mezclan igual que las marcas y las notas.
+      for (const m of ["moods", "food", "well", "habits"] as const) {
+        const merged = mergeMap(
+          (cur[m] ?? {}) as RegMap<unknown>,
+          (regs[m] ?? {}) as RegMap<unknown>,
+        );
+        if (Object.keys(merged).length)
+          (next as Record<string, unknown>)[m] = merged;
+      }
       const changed = JSON.stringify(next) !== JSON.stringify(cur);
       data.days[day] = next;
       return changed;
@@ -88,8 +97,10 @@ export function phone(id: string, name: string, now = { t: 1_000 }) {
     profile: () => data.profile,
     mergeProfile(regs) {
       const textures = mergeReg(data.profile.textures, regs.textures);
+      const age = mergeReg(data.profile.age, regs.age);
       const next: ProfileRegs = {
         ...(textures ? { textures } : {}),
+        ...(age ? { age } : {}),
         notes: mergeMap(data.profile.notes, regs.notes),
       };
       const changed = JSON.stringify(next) !== JSON.stringify(data.profile);

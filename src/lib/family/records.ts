@@ -4,6 +4,20 @@ import { NOTE_CHIPS, NOTE_TEXT_MAX } from "@/lib/diet/day-log";
 import { DEVICE_NAME_MAX } from "@/lib/device";
 import { NOTE_KINDS, PROFILE_NOTE_MAX } from "@/lib/diet/profile-notes";
 import { textureSchema } from "@/lib/diet/schema";
+import {
+  AGE_BANDS,
+  FOOD_KEY_MAX,
+  FOOD_TEXTURES,
+  HABIT_MAX_MIN,
+  MAP_CAPS,
+  MOODS,
+  PRESENTATIONS,
+  STAGES,
+  SYMPTOMS,
+  VERDICTS,
+  WELL_NOTE_KEY,
+  WELL_NOTE_MAX,
+} from "@/lib/wellbeing/values";
 
 import { aadFor, open, recordId, seal, type FamilyKeys } from "./crypto";
 import { logSharedSchema } from "./log";
@@ -46,14 +60,50 @@ export const profileNoteValue = z.object({
 
 const checkId = z.string().min(1).max(80);
 
+// S10 · bienestar (ADR-015): ids cerrados y minutos; cada mapa con su tope, para que un día
+// lleno siga cabiendo en lo compartido.
+export const foodValue = z.object({
+  stage: z.enum(STAGES),
+  verdict: z.enum(VERDICTS).nullable(),
+  texture: z.enum(FOOD_TEXTURES).nullable(),
+  presentation: z.enum(PRESENTATIONS).nullable(),
+  isNew: z.boolean(),
+});
+const wellKey = z.string().min(1).max(20);
+const wellValue = z.string().min(1).max(WELL_NOTE_MAX);
+const capped = <T extends z.ZodType>(
+  s: z.ZodRecord<z.ZodString, T>,
+  max: number,
+) => s.refine((m) => Object.keys(m).length <= max, "too many entries");
+
 export const daySchema = z.object({
   marks: z.record(checkId, reg(markValue)),
   notes: z.record(checkId, reg(dayNoteValue)),
+  moods: capped(
+    z.record(checkId, reg(z.enum(MOODS))),
+    MAP_CAPS.moods,
+  ).optional(),
+  food: capped(
+    z.record(z.string().min(1).max(FOOD_KEY_MAX), reg(foodValue)),
+    MAP_CAPS.food,
+  ).optional(),
+  well: capped(z.record(wellKey, reg(wellValue)), MAP_CAPS.well).optional(),
+  habits: capped(
+    z.record(wellKey, reg(z.number().int().min(0).max(HABIT_MAX_MIN))),
+    MAP_CAPS.habits,
+  ).optional(),
 });
 export const profileSchema = z.object({
   textures: reg(z.array(textureSchema)).optional(),
+  /** Franja de edad que un padre eligió (S10, decisión 1a): jamás una fecha de nacimiento. */
+  age: reg(z.enum(AGE_BANDS)).optional(),
   notes: z.record(z.string().min(1).max(40), reg(profileNoteValue)),
 });
+/** Las claves válidas de «cómo está»: los ocho síntomas y la nota del día. */
+export const WELL_KEYS: readonly string[] = [
+  ...Object.keys(SYMPTOMS),
+  WELL_NOTE_KEY,
+];
 /** El plan entero; su forma la valida `dietPlanSchema` al aplicarlo. */
 export const planSchema = z.object({ ...stamp, diet: z.unknown() });
 export const deviceSchema = z.object({
@@ -66,7 +116,10 @@ export const deviceSchema = z.object({
   /** Llave pública de firma de este teléfono (S9). */
   pub: z.string().regex(PUB_RE).optional(),
   /** Etiqueta de la invitación con la que entró (S9): un padre la confirma con su rol. */
-  invite: z.string().regex(/^[0-9A-HJKMNP-TV-Z]{4}$/).optional(),
+  invite: z
+    .string()
+    .regex(/^[0-9A-HJKMNP-TV-Z]{4}$/)
+    .optional(),
   /** Firma del propio teléfono sobre id, nombre, consentimiento, llave e invitación. */
   s: sig,
 });

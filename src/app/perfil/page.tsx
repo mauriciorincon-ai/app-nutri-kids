@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { RoleLimit } from "@/components/family/role-limit";
 import { useCan, useWho } from "@/components/family/use-family";
 import { useProfileNotes } from "@/components/use-profile-notes";
+import { AgePicker } from "@/components/wellbeing/age-picker";
 import { fmt, useI18n } from "@/i18n";
 import { dateKey, isRestrictionActive } from "@/lib/diet/logic";
 import { avoidTexts } from "@/lib/diet/options";
@@ -296,6 +297,8 @@ export default function ProfilePage() {
             })}
           </ul>
         </div>
+
+        <AgePicker />
 
         <div
           className="rounded-xl border bg-card px-4 py-3"

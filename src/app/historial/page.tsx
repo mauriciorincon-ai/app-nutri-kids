@@ -1,18 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { NoteSummary } from "@/components/day-checklist/note-summary";
 import { useToday } from "@/components/day-checklist/use-today";
 import { useDiet } from "@/components/diet-provider";
 import { useWho } from "@/components/family/use-family";
 import { TodayBadge } from "@/components/today-badge";
+import { WellbeingBlock } from "@/components/wellbeing/history-block";
+import { useWellbeingDays, useWt } from "@/components/wellbeing/use-wellbeing";
 import { fmt, useI18n, type Dictionary, type Locale } from "@/i18n";
 import {
   listDayEntries,
   listRecordedEntries,
   type DayRecord,
+  type DayWellbeing,
   type RecordedDay,
 } from "@/lib/diet/day-log";
 import { dateKey, resolveCheckTarget } from "@/lib/diet/logic";
@@ -31,16 +34,27 @@ export default function HistoryPage() {
   const { diet } = useDiet();
   const { t, locale } = useI18n();
   const hydrated = useHydrated();
+  const w = useWt();
   const today = useToday();
   const todayKey = today ? dateKey(today) : null;
 
   // Una sola lectura del store (no getDayRecord por día en el render).
   const entries = useLocalStore(listRecordedEntries, NO_ENTRIES, "");
+  const wellbeingByDay = new Map(
+    useWellbeingDays().map((d) => [d.day, d.wellbeing]),
+  );
 
   return (
     <div className="flex flex-col gap-5 pb-6">
       <h1 className="text-3xl">{t.history.title}</h1>
       <p className="-mt-2 text-muted-foreground">{t.history.intro}</p>
+      <Link
+        href="/bienestar"
+        className="inline-flex min-h-11 items-center gap-1 self-start text-sm font-medium text-primary hover:underline"
+      >
+        {w.open}
+        <ChevronRight aria-hidden className="size-4" />
+      </Link>
 
       {!hydrated ? (
         <div
@@ -60,6 +74,7 @@ export default function HistoryPage() {
               day={day}
               isToday={day === todayKey}
               record={record}
+              wellbeing={wellbeingByDay.get(day)}
               diet={diet}
               locale={locale}
               t={t}
@@ -83,6 +98,7 @@ function DayCard({
   day,
   isToday,
   record,
+  wellbeing,
   diet,
   locale,
   t,
@@ -90,6 +106,7 @@ function DayCard({
   day: string;
   isToday: boolean;
   record: DayRecord;
+  wellbeing: DayWellbeing | undefined;
   diet: DietPlan;
   locale: Locale;
   t: Dictionary;
@@ -159,6 +176,10 @@ function DayCard({
           </li>
         ))}
       </ul>
+
+      {wellbeing && (
+        <WellbeingBlock wellbeing={wellbeing} diet={diet} mealLabel={label} />
+      )}
     </li>
   );
 }

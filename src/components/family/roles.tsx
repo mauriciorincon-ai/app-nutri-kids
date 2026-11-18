@@ -578,6 +578,10 @@ export function describeLog(
       });
     case "notice":
       return t.family.logNotice;
+    case "wellbeing":
+      return fmt(t.family.logWellbeing, {
+        date: shortDate(row.r.split("|")[0] ?? "", locale),
+      });
     case "roster": {
       const [op, id, role] = row.r.split(":");
       const r = (role ?? id) as Role;

@@ -21,6 +21,7 @@ export default defineConfig({
         "src/lib/privacy/**",
         "src/lib/family/**",
         "src/lib/push/**",
+        "src/lib/wellbeing/**",
       ],
       thresholds: {
         lines: 80,
