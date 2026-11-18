@@ -30,6 +30,8 @@ export type LunchItem = {
 };
 
 export type LunchHeld = {
+  /** La misma clave que tendría en la lonchera (para no perder su nombre en lo ya empacado). */
+  key: string;
   name: LocalizedText;
   /** texture = hoy no acepta esa textura · refused = lo rechazó la última vez. */
   reason: "texture" | "refused";
@@ -161,7 +163,7 @@ export function lunchOptions(input: LunchInput): LunchOptions {
   const held: LunchHeld[] = [];
   const kept = marked.filter((i) => {
     if (refused.has(i.key)) {
-      held.push({ name: i.name, reason: "refused" });
+      held.push({ key: i.key, name: i.name, reason: "refused" });
       return false;
     }
     return true;
@@ -170,7 +172,7 @@ export function lunchOptions(input: LunchInput): LunchOptions {
   const items = ordered
     .filter((o) => {
       if (o.notAccepted) {
-        held.push({ name: o.name, reason: "texture" });
+        held.push({ key: o.key, name: o.name, reason: "texture" });
         return false;
       }
       return true;

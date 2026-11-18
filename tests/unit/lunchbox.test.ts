@@ -190,6 +190,7 @@ describe("lonchera · lo que NUNCA entra", () => {
     if (r.kind !== "options") throw new Error();
     expect(names(r)).not.toContain("pera");
     expect(r.held).toContainEqual({
+      key: "pera",
       name: { es: "Pera", en: "Pear" },
       reason: "refused",
     });

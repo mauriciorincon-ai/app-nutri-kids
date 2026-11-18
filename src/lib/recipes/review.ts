@@ -13,6 +13,8 @@ import { containsPhrase, toTokens } from "@/lib/diet/search";
 import type { DietPlan, LocalizedText, Texture } from "@/lib/diet/schema";
 import { orderByTexture } from "@/lib/diet/texture";
 import { avoidList } from "@/lib/lunchbox/engine";
+import { foodIdsAnnotated, summarizeFood } from "@/lib/wellbeing/acceptance";
+import type { DayWellbeing } from "@/lib/diet/day-log";
 
 import {
   timeLevel,
@@ -221,6 +223,18 @@ export type Filters = {
   /** Solo recetas con algún alimento que la última vez le gustó o aceptó. */
   liked?: boolean;
 };
+
+/** Los alimentos cuyo último veredicto fue «le gustó» o «lo aceptó» (S10), para el filtro «lo que le gusta». */
+export function likedFoodIds(
+  days: { day: string; wellbeing: DayWellbeing }[],
+): Set<string> {
+  const out = new Set<string>();
+  for (const id of foodIdsAnnotated(days)) {
+    const v = summarizeFood(days, id).lastVerdict;
+    if (v === "loves" || v === "accepts") out.add(id);
+  }
+  return out;
+}
 
 export function filterRecipes(
   list: readonly ReviewedRecipe[],

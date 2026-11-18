@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { dayWellbeing } from "./wellbeing-fixtures";
 import { looksLikeMedicalAdvice } from "@/lib/diet/guardrails";
 import { TEXTURES, type DietPlan } from "@/lib/diet/schema";
 import { getDemoDiet } from "@/lib/diet/storage";
@@ -11,6 +12,7 @@ import {
 } from "@/lib/recipes/catalog";
 import {
   filterRecipes,
+  likedFoodIds,
   pantryPlan,
   resolveIngredient,
   reviewAll,
@@ -44,7 +46,9 @@ describe("recetario inicial · contenido", () => {
     expect(new Set(RECIPES.map((r) => timeLevel(r.minutes)))).toEqual(
       new Set(["quick", "medium", "long"]),
     );
-    expect(new Set(RECIPES.map((r) => r.cost))).toEqual(new Set(["low", "mid"]));
+    expect(new Set(RECIPES.map((r) => r.cost))).toEqual(
+      new Set(["low", "mid"]),
+    );
   });
 
   it("el nivel de tiempo sale de los minutos: hasta 15, hasta 30, más", () => {
@@ -394,5 +398,24 @@ describe("resolveIngredient · el peor cotejo manda", () => {
       kind: "blocked",
       why: "red",
     });
+  });
+});
+
+describe("lo que le gusta · último veredicto de la aceptación (S10)", () => {
+  it("cuenta «le encantó» y «lo aceptó» del último veredicto; «lo rechazó» y lo sin veredicto, no", () => {
+    const days = [
+      dayWellbeing("2026-08-03", { lentejas: "refuses", pera: "loves" }),
+      dayWellbeing("2026-08-04", {
+        lentejas: "accepts",
+        pera: "refuses",
+        arroz: "accepts",
+      }),
+    ];
+    // listWellbeingDays los entrega del más reciente al más antiguo.
+    expect([...likedFoodIds([...days].reverse())].sort()).toEqual([
+      "arroz",
+      "lentejas",
+    ]);
+    expect(likedFoodIds([])).toEqual(new Set());
   });
 });

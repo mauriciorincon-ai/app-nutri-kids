@@ -131,7 +131,7 @@ const planKey = (p: { t: number; by: string }) => `${p.t}.${p.by}`;
 const hasDay = (r: DayRegs) =>
   Object.keys(r.marks).length > 0 ||
   Object.keys(r.notes).length > 0 ||
-  [r.moods, r.food, r.well, r.habits].some(
+  [r.moods, r.food, r.well, r.habits, r.lunch].some(
     (m) => m && Object.keys(m).length > 0,
   );
 const hasProfile = (r: ProfileRegs) =>
