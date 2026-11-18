@@ -152,6 +152,8 @@ test("medianoche con la pestaña abierta: el día rota SIN reload", async ({
   await page.clock.install({ time: new Date("2026-07-06T23:58:00") });
   await seedPrefs(page);
   await page.goto("/");
+  // El toque antes de la hidratación se pierde (intermitente en el runner): igual que `openAt`.
+  await page.waitForLoadState("networkidle");
   await page.getByRole("checkbox", { name: /Vaso 1/ }).click();
   await expect(page.getByRole("checkbox", { name: /Vaso 1/ })).toBeChecked();
 
