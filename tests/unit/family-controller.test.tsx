@@ -476,6 +476,13 @@ describe("el director: disparadores y bordes", () => {
 });
 
 describe("roles en el director (S9 · ADR-013)", () => {
+  // Los avisos se leen por la fecha del aparato: el reloj se fija al día que dice `today()`.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(DAY);
+  });
+  afterEach(() => vi.useRealTimers());
+
   /** Dos teléfonos en el mismo proceso: cada uno con SU localStorage e IndexedDB. */
   function devices() {
     const saved = new Map<

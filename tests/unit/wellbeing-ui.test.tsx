@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DietProvider } from "@/components/diet-provider";
 import { AgePicker } from "@/components/wellbeing/age-picker";
@@ -157,6 +157,13 @@ describe("hábitos contra la referencia", () => {
 });
 
 describe("bitácora de aceptación (formulario)", () => {
+  // La bitácora anota en el día real si cruzó la medianoche: el reloj se fija al día de la prueba.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(day);
+  });
+  afterEach(() => vi.useRealTimers());
+
   const meals = diet.dailyMenu.map((m) => ({ id: m.id, name: m.name }));
   const foods = acceptableFoods(diet);
 

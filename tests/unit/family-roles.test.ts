@@ -1292,7 +1292,7 @@ describe("bienestar contra el doble del servidor", () => {
   it("el servidor no ve tipos, nombres ni contenidos (centinela en todo lo que cruza la red)", async () => {
     const { net, c, sync } = await family();
     c.data.days[DAY] = { marks: {}, notes: {}, ...wb(c, T) };
-    c.data.profile = { notes: {}, age: { t: T, by: c.id, v: "5" } };
+    c.data.profile = { notes: {}, age: { t: T, by: c.id, v: "13-17" } };
     await sync(c);
     const wire = net.wire.join("\n");
     for (const word of [
@@ -1305,7 +1305,8 @@ describe("bienestar contra el doble del servidor", () => {
       "habits",
       "energy",
       "wellbeing",
-      "3-4",
+      // Entre comillas, como iría en claro: «13-17» suelto puede salir por azar en el cifrado.
+      '"13-17"',
     ])
       expect(wire).not.toContain(word);
   });
