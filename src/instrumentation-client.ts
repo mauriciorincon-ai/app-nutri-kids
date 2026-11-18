@@ -1,39 +1,30 @@
-/**
- * Sentry entra cuando el navegador queda libre, no durante la carga: iniciarlo era más de la
- * mitad del trabajo de arranque de Hoy (medido el 2026-11-17: ~140 → ~65 ms con la CPU ×6). Los
- * errores de esos primeros instantes se guardan y se envían al iniciar, con el mismo filtro de
- * privacidad (`src/lib/privacy/sentry-start.ts`).
- */
+import * as Sentry from "@sentry/nextjs";
 
-type OnTransition =
-  typeof import("@sentry/nextjs").captureRouterTransitionStart;
+import { loadProfileNotes } from "@/lib/diet/profile-notes";
+import { loadActiveDiet } from "@/lib/diet/storage";
+import {
+  scrubSentryEvent,
+  scrubSentryTransaction,
+  sensitiveTerms,
+} from "@/lib/privacy/sentry-scrub";
 
-let onTransition: OnTransition | null = null;
-const early: unknown[] = [];
-const onError = (e: ErrorEvent) => early.push(e.error ?? e.message);
-const onRejection = (e: PromiseRejectionEvent) => early.push(e.reason);
-
-function start() {
-  void import("@/lib/privacy/sentry-start").then(({ startSentry }) => {
-    window.removeEventListener("error", onError);
-    window.removeEventListener("unhandledrejection", onRejection);
-    onTransition = startSentry(early.splice(0));
-  });
+function termsOnThisDevice(): string[] {
+  try {
+    return sensitiveTerms(loadActiveDiet().diet, loadProfileNotes());
+  } catch {
+    return [];
+  }
 }
 
-function whenIdle() {
-  if ("requestIdleCallback" in window)
-    window.requestIdleCallback(start, { timeout: 4000 });
-  else setTimeout(start, 1);
-}
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  tracesSampleRate: 0.1,
+  // Regla dura de la app: jamás datos del niño ni contenido de la dieta en eventos.
+  sendDefaultPii: false,
+  // Perfil y anotaciones de quien cuida jamás viajan en claro (regla dura 6, ADR-009, ADR-011).
+  beforeSend: (event) => scrubSentryEvent(event, termsOnThisDevice()),
+  beforeSendTransaction: (event) =>
+    scrubSentryTransaction(event, termsOnThisDevice()),
+});
 
-if (typeof window !== "undefined") {
-  window.addEventListener("error", onError);
-  window.addEventListener("unhandledrejection", onRejection);
-  if (document.readyState === "complete") whenIdle();
-  else window.addEventListener("load", whenIdle, { once: true });
-}
-
-export function onRouterTransitionStart(...args: Parameters<OnTransition>) {
-  onTransition?.(...args);
-}
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
