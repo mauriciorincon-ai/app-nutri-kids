@@ -62,9 +62,15 @@ overrides:
 # (2026-11-12), así que no entra: se ignora la opcional y con ella sus binarios por plataforma.
 ignoredOptionalDependencies:
   - '@napi-rs/canvas'
-# picomatch <=4.0.7 (GHSA-fc5q-39xc-vjpf, ReDoS) no tiene versión parcheada publicada (la última es
-# 4.0.7, 2026-11-17). Solo entra en tiempo de build (el plugin de rollup de @sentry/nextjs y la CLI de
-# shadcn); no aparece en .next/server ni en .next/static. Excepción puntual: se quita cuando salga 4.0.8.
+# picomatch <=4.0.7 (GHSA-fc5q-39xc-vjpf, ReDoS) no tiene versión arreglada publicada (2026-11-17; el PR
+# upstream #194 tampoco cubre `+(*a)`). Se paga con un parche propio a 2.3.2 y 4.0.7 (`patches/`): un
+# `*` libre dentro de `+( )`/`*( )` ya no anida cuantificadores (una rama sin `/` se reduce a una sola
+# vez, que casa lo mismo; varias ramas quedan literales, como ya hace picomatch con otras repeticiones
+# riesgosas). Prueba: tests/unit/picomatch-redos.test.ts. La auditoría sigue viendo «4.0.7» por el número,
+# por eso el ignore. Cuando salga la versión arreglada, pnpm falla por parche sin usar: se quitan los dos.
 auditConfig:
   ignoreGhsas:
     - GHSA-fc5q-39xc-vjpf
+patchedDependencies:
+  picomatch@2.3.2: patches/picomatch@2.3.2.patch
+  picomatch@4.0.7: patches/picomatch@4.0.7.patch
