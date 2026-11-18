@@ -34,6 +34,9 @@ const ROUTES = [
   "/escenarios",
   "/unir",
   "/bienestar",
+  "/lonchera",
+  "/recetas",
+  "/viaje",
 ];
 
 // Los dos temas REALES (S11, ADR-016): `analyze` falla si la página no está en el tema pedido.
