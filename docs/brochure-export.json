@@ -289,10 +289,10 @@
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 1180,
+      "valor": 1190,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-17 sobre la rama del bienestar (S10), tras pagar la auditoría: 59 archivos, 1180 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-17 sobre la rama del bienestar (S10), tras pagar la auditoría, el parche de picomatch y aligerar Hoy: 61 archivos, 1190 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",

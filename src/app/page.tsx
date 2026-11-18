@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useDeferredValue, useMemo } from "react";
 import Link from "next/link";
 import { ChevronRight, Droplets, Pill } from "lucide-react";
 
@@ -42,16 +43,27 @@ type Row = ChecklistItem & { done: boolean };
  * (esqueleto mínimo, sin envolver el candidato LCP).
  */
 export default function TodayPage() {
+  // La fecha del aparato llega al hidratar y useSyncExternalStore re-pintaría Hoy entera
+  // de golpe, en una tarea larga (TBT, S10). Diferida, Hoy se re-pinta en segundo plano y
+  // a trozos; aquí solo se re-pinta este envoltorio, que no cambia nada (TodayView es memo).
+  const today = useDeferredValue(useToday());
+  return <TodayView today={today} />;
+}
+
+const TodayView = memo(function TodayView({ today }: { today: Date | null }) {
   const { diet } = useDiet();
   const { t, l, locale } = useI18n();
   const who = useWho();
   const can = useCan();
-  const today = useToday();
   const { record, doneIds, toggle, saveNote } = useDayLog(today);
   const w = useWt();
   const wellbeing = useWellbeing(today);
-  const mealOptions = diet.dailyMenu.map((m) => ({ id: m.id, name: m.name }));
-  const foodOptions = acceptableFoods(diet);
+  // Solo cambian con la dieta: no se rehacen en cada render de Hoy.
+  const mealOptions = useMemo(
+    () => diet.dailyMenu.map((m) => ({ id: m.id, name: m.name })),
+    [diet],
+  );
+  const foodOptions = useMemo(() => acceptableFoods(diet), [diet]);
 
   // Con fecha real: checklist completo. Sin ella (prerender): comidas + agua
   // estáticas, sin marcas — el HTML inicial ya contiene el candidato LCP.
@@ -286,4 +298,4 @@ export default function TodayPage() {
       </Link>
     </div>
   );
-}
+});
