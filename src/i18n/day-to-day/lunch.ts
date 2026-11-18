@@ -29,6 +29,8 @@ const es = {
   heldLine: "{name}: {why}",
   pack: "Empacar",
   packAria: "Empacar {name}",
+  packFull:
+    "Este día ya tiene {n} cosas anotadas: es el máximo. Quita alguna para empacar otra.",
   states: {
     packed: "Empacado",
     eaten: "Se lo comió",
@@ -91,6 +93,8 @@ const en: typeof es = {
   heldLine: "{name}: {why}",
   pack: "Pack",
   packAria: "Pack {name}",
+  packFull:
+    "This day already has {n} things noted: that is the most. Remove one to pack another.",
   states: {
     packed: "Packed",
     eaten: "Ate it",

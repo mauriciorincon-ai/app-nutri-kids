@@ -274,10 +274,16 @@ const TodayView = memo(function TodayView({ today }: { today: Date | null }) {
       </Link>
 
       <nav
-        aria-label={t.today.dayToDayLabel}
+        aria-labelledby="day-to-day-label"
         className="flex flex-wrap items-center gap-x-4"
         data-testid="day-to-day-links"
       >
+        <span
+          id="day-to-day-label"
+          className="w-full text-sm font-semibold text-muted-foreground"
+        >
+          {t.today.dayToDayLabel}
+        </span>
         {(
           [
             ["/lonchera", t.today.dayToDayLunchbox],

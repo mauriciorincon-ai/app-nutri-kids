@@ -27,6 +27,7 @@ import {
 } from "@/lib/lunchbox/engine";
 import { shoppingList } from "@/lib/lunchbox/shopping";
 import { useLocalStore } from "@/lib/local-store";
+import { MAP_CAPS } from "@/lib/wellbeing/values";
 import { cn } from "@/lib/utils";
 import type { LunchState } from "@/lib/wellbeing/values";
 
@@ -112,6 +113,9 @@ export function Lunchbox() {
   const canWrite = can({ k: "lunch" }) && !school;
   const shopping = shoppingList(week, names);
   const packedKeys = Object.keys(dayLunch).filter((k) => names.has(k));
+  // El registro del día guarda hasta MAP_CAPS.lunch anotaciones: pasado el tope no se puede
+  // empacar más y se dice, en vez de dejar un botón que no hace nada.
+  const full = Object.keys(dayLunch).length >= MAP_CAPS.lunch;
 
   const set = (key: string, state: LunchState | null) => {
     setLunch(date, key, state);
@@ -210,17 +214,28 @@ export function Lunchbox() {
             {d.lunch.emptyToday}
           </p>
         ) : (
-          <ul className="flex flex-col gap-2" data-testid="lunch-options">
-            {options.items.map((i) => (
-              <OptionRow
-                key={i.key}
-                item={i}
-                state={dayLunch[i.key]}
-                canWrite={canWrite}
-                onSet={(s) => set(i.key, s)}
-              />
-            ))}
-          </ul>
+          <>
+            {full && canWrite && (
+              <p
+                className="rounded-xl border border-dashed px-4 py-3 text-sm"
+                data-testid="lunch-full"
+              >
+                {fmt(d.lunch.packFull, { n: MAP_CAPS.lunch })}
+              </p>
+            )}
+            <ul className="flex flex-col gap-2" data-testid="lunch-options">
+              {options.items.map((i) => (
+                <OptionRow
+                  key={i.key}
+                  item={i}
+                  state={dayLunch[i.key]}
+                  full={full}
+                  canWrite={canWrite}
+                  onSet={(s) => set(i.key, s)}
+                />
+              ))}
+            </ul>
+          </>
         )}
 
         {options.held.length > 0 && (
@@ -323,7 +338,7 @@ export function Lunchbox() {
         <div
           data-print-sheet
           data-testid="lunch-label-sheet"
-          className="flex flex-wrap items-start gap-4 rounded-xl border bg-card px-4 py-4"
+          className="flex flex-col items-start gap-4 rounded-xl border bg-card px-4 py-4 min-[420px]:flex-row"
         >
           <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-sm">
             {label.lines.map((line, i) => (
@@ -392,11 +407,13 @@ function Head() {
 function OptionRow({
   item,
   state,
+  full,
   canWrite,
   onSet,
 }: {
   item: LunchItem;
   state: LunchState | undefined;
+  full: boolean;
   canWrite: boolean;
   onSet: (s: LunchState | null) => void;
 }) {
@@ -429,9 +446,12 @@ function OptionRow({
           {!state && (
             <Button
               size="sm"
-              className="min-h-11"
               aria-label={fmt(d.lunch.packAria, { name: l(item.name) })}
-              onClick={() => onSet("packed")}
+              aria-disabled={full || undefined}
+              className={cn("min-h-11", full && "opacity-60")}
+              onClick={() => {
+                if (!full) onSet("packed");
+              }}
             >
               <Package aria-hidden />
               {d.lunch.pack}

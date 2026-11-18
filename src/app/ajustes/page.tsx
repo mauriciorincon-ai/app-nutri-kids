@@ -104,6 +104,7 @@ export default function SettingsPage() {
               )}
               onClick={() => setLocale(key as Locale)}
             >
+              {locale === key && <span aria-hidden>✓ </span>}
               {label}
             </Button>
           ))}
@@ -136,6 +137,7 @@ export default function SettingsPage() {
               )}
               onClick={() => setTheme(key)}
             >
+              {theme === key && <span aria-hidden>✓ </span>}
               {label}
             </Button>
           ))}

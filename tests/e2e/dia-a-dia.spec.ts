@@ -169,6 +169,39 @@ test.describe("Lonchera", () => {
   });
 });
 
+test.describe("Lonchera · tope del día", () => {
+  test("con el día lleno no se puede empacar más y se dice por qué (texto y axe en los dos temas)", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.addInitScript(() => {
+      if (window.localStorage.getItem("nutrikids.daylog.v3")) return;
+      const lunch: Record<string, unknown> = {};
+      for (let i = 0; i < 14; i++)
+        lunch[`ejemplo-${i}`] = { v: "packed", t: 1, by: "ejemplo" };
+      window.localStorage.setItem(
+        "nutrikids.daylog.v3",
+        JSON.stringify({ "2026-07-06": { marks: {}, notes: {}, lunch } }),
+      );
+    });
+    await open(page, "/lonchera");
+    const full = page.getByTestId("lunch-full");
+    await expect(full).toContainText("14 cosas anotadas");
+    const pack = page
+      .getByTestId("lunch-options")
+      .getByRole("button", { name: /^Empacar / })
+      .first();
+    await expect(pack).toHaveAttribute("aria-disabled", "true");
+    await pack.click({ force: true });
+    // Nada cambió: sigue sin estado «Empacado» en esa fila y el botón sigue ahí.
+    await expect(pack).toBeVisible();
+    await expect(
+      page.getByTestId("lunch-options").getByText("Empacado"),
+    ).toHaveCount(0);
+    await axe(page, "lonchera · día lleno");
+  });
+});
+
 test.describe("Recetas", () => {
   test("revisadas contra el plan: ocultas con su causa, abrir una, filtros, despensa y recetas propias", async ({
     page,
@@ -357,6 +390,10 @@ test("Hoy enseña los tres accesos y llegan a sus pantallas", async ({
   await open(page, "/");
   const nav = page.getByRole("navigation", { name: "Para el día a día" });
   await expect(nav).toBeVisible();
+  // El rótulo de la fila se VE (la guía y el manual lo nombran): no es solo un aria-label.
+  await expect(
+    nav.getByText("Para el día a día", { exact: true }),
+  ).toBeVisible();
   await nav.getByRole("link", { name: /Lonchera/ }).click();
   await expect(page).toHaveURL(/\/lonchera$/);
   await page.goto("/");

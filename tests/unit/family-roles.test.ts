@@ -1447,6 +1447,8 @@ describe("lonchera contra el doble del servidor (S11)", () => {
       lunch: lunch(c, "opt:SENTINEL-FOOD", "packed"),
     } as never;
     await sync(c);
+    // Sin esto el test pasaría con una red vacía: tiene que haber subido algo de verdad.
+    expect(net.wire.length).toBeGreaterThan(0);
     const wire = net.wire.join("\n");
     for (const word of [
       "SENTINEL-FOOD",
