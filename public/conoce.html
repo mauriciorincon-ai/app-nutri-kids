@@ -18,7 +18,7 @@
   REGLAS QUE ESTE ARCHIVO OBEDECE:
   · Cero datos del menor o de la familia: TODO lo que se ve es la dieta demo inventada.
   · Cero URLs de producción (regla 17 del portafolio): la producción se muestra, no se entrega.
-  · Tokens de color COPIADOS del design-system.md de la app (oklch, light-only por decisión S1).
+  · Tokens de color COPIADOS del design-system.md de la app (oklch, tema claro: esta página es aparte de la app y siempre se ve clara; la app sí tiene tema oscuro desde el S11).
   · Tipografía: trade-off declarado — Fraunces/Nunito Sans son webfonts de marca y no viajan
     en un archivo autocontenido; se usa Georgia (display) + system-ui (cuerpo).
   · Solo se anima transform/opacity. Tres excepciones DECLARADAS y comentadas en el sitio:
@@ -37,7 +37,7 @@
   html { overflow-anchor: none; }
 
   :root {
-    color-scheme: light; /* light-only: el DS de la app lo es por decisión del S1 (no se finge un modo oscuro) */
+    color-scheme: light; /* esta página es aparte de la app y siempre se ve clara; la app sí tiene tema oscuro (S11, ADR-016) */
 
     /* ——— Tokens COPIADOS del design-system.md de Nutrikids ——— */
     --background: oklch(0.977 0.008 84);
@@ -1130,7 +1130,7 @@
         <p><strong>Los límites de hoy, sin adornos:</strong> sin familia, todo vive en <em>ese</em>
           teléfono y al cambiar de aparato hay que volver a cargar la dieta; con familia, si se pierde
           la frase y ningún teléfono sigue dentro, lo compartido no se puede abrir (se crea otra
-          familia). Si dos teléfonos cambian lo mismo a la vez, gana el último cambio. Una sola dieta a la vez. Sin modo oscuro. Los avisos pueden llegar unos minutos tarde (el reloj es cada 5 minutos).</p>
+          familia). Si dos teléfonos cambian lo mismo a la vez, gana el último cambio. Una sola dieta a la vez. Los avisos pueden llegar unos minutos tarde (el reloj es cada 5 minutos).</p>
         <p><strong>Lo que no es:</strong> esta app no reemplaza a tu pediatra ni a tu nutricionista.
           Organiza el plan que ellos definieron y te recuerda consultarlos. Cuando abres la app por
           primera vez te lo dice, y el recordatorio queda visible en toda la app — no es letra
