@@ -289,10 +289,10 @@
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 1185,
+      "valor": 1187,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-17 sobre la rama del bienestar (S10), tras pagar la auditoría y el parche de picomatch: 60 archivos, 1185 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-17 sobre la rama del bienestar (S10), tras pagar la auditoría, el parche de picomatch y el arranque diferido de Sentry: 61 archivos, 1187 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
@@ -305,10 +305,10 @@
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 97.02,
+      "valor": 96.98,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib el 2026-11-17 sobre la rama del bienestar (97,02 % de líneas en total; src/lib/wellbeing 98,09 %; src/lib/family 97,25 % y su servidor 100 %; src/lib/push 96,56 % y su servidor 100 %), con umbrales del 80 % en vitest.config.ts (incluido src/lib/wellbeing) y del 90 % para src/lib/family y src/lib/push."
+      "detalle": "v8 sobre src/lib el 2026-11-17 sobre la rama del bienestar (96,98 % de líneas en total; src/lib/wellbeing 98,09 %; src/lib/family 97,25 % y su servidor 100 %; src/lib/push 96,56 % y su servidor 100 %), con umbrales del 80 % en vitest.config.ts (incluido src/lib/wellbeing) y del 90 % para src/lib/family y src/lib/push."
     },
     {
       "clave": "decisiones_registradas",
