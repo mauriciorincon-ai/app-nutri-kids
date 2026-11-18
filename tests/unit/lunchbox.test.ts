@@ -290,7 +290,7 @@ describe("etiqueta y QR · texto, nunca un enlace", () => {
     const l = buildLabel({
       diet: diet(),
       now: NOW,
-      notes: [{ kind: "allergy", text: "ver https://ejemplo.vercel.app/x" }],
+      notes: [{ kind: "allergy", text: "ver https://ejemplo.invalid/x" }],
       items,
       childName: "www.ejemplo.dev y https://a.b/c",
     });
