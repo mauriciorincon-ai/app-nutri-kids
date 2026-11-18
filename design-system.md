@@ -156,7 +156,7 @@ El "por qué" del semáforo siempre en palabras simples.
 
 - **Quién manda:** Ajustes → Tema: _Sistema_ (por defecto, sigue al teléfono) · _Claro_ · _Oscuro_. Lo elegido a mano gana
   al teléfono. Se guarda en el aparato como el idioma (`nutrikids.prefs.v1`, no es dato del niño).
-- **Sin destello:** un script en línea (`THEME_SCRIPT`, `src/lib/theme.ts`) pone la clase `.dark`, `color-scheme` y el color de
+- **Sin destello:** un script en línea (`THEME_SCRIPT`, `src/lib/theme-script.ts`) pone la clase `.dark`, `color-scheme` y el color de
   la barra del navegador ANTES del primer pintado. `ThemeSync` lo mantiene al día.
 - **Oscuro cálido, no gris azulado:** el mismo «cocina familiar» de noche — marrones tostados (matiz 55–60), crema atenuada
   como tinta, terracota más clara como acento.
