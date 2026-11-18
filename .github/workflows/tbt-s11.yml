@@ -1,0 +1,21 @@
+# TEMPORAL (S11): mide el TBT de Hoy en el runner antes de abrir el PR. Se borra antes del PR.
+name: tbt-s11
+on:
+  push:
+    branches: [sprint-011/dia-a-dia]
+jobs:
+  tbt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 11 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Lighthouse sobre Hoy y las tres pantallas nuevas, 3 corridas cada una
+        run: |
+          npm i -g @lhci/cli
+          lhci autorun --collect.startServerCommand="pnpm start" --collect.url=http://127.0.0.1:3600/ --collect.url=http://127.0.0.1:3600/lonchera --collect.url=http://127.0.0.1:3600/recetas --collect.url=http://127.0.0.1:3600/viaje --collect.numberOfRuns=3 --assert.budgetsFile=./perf-budget.json || true
+          for f in .lighthouseci/lhr-*.json; do node -e 'const j=require("./"+process.argv[1]);console.log(j.finalUrl.replace("http://127.0.0.1:3600",""),"· TBT",Math.round(j.audits["total-blocking-time"].numericValue),"ms · LCP",Math.round(j.audits["largest-contentful-paint"].numericValue),"ms · FCP",Math.round(j.audits["first-contentful-paint"].numericValue),"ms")' "$f"; done
