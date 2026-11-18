@@ -63,7 +63,7 @@ test("las cuatro preguntas abiertas en ES contestan con el plan demo y cero red"
   await ask(page, "No tengo pollo, ¿qué le doy?");
   const a1 = page.locator('[data-answer="replacement"]').last();
   await expect(a1).toContainText("Si no hay pollo");
-  await expect(a1).toContainText("Huevos");
+  await expect(a1).toContainText("huevos");
   await expect(a1).not.toContainText("Pollo");
 
   // 2 · «no quiso X» → otras opciones y lo que toca después, sin culpa

@@ -18,4 +18,11 @@ jobs:
         run: |
           npm i -g @lhci/cli
           lhci autorun --collect.startServerCommand="pnpm start" --collect.url=http://127.0.0.1:3600/ --collect.url=http://127.0.0.1:3600/lonchera --collect.url=http://127.0.0.1:3600/recetas --collect.url=http://127.0.0.1:3600/viaje --collect.numberOfRuns=3 --assert.budgetsFile=./perf-budget.json || true
-          for f in .lighthouseci/lhr-*.json; do node -e 'const j=require("./"+process.argv[1]);console.log(j.finalUrl.replace("http://127.0.0.1:3600",""),"· TBT",Math.round(j.audits["total-blocking-time"].numericValue),"ms · LCP",Math.round(j.audits["largest-contentful-paint"].numericValue),"ms · FCP",Math.round(j.audits["first-contentful-paint"].numericValue),"ms")' "$f"; done
+          cat > /tmp/sum.cjs <<'JS'
+          const j=require(process.argv[2]); const r=j.audits;
+          console.log("==", j.finalUrl.replace("http://127.0.0.1:3600",""), "TBT", Math.round(r["total-blocking-time"].numericValue), "TTI", Math.round(r["interactive"].numericValue), "FCP", Math.round(r["first-contentful-paint"].numericValue));
+          console.log("  main-thread:", r["mainthread-work-breakdown"].details.items.map(i=>i.groupLabel+" "+Math.round(i.duration)).join(" · "));
+          for (const i of r["bootup-time"].details.items.slice(0,5)) console.log("  boot", Math.round(i.total), "ms ·", Math.round(i.scripting), "script ·", i.url.replace(/^.*\/_next\//,""));
+          const lt=r["long-tasks"]; if(lt&&lt.details) for (const i of lt.details.items.slice(0,6)) console.log("  long", Math.round(i.duration),"ms @", Math.round(i.startTime), i.url.replace(/^.*\/_next\//,""));
+          JS
+          for f in .lighthouseci/lhr-*.json; do node /tmp/sum.cjs "$PWD/$f"; done

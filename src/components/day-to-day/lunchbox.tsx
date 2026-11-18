@@ -86,17 +86,21 @@ export function Lunchbox() {
     [input, date, refused],
   );
 
-  // Los nombres de todo lo que se puede llevar en la semana (para las compras y para lo ya empacado).
+  // Los nombres de lo que se puede llevar, para las compras y para lo ya empacado. Solo se calculan
+  // los días que tienen algo anotado (más el que se mira): abrir la pantalla no recorre la semana entera.
   const names = useMemo(() => {
     const m = new Map<string, LocalizedText>();
     if (!input) return m;
-    for (const x of days) {
+    days.forEach((x, i) => {
+      if (i !== offset && Object.keys(week[i]?.lunch ?? {}).length === 0)
+        return;
       const o = lunchOptions({ ...input, now: x, refused });
-      if (o.kind === "options") for (const i of o.items) m.set(i.key, i.name);
+      if (o.kind === "options")
+        for (const it of o.items) m.set(it.key, it.name);
       for (const h of o.held) m.set(h.key, h.name);
-    }
+    });
     return m;
-  }, [input, days, refused]);
+  }, [input, days, refused, week, offset]);
 
   if (!today || !date || !input) {
     return <p className="text-muted-foreground">{d.common.planLoading}</p>;
