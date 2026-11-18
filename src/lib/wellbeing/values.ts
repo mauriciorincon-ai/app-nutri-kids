@@ -78,13 +78,29 @@ export const HABITS = ["sleep", "screen", "activity", "sun"] as const;
 export type HabitId = (typeof HABITS)[number];
 export const HABIT_MAX_MIN = 24 * 60;
 
+/**
+ * La lonchera del día (S11 · ADR-017): qué se puso en ella y qué pasó con cada cosa. Sin
+ * medidas ni calificaciones: «volvió» solo dice que regresó en la caja, jamás que algo salió mal.
+ */
+export const LUNCH_STATES = ["packed", "eaten", "back"] as const;
+export type LunchState = (typeof LUNCH_STATES)[number];
+/** Largo máximo de la clave de un alimento de la lonchera (lo valida también la familia). */
+export const LUNCH_KEY_MAX = 100;
+
 export type WellbeingMaps = {
   moods: RegMap<MoodId>;
   food: RegMap<FoodValue>;
   well: RegMap<string>;
   habits: RegMap<number>;
+  lunch: RegMap<LunchState>;
 };
-export const WELLBEING_MAPS = ["moods", "food", "well", "habits"] as const;
+export const WELLBEING_MAPS = [
+  "moods",
+  "food",
+  "well",
+  "habits",
+  "lunch",
+] as const;
 export type WellbeingMap = (typeof WELLBEING_MAPS)[number];
 
 /** Topes por día: un día lleno no pasa de 64 KB cifrados (prueba en family-roles). */
@@ -93,6 +109,7 @@ export const MAP_CAPS: Record<WellbeingMap, number> = {
   food: 60,
   well: SYMPTOM_IDS.length + 2,
   habits: HABITS.length,
+  lunch: 14,
 };
 
 /** Franja de edad que un padre elige en el perfil (decisión 1a del G-Plan). Jamás una fecha. */
@@ -172,6 +189,12 @@ export function coerceHabit(key: string, raw: unknown): number | null {
     ? raw
     : null;
 }
+
+export const isLunchState = (v: unknown): v is LunchState =>
+  has(LUNCH_STATES, v);
+/** La clave de un alimento de la lonchera: su id del plan, o `opt:<nombre>` si es una opción de equivalencia. */
+export const lunchKeyOk = (k: unknown): k is string =>
+  typeof k === "string" && k.length > 0 && k.length <= LUNCH_KEY_MAX;
 
 export const isHabit = (k: string): k is HabitId => has(HABITS, k);
 export const isSymptom = (k: string): k is SymptomId =>

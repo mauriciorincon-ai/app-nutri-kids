@@ -999,6 +999,9 @@ describe("bienestar: qué puede escribir cada rol", () => {
     { k: "well" },
     { k: "habit" },
     { k: "age" },
+    // S11 · lonchera: la pone un padre o quien cuida; el nombre de la etiqueta, solo un padre.
+    { k: "lunch" },
+    { k: "lunch-label" },
   ];
   const label = (w: Write) =>
     "check" in w ? `${w.k}:${w.check}` : "meal" in w ? `${w.k}:${w.meal}` : w.k;
@@ -1012,6 +1015,7 @@ describe("bienestar: qué puede escribir cada rol", () => {
       "food:cena",
       "well",
       "habit",
+      "lunch",
     ],
     school: ["mood:meal:almuerzo", "food:almuerzo"],
     nutritionist: [],
@@ -1361,6 +1365,11 @@ describe("bienestar contra el doble del servidor", () => {
       MAP_CAPS.habits,
       (i) => `h${i}`,
       () => 1440,
+    );
+    regs.lunch = fill(
+      MAP_CAPS.lunch,
+      (i) => `opt:${long}-${long}-${i}`.slice(0, 100),
+      () => "back",
     );
     expect(sealedSize(regs)).toBeLessThan(ITEM_MAX_CT);
   });

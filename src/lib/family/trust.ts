@@ -19,8 +19,10 @@ import {
   coerceWell,
   isAgeBand,
   isHabit,
+  isLunchState,
   isMood,
   foodKey,
+  lunchKeyOk,
   parseFoodKey,
   WELLBEING_MAPS,
   type WellbeingMap,
@@ -149,6 +151,11 @@ const WELLBEING_RULES: Record<
   habits: {
     write: (key) => (isHabit(key) ? { k: "habit" } : null),
     valid: (k, v) => v === null || coerceHabit(k, v) !== null,
+  },
+  // Padre y cuidador escriben la lonchera; el colegio y el nutricionista la leen, no la escriben.
+  lunch: {
+    write: (key) => (lunchKeyOk(key) ? { k: "lunch" } : null),
+    valid: (_k, v) => v === null || isLunchState(v),
   },
 };
 

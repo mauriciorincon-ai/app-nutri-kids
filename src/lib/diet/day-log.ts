@@ -6,11 +6,14 @@ import {
   coerceWell,
   FOOD_KEY_MAX,
   foodKey,
+  isLunchState,
   isMood,
+  lunchKeyOk,
   MAP_CAPS,
   parseFoodKey,
   WELLBEING_MAPS,
   type FoodValue,
+  type LunchState,
   type MoodId,
   type WellbeingMap,
   type WellbeingMaps,
@@ -81,6 +84,8 @@ export type DayWellbeing = {
   food: Record<string, FoodValue>;
   well: Record<string, string>;
   habits: Record<string, number>;
+  /** La lonchera (S11): alimento → puesta, comida o volvió. */
+  lunch: Record<string, LunchState>;
 };
 type DayLogStore = Record<string, DayRegs>;
 
@@ -194,6 +199,7 @@ function coerceWellbeing(value: Record<string, unknown>, regs: DayRegs): void {
       },
       well: coerceWell,
       habits: coerceHabit,
+      lunch: (k, raw) => (lunchKeyOk(k) && isLunchState(raw) ? raw : null),
     };
   for (const name of WELLBEING_MAPS) {
     const map = value[name];
@@ -367,7 +373,13 @@ export function getNote(date: Date, checkId: string): DayNote | null {
 
 /** Lo vivo del bienestar de un día (amanece vacío). */
 function toWellbeing(regs: DayRegs | undefined): DayWellbeing {
-  const out: DayWellbeing = { moods: {}, food: {}, well: {}, habits: {} };
+  const out: DayWellbeing = {
+    moods: {},
+    food: {},
+    well: {},
+    habits: {},
+    lunch: {},
+  };
   if (!regs) return out;
   for (const name of WELLBEING_MAPS)
     for (const [k, r] of Object.entries(regs[name] ?? {}))
@@ -375,8 +387,11 @@ function toWellbeing(regs: DayRegs | undefined): DayWellbeing {
   return out;
 }
 
+/** La lonchera no es «bienestar» para el historial: un día con solo lonchera no sale ahí. */
 const wellbeingIsEmpty = (w: DayWellbeing) =>
-  WELLBEING_MAPS.every((n) => Object.keys(w[n]).length === 0);
+  WELLBEING_MAPS.every(
+    (n) => n === "lunch" || Object.keys(w[n]).length === 0,
+  );
 
 export function getWellbeing(date: Date): DayWellbeing {
   return toWellbeing(readStore()[dateKey(date)]);
@@ -638,6 +653,17 @@ export function setHabit(
   const v = minutes === null ? null : coerceHabit(key, minutes);
   if (minutes !== null && v === null) return;
   setWellbeing(date, "habits", key, v);
+}
+
+/** Pone, cambia o quita (null) un alimento de la lonchera de un día. */
+export function setLunch(
+  date: Date,
+  key: string,
+  state: LunchState | null,
+): void {
+  if (!lunchKeyOk(key)) return;
+  if (state !== null && !isLunchState(state)) return;
+  setWellbeing(date, "lunch", key, state);
 }
 
 /** Limpieza total (la usa "borrar datos"): borra el store activo y cualquier versión vieja. */

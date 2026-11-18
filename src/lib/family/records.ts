@@ -9,6 +9,8 @@ import {
   FOOD_KEY_MAX,
   FOOD_TEXTURES,
   HABIT_MAX_MIN,
+  LUNCH_KEY_MAX,
+  LUNCH_STATES,
   MAP_CAPS,
   MOODS,
   PRESENTATIONS,
@@ -91,6 +93,11 @@ export const daySchema = z.object({
   habits: capped(
     z.record(wellKey, reg(z.number().int().min(0).max(HABIT_MAX_MIN))),
     MAP_CAPS.habits,
+  ).optional(),
+  // S11 · lonchera (ADR-017): alimento → puesta, comida o volvió.
+  lunch: capped(
+    z.record(z.string().min(1).max(LUNCH_KEY_MAX), reg(z.enum(LUNCH_STATES))),
+    MAP_CAPS.lunch,
   ).optional(),
 });
 export const profileSchema = z.object({

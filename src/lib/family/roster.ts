@@ -258,7 +258,10 @@ export type Write =
   | { k: "food"; meal: string }
   | { k: "well" }
   | { k: "habit" }
-  | { k: "age" };
+  | { k: "age" }
+  // S11 · lonchera (ADR-017): lo que va en la lonchera del día, y el nombre de la etiqueta.
+  | { k: "lunch" }
+  | { k: "lunch-label" };
 
 /** Todas las clases de escritura, para la prueba de permisos de cada rol contra cada una. */
 export const WRITE_KINDS = [
@@ -274,6 +277,8 @@ export const WRITE_KINDS = [
   "well",
   "habit",
   "age",
+  "lunch",
+  "lunch-label",
 ] as const satisfies readonly Write["k"][];
 
 /** El corazón de los permisos: lo usan la pantalla (esconde) y la sincronía (descarta). */
@@ -293,7 +298,8 @@ export function may(
         w.k === "mood" ||
         w.k === "food" ||
         w.k === "well" ||
-        w.k === "habit"
+        w.k === "habit" ||
+        w.k === "lunch"
       );
     case "school":
       if (w.k === "notice") return true;

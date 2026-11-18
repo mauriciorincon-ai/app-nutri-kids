@@ -16,7 +16,13 @@ export function useWt(): WellbeingText {
   return wellbeingText[locale];
 }
 
-const EMPTY: DayWellbeing = { moods: {}, food: {}, well: {}, habits: {} };
+const EMPTY: DayWellbeing = {
+  moods: {},
+  food: {},
+  well: {},
+  habits: {},
+  lunch: {},
+};
 
 /** Lo anotado del bienestar de un día (null = aún sin fecha del aparato). */
 export function useWellbeing(day: Date | null): DayWellbeing {
