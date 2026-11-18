@@ -77,6 +77,10 @@ export const en: Dictionary = {
     noteRemove: "Remove note",
     noteCancel: "Cancel",
     historyLink: "See previous days",
+    dayToDayLabel: "For everyday life",
+    dayToDayLunchbox: "Lunchbox",
+    dayToDayRecipes: "Recipes",
+    dayToDayTravel: "Travel",
     profileLink: "Your child's profile",
   },
   reminder: {

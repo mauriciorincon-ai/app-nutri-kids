@@ -78,6 +78,10 @@ export const es = {
     noteRemove: "Quitar nota",
     noteCancel: "Cancelar",
     historyLink: "Ver días anteriores",
+    dayToDayLabel: "Para el día a día",
+    dayToDayLunchbox: "Lonchera",
+    dayToDayRecipes: "Recetas",
+    dayToDayTravel: "Viaje",
     profileLink: "Perfil de tu peque",
   },
   reminder: {

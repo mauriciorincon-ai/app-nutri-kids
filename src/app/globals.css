@@ -221,3 +221,27 @@
     }
   }
 }
+/* Impresión (S11): la etiqueta de la lonchera y el documento del viaje. Solo se imprime lo que
+   lleva `data-print-sheet`; el resto de la pantalla (encabezado, barra, controles) se esconde y
+   la hoja sale en blanco y negro aunque el tema sea oscuro. */
+@media print {
+  header,
+  nav,
+  [data-no-print] {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  [data-print-sheet] {
+    border: 1px solid #000 !important;
+    background: #fff !important;
+    color: #000 !important;
+    break-inside: avoid;
+  }
+  [data-print-sheet] * {
+    color: #000 !important;
+  }
+}
