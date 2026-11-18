@@ -8,8 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
-        with: { ref: main, path: base }
+        with: { fetch-depth: 0 }
+      - name: main fuera del árbol de la rama (el tsc de la rama no debe verlo)
+        run: mkdir -p "$RUNNER_TEMP/base" && git archive origin/main | tar -x -C "$RUNNER_TEMP/base"
       - uses: pnpm/action-setup@v4
         with: { version: 11 }
       - uses: actions/setup-node@v4
@@ -17,7 +18,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm install --frozen-lockfile && pnpm build
-        working-directory: base
+        working-directory: ${{ runner.temp }}/base
       - run: npm i -g @lhci/cli
       - name: Hoy, main contra la rama, alternando (5 corridas cada uno)
         run: |
@@ -25,7 +26,7 @@ jobs:
             (cd "$2" && rm -rf .lighthouseci && lhci autorun --collect.startServerCommand="pnpm exec next start -H 127.0.0.1 -p 3600" --collect.url=http://127.0.0.1:3600/ --collect.numberOfRuns=5 --assert.budgetsFile=./perf-budget.json >/dev/null 2>&1 || true
              for f in .lighthouseci/lhr-*.json; do node -e 'const j=require("./"+process.argv[1]);console.log(process.argv[2],"TBT",Math.round(j.audits["total-blocking-time"].numericValue))' "$f" "$1"; done)
           }
-          measure main base
+          measure main "$RUNNER_TEMP/base"
           measure rama .
-          measure main base
+          measure main "$RUNNER_TEMP/base"
           measure rama .
