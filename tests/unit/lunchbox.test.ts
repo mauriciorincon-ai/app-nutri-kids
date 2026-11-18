@@ -9,6 +9,7 @@ import { buildLabel, plain } from "@/lib/lunchbox/label";
 import { lunchOptions, optionKey, refusedFoodIds } from "@/lib/lunchbox/engine";
 import { QR_MAX_BYTES, qrModules } from "@/lib/lunchbox/qr";
 import { shoppingList } from "@/lib/lunchbox/shopping";
+import type { LunchState } from "@/lib/wellbeing/values";
 import { dayWellbeing } from "./wellbeing-fixtures";
 
 /** El plan de ejemplo (inventado) y un día dentro de la ventana de la restricción. */
@@ -234,18 +235,12 @@ describe("lista de compras de la semana", () => {
     ["kiwi", { es: "Kiwi", en: "Kiwi" }],
   ]);
   it("cuenta los días que lleva cada alimento, solo lo puesto y solo nombres del plan", () => {
-    const week = [
-      { day: "2026-08-10", lunch: { pera: "packed", kiwi: "eaten" } as const },
-      {
-        day: "2026-08-11",
-        lunch: { pera: "packed", ghost: "packed" } as const,
-      },
-      { day: "2026-08-12", lunch: { kiwi: "packed" } as const },
+    const week: { day: string; lunch: Record<string, LunchState> }[] = [
+      { day: "2026-08-10", lunch: { pera: "packed", kiwi: "eaten" } },
+      { day: "2026-08-11", lunch: { pera: "packed", ghost: "packed" } },
+      { day: "2026-08-12", lunch: { kiwi: "packed" } },
     ];
-    const list = shoppingList(
-      week.map((w) => ({ ...w, lunch: { ...w.lunch } })),
-      nm,
-    );
+    const list = shoppingList(week, nm);
     expect(list.map((l) => [l.key, l.days])).toEqual([
       ["pera", 2],
       ["kiwi", 1],

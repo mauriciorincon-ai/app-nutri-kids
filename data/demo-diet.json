@@ -448,6 +448,45 @@
           "keepsWithoutFridge": true
         }
       ]
+    },
+    {
+      "whenMissing": "pollo",
+      "title": {
+        "es": "En vez de pollo (almuerzo)",
+        "en": "Instead of chicken (lunch)"
+      },
+      "use": [
+        {
+          "name": {
+            "es": "huevos",
+            "en": "eggs"
+          },
+          "texture": "soft"
+        },
+        {
+          "name": {
+            "es": "lentejas",
+            "en": "lentils"
+          },
+          "texture": "soft"
+        }
+      ]
+    },
+    {
+      "whenMissing": "arroz",
+      "title": {
+        "es": "En vez de arroz (almuerzo)",
+        "en": "Instead of rice (lunch)"
+      },
+      "use": [
+        {
+          "name": {
+            "es": "papa cocida",
+            "en": "boiled potato"
+          },
+          "texture": "soft"
+        }
+      ]
     }
   ],
   "supplements": [

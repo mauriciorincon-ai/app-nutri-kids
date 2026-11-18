@@ -121,15 +121,25 @@ describe("«no tengo X» → reemplazos del plan", () => {
     expect(b.kind === "replacement" && b.options.items.length).toBe(4);
   });
 
-  it("sin equivalencia, un verde usa su mismo grupo (pollo → otras proteínas)", () => {
-    const a = open("no tengo pollo, ¿qué le doy?", "es");
+  it("sin equivalencia, un verde usa su mismo grupo (brócoli → otras verduras)", () => {
+    const a = open("no tengo brócoli, ¿qué le doy?", "es");
     if (a.kind !== "replacement") throw new Error(a.kind);
     expect(a.options.source).toBe("group");
     const list = names(a.options.items, "es").map((n) => n.toLowerCase());
-    expect(list).not.toContain("pollo");
+    expect(list).not.toContain("brócoli");
     expect(list.length).toBe(3);
-    const b = open("I don't have chicken, what can I give?", "en");
+    const b = open("I don't have broccoli, what can I give?", "en");
     expect(b.kind).toBe("replacement");
+  });
+
+  it("con equivalencia escrita por el plan, esa manda sobre el grupo (pollo → huevos, lentejas)", () => {
+    const a = open("no tengo pollo, ¿qué le doy?", "es");
+    if (a.kind !== "replacement") throw new Error(a.kind);
+    expect(a.options.source).toBe("equivalence");
+    expect(names(a.options.items, "es").map((n) => n.toLowerCase())).toEqual([
+      "huevos",
+      "lentejas",
+    ]);
   });
 
   it("negativo: un alimento que el plan no trae → «no lo dice», sin inventar", () => {

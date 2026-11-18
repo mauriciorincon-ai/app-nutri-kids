@@ -55,7 +55,7 @@ describe("dietPlanSchema", () => {
       redItems: 5,
       additives: 3,
       restrictedFoods: 2,
-      equivalences: 3,
+      equivalences: 5,
       supplements: 2,
       meals: 5,
       allergies: 1,
