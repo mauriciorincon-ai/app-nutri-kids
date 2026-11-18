@@ -323,3 +323,49 @@ export function pantryPlan(
   );
   return out;
 }
+
+// --- Recetas propias (S11): ingredientes en texto libre, el mismo cotejo con el plan ------------
+
+export type OwnReview = {
+  state: RecipeState;
+  blocked: { text: string; why: BlockReason; planName?: LocalizedText }[];
+  cautions: { text: string; limit: LocalizedText }[];
+  unknown: string[];
+};
+
+/**
+ * Cada línea es un ingrediente escrito por quien cuida: se coteja por nombre como los del
+ * recetario. Lo que el plan no nombra queda «no está en tu plan» (jamás verde).
+ */
+export function reviewOwn(
+  own: { ingredients: readonly string[] },
+  input: ReviewInput,
+): OwnReview {
+  const avoid = avoidList(input.diet, input.notes);
+  const out: OwnReview = {
+    state: "ok",
+    blocked: [],
+    cautions: [],
+    unknown: [],
+  };
+  for (const text of own.ingredients) {
+    const s = resolveIngredient(
+      input.diet,
+      { es: text, en: text },
+      input.now,
+      avoid,
+    );
+    if (s.kind === "blocked")
+      out.blocked.push({ text, why: s.why, planName: s.planName });
+    else if (s.kind === "caution") out.cautions.push({ text, limit: s.limit });
+    else if (s.kind === "unknown") out.unknown.push(text);
+  }
+  out.state = out.blocked.length
+    ? "blocked"
+    : out.unknown.length
+      ? "unknown"
+      : out.cautions.length
+        ? "caution"
+        : "ok";
+  return out;
+}

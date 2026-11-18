@@ -5,6 +5,7 @@ import { clearNotices } from "../family/notices";
 import { clearFamilyLocal } from "../family/state";
 import { log } from "../log";
 import { clearPushState } from "../push/state";
+import { clearDayToDay } from "../day-to-day/store";
 import {
   dietCounts,
   dietPlanSchema,
@@ -259,6 +260,7 @@ export function clearAllData(): void {
   clearProfileNotes();
   clearPlanDraft();
   clearSecondPlan();
+  clearDayToDay();
   // Sale de la familia (las claves y el estado se van de este teléfono; lo compartido en el
   // servidor lo borra «Borrar lo compartido» en Ajustes) y olvida quién es este teléfono.
   clearFamilyLocal();
