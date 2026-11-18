@@ -299,6 +299,37 @@ describe("etiqueta y QR · texto, nunca un enlace", () => {
     expect(plain("a http://x.y/z b")).toBe("a b");
   });
 
+  it("quita también los dominios sueltos, los correos y los teléfonos, y deja intactas las dosis con decimales", () => {
+    expect(plain("mira bit.ly/abc ya")).toBe("mira ya");
+    expect(plain("ver ejemplo.com/x ahora")).toBe("ver ahora");
+    expect(plain("escribe mailto:a@b.co hoy")).toBe("escribe hoy");
+    expect(plain("llama tel:+570000000 hoy")).toBe("llama hoy");
+    expect(plain("2.5 ml con comida, 0.5 mg")).toBe(
+      "2.5 ml con comida, 0.5 mg",
+    );
+    const l = buildLabel({
+      diet: diet(),
+      now: NOW,
+      notes: [{ kind: "allergy", text: "ver bit.ly/abc o ejemplo.com/x" }],
+      items,
+      childName: null,
+    });
+    expect(l.text).not.toMatch(/bit\.ly|ejemplo\.com|abc/i);
+  });
+
+  it("el texto médico no se corta: una alergia de 200 caracteres sale completa en las líneas", () => {
+    const long = `${"alergia de ejemplo ".repeat(11)}fin`.slice(0, 200);
+    expect(long.length).toBe(200);
+    const l = buildLabel({
+      diet: diet(),
+      now: NOW,
+      notes: [{ kind: "allergy", text: long }],
+      items: [],
+      childName: null,
+    });
+    expect(l.lines.join("\n")).toContain(long.trim());
+  });
+
   it("cabe en el QR: si hay demasiado, se acorta lo de hoy y las alergias no se sueltan", () => {
     const many = Array.from({ length: 60 }, (_, i) => ({
       name: { es: `Alimento de ejemplo ${i}`, en: `Sample food ${i}` },

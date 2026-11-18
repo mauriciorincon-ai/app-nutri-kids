@@ -10,16 +10,20 @@ import type { DietPlan, LocalizedText } from "@/lib/diet/schema";
 import { QR_MAX_BYTES } from "./qr";
 import type { LunchItem } from "./engine";
 
-const URLISH = /(?:[a-z][a-z0-9+.-]*:\/\/|www\.)\S*/gi;
+/**
+ * Lo que un lector de QR o un teléfono convierte en enlace: `esquema://…`, `mailto:`/`tel:`, `www.…` y
+ * cualquier `nombre.dominio` (con ruta opcional), como `bit.ly/abc` o `ejemplo.com/x`.
+ */
+const URLISH =
+  /(?:[a-z][a-z0-9+.-]*:\/\/\S*|(?:mailto|tel):\S*|www\.\S*|\b[\w-]+(?:\.[\w-]+)*\.[a-z]{2,}\b(?:\/\S*)?)/gi;
 
-/** Texto sin nada que parezca un enlace, sin saltos de línea y de largo acotado. */
-export function plain(text: string, max = 60): string {
-  return text
-    .replace(URLISH, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, max)
-    .trim();
+/**
+ * Texto sin nada que parezca un enlace y sin saltos de línea. Solo se acorta si se pide un `max`
+ * (el nombre del niño): lo médico —alergias, dosis, condición— jamás se corta a media palabra.
+ */
+export function plain(text: string, max = Infinity): string {
+  const clean = text.replace(URLISH, "").replace(/\s+/g, " ").trim();
+  return clean.slice(0, max).trim();
 }
 
 const both = (t: LocalizedText): string => {
@@ -62,10 +66,16 @@ export function buildLabel(input: LabelInput): Label {
   const { diet, now, notes, items, childName } = input;
   const dedupe = (list: string[]) => [...new Set(list.filter(Boolean))];
   const allergies = dedupe(
-    [...(diet.profile?.allergies ?? []).map((a) => a.name), ...noted(notes, "allergy")].map(both),
+    [
+      ...(diet.profile?.allergies ?? []).map((a) => a.name),
+      ...noted(notes, "allergy"),
+    ].map(both),
   );
   const intolerances = dedupe(
-    [...(diet.profile?.intolerances ?? []).map((a) => a.name), ...noted(notes, "intolerance")].map(both),
+    [
+      ...(diet.profile?.intolerances ?? []).map((a) => a.name),
+      ...noted(notes, "intolerance"),
+    ].map(both),
   );
   const name = childName ? plain(childName, 40) : "";
   const today = items.map((i) => both(i.name));

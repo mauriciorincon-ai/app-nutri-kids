@@ -137,6 +137,48 @@ describe("modo viaje · motor", () => {
     for (const s of allText(t)) expect(s).not.toMatch(/https?:|:\/\/|www\./i);
   });
 
+  it("quita dominios y correos, y no corta una alergia larga", () => {
+    const long = `${"alergia de ejemplo ".repeat(11)}fin`.slice(0, 200).trim();
+    const t = base({
+      notes: [
+        { kind: "allergy", text: long },
+        {
+          kind: "medication",
+          text: "gotas bit.ly/abc ejemplo.com/x mailto:a@b.co",
+        },
+      ],
+    });
+    const texts = allText(t);
+    for (const s of texts)
+      expect(s).not.toMatch(/bit\.ly|ejemplo\.com|mailto:/i);
+    expect(t.doc.allergies.some((a) => a.es === long)).toBe(true);
+  });
+
+  it("la lista de viaje no tiene tope: 15 alimentos marcados salen los 15, los mismos de la lonchera", () => {
+    const d = diet();
+    const names = Array.from({ length: 15 }, (_, i) => ({
+      es: `Fruta de ejemplo ${i}`,
+      en: `Sample fruit ${i}`,
+    }));
+    const group = d.trafficLight.green.groups[0];
+    group.items.push(
+      ...names.map((name, i) => ({
+        id: `ejemplo-${i}`,
+        name,
+        keepsWithoutFridge: true,
+      })),
+    );
+    const t = buildTravel({
+      diet: d,
+      now: NOW,
+      notes: [],
+      mode: "road",
+      childName: null,
+    });
+    for (const n of names)
+      expect(t.foods.some((f) => f.es === n.es)).toBe(true);
+  });
+
   it("sin red: generar el documento no abre ninguna petición", () => {
     const fetchSpy = vi.fn();
     vi.stubGlobal("fetch", fetchSpy);

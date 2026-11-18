@@ -16,15 +16,16 @@ import type {
   Supplement,
 } from "@/lib/diet/schema";
 import { buildScenario } from "@/lib/diet/scenarios";
+import { lunchOptions } from "@/lib/lunchbox/engine";
 import { plain } from "@/lib/lunchbox/label";
 
 export const TRAVEL_MODES = ["road", "air"] as const;
 export type TravelMode = (typeof TRAVEL_MODES)[number];
 
-const TEXT_MAX = 140;
+/** Sin enlaces, pero sin cortar: una dosis o una alergia cortada a media palabra es peor que una larga. */
 const clean = (t: LocalizedText): LocalizedText => ({
-  es: plain(t.es, TEXT_MAX),
-  en: plain(t.en, TEXT_MAX),
+  es: plain(t.es),
+  en: plain(t.en),
 });
 
 export type TravelMedication = {
@@ -117,10 +118,14 @@ export function buildTravel(input: TravelInput): Travel {
     })),
     source: clean(s.professional),
   };
+  // Los mismos candidatos y los mismos filtros que la lonchera (rojo, restricción, alergia,
+  // intolerancia, marca de nevera del plan o de quien cuida), sin tope: la lista de viaje no
+  // deja fuera nada que el plan ya dijo que aguanta.
+  const packed = lunchOptions({ diet, now, notes });
   return {
     mode,
     foods: dedupe(
-      s.safe.filter((f) => f.keepsWithoutFridge).map((f) => clean(f.name)),
+      packed.kind === "options" ? packed.items.map((i) => clean(i.name)) : [],
     ),
     supplements: diet.supplements,
     medications,
