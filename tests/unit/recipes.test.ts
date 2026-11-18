@@ -17,6 +17,7 @@ import {
   pantryPlan,
   resolveIngredient,
   reviewAll,
+  reviewRecipe,
   type ReviewInput,
 } from "@/lib/recipes/review";
 
@@ -422,5 +423,25 @@ describe("lo que le gusta · último veredicto de la aceptación (S10)", () => {
       "lentejas",
     ]);
     expect(likedFoodIds([])).toEqual(new Set());
+  });
+});
+
+describe("revisión de todo el recetario · el cotejo compartido no cambia el resultado", () => {
+  it("da lo mismo que revisar cada receta por separado, con el plan y con una alergia anotada", () => {
+    for (const notes of [[], [{ kind: "allergy", text: "tomate" }]]) {
+      const inp = input({ notes });
+      const solo = RECIPES.map((r) => reviewRecipe(r, inp));
+      const all = reviewAll(RECIPES, inp);
+      expect(
+        [...all.shown, ...all.hidden].map((r) => r.recipe.id).sort(),
+      ).toEqual(solo.map((r) => r.recipe.id).sort());
+      for (const r of [...all.shown, ...all.hidden]) {
+        const alone = solo.find((x) => x.recipe.id === r.recipe.id)!;
+        expect(r.state).toBe(alone.state);
+        expect(r.blockers).toEqual(alone.blockers);
+        expect(r.unknown).toEqual(alone.unknown);
+        expect(r.cautions).toEqual(alone.cautions);
+      }
+    }
   });
 });

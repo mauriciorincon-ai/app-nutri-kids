@@ -74,7 +74,10 @@ export function Recipes() {
     [pantryIds],
   );
   const plan = useMemo(
-    () => (input ? pantryPlan(reviewed.shown, pantry, input) : null),
+    () =>
+      input && pantry.size > 0
+        ? pantryPlan(reviewed.shown, pantry, input)
+        : null,
     [input, reviewed, pantry],
   );
 

@@ -161,8 +161,18 @@ export type ReviewInput = {
   accepted?: readonly Texture[];
 };
 
-export function reviewRecipe(r: Recipe, input: ReviewInput): ReviewedRecipe {
-  const avoid = avoidList(input.diet, input.notes);
+/** Lo que varias recetas comparten en una misma revisión: lo que se evita y lo ya resuelto por ingrediente. */
+type Shared = {
+  avoid: string[];
+  resolved: Map<IngredientId, IngredientStatus>;
+};
+
+export function reviewRecipe(
+  r: Recipe,
+  input: ReviewInput,
+  shared?: Shared,
+): ReviewedRecipe {
+  const avoid = shared?.avoid ?? avoidList(input.diet, input.notes);
   const out: ReviewedRecipe = {
     recipe: r,
     state: "ok",
@@ -173,7 +183,12 @@ export function reviewRecipe(r: Recipe, input: ReviewInput): ReviewedRecipe {
     textureNotAccepted: false,
   };
   for (const { id } of r.ingredients) {
-    const s = resolveIngredient(input.diet, INGREDIENTS[id], input.now, avoid);
+    // Un mismo ingrediente sale en muchas recetas: se coteja con el plan una sola vez por revisión.
+    let s = shared?.resolved.get(id);
+    if (!s) {
+      s = resolveIngredient(input.diet, INGREDIENTS[id], input.now, avoid);
+      shared?.resolved.set(id, s);
+    }
     if (s.kind === "blocked")
       out.blockers.push({ ingredient: id, why: s.why, planName: s.planName });
     else if (s.kind === "caution") {
@@ -208,7 +223,11 @@ export function reviewAll(
   recipes: readonly Recipe[],
   input: ReviewInput,
 ): Reviewed {
-  const all = recipes.map((r) => reviewRecipe(r, input));
+  const shared: Shared = {
+    avoid: avoidList(input.diet, input.notes),
+    resolved: new Map(),
+  };
+  const all = recipes.map((r) => reviewRecipe(r, input, shared));
   return {
     shown: all.filter((r) => r.state !== "blocked"),
     hidden: all.filter((r) => r.state === "blocked"),
