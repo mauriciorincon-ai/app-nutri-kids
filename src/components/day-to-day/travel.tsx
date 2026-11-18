@@ -6,7 +6,7 @@ import { Printer } from "lucide-react";
 import { useToday } from "@/components/day-checklist/use-today";
 import { Button } from "@/components/ui/button";
 import { fmt, useI18n } from "@/i18n";
-import { dayToDayText } from "@/i18n/day-to-day";
+import { travelText } from "@/i18n/day-to-day/travel";
 import {
   getLunchName,
   getTravelChecks,
@@ -22,13 +22,13 @@ import {
 } from "@/lib/travel/engine";
 import { cn } from "@/lib/utils";
 
-import { useDt, useReviewInput } from "./use-dt";
+import { useTravelDt, useReviewInput } from "./use-dt";
 
 const EMPTY_CHECKS: string[] = [];
 
 /** Modo viaje (S11 · ADR-017): lista desde el plan, el día de viaje y el documento en dos idiomas. */
 export function Travel() {
-  const d = useDt();
+  const d = useTravelDt();
   const { l } = useI18n();
   const today = useToday();
   const input = useReviewInput(today);
@@ -261,7 +261,7 @@ export function Travel() {
 
 /** Una cara del documento, en SU idioma (no en el de la pantalla): la hoja lleva los dos. */
 function DocBlock({ doc, lang }: { doc: MedicalDoc; lang: "es" | "en" }) {
-  const t = dayToDayText[lang].travel.doc;
+  const t = travelText[lang].doc;
   const none = t.notWritten;
   const row = (label: string, value: string | null) => (
     <p className="text-sm">

@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CircleCheck, CircleHelp, TriangleAlert } from "lucide-react";
 
 import { useToday } from "@/components/day-checklist/use-today";
 import { useWellbeingDays } from "@/components/wellbeing/use-wellbeing";
@@ -11,12 +10,6 @@ import {
   clearPantry,
   getOwnRecipes,
   getPantry,
-  OWN_LINES_MAX,
-  OWN_MAX,
-  OWN_NAME_MAX,
-  OWN_STEPS_MAX,
-  removeOwnRecipe,
-  saveOwnRecipe,
   togglePantry,
 } from "@/lib/day-to-day/store";
 import { notifyLocalStore, useLocalStore } from "@/lib/local-store";
@@ -26,6 +19,7 @@ import {
   type Cost,
   type TimeLevel,
 } from "@/lib/recipes/book";
+import type { RecipeSteps } from "@/lib/recipes/steps";
 import {
   INGREDIENTS,
   INGREDIENT_IDS,
@@ -36,14 +30,16 @@ import {
   likedFoodIds,
   pantryPlan,
   reviewAll,
-  reviewOwn,
   type PantryRecipe,
   type RecipeState,
   type ReviewedRecipe,
 } from "@/lib/recipes/review";
 import { cn } from "@/lib/utils";
 
-import { useDt, useReviewInput } from "./use-dt";
+import { StateChip } from "./state-chip";
+import { useRecipesDt, useReviewInput } from "./use-dt";
+
+import OwnRecipes from "./own-recipes";
 
 const TIMES: TimeLevel[] = ["quick", "medium", "long"];
 const COSTS: Cost[] = ["low", "mid", "high"];
@@ -51,18 +47,9 @@ const COSTS_PRESENT = COSTS.filter((c) => RECIPES.some((r) => r.cost === c));
 const EMPTY_OWN: ReturnType<typeof getOwnRecipes> = [];
 const EMPTY_PANTRY: IngredientId[] = [];
 
-const STATE_STYLE: Record<
-  Exclude<RecipeState, "blocked">,
-  { chip: string; Icon: typeof CircleCheck }
-> = {
-  ok: { chip: "bg-tl-green-surface text-tl-green", Icon: CircleCheck },
-  caution: { chip: "bg-tl-yellow-surface text-tl-yellow", Icon: TriangleAlert },
-  unknown: { chip: "bg-muted text-foreground", Icon: CircleHelp },
-};
-
 /** Recetario (S11 · ADR-017): recetas revisadas contra el plan, «con lo que tengo» y recetas propias. */
 export function Recipes() {
-  const d = useDt();
+  const d = useRecipesDt();
   const { l } = useI18n();
   const today = useToday();
   const input = useReviewInput(today);
@@ -318,22 +305,6 @@ function Chips<T extends string>({
   );
 }
 
-function StateChip({ state }: { state: Exclude<RecipeState, "blocked"> }) {
-  const d = useDt();
-  const { chip, Icon } = STATE_STYLE[state];
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-sm font-semibold",
-        chip,
-      )}
-    >
-      <Icon aria-hidden className="size-4 shrink-0" />
-      {d.recipes.states[state]}
-    </span>
-  );
-}
-
 function RecipeCard({
   r,
   ingredient,
@@ -341,9 +312,18 @@ function RecipeCard({
   r: ReviewedRecipe;
   ingredient: (id: IngredientId) => string;
 }) {
-  const d = useDt();
+  const d = useRecipesDt();
   const { l } = useI18n();
   const [open, setOpen] = useState(false);
+  // Los pasos se piden la primera vez que se abre la receta, no al cargar la pantalla.
+  const [detail, setDetail] = useState<RecipeSteps | null>(null);
+  const toggle = () => {
+    setOpen((v) => !v);
+    if (!detail)
+      import("@/lib/recipes/steps").then((m) =>
+        setDetail(m.STEPS[r.recipe.id] ?? { steps: [] }),
+      );
+  };
   const state = r.state as Exclude<RecipeState, "blocked">;
   const id = `rec-${r.recipe.id}`;
   return (
@@ -384,7 +364,7 @@ function RecipeCard({
         className="min-h-11 self-start"
         aria-expanded={open}
         aria-controls={id}
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggle}
       >
         {open ? d.recipes.close : d.recipes.open}
       </Button>
@@ -399,16 +379,24 @@ function RecipeCard({
               </li>
             ))}
           </ul>
-          <h4 className="font-semibold">{d.recipes.stepsTitle}</h4>
-          <ol className="list-decimal pl-5 text-sm">
-            {r.recipe.steps.map((s, i) => (
-              <li key={i}>{l(s)}</li>
-            ))}
-          </ol>
-          {r.recipe.tip && (
-            <p className="rounded-lg bg-accent px-3 py-2 text-sm text-accent-foreground">
-              <span className="font-semibold">{d.recipes.tipTitle}: </span>
-              {l(r.recipe.tip)}
+          {detail ? (
+            <>
+              <h4 className="font-semibold">{d.recipes.stepsTitle}</h4>
+              <ol className="list-decimal pl-5 text-sm">
+                {detail.steps.map((s, i) => (
+                  <li key={i}>{l(s)}</li>
+                ))}
+              </ol>
+              {detail.tip && (
+                <p className="rounded-lg bg-accent px-3 py-2 text-sm text-accent-foreground">
+                  <span className="font-semibold">{d.recipes.tipTitle}: </span>
+                  {l(detail.tip)}
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {d.recipes.stepsLoading}
             </p>
           )}
         </div>
@@ -428,7 +416,7 @@ function PantryResult({
   almost: PantryRecipe[];
   ingredient: (id: IngredientId) => string;
 }) {
-  const d = useDt();
+  const d = useRecipesDt();
   const { l } = useI18n();
   if (ready.length + swap.length + almost.length === 0)
     return <p className="text-sm">{d.recipes.pantryNone}</p>;
@@ -472,161 +460,5 @@ function PantryResult({
       {block(d.recipes.pantrySwap, swap, "pantry-swap")}
       {block(d.recipes.pantryAlmost, almost, "pantry-almost")}
     </div>
-  );
-}
-
-function OwnRecipes({
-  own,
-  input,
-}: {
-  own: ReturnType<typeof getOwnRecipes>;
-  input: NonNullable<ReturnType<typeof useReviewInput>>;
-}) {
-  const d = useDt();
-  const { l } = useI18n();
-  const [name, setName] = useState("");
-  const [lines, setLines] = useState("");
-  const [steps, setSteps] = useState("");
-  const [error, setError] = useState<"invalid" | "full" | null>(null);
-
-  const save = () => {
-    const ingredients = lines.split("\n");
-    const r = saveOwnRecipe({ name, ingredients, steps }, new Date());
-    if (!r) {
-      setError(own.length >= OWN_MAX ? "full" : "invalid");
-      return;
-    }
-    setError(null);
-    setName("");
-    setLines("");
-    setSteps("");
-    notifyLocalStore();
-  };
-
-  return (
-    <section className="flex flex-col gap-3" aria-labelledby="rec-own">
-      <h2 id="rec-own" className="text-xl">
-        {d.recipes.ownTitle}
-      </h2>
-      <p className="-mt-2 text-sm text-muted-foreground">{d.recipes.ownLead}</p>
-      <p className="text-sm text-muted-foreground">{d.recipes.ownLocal}</p>
-
-      {own.length === 0 ? (
-        <p className="text-sm">{d.recipes.ownEmpty}</p>
-      ) : (
-        <ul className="flex flex-col gap-2" data-testid="own-list">
-          {own.map((r) => {
-            const rev = reviewOwn(r, input);
-            return (
-              <li
-                key={r.id}
-                className="flex flex-col gap-1 rounded-xl border bg-card px-3 py-3"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-semibold">{r.name}</h3>
-                  {rev.state !== "blocked" && <StateChip state={rev.state} />}
-                </div>
-                {rev.state === "blocked" ? (
-                  <p className="text-sm">
-                    {fmt(d.recipes.ownHidden, {
-                      foods: rev.blocked.map((b) => b.text).join(", "),
-                    })}
-                  </p>
-                ) : (
-                  <>
-                    {rev.cautions.map((c) => (
-                      <p key={c.text} className="text-sm">
-                        {fmt(d.recipes.cautionLine, {
-                          food: c.text,
-                          limit: l(c.limit),
-                        })}
-                      </p>
-                    ))}
-                    {rev.unknown.length > 0 && (
-                      <p className="text-sm">
-                        {fmt(d.recipes.unknownLine, {
-                          foods: rev.unknown.join(", "),
-                        })}
-                      </p>
-                    )}
-                    <ul className="list-disc pl-5 text-sm">
-                      {r.ingredients.map((x, i) => (
-                        <li key={i}>{x}</li>
-                      ))}
-                    </ul>
-                    {r.steps && (
-                      <p className="whitespace-pre-line text-sm">{r.steps}</p>
-                    )}
-                  </>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="min-h-11 self-start"
-                  aria-label={fmt(d.recipes.ownRemoveAria, { name: r.name })}
-                  onClick={() => {
-                    removeOwnRecipe(r.id);
-                    notifyLocalStore();
-                  }}
-                >
-                  {d.recipes.ownRemove}
-                </Button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
-      <div className="flex flex-col gap-2">
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-semibold text-muted-foreground">
-            {d.recipes.ownName}
-          </span>
-          <input
-            type="text"
-            value={name}
-            maxLength={OWN_NAME_MAX}
-            onChange={(e) => setName(e.target.value)}
-            className="min-h-11 rounded-lg border bg-background px-3"
-            autoComplete="off"
-          />
-        </label>
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-semibold text-muted-foreground">
-            {d.recipes.ownIngredients}
-          </span>
-          <textarea
-            value={lines}
-            rows={4}
-            onChange={(e) =>
-              setLines(
-                e.target.value.split("\n").slice(0, OWN_LINES_MAX).join("\n"),
-              )
-            }
-            className="rounded-lg border bg-background px-3 py-2"
-          />
-        </label>
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-semibold text-muted-foreground">
-            {d.recipes.ownSteps}
-          </span>
-          <textarea
-            value={steps}
-            rows={3}
-            maxLength={OWN_STEPS_MAX}
-            onChange={(e) => setSteps(e.target.value)}
-            className="rounded-lg border bg-background px-3 py-2"
-          />
-        </label>
-        {error && (
-          <p role="alert" className="text-sm font-semibold">
-            {error === "full" ? d.recipes.ownFull : d.recipes.ownInvalid}
-          </p>
-        )}
-        <Button className="min-h-11 self-start" onClick={save}>
-          {d.recipes.ownSave}
-        </Button>
-      </div>
-    </section>
   );
 }

@@ -30,7 +30,8 @@ import { useLocalStore } from "@/lib/local-store";
 import { cn } from "@/lib/utils";
 import type { LunchState } from "@/lib/wellbeing/values";
 
-import { useDt, useReviewInput } from "./use-dt";
+import { useLunchDt, useReviewInput } from "./use-dt";
+import { WhenInView } from "./when-in-view";
 
 // El QR (y su librería) se cargan solo aquí, solo en la pantalla de la lonchera.
 const LunchQr = dynamic(() => import("./lunch-qr"), { ssr: false });
@@ -42,7 +43,7 @@ const STATE_ICON = { packed: Package, eaten: Check, back: House } as const;
 
 /** Lonchera (S11 · ADR-017): opciones del plan que aguantan sin nevera, qué se empacó y se comió, compras y etiqueta. */
 export function Lunchbox() {
-  const d = useDt();
+  const d = useLunchDt();
   const { l, locale } = useI18n();
   const today = useToday();
   const can = useCan();
@@ -327,12 +328,16 @@ export function Lunchbox() {
               </p>
             ))}
           </div>
-          <LunchQr
-            text={label.text}
-            alt={d.lunch.labelQrAlt}
-            building={d.lunch.labelBuilding}
-            failed={d.lunch.labelQrError}
-          />
+          <WhenInView
+            placeholder={<div aria-hidden className="size-44 shrink-0" />}
+          >
+            <LunchQr
+              text={label.text}
+              alt={d.lunch.labelQrAlt}
+              building={d.lunch.labelBuilding}
+              failed={d.lunch.labelQrError}
+            />
+          </WhenInView>
         </div>
         {label.cut && (
           <p className="text-sm text-muted-foreground" data-no-print>
@@ -361,7 +366,7 @@ export function Lunchbox() {
 }
 
 function Head() {
-  const d = useDt();
+  const d = useLunchDt();
   return (
     <>
       <h1 className="text-3xl" data-no-print>
@@ -391,7 +396,7 @@ function OptionRow({
   canWrite: boolean;
   onSet: (s: LunchState | null) => void;
 }) {
-  const d = useDt();
+  const d = useLunchDt();
   const { l } = useI18n();
   const Icon = state ? STATE_ICON[state] : null;
   return (
@@ -474,7 +479,7 @@ function NameField({
   saved: string | null;
   canWrite: boolean;
 }) {
-  const d = useDt();
+  const d = useLunchDt();
   const [draft, setDraft] = useState(saved ?? "");
   if (!canWrite)
     return (

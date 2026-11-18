@@ -1,0 +1,138 @@
+import type { Locale } from "../index";
+
+/**
+ * Textos de el recetario (S11 · ADR-017), en su propio módulo para que cada pantalla cargue solo los suyos
+ * y el bundle compartido no crezca. Redactados en cada idioma (no traducidos); paridad por test.
+ */
+
+const es = {
+  title: "Recetas",
+  lead: "Recetas sencillas revisadas contra TU plan: lo que el plan evita no aparece, y lo que no está en el plan se dice.",
+  timeLabel: "Tiempo",
+  costLabel: "Costo",
+  all: "Todas",
+  time: { quick: "Rápidas", medium: "Medianas", long: "Largas" },
+  cost: { low: "Económicas", mid: "Intermedias", high: "Más caras" },
+  likedOnly: "Con lo que le gusta",
+  likedHint: "Recetas con algún alimento que la última vez le gustó o aceptó.",
+  minutes: "{n} min",
+  ingredientsTitle: "Ingredientes",
+  stepsTitle: "Pasos",
+  tipTitle: "Un consejo",
+  optional: "(opcional)",
+  states: {
+    ok: "Con lo de tu plan",
+    caution: "Con medida",
+    unknown: "Algo no está en tu plan",
+  },
+  cautionLine: "{food}: {limit}",
+  unknownLine:
+    "No está en tu plan: {foods}. Pregúntale a tu profesional si puede.",
+  textureNote:
+    "Hoy no acepta esa textura: depende de cómo la prepares y puedes ajustarla.",
+  open: "Ver receta",
+  close: "Cerrar",
+  stepsLoading: "Abriendo la receta…",
+  empty: "Ninguna receta coincide con estos filtros.",
+  hiddenToggle: "Ver por qué algunas no se muestran",
+  hiddenTitle: "Recetas que no se muestran",
+  hiddenLead: "Llevan algo que tu plan evita o que anotaste para evitar.",
+  hiddenLine: "{recipe}: {ingredient} ({why})",
+  hiddenWhy: {
+    red: "tu plan lo evita",
+    restricted: "restricción vigente",
+    allergy: "lo anotaste para evitar",
+  },
+  pantryTitle: "¿Qué cocino con lo que tengo?",
+  pantryLead: "Marca lo que hay en casa y te digo qué se puede preparar.",
+  pantryStaples: "Agua, aceite, canela y limón se dan por sabidos.",
+  pantryClear: "Vaciar la despensa",
+  pantryNone: "Con lo marcado aún no sale ninguna; marca algo más.",
+  pantryReady: "Puedes hacerlas ya",
+  pantrySwap: "Con un reemplazo de tu plan",
+  pantryAlmost: "Casi: te falta poco",
+  swapLine: "En vez de {from}, tu plan propone {to}.",
+  missingLine: "Te falta: {foods}",
+  ownTitle: "Mis recetas",
+  ownLead: "Escribe las tuyas. Se revisan contra tu plan igual que las demás.",
+  ownLocal: "Se guardan solo en este teléfono: no se comparten.",
+  ownName: "Nombre de la receta",
+  ownIngredients: "Ingredientes (uno por línea)",
+  ownSteps: "Cómo se hace (opcional)",
+  ownSave: "Guardar receta",
+  ownRemove: "Quitar",
+  ownRemoveAria: "Quitar {name}",
+  ownEmpty: "Aún no tienes recetas propias.",
+  ownFull: "Llegaste al máximo de recetas propias; quita una para sumar otra.",
+  ownInvalid: "Falta el nombre o al menos un ingrediente.",
+  ownHidden: "Esta receta lleva algo que tu plan evita: {foods}.",
+};
+
+const en: typeof es = {
+  title: "Recipes",
+  lead: "Simple recipes checked against YOUR plan: what the plan avoids does not show up, and what is not in the plan is said out loud.",
+  timeLabel: "Time",
+  costLabel: "Cost",
+  all: "All",
+  time: { quick: "Quick", medium: "Medium", long: "Long" },
+  cost: { low: "Budget", mid: "Mid-range", high: "Pricier" },
+  likedOnly: "With what they like",
+  likedHint: "Recipes with a food they liked or accepted the last time.",
+  minutes: "{n} min",
+  ingredientsTitle: "Ingredients",
+  stepsTitle: "Steps",
+  tipTitle: "A tip",
+  optional: "(optional)",
+  states: {
+    ok: "Fits your plan",
+    caution: "With a limit",
+    unknown: "Something is not in your plan",
+  },
+  cautionLine: "{food}: {limit}",
+  unknownLine:
+    "Not in your plan: {foods}. Ask your professional if it is fine.",
+  textureNote:
+    "They do not take that texture today: it depends on how you prepare it, and you can adjust it.",
+  open: "See recipe",
+  close: "Close",
+  stepsLoading: "Opening the recipe…",
+  empty: "No recipe matches these filters.",
+  hiddenToggle: "See why some are not shown",
+  hiddenTitle: "Recipes that are not shown",
+  hiddenLead:
+    "They include something your plan avoids or that you noted to avoid.",
+  hiddenLine: "{recipe}: {ingredient} ({why})",
+  hiddenWhy: {
+    red: "your plan avoids it",
+    restricted: "restriction in force",
+    allergy: "you noted it to avoid",
+  },
+  pantryTitle: "What can I cook with what I have?",
+  pantryLead:
+    "Mark what you have at home and I will tell you what you can make.",
+  pantryStaples: "Water, oil, cinnamon and lemon are taken for granted.",
+  pantryClear: "Empty the pantry",
+  pantryNone: "Nothing comes out yet with what is marked; mark something more.",
+  pantryReady: "You can make these now",
+  pantrySwap: "With a swap from your plan",
+  pantryAlmost: "Almost: just a little missing",
+  swapLine: "Instead of {from}, your plan suggests {to}.",
+  missingLine: "Missing: {foods}",
+  ownTitle: "My recipes",
+  ownLead: "Write your own. They are checked against your plan like the rest.",
+  ownLocal: "They are saved only on this phone: they are not shared.",
+  ownName: "Recipe name",
+  ownIngredients: "Ingredients (one per line)",
+  ownSteps: "How it is made (optional)",
+  ownSave: "Save recipe",
+  ownRemove: "Remove",
+  ownRemoveAria: "Remove {name}",
+  ownEmpty: "You have no recipes of your own yet.",
+  ownFull:
+    "You reached the limit of your own recipes; remove one to add another.",
+  ownInvalid: "The name or at least one ingredient is missing.",
+  ownHidden: "This recipe has something your plan avoids: {foods}.",
+};
+
+export type RecipesText = typeof es;
+export const recipesText: Record<Locale, RecipesText> = { es, en };

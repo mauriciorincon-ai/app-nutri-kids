@@ -16,8 +16,8 @@ const placeholders = (s: string) =>
   [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 
 describe("textos de lonchera, recetas y viaje (es/en)", () => {
-  const es = strings(dayToDayText.es);
-  const en = strings(dayToDayText.en);
+  const es = strings(dayToDayText("es"));
+  const en = strings(dayToDayText("en"));
 
   it("paridad: mismas claves, ninguna vacía y los mismos {marcadores}", () => {
     expect(en.map(([k]) => k)).toEqual(es.map(([k]) => k));
@@ -30,7 +30,7 @@ describe("textos de lonchera, recetas y viaje (es/en)", () => {
   });
 
   it("cada opción que se puede elegir tiene su palabra en los dos idiomas", () => {
-    for (const t of Object.values(dayToDayText)) {
+    for (const t of [dayToDayText("es"), dayToDayText("en")]) {
       for (const s of LUNCH_STATES) expect(t.lunch.states[s]).toBeTruthy();
       for (const m of TRAVEL_MODES) expect(t.travel.modes[m]).toBeTruthy();
       for (const c of new Set(RECIPES.map((r) => r.cost)))

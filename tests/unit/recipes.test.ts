@@ -5,6 +5,7 @@ import { looksLikeMedicalAdvice } from "@/lib/diet/guardrails";
 import { TEXTURES, type DietPlan } from "@/lib/diet/schema";
 import { getDemoDiet } from "@/lib/diet/storage";
 import { RECIPES, timeLevel, type Recipe } from "@/lib/recipes/book";
+import { STEPS } from "@/lib/recipes/steps";
 import {
   INGREDIENTS,
   INGREDIENT_IDS,
@@ -34,8 +35,8 @@ const withIngredient = (id: IngredientId) =>
 const textOf = (r: Recipe) =>
   [
     r.name,
-    ...r.steps,
-    ...(r.tip ? [r.tip] : []),
+    ...STEPS[r.id].steps,
+    ...(STEPS[r.id].tip ? [STEPS[r.id].tip!] : []),
     ...r.ingredients.map((i) => i.qty),
   ].flatMap((t) => [t.es, t.en]);
 
@@ -58,11 +59,15 @@ describe("recetario inicial · contenido", () => {
     expect(timeLevel(31)).toBe("long");
   });
 
+  it("cada receta tiene sus pasos, y ningún paso queda huérfano de receta", () => {
+    expect(Object.keys(STEPS).sort()).toEqual(RECIPES.map((r) => r.id).sort());
+  });
+
   it("cada receta está redactada en español y en inglés, con ingredientes del catálogo y pasos", () => {
     for (const r of RECIPES) {
       for (const t of textOf(r))
         expect(t.trim().length, r.id).toBeGreaterThan(0);
-      expect(r.steps.length, r.id).toBeGreaterThanOrEqual(2);
+      expect(STEPS[r.id].steps.length, r.id).toBeGreaterThanOrEqual(2);
       expect(r.ingredients.length, r.id).toBeGreaterThanOrEqual(2);
       for (const i of r.ingredients)
         expect(INGREDIENT_IDS, `${r.id}:${i.id}`).toContain(i.id);
@@ -95,7 +100,7 @@ describe("recetario inicial · contenido", () => {
     // Y la uva siempre va partida.
     for (const r of withIngredient("uvas"))
       expect(
-        r.steps.some((s) => /parte|cut/i.test(s.es + s.en)),
+        STEPS[r.id].steps.some((s) => /parte|cut/i.test(s.es + s.en)),
         r.id,
       ).toBe(true);
   });
