@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nutrikids — Conócela</title>
-<meta name="description" content="La dieta de tu peque, viva en tu bolsillo. Recorrido por las 31 funcionalidades de Nutrikids.">
+<meta name="description" content="La dieta de tu peque, viva en tu bolsillo. Recorrido por las 35 funcionalidades de Nutrikids.">
 <!--
   BROCHURE VIVO de Nutrikids — molde v2 del kit (autocontenido, cero CDNs, cero fetch).
   Doble vida: este archivo abre con doble clic sin internet, Y se sirve como la ruta
@@ -454,7 +454,7 @@
       <span class="flecha" aria-hidden="true">↓</span></p>
   </header>
 
-  <!-- ═══ Capa 1 · E03/E04 · Qué hace (6 puertas, 31 funcionalidades) ═══ -->
+  <!-- ═══ Capa 1 · E03/E04 · Qué hace (6 puertas, 35 funcionalidades) ═══ -->
   <section class="seccion" aria-labelledby="t-quehace">
     <h2 id="t-quehace" class="revela">Qué hace</h2>
     <p class="suave revela">Veintiuna cosas, con una muestra de la pantalla de la que hablan.
@@ -554,7 +554,7 @@
             </span>
             <span class="tarjeta-titulos">
               <span class="titulo">El día de hoy, en orden</span>
-              <span class="linea">Qué toca ahora, qué ya pasó y cómo fue cada comida, anotado en segundos</span>
+              <span class="linea">Qué toca ahora, qué llevar, qué ya pasó y cómo fue cada comida, anotado en segundos</span>
             </span>
             <svg class="chevron" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
               <path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -664,6 +664,26 @@
                 un padre (nunca la fecha de nacimiento), cada hábito se compara con la referencia de esa edad
                 <strong>con su fuente a la vista</strong>: «dentro de lo que se recomienda», «por debajo» o «por encima de la referencia», nunca un
                 veredicto. Todo queda en el Historial y cada rol anota solo lo suyo.</p>
+            </div>
+            <div class="feature">
+              <h4>La lonchera, sin sorpresas</h4>
+              <p class="como">En <strong>Lonchera</strong> ves, para hoy y los seis días siguientes, solo lo que <strong>tu plan acepta y marca como «aguanta sin nevera»</strong>:
+                en verde o con medida, jamás un rojo, una restricción vigente ni una alergia. Empacas, marcas «se lo comió» o «volvió a casa», y las
+                <strong>compras de la semana</strong> se arman solas. La <strong>etiqueta</strong> imprimible lleva lo que no puede comer y un <strong>QR que guarda solo texto</strong>, nunca un enlace.</p>
+            </div>
+            <div class="feature">
+              <h4>Recetas revisadas contra tu plan</h4>
+              <p class="como">Más de 30 recetas sencillas, cada una con su estado en símbolo y palabra: <strong>«con lo de tu plan», «con medida» o «algo no está en tu plan»</strong>.
+                Lo que tu plan evita no aparece, y se dice por qué. Marca <strong>lo que tienes en casa</strong> y salen las que puedes hacer ya o con un reemplazo de tu plan; escribe también <strong>tus propias recetas</strong>, que se quedan en tu teléfono.</p>
+            </div>
+            <div class="feature">
+              <h4>Modo viaje</h4>
+              <p class="como">Por carretera o en avión, <strong>una lista para llevar</strong> sacada de tu plan (comida que aguanta, suplementos, medicamentos anotados), el día de viaje con las franjas de tu plan y un
+                <strong>documento en español e inglés</strong> para quien cuide al niño fuera de casa. Se arma en tu teléfono, <strong>sin internet</strong>, y avisa que contiene datos de salud.</p>
+            </div>
+            <div class="feature">
+              <h4>Claro, oscuro o el de tu teléfono</h4>
+              <p class="como">En <strong>Ajustes → Tema</strong> eliges cómo se ve: claro, oscuro o el que use tu teléfono. El semáforo se lee igual en los dos, con <strong>símbolo, palabra y color</strong>, y no hay destello al abrir.</p>
             </div>
           </div></div>
         </div>
@@ -1138,7 +1158,7 @@
   <!-- ═══ E09 · Cierre ═══ -->
   <footer class="revela">
     <p class="chica suave">Este recorrido cubre las
-      <span class="conteo"><span data-tabular id="conteo-cifra">31</span> funcionalidades</span>
+      <span class="conteo"><span data-tabular id="conteo-cifra">35</span> funcionalidades</span>
       de Nutrikids — todas, agrupadas para que las descubras a tu ritmo. El conteo cuadra con el
       manual de uso del repositorio; la tabla de mapeo vive en el resumen de esta entrega.</p>
     <p class="chica suave">Nutrikids no reemplaza a tu pediatra ni a tu nutricionista.</p>
@@ -1162,6 +1182,9 @@
         <li><strong>S10 · 2026-11-17:</strong> bienestar: cómo llega a la mesa, qué acepta, cómo está hoy y sus
           hábitos contra la referencia de su edad (con su fuente), todo cifrado y con permisos por rol.
           31 funcionalidades en 6 grupos.</li>
+        <li><strong>S11 · 2026-11-18:</strong> lonchera con etiqueta de QR de solo texto, recetas revisadas contra el plan
+          con «lo que tengo» y recetas propias, modo viaje con documento en dos idiomas y tema oscuro de verdad.
+          35 funcionalidades en 6 grupos.</li>
       </ul>
     </details>
   </footer>
@@ -1317,7 +1340,7 @@
   var cifraClimax = document.getElementById("marcador-cifra");
   alEntrar(cifraClimax, function () { contarHasta(cifraClimax, 7); });
   var cifraConteo = document.getElementById("conteo-cifra");
-  alEntrar(cifraConteo, function () { contarHasta(cifraConteo, 31); });
+  alEntrar(cifraConteo, function () { contarHasta(cifraConteo, 35); });
 
   /* ——— El «%» del clímax: el único loop de la pieza. Se pausa fuera de viewport y
      cuando la pestaña no está visible (no gastar batería por una promesa). ——— */

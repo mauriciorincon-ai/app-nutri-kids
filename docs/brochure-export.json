@@ -12,14 +12,14 @@
     "enlaces.produccion": "null cuando la app no tiene URL pública. `razon` explica por qué, y es lo que la vitrina muestra en lugar del enlace. Nunca se rellena con un enlace de repositorio ni con una promesa."
   },
   "schema_version": "1.0.0",
-  "actualizado": "2026-11-17",
+  "actualizado": "2026-11-18",
   "app": {
     "slug": "nutri-kids",
     "nombre": "Nutrikids",
     "ciclo": "H-2",
     "estado": "inicial",
     "sellado_en": null,
-    "sprints_cerrados": 10,
+    "sprints_cerrados": 11,
     "version_repo": "0.1.0"
   },
   "promesa": {
@@ -29,7 +29,7 @@
     "diferencial": "No califica al niño: sin calorías, peso, IMC ni percentiles, y sin convertir el «cumplimiento» en una nota. El chat contesta con tu plan dentro del teléfono y sin internet: no manda nada a ningún lado, ni siquiera para hacerle una pregunta. Lo que anotas del día, las horas y las notas sobre tu hijo solo viaja a tu familia si tú lo decides, y siempre cifrado desde el teléfono."
   },
   "funcionalidades": {
-    "total": 31,
+    "total": 35,
     "fuente_del_conteo": "docs/MANUAL-DE-USO.md",
     "descartadas": [],
     "grupos": [
@@ -63,7 +63,7 @@
         "orden": 2,
         "estrella": false,
         "nombre": "El día de hoy, en orden",
-        "linea": "Qué toca ahora, qué ya pasó y cómo fue cada comida, anotado en segundos",
+        "linea": "Qué toca ahora, qué llevar, qué ya pasó y cómo fue cada comida, anotado en segundos",
         "features": [
           {
             "id": "F4",
@@ -130,6 +130,30 @@
             "nombre": "Hábitos, con su referencia",
             "que_hace": "Sueño, pantalla, actividad, sol y agua, comparados con la referencia de la franja de edad que elige una madre o un padre (nunca la fecha de nacimiento), con su fuente a la vista y sin veredicto.",
             "seccion_manual": "Bienestar: cómo llega, qué acepta, cómo está y sus hábitos"
+          },
+          {
+            "id": "F32",
+            "nombre": "La lonchera, sin sorpresas",
+            "que_hace": "Ves, para hoy y los seis días siguientes, solo lo que tu plan acepta y marca como «aguanta sin nevera»: en verde o con medida, jamás un rojo, una restricción vigente ni una alergia. Empacas, marcas «se lo comió» o «volvió a casa», las compras de la semana se arman solas y la etiqueta imprimible lleva lo que no puede comer y un QR que guarda solo texto, nunca un enlace.",
+            "seccion_manual": "Lonchera, recetas y modo viaje"
+          },
+          {
+            "id": "F33",
+            "nombre": "Recetas revisadas contra tu plan",
+            "que_hace": "Más de 30 recetas sencillas con su estado en símbolo y palabra: con lo de tu plan, con medida o algo no está en tu plan. Lo que tu plan evita no aparece y se dice por qué. Marcas lo que tienes en casa y salen las que puedes hacer ya o con un reemplazo de tu plan; las recetas propias se quedan en tu teléfono.",
+            "seccion_manual": "Lonchera, recetas y modo viaje"
+          },
+          {
+            "id": "F34",
+            "nombre": "Modo viaje",
+            "que_hace": "Por carretera o en avión: una lista para llevar sacada de tu plan, el día de viaje con las franjas de tu plan y un documento en español e inglés para quien cuide al niño fuera de casa, armado en tu teléfono sin internet y con el aviso de que contiene datos de salud.",
+            "seccion_manual": "Lonchera, recetas y modo viaje"
+          },
+          {
+            "id": "F35",
+            "nombre": "Claro, oscuro o el de tu teléfono",
+            "que_hace": "En Ajustes eliges el tema: claro, oscuro o el que use tu teléfono. El semáforo se lee igual en los dos, con símbolo, palabra y color, y no hay destello al abrir.",
+            "seccion_manual": "Tema: claro, oscuro o el del teléfono"
           }
         ]
       },

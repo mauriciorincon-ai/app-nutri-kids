@@ -180,3 +180,12 @@ El "por qué" del semáforo siempre en palabras simples.
 
 - **Tonos del ánimo:** `--mood-{happy,tired,anxious,quiet,other}` y su `-surface` (claro y `.dark`), mapeados como `--color-mood-*`. Lejos del semáforo de alimentos y **nunca rojo**: «dentro» usa `happy`, «por debajo / por encima» usa `tired`, «sin cifra» usa `other`.
 - **Elegido = marca ✓ + borde + relleno.** Ningún estado de bienestar se distingue solo por color (regla 4).
+
+## El día a día: lonchera, recetas y viaje (S11 · ADR-017)
+
+- **Un estado de receta es símbolo + palabra + color** (`StateChip`): «Con lo de tu plan» ✓ (verde), «Con medida» ⚠ (amarillo), «Algo no está en tu plan» ? (neutro). Lo desconocido **nunca** es verde. Una receta bloqueada no se pinta: se explica en «Ver por qué algunas no se muestran».
+- **Elegir = marca ✓ + borde + relleno** también en los filtros, la despensa, los días de la lonchera y el modo de viaje (`aria-pressed`, táctil ≥ 44 px), igual que el ánimo del S10.
+- **Estados de la lonchera con icono y palabra:** empacado (caja), «se lo comió» (✓), «volvió a casa» (casa). Sin rojo: volver a casa no es un fallo.
+- **Hoja para imprimir:** `data-print-sheet` marca lo que sale en papel (la etiqueta y el documento del viaje) y `data-no-print` lo que se esconde; en papel todo es negro sobre blanco, sin fondos. El QR lleva zona de silencio blanca propia (`bg-white`) en los dos temas, porque un QR sobre fondo oscuro no se lee.
+- **Una fila de enlaces, no una barra nueva:** en Hoy, «Para el día a día» con tres enlaces estáticos (Lonchera · Recetas · Viaje); la barra inferior se queda en 6.
+- **Aviso no médico en cada pantalla**, como elemento fijo (`notMedical`), y el del documento del viaje «contiene datos de salud» en un bloque propio, no en letra pequeña.
