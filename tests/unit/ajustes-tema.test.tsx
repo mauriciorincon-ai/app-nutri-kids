@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -24,6 +24,7 @@ const listeners = new Set<() => void>();
 beforeEach(() => {
   localStorage.clear();
   document.documentElement.classList.remove("dark");
+  delete document.documentElement.dataset.themePref;
   systemDark = false;
   listeners.clear();
   window.matchMedia = ((q: string) => ({
@@ -65,10 +66,12 @@ describe("Ajustes · Tema", () => {
     const user = userEvent.setup();
     renderApp();
     await user.click(screen.getByTestId("theme-dark"));
-    expect(document.documentElement).toHaveClass("dark");
+    await waitFor(() => expect(document.documentElement).toHaveClass("dark"));
     expect(loadPrefs().theme).toBe("dark");
     await user.click(screen.getByTestId("theme-light"));
-    expect(document.documentElement).not.toHaveClass("dark");
+    await waitFor(() =>
+      expect(document.documentElement).not.toHaveClass("dark"),
+    );
     expect(loadPrefs().theme).toBe("light");
   });
 
@@ -78,7 +81,7 @@ describe("Ajustes · Tema", () => {
     await user.click(screen.getByTestId("theme-dark"));
     await user.click(screen.getByRole("button", { name: "English" }));
     expect(loadPrefs()).toMatchObject({ locale: "en", theme: "dark" });
-    expect(document.documentElement).toHaveClass("dark");
+    await waitFor(() => expect(document.documentElement).toHaveClass("dark"));
   });
 
   it("en «Sistema» sigue al teléfono cuando cambia; con tema a mano, no", async () => {
@@ -86,9 +89,11 @@ describe("Ajustes · Tema", () => {
     renderApp();
     systemDark = true;
     listeners.forEach((fn) => fn());
-    expect(document.documentElement).toHaveClass("dark");
+    await waitFor(() => expect(document.documentElement).toHaveClass("dark"));
     await user.click(screen.getByTestId("theme-light"));
     expect(listeners.size).toBe(0); // dejó de escuchar al teléfono
-    expect(document.documentElement).not.toHaveClass("dark");
+    await waitFor(() =>
+      expect(document.documentElement).not.toHaveClass("dark"),
+    );
   });
 });

@@ -1,12 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { STORAGE_KEYS, type ThemePref } from "@/lib/diet/storage";
-import {
-  applyTheme,
-  resolveTheme,
-  THEME_COLORS,
-  THEME_SCRIPT,
-} from "@/lib/theme";
+import { applyTheme, resolveTheme, THEME_COLORS } from "@/lib/theme";
+import { THEME_SCRIPT } from "@/lib/theme-script";
 
 /**
  * Tema (S11, ADR-016): quién manda (ajuste o teléfono), qué se pone en <html> y en la barra, y
@@ -24,6 +20,7 @@ function barMetas() {
 
 function snapshot() {
   return {
+    pref: root.dataset.themePref,
     dark: root.classList.contains("dark"),
     scheme: root.style.colorScheme,
     bar: [...document.querySelectorAll('meta[name="theme-color"]')].map((m) =>
@@ -34,6 +31,7 @@ function snapshot() {
 
 function reset() {
   root.classList.remove("dark");
+  delete root.dataset.themePref;
   root.style.colorScheme = "";
   window.localStorage.clear();
   barMetas();
@@ -55,6 +53,7 @@ describe("applyTheme", () => {
   it("oscuro: clase, color-scheme y las dos etiquetas de la barra en oscuro", () => {
     applyTheme(document, "dark", false);
     expect(snapshot()).toEqual({
+      pref: "dark",
       dark: true,
       scheme: "dark",
       bar: [THEME_COLORS.dark, THEME_COLORS.dark],
@@ -64,6 +63,7 @@ describe("applyTheme", () => {
   it("claro con el teléfono oscuro: manda lo elegido", () => {
     applyTheme(document, "light", true);
     expect(snapshot()).toEqual({
+      pref: "light",
       dark: false,
       scheme: "light",
       bar: [THEME_COLORS.light, THEME_COLORS.light],
@@ -74,6 +74,7 @@ describe("applyTheme", () => {
     applyTheme(document, "dark", false); // venía de un tema a mano
     applyTheme(document, "system", true);
     expect(snapshot()).toEqual({
+      pref: "system",
       dark: true,
       scheme: "dark",
       bar: [THEME_COLORS.light, THEME_COLORS.dark],
