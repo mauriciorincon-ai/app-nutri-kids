@@ -377,7 +377,6 @@ export const en: Dictionary = {
     languageEs: "Español",
     languageEn: "English",
     theme: "Theme",
-    themeHelp: "How the app looks. “System” follows your phone.",
     themeSystem: "System",
     themeLight: "Light",
     themeDark: "Dark",

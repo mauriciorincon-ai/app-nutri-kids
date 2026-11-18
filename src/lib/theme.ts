@@ -39,6 +39,8 @@ export function applyTheme(
   const theme = resolveTheme(pref, systemDark);
   const root = doc.documentElement;
   const dark = theme === "dark";
+  // Qué ajuste se aplicó: `ThemeSync` lo lee para no cargar este módulo si ya está al día.
+  if (root.dataset.themePref !== pref) root.dataset.themePref = pref;
   if (root.classList.contains("dark") !== dark) {
     root.classList.toggle("dark", dark);
   }
@@ -54,9 +56,3 @@ export function applyTheme(
   });
   return theme;
 }
-
-/**
- * Lo mismo que `applyTheme`, escrito para correr en línea ANTES de pintar (síncrono, sin
- * módulos). Una prueba lo ejecuta contra `applyTheme` para que no se separen.
- */
-export const THEME_SCRIPT = `try{var d=document.documentElement,t=JSON.parse(localStorage.getItem("nutrikids.prefs.v1")||"{}").theme,s=matchMedia("${DARK_QUERY}").matches,k=t==="dark"||(t!=="light"&&s),n=k?"dark":"light",c={light:"${THEME_COLORS.light}",dark:"${THEME_COLORS.dark}"};d.classList.toggle("dark",k);d.style.colorScheme=n;document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){var o=/dark/.test(m.getAttribute("media")||"")?"dark":"light";m.setAttribute("content",c[t==="dark"||t==="light"?n:o])})}catch(e){}`;

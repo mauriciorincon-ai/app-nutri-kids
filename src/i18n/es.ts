@@ -380,7 +380,6 @@ export const es = {
     languageEs: "Español",
     languageEn: "English",
     theme: "Tema",
-    themeHelp: "Cómo se ve la app. «Sistema» sigue al teléfono.",
     themeSystem: "Sistema",
     themeLight: "Claro",
     themeDark: "Oscuro",

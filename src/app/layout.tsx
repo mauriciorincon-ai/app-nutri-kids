@@ -12,7 +12,8 @@ import { DietProvider } from "@/components/diet-provider";
 import { FamilySync } from "@/components/family/family-sync";
 import { PushSync } from "@/components/push/push-sync";
 import { I18nProvider } from "@/i18n";
-import { THEME_COLORS, THEME_SCRIPT } from "@/lib/theme";
+import { THEME_COLORS } from "@/lib/theme";
+import { THEME_SCRIPT } from "@/lib/theme-script";
 
 // Presupuesto de fuentes (gate LCP): 2 familias variables sin ejes extra y
 // display OPTIONAL — con swap, el repaint al llegar el webfont movía el LCP a
