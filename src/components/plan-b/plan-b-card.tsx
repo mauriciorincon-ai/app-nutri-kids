@@ -11,6 +11,7 @@ import { useI18n } from "@/i18n";
 import type { OpenAnswer } from "@/lib/diet/answer";
 import { allItemIds, resolveItemStatus } from "@/lib/diet/logic";
 import { avoidTexts } from "@/lib/diet/options";
+import { compareText } from "@/lib/format";
 import {
   fridgeMarks,
   planB,
@@ -63,11 +64,16 @@ export function PlanBCard() {
     );
   };
 
-  const foods = allItemIds(diet)
-    .map((id) => resolveItemStatus(diet, id, new Date()))
-    .filter((s) => s !== null)
-    .map((s) => ({ id: s.id, name: l(s.name) }))
-    .sort((a, b) => a.name.localeCompare(b.name, locale));
+  // La lista de alimentos solo se arma al abrir «se acabó…»: resolver el semáforo de toda
+  // la dieta en cada render de Hoy pesaba al abrir la app (S10) y nadie la veía.
+  const foods =
+    open === "out"
+      ? allItemIds(diet)
+          .map((id) => resolveItemStatus(diet, id, new Date()))
+          .filter((s) => s !== null)
+          .map((s) => ({ id: s.id, name: l(s.name) }))
+          .sort((a, b) => compareText(a.name, b.name, locale))
+      : [];
 
   const buttons: { s: Situation; label: string }[] = [
     { s: "out", label: t.planB.out },
