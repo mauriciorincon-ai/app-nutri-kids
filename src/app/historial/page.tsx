@@ -48,8 +48,10 @@ export default function HistoryPage() {
     <div className="flex flex-col gap-5 pb-6">
       <h1 className="text-3xl">{t.history.title}</h1>
       <p className="-mt-2 text-muted-foreground">{t.history.intro}</p>
+      {/* Sin precarga: el enlace está a la vista y bajaría Bienestar entero al abrir Historial. */}
       <Link
         href="/bienestar"
+        prefetch={false}
         className="inline-flex min-h-11 items-center gap-1 self-start text-sm font-medium text-primary hover:underline"
       >
         {w.open}
