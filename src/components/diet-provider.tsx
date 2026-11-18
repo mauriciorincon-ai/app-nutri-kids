@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, useContext, useDeferredValue, useMemo } from "react";
 
 import type { DietPlan } from "@/lib/diet/schema";
 import {
@@ -38,13 +38,18 @@ const SERVER_SNAPSHOT: ActiveDiet = { diet: getDemoDiet(), source: "demo" };
 export function DietProvider({ children }: { children: React.ReactNode }) {
   const active = useLocalStore(loadActiveDiet, SERVER_SNAPSHOT);
   const ready = useHydrated();
+  const value = useMemo(
+    () => ({ ...active, refresh: notifyLocalStore, ready }),
+    [active, ready],
+  );
+  // Al hidratar cambian la dieta (la del aparato) y `ready`, y useSyncExternalStore fuerza
+  // un re-render SÍNCRONO de toda la pantalla: una sola tarea larga al abrir (TBT de
+  // Lighthouse, S10). Diferido, ese re-render corre en segundo plano y a trozos; la
+  // pantalla termina igual, solo deja de trabar el teléfono mientras se arma.
+  const deferred = useDeferredValue(value);
 
   return (
-    <DietContext.Provider
-      value={{ ...active, refresh: notifyLocalStore, ready }}
-    >
-      {children}
-    </DietContext.Provider>
+    <DietContext.Provider value={deferred}>{children}</DietContext.Provider>
   );
 }
 
