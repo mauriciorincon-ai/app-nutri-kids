@@ -19,7 +19,7 @@ Implementados como CSS variables en `src/app/globals.css` (mapeadas a Tailwind v
 **Prohibido el valor mágico suelto en componentes** — si un valor no existe como token, se
 propone aquí primero.
 
-### Paleta (modo claro — S1 es light-only, decisión documentada abajo)
+### Paleta (modo claro; el oscuro tiene su tabla más abajo, «Tema oscuro»)
 
 | Rol              | Token                | Valor                   | Uso                                                          |
 | ---------------- | -------------------- | ----------------------- | ------------------------------------------------------------ |
@@ -92,7 +92,7 @@ por tarjeta es cobrar un peaje por cada una. La regla que quedó tras seis ronda
    (encoge fuera de cuadro). Por arriba: de golpe, sin transición, **reponiendo el scroll con el
    alto exacto perdido** vía `scrollBy({top: -perdido, behavior: "instant"})` — un `scrollBy(x, y)`
    a secas SE ANIMA con `scroll-behavior: smooth` y la página «pega saltos». `overflow-anchor:
-   none` en `<html>` para que el navegador no compense también (Safari no ancla nunca).
+none` en `<html>` para que el navegador no compense también (Safari no ancla nunca).
 3. **Rectángulos, no IntersectionObserver**: gobierna dónde está la cabecera respecto a la
    pantalla, no cuánto de la tarjeta se ve. Y si hay coreografía de entrada con `translateY`, las
    tarjetas revelan con **umbral 0**: una caja desplazada 18 px miente sobre su posición.
@@ -148,9 +148,33 @@ El "por qué" del semáforo siempre en palabras simples.
 
 ## Decisiones de alcance v1
 
-- **Light-only en S1.** El modo oscuro se diseñará con su propia paleta AA (no inversión
-  automática) cuando un sprint lo priorice; queda anotado como extensión, no deuda.
+- **Claro y oscuro desde el S11** (ver «Tema oscuro»). El S1 era solo claro; el oscuro se diseñó con su
+  propia paleta AA, no con una inversión automática.
 - Orientación: portrait (uso teléfono); desktop ≥1024 = misma app centrada con nav lateral simple.
+
+## Tema oscuro (S11 · ADR-016)
+
+- **Quién manda:** Ajustes → Tema: _Sistema_ (por defecto, sigue al teléfono) · _Claro_ · _Oscuro_. Lo elegido a mano gana
+  al teléfono. Se guarda en el aparato como el idioma (`nutrikids.prefs.v1`, no es dato del niño).
+- **Sin destello:** un script en línea (`THEME_SCRIPT`, `src/lib/theme.ts`) pone la clase `.dark`, `color-scheme` y el color de
+  la barra del navegador ANTES del primer pintado. `ThemeSync` lo mantiene al día.
+- **Oscuro cálido, no gris azulado:** el mismo «cocina familiar» de noche — marrones tostados (matiz 55–60), crema atenuada
+  como tinta, terracota más clara como acento.
+
+| Rol              | Token                | Valor oscuro            |
+| ---------------- | -------------------- | ----------------------- |
+| Fondo            | `--background`       | `oklch(0.2 0.012 55)`   |
+| Superficie       | `--card`             | `oklch(0.245 0.014 55)` |
+| Tinta            | `--foreground`       | `oklch(0.93 0.012 80)`  |
+| Tinta secundaria | `--muted-foreground` | `oklch(0.76 0.02 70)`   |
+| Acento           | `--primary`          | `oklch(0.74 0.11 50)`   |
+| Telón de diálogo | `--scrim`            | `oklch(0 0 0 / 55%)`    |
+
+- **Semáforo de noche:** los tonos `--tl-*` invierten el par (texto claro sobre superficie oscura teñida). Siguen siendo
+  símbolo + texto + color (regla 4); aquí solo cambia el tono.
+- **La verificación:** toda pasada de axe de las e2e pasa por `tests/e2e/theme.ts`, que falla si la página no está de verdad
+  en el tema que se dice medir (clase de `<html>`, `color-scheme` y luminancia del fondo). Hasta el S10 las pasadas «dark» eran
+  el claro dos veces.
 
 ## Bienestar (S10 · ADR-015)
 
