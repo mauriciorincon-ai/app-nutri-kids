@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+
+import { analyze } from "./theme";
 
 /**
  * S6 «Tu PDF, vuelto app»: PDF → revisar → guardar, sin red (ADR-010).
@@ -111,7 +112,7 @@ async function seedDraft(
 }
 
 async function axeClean(page: Page) {
-  const results = await new AxeBuilder({ page }).analyze();
+  const results = await analyze(page);
   expect(results.violations).toEqual([]);
 }
 
@@ -287,8 +288,7 @@ test("la revisión en inglés usa los textos en inglés", async ({ page }) => {
 });
 
 for (const colorScheme of ["light", "dark"] as const) {
-  // El sistema de diseño es solo claro (no hay tema oscuro real): «dark» es la guarda por
-  // preferencia del sistema, como en perfil.spec y chat.spec.
+  // Los dos temas reales (S11): `analyze` falla si la página no está en el tema que se mide.
   test(`axe limpio en cada estado de la revisión · tema ${colorScheme}`, async ({
     page,
   }) => {

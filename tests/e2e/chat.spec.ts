@@ -1,5 +1,6 @@
-import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+
+import { analyze } from "./theme";
 
 /**
  * Chat «pregúntale a la dieta» — código primero (ADR-008, regla dura 5).
@@ -129,8 +130,7 @@ test("EN: open questions answer in English from the plan", async ({ page }) => {
   expect(calls).toEqual([]);
 });
 
-// Nota: el sistema de diseño es solo claro (no hay tema oscuro real); «dark» es una guarda:
-// si algún día se agrega un tema oscuro, esta e2e ya lo cubre con axe.
+// Los dos temas reales (S11): `analyze` falla si la página no está en el tema que se mide.
 for (const colorScheme of ["light", "dark"] as const) {
   test(`axe limpio con respuestas en el hilo · tema ${colorScheme}`, async ({
     page,
@@ -144,7 +144,7 @@ for (const colorScheme of ["light", "dark"] as const) {
     await ask(page, "No tengo mandarina");
     await ask(page, "¿le subo la dosis de la B12?");
     await expect(page.locator('[data-answer="not-in-plan"]')).toBeVisible();
-    const results = await new AxeBuilder({ page }).analyze();
+    const results = await analyze(page);
     expect(results.violations).toEqual([]);
   });
 }
@@ -166,7 +166,7 @@ test("con un modelo del aparato disponible, la respuesta sale marcada «redactad
   const calls = watchNetwork(page);
   await ask(page, "No tengo pollo, ¿qué le doy?");
   await expect(page.getByText("redactado en tu teléfono")).toBeVisible();
-  const results = await new AxeBuilder({ page }).analyze();
+  const results = await analyze(page);
   expect(results.violations).toEqual([]);
   expect(calls).toEqual([]);
 });

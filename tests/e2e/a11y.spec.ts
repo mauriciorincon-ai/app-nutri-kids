@@ -1,5 +1,6 @@
-import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+
+import { analyze, summarize } from "./theme";
 
 /**
  * Gate A11y automático: axe limpio en cada ruta nueva (estándar 6)
@@ -35,12 +36,16 @@ const ROUTES = [
   "/bienestar",
 ];
 
-for (const route of ROUTES) {
-  test(`axe limpio en ${route}`, async ({ page }) => {
-    await openApp(page, route);
-    const results = await new AxeBuilder({ page }).analyze();
-    expect(results.violations).toEqual([]);
-  });
+// Los dos temas REALES (S11, ADR-016): `analyze` falla si la página no está en el tema pedido.
+for (const colorScheme of ["light", "dark"] as const) {
+  for (const route of ROUTES) {
+    test(`axe limpio en ${route} · tema ${colorScheme}`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme });
+      await openApp(page, route);
+      const results = await analyze(page, colorScheme);
+      expect(summarize(results.violations)).toEqual([]);
+    });
+  }
 }
 
 test("axe limpio en /historial CON días registrados (lista, <time>, notas)", async ({
@@ -73,7 +78,7 @@ test("axe limpio en /historial CON días registrados (lista, <time>, notas)", as
   await page.goto("/historial");
   await page.waitForLoadState("networkidle");
   await expect(page.getByText(/solo un poco/)).toBeVisible();
-  const results = await new AxeBuilder({ page }).analyze();
+  const results = await analyze(page);
   expect(results.violations).toEqual([]);
 });
 
@@ -81,7 +86,7 @@ test("axe limpio con el diálogo de primer uso abierto", async ({ page }) => {
   await page.clock.install({ time: MONDAY });
   await page.goto("/");
   await expect(page.getByRole("dialog")).toBeVisible();
-  const results = await new AxeBuilder({ page }).analyze();
+  const results = await analyze(page);
   expect(results.violations).toEqual([]);
 });
 

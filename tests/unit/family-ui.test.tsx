@@ -224,7 +224,10 @@ describe("Compartir con la familia (Ajustes)", () => {
     );
     await user.click(screen.getByTestId("family-join"));
     const submit = screen.getByRole("button", { name: "Entrar" });
-    await user.type(await screen.findByLabelText("Invitación"), "ZZZZZ-ZZZZZ-ZZZZ-ZZZZ-ZZZZ");
+    await user.type(
+      await screen.findByLabelText("Invitación"),
+      "ZZZZZ-ZZZZZ-ZZZZ-ZZZZ-ZZZZ",
+    );
     await user.type(await screen.findByLabelText("Frase"), secrets.phrase);
     await user.type(
       await screen.findByLabelText(/Nombre de este teléfono/),
@@ -295,7 +298,9 @@ describe("Compartir con la familia (Ajustes)", () => {
       ),
     );
     const form = screen.getByTestId("family-join-form");
-    expect(within(form).getByLabelText("Invitación")).toHaveAttribute("readonly");
+    expect(within(form).getByLabelText("Invitación")).toHaveAttribute(
+      "readonly",
+    );
     expect(within(form).queryByLabelText(/Nombre de este teléfono/)).toBeNull();
   });
 
@@ -359,7 +364,12 @@ describe("«Por <nombre>»", () => {
   }
 
   it("sin familia no se ve; la fila marcada con `by` lo muestra", async () => {
-    savePrefs({ locale: "es", disclaimerSeen: true, chatIntroSeen: true });
+    savePrefs({
+      locale: "es",
+      theme: "system",
+      disclaimerSeen: true,
+      chatIntroSeen: true,
+    });
     const { unmount } = render(
       <I18nProvider>
         <Row id="ABC" />

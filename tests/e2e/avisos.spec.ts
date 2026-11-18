@@ -1,4 +1,3 @@
-import AxeBuilder from "@axe-core/playwright";
 import {
   expect,
   test,
@@ -7,6 +6,8 @@ import {
   type BrowserContext,
   type Page,
 } from "@playwright/test";
+
+import { axe } from "./phones";
 
 import { signLikeQstash } from "../../src/lib/push/qstash";
 
@@ -125,24 +126,6 @@ async function phone(
   }, opts);
   const page = await context.newPage();
   return { context, page, wire };
-}
-
-async function axe(page: Page, scope: string) {
-  for (const colorScheme of ["light", "dark"] as const) {
-    await page.emulateMedia({ colorScheme, reducedMotion: "reduce" });
-    await page.evaluate(() =>
-      Promise.all(
-        document.getAnimations().map((a) => a.finished.catch(() => null)),
-      ),
-    );
-    const results = await new AxeBuilder({ page }).analyze();
-    const found = results.violations.map(
-      (v) =>
-        `${v.id}: ${v.nodes.map((n) => `${n.target.join(" ")} — ${n.failureSummary?.split("\n")[1]?.trim()}`).join(" | ")}`,
-    );
-    expect(found, `${scope} · ${colorScheme}`).toEqual([]);
-  }
-  await page.emulateMedia({ colorScheme: "light" });
 }
 
 async function enable(page: Page) {
