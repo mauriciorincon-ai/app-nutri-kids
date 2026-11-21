@@ -43,7 +43,7 @@ export type IngredientStatus =
 const SEVERITY = { green: 0, yellow: 1, red: 2 } as const;
 
 /** Las formas de decir un ingrediente, como listas de palabras (es, en y las otras). */
-function forms(ing: Ingredient): string[][] {
+export function forms(ing: Ingredient): string[][] {
   return [ing.es, ing.en, ...(ing.alt ?? [])]
     .map((f) => toTokens(f, "es"))
     .filter((t) => t.length > 0);
@@ -56,10 +56,10 @@ function overlap(a: string[], b: string[]): 0 | 1 | 2 {
 }
 
 /** «Gaseosas y jugos de caja» nombra dos cosas: cada alternativa también cuenta (como parcial). */
-const ALTERNATIVES = /\s*(?:,|\/|;|\by\b|\be\b|\band\b|\bor\b|\bo\b|\bu\b)\s*/i;
+export const ALTERNATIVES = /\s*(?:,|\/|;|\by\b|\be\b|\band\b|\bor\b|\bo\b|\bu\b)\s*/i;
 
 /** El mejor cotejo de un nombre del plan (en los dos idiomas) con las formas del ingrediente. */
-function matchLevel(ing: string[][], name: LocalizedText): 0 | 1 | 2 {
+export function matchLevel(ing: string[][], name: LocalizedText): 0 | 1 | 2 {
   let best: 0 | 1 | 2 = 0;
   for (const locale of ["es", "en"] as const) {
     const planTokens = toTokens(name[locale], locale);

@@ -27,6 +27,8 @@ export default defineConfig({
         "src/lib/recipes/**",
         "src/lib/travel/**",
         "src/lib/day-to-day/**",
+        // S12: la cámara (cotejo, prueba, cliente del worker y caché del modelo).
+        "src/lib/camera/**",
       ],
       thresholds: {
         lines: 80,
