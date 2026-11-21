@@ -81,6 +81,7 @@ export const en: Dictionary = {
     dayToDayLunchbox: "Lunchbox",
     dayToDayRecipes: "Recipes",
     dayToDayTravel: "Travel",
+    dayToDayCamera: "Camera",
     profileLink: "Your child's profile",
   },
   reminder: {

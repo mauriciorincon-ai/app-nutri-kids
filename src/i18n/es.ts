@@ -82,6 +82,7 @@ export const es = {
     dayToDayLunchbox: "Lonchera",
     dayToDayRecipes: "Recetas",
     dayToDayTravel: "Viaje",
+    dayToDayCamera: "Cámara",
     profileLink: "Perfil de tu peque",
   },
   reminder: {
