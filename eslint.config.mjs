@@ -16,6 +16,8 @@ const eslintConfig = defineConfig([
     "coverage/**",
     // pdf.js y su worker: copia minificada de node_modules que genera el build (S6, ADR-010)
     "public/pdfjs/**",
+    // Runtime del modelo de la cámara, copiado de node_modules por build-sw (ADR-018).
+    "public/ia/**",
   ]),
 ]);
 

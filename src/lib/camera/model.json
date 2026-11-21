@@ -1,0 +1,20 @@
+{
+  "_comment": "S12 · ADR-018. El modelo que mira la foto: público (Apache-2.0), fijado por commit del Hub. Lo leen la pantalla (tamaño y nombre) y scripts/build-sw.mjs (estampa public/ia/vision-worker.js). dtype medido en el Mac: el codificador de visión en q4f16 devuelve vacío en WebGPU; int8 + q4 + q4 suma 178,8 MB y nombra la comida. Cambiar de modelo es decisión del dueño.",
+  "id": "HuggingFaceTB/SmolVLM-256M-Instruct",
+  "revision": "d039ab0d4b9311b617e8ffec1d06c8464364aeb3",
+  "license": "Apache-2.0",
+  "dtype": {
+    "embed_tokens": "int8",
+    "vision_encoder": "q4",
+    "decoder_model_merged": "q4"
+  },
+  "downloadMB": 179,
+  "cacheKey": "nutrikids-model",
+  "prompt": "List the foods and ingredients you can see in this image. Answer only with their names, separated by commas.",
+  "maxNewTokens": 40,
+  "repetitionPenalty": 1.3,
+  "imageEdge": 512,
+  "allowedHosts": [
+    "huggingface.co"
+  ]
+}
