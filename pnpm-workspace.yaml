@@ -9,6 +9,9 @@ allowBuilds:
   # modelo corre en el navegador desde public/ia/). Sus scripts de instalación NO corren.
   onnxruntime-node: false
   protobufjs: false
+  # S13: tesseract.js solo trae un aviso de opencollective en su postinstall; el lector corre en
+  # el navegador desde public/ocr/. No corre.
+  tesseract.js: false
 # Parche de seguridad de next (decisión «1a» del 2026-11-01): 16.4.4 se publicó el
 # 2026-11-02, el mismo día en que se aplicó, y pnpm 11 rechaza versiones más nuevas que
 # su `minimumReleaseAge`. Se exime SOLO la versión exacta, tras verificar su provenance
