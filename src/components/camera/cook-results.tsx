@@ -38,7 +38,7 @@ export function CookResults({
   const block = (title: string, rows: PantryRecipe[], testid: string) =>
     rows.length > 0 && (
       <div className="flex flex-col gap-1" data-testid={testid}>
-        <h3 className="font-semibold">{title}</h3>
+        <h2 className="font-semibold">{title}</h2>
         <ul className="flex flex-col gap-1.5">
           {rows.map((r) => (
             <li
@@ -93,7 +93,7 @@ export function CookResults({
           className="flex flex-col gap-2"
           data-testid="camera-cook-templates"
         >
-          <h3 className="font-semibold">{c.templateTitle}</h3>
+          <h2 className="font-semibold">{c.templateTitle}</h2>
           <p className="text-sm text-muted-foreground">{c.templateLead}</p>
           <ul className="flex flex-col gap-2">
             {cooked.templates.map((t) => {
