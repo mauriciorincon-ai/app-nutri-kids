@@ -18,6 +18,8 @@ const eslintConfig = defineConfig([
     "public/pdfjs/**",
     // Runtime del modelo de la cámara, copiado de node_modules por build-sw (ADR-018).
     "public/ia/**",
+    // Lector de etiquetas, copiado de node_modules por build-sw (ADR-019).
+    "public/ocr/**",
   ]),
 ]);
 
