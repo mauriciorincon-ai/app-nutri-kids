@@ -12,14 +12,14 @@
     "enlaces.produccion": "null cuando la app no tiene URL pública. `razon` explica por qué, y es lo que la vitrina muestra en lugar del enlace. Nunca se rellena con un enlace de repositorio ni con una promesa."
   },
   "schema_version": "1.0.0",
-  "actualizado": "2026-11-18",
+  "actualizado": "2026-11-22",
   "app": {
     "slug": "nutri-kids",
     "nombre": "Nutrikids",
     "ciclo": "H-2",
     "estado": "inicial",
     "sellado_en": null,
-    "sprints_cerrados": 11,
+    "sprints_cerrados": 12,
     "version_repo": "0.1.0"
   },
   "promesa": {
@@ -29,7 +29,7 @@
     "diferencial": "No califica al niño: sin calorías, peso, IMC ni percentiles, y sin convertir el «cumplimiento» en una nota. El chat contesta con tu plan dentro del teléfono y sin internet: no manda nada a ningún lado, ni siquiera para hacerle una pregunta. Lo que anotas del día, las horas y las notas sobre tu hijo solo viaja a tu familia si tú lo decides, y siempre cifrado desde el teléfono."
   },
   "funcionalidades": {
-    "total": 35,
+    "total": 37,
     "fuente_del_conteo": "docs/MANUAL-DE-USO.md",
     "descartadas": [],
     "grupos": [
@@ -154,6 +154,18 @@
             "nombre": "Claro, oscuro o el de tu teléfono",
             "que_hace": "En Ajustes eliges el tema: claro, oscuro o el que use tu teléfono. El semáforo se lee igual en los dos, con símbolo, palabra y color, y no hay destello al abrir.",
             "seccion_manual": "Tema: claro, oscuro o el del teléfono"
+          },
+          {
+            "id": "F36",
+            "nombre": "La cámara: de la foto a la cocina",
+            "que_hace": "En Hoy → Cámara tomas o eliges una foto de lo que hay en la cocina y la app te dice qué alimentos ve. Un modelo pequeño y gratuito solo nombra lo que ve; todo lo demás lo decide el código con tu plan. Se descarga una sola vez, cuando tú lo tocas, y después funciona sin señal; la foto se mira dentro del teléfono y se suelta, sin guardarse ni enviarse. Los alimentos entran a tu despensa solo con tu toque, y «Qué cocinar con lo que tienes» separa las recetas que puedes hacer ya, con un reemplazo de tu plan o casi, o arma una idea solo con lo que tu plan acepta. Cada resultado pide verificarlo con un adulto, y sin modelo queda «Marcar a mano».",
+            "seccion_manual": "La cámara: de la foto a la cocina y al plato"
+          },
+          {
+            "id": "F37",
+            "nombre": "Mirar el plato",
+            "que_hace": "Con la misma foto, la app lee lo que se ve contra tu plan para esa comida: cada alimento con símbolo, palabra y color («Está en tu plan», «Con medida», «Tu plan lo evita», «Choca con lo anotado como alergia o intolerancia»). Lo que tu plan no nombra nunca sale en verde, y dice qué grupos de tu plan no se vieron porque puede estar y no verse.",
+            "seccion_manual": "La cámara: de la foto a la cocina y al plato"
           }
         ]
       },
@@ -297,7 +309,7 @@
     {
       "clave": "funcionalidades",
       "etiqueta": "Funcionalidades",
-      "valor": 35,
+      "valor": 37,
       "unidad": "funcionalidades",
       "fuente": "medido",
       "detalle": "Contadas contra docs/MANUAL-DE-USO.md y verificadas por un test que compara el total con los bloques .feature del brochure. El marco no-médico (nota de primer uso y disclaimer permanente) no cuenta: es el encuadre de la app, no una funcionalidad."
@@ -305,10 +317,10 @@
     {
       "clave": "pantallas",
       "etiqueta": "Pantallas de la app",
-      "valor": 15,
+      "valor": 17,
       "unidad": "pantallas",
       "fuente": "medido",
-      "detalle": "Catorce rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes, perfil, escenarios, unir, bienestar, lonchera, recetas y viaje) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
+      "detalle": "Dieciséis rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes, perfil, escenarios, unir, bienestar, lonchera, recetas, viaje, cámara y qué cocinar con lo que tienes) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
     },
     {
       "clave": "pruebas_unitarias",
@@ -337,18 +349,18 @@
     {
       "clave": "decisiones_registradas",
       "etiqueta": "Decisiones de arquitectura registradas",
-      "valor": 17,
+      "valor": 18,
       "unidad": "ADR",
       "fuente": "medido",
-      "detalle": "Archivos de decisions/ el 2026-11-18; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono, la 013 fija los roles con firma por persona, la 014 el plan B, los días especiales y la unión de dos planes, y la 015 el bienestar (se anota, nunca se interpreta, con la franja de edad en vez de la fecha de nacimiento). La 016 fija el tema oscuro (se elige en Ajustes, se recuerda y no destella) y la 017 la lonchera, el recetario y el modo viaje: todo se arma con el plan y en el teléfono."
+      "detalle": "Archivos de decisions/ el 2026-11-22; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono, la 013 fija los roles con firma por persona, la 014 el plan B, los días especiales y la unión de dos planes, y la 015 el bienestar (se anota, nunca se interpreta, con la franja de edad en vez de la fecha de nacimiento). La 016 fija el tema oscuro (se elige en Ajustes, se recuerda y no destella) y la 017 la lonchera, el recetario y el modo viaje: todo se arma con el plan y en el teléfono. La 018 fija que la cámara solo ve: un modelo pequeño que corre en el teléfono nombra lo que ve y el código decide todo lo demás, sin que la foto se guarde ni salga."
     },
     {
       "clave": "dependencias_runtime",
       "etiqueta": "Dependencias en tiempo de ejecución",
-      "valor": 15,
+      "valor": 16,
       "unidad": "paquetes",
       "fuente": "medido",
-      "detalle": "Campo `dependencies` de package.json el 2026-11-18 sobre la rama del S11: una dependencia nueva, qrcode-generator 2.0.4 (publicada el 2025-08-07, licencia MIT, sin dependencias propias), que dibuja el QR de la etiqueta en el teléfono y solo con texto, nunca un enlace (ADR-017); sigue incluyendo pdfjs-dist, fijado y servido por la propia app (ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
+      "detalle": "Campo `dependencies` de package.json el 2026-11-22 sobre la rama de la cámara (S12): una dependencia nueva, @huggingface/transformers 4.3.2 (publicada el 2026-10-27, licencia Apache-2.0), el motor que corre el modelo de la cámara en el teléfono, servido por la propia app y sin CDN, que ninguna ruta importa (ADR-018). Sigue incluyendo qrcode-generator 2.0.4 (MIT), que dibuja el QR de la etiqueta solo con texto (ADR-017), y pdfjs-dist, fijado y servido por la propia app (ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
     },
     {
       "clave": "requests_del_registro",
@@ -364,15 +376,15 @@
       "valor": 0,
       "unidad": "USD",
       "fuente": "calculada",
-      "detalle": "Suma de los servicios contratados: Vercel Hobby (free) + GitHub Free + Sentry free + Upstash Redis Free (solo lo compartido, ya cifrado). Ningún servicio de IA ni de pago por uso. Sin servidor propio que facturar: la única ruta de servidor cabe en el plan gratuito. Techo declarado del proyecto: 10 USD/mes."
+      "detalle": "Suma de los servicios contratados: Vercel Hobby (free) + GitHub Free + Sentry free + Upstash Redis Free (solo lo compartido, ya cifrado). Ningún servicio de IA ni de pago por uso: el modelo de la cámara es gratuito (Apache-2.0) y corre en el teléfono. Sin servidor propio que facturar: la única ruta de servidor cabe en el plan gratuito. Techo declarado del proyecto: 10 USD/mes."
     },
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 91393,
+      "valor": 94168,
       "unidad": "bytes",
       "fuente": "medido",
-      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-18 sobre la rama del S11. Autocontenido: cero recursos externos, incluidas las seis muestras de interfaz (SVG en línea, no imágenes)."
+      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-22 sobre la rama de la cámara (S12). Autocontenido: cero recursos externos, incluidas las seis muestras de interfaz (SVG en línea, no imágenes)."
     }
   ],
   "stack": [
@@ -401,6 +413,10 @@
       "papel": "si el teléfono ya trae su modelo de lenguaje, redacta con otras palabras una respuesta que el código ya decidió; sin descargar nada, sin red y con respaldo en el código. Ningún proveedor de IA, ni de pago ni de terceros"
     },
     {
+      "nombre": "Modelo de visión en el teléfono (opcional)",
+      "papel": "la cámara (S12): un modelo pequeño y gratuito (SmolVLM-256M, Apache-2.0) que se descarga una sola vez, cuando la persona lo toca, y corre en el teléfono; solo nombra lo que ve en la foto y el código decide todo lo demás. La foto no se guarda ni se envía. Ningún proveedor de IA, ni de pago ni de terceros"
+    },
+    {
       "nombre": "Vitest y Playwright",
       "papel": "las pruebas, incluidas las de privacidad y las de accesibilidad"
     },
@@ -417,8 +433,8 @@
     "servidor_ve_texto_en_claro": false,
     "conversacion_persistida": false,
     "red_saliente": true,
-    "usa_ia": false,
-    "detalle": "Sin familia, la dieta, las marcas, las horas y las notas viven solo en el teléfono y la app no hace ninguna petición. Si la familia decide compartir, el plan, el día y el perfil viajan cifrados desde el teléfono (AES-GCM, con una clave que nace de la frase de la familia y no sale del aparato): el servidor guarda datos ilegibles, jamás ve texto, nombres, la frase ni la clave, y un test de punta a punta revisa cada petición con un centinela. El chat no manda nada a internet: contesta con programación sobre el plan cargado, dentro del teléfono y también sin señal."
+    "usa_ia": true,
+    "detalle": "Sin familia, la dieta, las marcas, las horas y las notas viven solo en el teléfono y la app no hace ninguna petición. Si la familia decide compartir, el plan, el día y el perfil viajan cifrados desde el teléfono (AES-GCM, con una clave que nace de la frase de la familia y no sale del aparato): el servidor guarda datos ilegibles, jamás ve texto, nombres, la frase ni la clave, y un test de punta a punta revisa cada petición con un centinela. El chat no manda nada a internet: contesta con programación sobre el plan cargado, dentro del teléfono y también sin señal. La cámara tampoco manda nada: la foto se mira en el teléfono con un modelo pequeño que se descarga una sola vez (lo único que usa internet) y se suelta, sin guardarse ni enviarse; ningún servicio de pago ni de terceros la procesa."
   },
   "enlaces": {
     "produccion": null,

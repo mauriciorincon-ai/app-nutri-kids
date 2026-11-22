@@ -187,5 +187,14 @@ El "por qué" del semáforo siempre en palabras simples.
 - **Elegir = marca ✓ + borde + relleno** también en los filtros, la despensa, los días de la lonchera y el modo de viaje (`aria-pressed`, táctil ≥ 44 px), igual que el ánimo del S10.
 - **Estados de la lonchera con icono y palabra:** empacado (caja), «se lo comió» (✓), «volvió a casa» (casa). Sin rojo: volver a casa no es un fallo.
 - **Hoja para imprimir:** `data-print-sheet` marca lo que sale en papel (la etiqueta y el documento del viaje) y `data-no-print` lo que se esconde; en papel todo es negro sobre blanco, sin fondos. El QR lleva zona de silencio blanca propia (`bg-white`) en los dos temas, porque un QR sobre fondo oscuro no se lee.
-- **Una fila de enlaces, no una barra nueva:** en Hoy, «Para el día a día» con tres enlaces estáticos (Lonchera · Recetas · Viaje); la barra inferior se queda en 6.
+- **Una fila de enlaces, no una barra nueva:** en Hoy, «Para el día a día» con enlaces estáticos (Lonchera · Recetas · Viaje, y desde el S12 la Cámara); la barra inferior se queda en 6.
 - **Aviso no médico en cada pantalla**, como elemento fijo (`notMedical`), y el del documento del viaje «contiene datos de salud» en un bloque propio, no en letra pequeña.
+
+## La cámara (S12 · ADR-018)
+
+- **Lo que el modelo vio no es un dato:** «Lo que vio» es una lista para revisar, no un resultado. Cada nombre que cuadra con el catálogo sale **sin marcar** y entra a la despensa solo cuando quien cuida lo toca («Lo tengo en casa»); lo que no cuadra se muestra aparte, sin acción, bajo «Vio esto, pero no está en tu catálogo». Elegir = marca ✓ + borde + relleno (`aria-pressed`, táctil ≥ 44 px), como en el resto.
+- **Mirar el plato usa el mismo lenguaje del semáforo:** cada alimento lleva `StatusChip` (símbolo + palabra + color); una alergia o intolerancia anotada se pinta como rojo con su propio texto («Choca con lo anotado…»); lo que el plan no nombra es **neutro con «?»**, jamás verde. Los grupos que faltan se dicen con «Puede estar y no verse», sin reproche.
+- **«Verifícalo con un adulto» va en un bloque fijo** (fondo `accent`, letra media) al inicio de todo resultado de la cámara y de «Qué cocinar», no en letra pequeña.
+- **Los títulos bajan de a un nivel:** en `/camara/cocina` los bloques de resultados son `h2` bajo el `h1` (axe `heading-order`); el panel «Cómo va el motor» y la rejilla «Marcar a mano» son `<details>` con su `summary` de 44 px, abiertos solos cuando el teléfono no puede con el modelo.
+- **Estados de la descarga con palabra, no solo barra:** «Descargando el modelo… N de unos M MB» (`role="status"`), «Preparando el modelo…» si ya estaba guardado, y el fallo con `role="alert"`, su salida («Marcar a mano en Recetas») y «Volver a intentar».
+- **Entrada a la cámara:** un enlace más en la fila «Para el día a día» de Hoy (Lonchera · Recetas · Viaje · Cámara); la barra inferior se queda en 6.

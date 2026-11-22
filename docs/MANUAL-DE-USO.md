@@ -193,7 +193,7 @@ Profile stays.
   una versión nueva de Nutrikids. Tu dieta y tu registro no se tocan."** Toca **"Actualizar"**
   cuando te convenga (la app se recarga una vez) o **"Ahora no"** para seguir con lo que estás
   haciendo. **Nunca se actualiza sola mientras la usas.**
-- **Limitaciones conocidas:** la primera vez necesita señal. Si cambias de teléfono, la dieta no
+- **Limitaciones conocidas:** la primera vez necesita señal. La **Cámara** también abre sin señal, pero para mirar fotos necesita que el modelo ya se haya descargado antes (sin él, queda «Marcar a mano»). Si cambias de teléfono, la dieta no
   viaja sola —salvo que entres a tu familia con el código y la frase—: vuelve a cargar tu PDF o el archivo.
 
 ### Suplementos de la semana · desde Sprint 001
@@ -371,7 +371,7 @@ own meals · Nutritionist: sees it and leaves day notes. It all shows in **Histo
 - **Lonchera (/lonchera):** elige el día (hoy y los seis siguientes) y ves las **opciones para llevar**: solo alimentos que tu plan acepta, en **verde o con medida**, que **aguantan sin nevera** (porque tu plan lo marca o porque quien cuida lo marcó en **Perfil → «Aguantan sin nevera»**) y con una textura que hoy acepta. Cada una dice quién la marcó. **Nunca** salen un alimento rojo, uno con restricción vigente, una alergia ni una intolerancia. Si algo se queda fuera porque **hoy no acepta esa textura** o **lo rechazó la última vez**, la pantalla lo dice abajo en **«Hoy se quedan fuera»**. Con **Empacar** lo pones en el día; luego **«Se lo comió»** o **«Volvió a casa»** (con símbolo y palabra), y **Quitar** lo deshace. Las **compras de la semana** se arman solas con lo que empacaste. Si tu plan no marca nada que aguante sin nevera, la pantalla lo dice y te manda al Perfil: no inventa opciones.
 - **Etiqueta con QR:** **«Etiqueta de la lonchera»** junta lo que no puede comer (alergias, intolerancias) y lo que lleva hoy, con un **código QR que guarda solo texto, nunca un enlace**, y se lee sin internet. El **nombre** va únicamente si un padre lo escribe en esa pantalla (se queda en este teléfono). **«Imprimir etiqueta»** abre el cuadro de impresión de tu teléfono y solo sale la hoja; no se envía nada. Si no cabe todo en el código, se acorta la lista de lo que lleva, nunca la de lo que no puede comer.
 - **Recetas (/recetas):** un recetario inicial de más de 30 recetas sencillas, **revisadas contra tu plan**. Cada una dice su estado con símbolo y palabra: **«Con lo de tu plan»**, **«Con medida»** (el plan limita algo) o **«Algo no está en tu plan»** (se dice cuál; pregunta a tu profesional). Una receta con algo rojo, con restricción vigente o con una alergia **no se muestra**, y **«Ver por qué algunas no se muestran»** dice cuál ingrediente y por qué. Si hoy no acepta una textura, la receta lo avisa (depende de cómo la prepares). **Ver receta** abre ingredientes y pasos. Filtros por **tiempo**, **costo** y **«Con lo que le gusta»**.
-- **«¿Qué cocino con lo que tengo?»:** marca lo que hay en casa y la app separa las que puedes hacer **ya**, las que salen **con un reemplazo de tu plan** (solo si tu plan lo trae como equivalencia) y las que **casi** salen. La despensa se queda en este teléfono.
+- **«¿Qué cocino con lo que tengo?»:** marca lo que hay en casa y la app separa las que puedes hacer **ya**, las que salen **con un reemplazo de tu plan** (solo si tu plan lo trae como equivalencia) y las que **casi** salen. La despensa se queda en este teléfono (desde el Sprint 012 también puedes llenarla con una foto en **Cámara**).
 - **Mis recetas:** escribe las tuyas (nombre, ingredientes uno por línea, pasos opcionales). Se revisan contra tu plan igual que las demás. **Se guardan solo en este teléfono: no se comparten con la familia.**
 - **Modo viaje (/viaje):** elige **Carretera** o **Avión**. Te da la lista **«Para llevar»** sacada de tu plan (la comida que aguanta sin nevera, los suplementos, los medicamentos anotados y lo que no puede), que puedes ir marcando; un **día de viaje** ordenado con las franjas de comida de tu plan (sin horas inventadas) y un **documento del viaje en español e inglés** con lo que tu plan y lo que anotaste dicen. El documento se arma **en tu teléfono, sin internet**, e **incluye datos de salud del niño**: guárdalo con cuidado. Lleva el nombre solo si un padre lo escribió para la etiqueta. **«Imprimir documento»** saca solo la hoja.
 - **Quién la usa:** madre o padre, todo · cuidador, la lonchera y lo anotado en ella · colegio, ve la lonchera solo si su acceso incluye comidas (si no, la pantalla dice «Tu acceso no incluye comidas de la lonchera») · nutricionista, no la anota. Lo empacado viaja cifrado entre los teléfonos de la familia, como el resto del día.
@@ -407,12 +407,56 @@ if your plan names a food differently the recipe says "not in your plan" instead
 **Light** or **Dark**. Dark is real: background, traffic light (symbol + word + colour) and text keep the
 same contrast. "System" follows the phone; the choice stays on this phone and survives a language change.
 
+### La cámara: de la foto a la cocina y al plato · desde Sprint 012
+
+- **Qué hace:** con una foto de lo que hay en la cocina, la app **ve qué alimentos son** y, a partir de ahí, te ayuda a **llenar la despensa**, a **decidir qué cocinar** y a **mirar un plato contra tu plan**. Quien mira la foto es un modelo pequeño y gratuito; **solo dice los nombres de lo que ve**. Todo lo demás lo decide la programación de la app con **tu plan**: nada se inventa, y lo que no coincide con nada se muestra y no va a ningún lado. No es un consejo médico: organiza lo que dice tu plan.
+- **Dónde está:** **Hoy**, en la fila **«Para el día a día»** → **Cámara** (/camara).
+- **La primera vez, el modelo:** la pantalla ofrece **«Descargar el modelo»** (unos 179 MB, mejor con wifi). **Hasta que lo toques no se descarga nada y nada sale del teléfono.** Se baja **una sola vez**, se guarda en tu teléfono y después **funciona sin señal**. Es lo único que usa internet en toda la cámara.
+- **La foto:** **«Tomar una foto»** o **«Elegir de la galería»** (el teléfono abre su propio selector: la página no pide permiso de cámara). La foto se achica, se mira **en la memoria del teléfono** y se suelta: **no se guarda y no se envía**. Ningún servicio de pago ni de terceros procesa nada.
+- **«Lo que vio»:** la lista de alimentos que reconoció. Todo resultado dice **«Verifícalo con un adulto: el modelo puede equivocarse»**. Lo que no está en tu catálogo sale aparte como **«Vio esto, pero no está en tu catálogo»**, solo para que lo veas.
+- **«¿Qué tienes en casa?»:** los alimentos salen **sin marcar**. Toca solo lo que de verdad tienes y luego **«Guardar en la despensa (n)»**: nada entra a la despensa hasta que lo confirmas.
+- **«Qué cocinar con lo que tienes» (/camara/cocina):** con tu despensa, separa las recetas que puedes hacer **ya**, las que salen **con un reemplazo que tu plan propone** y las que **casi** salen (te falta poco). Si ninguna receta del recetario sale tal cual, la app arma **«Una idea con lo que tienes»** a partir de seis formas de cocinar (salteado, sopa, tortilla, al horno, puré, arroz), con **solo** lo de tu despensa que tu plan acepta: nunca un alimento rojo, una restricción vigente, una alergia, una intolerancia ni una textura que hoy no acepta. Cada idea se revisa de nuevo contra tu plan, dice su estado con símbolo y palabra y trae sus pasos, sin cantidades.
+- **«Mirar el plato»:** lee lo que mostró la foto contra tu plan para **la comida de ahora** (o la que elijas en el selector). Cada alimento sale con símbolo, palabra y color: **«Está en tu plan»**, **«Con medida»**, **«Tu plan lo evita»**, **«Choca con lo anotado como alergia o intolerancia»** o **«Tu plan no lo nombra»**. Una alergia o intolerancia anotada en **Perfil** choca aunque el alimento no esté en el catálogo. También dice **qué grupos de tu plan para esa comida no se vieron** («Puede estar y no verse») o, si el plan no nombra grupos para esa comida, **«Tu plan no dice qué grupos lleva esta comida»**. Un alimento que tu plan no nombra **nunca sale en verde**.
+- **Si el modelo no se puede usar:** si el navegador del teléfono no lo corre, si no lo has descargado o si falló, la pantalla lo dice y abre **«Marcar a mano»**: eliges ingredientes y alimentos de tu plan y se leen igual. La app no se rompe sin el modelo.
+- **«Cómo va el motor»:** un panel plegable pensado para probar: motor que usa el teléfono, tamaño, cuánto tardó en cargar y por foto, y una marca ✓/✗ por cada alimento visto. **«Copiar resultados»** copia solo cifras en texto, nunca la foto.
+- **Borrar el modelo:** **Ajustes → «El modelo de la cámara»** dice cuánto espacio ocupa y **«Borrar el modelo»** lo quita sin tocar tu plan ni tu registro (para volver a usar la cámara se descarga de nuevo). **«Borrar mis datos»** también lo borra.
+- **Quién la usa:** madre o padre, todo · cuidador, la despensa y el plato · colegio, solo el plato de **sus** comidas · nutricionista, no la usa (la pantalla dice «Con tu rol en la familia, este teléfono no puede usar esto.»). **Nada de esto se comparte con la familia:** la despensa se queda en este teléfono.
+- **Limitaciones conocidas:** el modelo es pequeño: nombra los alimentos en inglés, puede equivocarse y puede no ver algo que sí está; el cotejo con tu plan y tus recetas es **por nombre**. **No lee etiquetas ni el supermercado todavía** (eso llega en el Sprint 013). Necesita espacio libre para descargarse una vez. Un teléfono muy antiguo puede no poder correrlo: para eso está «Marcar a mano».
+
+**In English — The camera: from the photo to the kitchen and the plate (since Sprint 012).** On **Today**,
+in the **"For everyday life"** row, open **Camera**. A small free model looks at a photo and **only names the
+foods it sees**; the app's code does everything else, with **your plan**: it matches the names against the
+recipe book and your plan, nothing is invented, and whatever matches nothing is shown ("It saw this, but it
+is not in your catalogue") and goes nowhere. The model is downloaded **once** (about 179 MB, better on wifi)
+**only after you tap "Download the model"**; until then nothing is downloaded and nothing leaves the phone.
+It is then kept on the phone and works **without signal**; that download is the only thing the camera does
+online. The photo comes from the system's own picker (no camera permission for the page), is shrunk, looked at
+in the phone's memory and let go: **not saved, not sent**; no paid or third-party service processes anything.
+Every result says **"Double-check it with an adult: the model can get things wrong."** The foods it saw
+arrive **unticked** in **"What do you have at home?"**: tap what you really have and **Save to the pantry**.
+**What to cook with what you have** sorts recipes into make-it-now, with-a-swap-your-plan-proposes and almost;
+if no recipe comes out, the code offers **"An idea with what you have"** (sauté, soup, omelette, baked,
+mash or rice) filled only with pantry items your plan accepts, never a red food, a current restriction, an
+allergy, an intolerance or a texture they don't accept today, with steps and no quantities. **Look at the
+plate** reads the photo against your plan for the current meal (or the one you pick), each food with symbol,
+word and colour (**In your plan · With a limit · Your plan avoids it · Clashes with what is noted as an allergy
+or intolerance · Your plan doesn't name it**); an allergy noted in Profile clashes even if the food is not in
+the catalogue; it also says which of your plan's groups for that meal were not seen ("It may be there and not
+show"). If the browser cannot run the model, or it is not downloaded, **Tick by hand** works the same way. A
+folding **"How is the engine doing"** panel (engine, size, load time, time per photo, ✓/✗ per food, **Copy
+results**, figures only, never the photo) is for testing. **Settings → "The camera model"** shows the space it
+takes and **Delete the model** removes it without touching your plan or log; **Delete my data** removes it too.
+Parent: everything · Caregiver: pantry and plate · School: the plate of its own meals · Nutritionist: not
+available. Nothing here is shared with the family; the pantry stays on the phone. Limits: the small model names
+foods in English, can be wrong or miss things, and matching is by name; labels and the supermarket are not
+supported yet (Sprint 013).
+
 ### Idioma y borrar datos · desde Sprint 001
 
 - **Qué hace:** cambia la app entre español e inglés, muestra qué dieta está cargada, y permite
   **borrar todos los datos** del teléfono.
 - **Cómo se usa:** **Ajustes** (abajo). Para borrar: **"Borrar mis datos"** → confirma. Se borra
-  la dieta cargada y **todo tu registro del día (marcas, horas y notas)** y **lo que anotaste en el perfil (notas y texturas)**, y este teléfono sale de la familia y deja de recibir avisos; la app vuelve a la demo.
+  la dieta cargada y **todo tu registro del día (marcas, horas y notas)** y **lo que anotaste en el perfil (notas y texturas)**, y este teléfono sale de la familia y deja de recibir avisos; **si descargaste el modelo de la cámara, también se borra** (puedes quitarlo solo, sin tocar nada más, en **Ajustes → «El modelo de la cámara»**); la app vuelve a la demo.
   Esto no se puede deshacer. Si estás en una familia, el cuadro trae la casilla **«También borrar lo compartido de internet»**: con ella marcada se borra también la copia cifrada (los demás teléfonos conservan la suya); sin marcar, solo sales de la familia. También puedes borrarla antes desde **«Borrar lo compartido»** en Compartir con la familia.
 
 ## Preguntas frecuentes
@@ -422,7 +466,7 @@ same contrast. "System" follows the phone; the choice stays on this phone and su
   y el contacto que traiga el PDF se descartan: no entran al plan ni se guardan.
 - **¿Mis datos van a internet?** Solo si activas «Compartir con la familia»: entonces el plan, el
   día (marcas, horas y notas) y el perfil (notas, alergias y medicamentos) viajan **cifrados desde tu
-  teléfono**, y en internet solo quedan datos ilegibles. Sin familia y sin avisos, nada sale del teléfono; con los avisos activos salen solo la dirección para despertarlo y horas sin etiqueta (y, si marcas antes de la hora, el día y el minuto de ese aviso). El chat
+  teléfono**, y en internet solo quedan datos ilegibles. Sin familia y sin avisos, nada sale del teléfono (la cámara solo descarga el modelo, una vez y si tú lo pides, y no envía ni una foto); con los avisos activos salen solo la dirección para despertarlo y horas sin etiqueta (y, si marcas antes de la hora, el día y el minuto de ese aviso). El chat
   **nunca** envía nada: solo el de tu propio teléfono usa lo que anotaste, para contestarte con eso
   marcado como «anotado por quien cuida».
 - **¿Los avisos le cuentan algo a alguien?** Solo que un teléfono quiere avisos a ciertas horas del día,
@@ -439,7 +483,19 @@ same contrast. "System" follows the phone; the choice stays on this phone and su
   de inventarla.
 - **¿El chat funciona sin internet?** Sí, **todas** sus respuestas: nunca usa internet.
 - **¿La app abre sin internet?** Sí, todas las pantallas, después de haberla abierto una vez con
-  señal.
+  señal. La única cosa que pide internet es descargar, una sola vez y
+  cuando tú lo tocas, el modelo de la cámara; después también la cámara funciona sin señal.
+- **¿La foto de la cámara se guarda o se envía?** No. Se mira dentro del teléfono y se suelta: no queda
+  en la app ni sale a ningún lado. Solo se descarga, una vez y si tú lo pides, el modelo que mira las
+  fotos; ningún servicio de pago ni de terceros ve nada.
+- **¿La cámara necesita internet?** Solo para descargar el modelo la primera vez (unos 179 MB, mejor con
+  wifi). Antes de tocar **«Descargar el modelo»** no se baja nada. Después se usa sin señal, y sin el
+  modelo siempre queda **«Marcar a mano»**.
+- **¿La cámara se puede equivocar?** Sí: el modelo es pequeño, nombra los alimentos en inglés y puede
+  confundir o no ver algo. Por eso cada resultado dice **«Verifícalo con un adulto»**, nada entra a la
+  despensa hasta que tú lo confirmas y lo que tu plan no nombra nunca sale en verde.
+- **¿Puedo borrar el modelo de la cámara?** Sí: **Ajustes → «El modelo de la cámara» → «Borrar el
+  modelo»**. No toca tu plan ni tu registro; para volver a usarla se descarga de nuevo.
 
 ## Historial
 
@@ -456,3 +512,4 @@ same contrast. "System" follows the phone; the choice stays on this phone and su
 | 009    | **Coordinación:** roles (madre o padre, cuidador, colegio, nutricionista) con permisos y una bitácora firmada de quién cambió qué · **Plan B** (se acabó algo, no hay nevera, llegamos tarde) solo con lo que trae el plan · **Días especiales** (cumpleaños, restaurante, emergencia, «le ofrecen algo») sin señal · **Varias dietas:** unir dos planes, donde lo prohibido gana y cada línea dice de dónde salió                                               |
 | 010    | **Bienestar:** cómo llega a cada comida (5 opciones con símbolo y palabra) · qué hizo con cada alimento · cómo está hoy (8 preguntas y una nota) · hábitos con su referencia y su fuente, sin alarmas · franja de edad en el Perfil · el Historial lo muestra                                                                                                                                                                                                    |
 | 011    | **El día a día:** **Lonchera** con opciones del plan que aguantan sin nevera, qué se empacó y se comió, compras de la semana y etiqueta imprimible con QR de solo texto · **Recetas** (más de 30, revisadas contra tu plan) con «lo que tengo» y recetas propias · **Modo viaje** con lista, día de viaje y documento ES+EN sin internet · **tema oscuro** de verdad en Ajustes                                                                                  |
+| 012    | **La cámara:** una foto de lo que hay en la cocina → **«Lo que vio»** con el aviso «verifícalo con un adulto» · **«¿Qué tienes en casa?»** (nada entra a la despensa hasta que confirmas) y **«Qué cocinar con lo que tienes»**, con ideas armadas solo con lo que tu plan acepta · **«Mirar el plato»** contra tu plan, con símbolo, palabra y color · **«Marcar a mano»** sin modelo · el modelo (unos 179 MB, una sola vez, sin señal después) se borra desde Ajustes · la foto no se guarda ni se envía|
