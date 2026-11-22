@@ -56,6 +56,18 @@
             "nombre": "Aditivos que vigilar en la etiqueta",
             "que_hace": "Compras lo empacado sabiendo qué buscar en la etiqueta. En la pestaña Rojo, la app lista los códigos de aditivo que el plan pide evitar, los que empiezan por E, y en qué productos suelen aparecer.",
             "seccion_manual": "El semáforo de la dieta"
+          },
+          {
+            "id": "F36",
+            "nombre": "La cámara: de la foto a la cocina",
+            "que_hace": "En Hoy → Cámara tomas o eliges una foto de lo que hay en la cocina y la app te dice qué alimentos ve. Un modelo pequeño y gratuito solo nombra lo que ve; todo lo demás lo decide el código con tu plan. Se descarga una sola vez, cuando tú lo tocas, y después funciona sin señal; la foto se mira dentro del teléfono y se suelta, sin guardarse ni enviarse. Los alimentos entran a tu despensa solo con tu toque, y «Qué cocinar con lo que tienes» separa las recetas que puedes hacer ya, con un reemplazo de tu plan o casi, o arma una idea solo con lo que tu plan acepta. Cada resultado pide verificarlo con un adulto, y sin modelo queda «Marcar a mano».",
+            "seccion_manual": "La cámara: de la foto a la cocina y al plato"
+          },
+          {
+            "id": "F37",
+            "nombre": "Mirar el plato",
+            "que_hace": "Con la misma foto, la app lee lo que se ve contra tu plan para esa comida: cada alimento con símbolo, palabra y color («Está en tu plan», «Con medida», «Tu plan lo evita», «Choca con lo anotado como alergia o intolerancia»). Lo que tu plan no nombra nunca sale en verde, y dice qué grupos de tu plan no se vieron porque puede estar y no verse.",
+            "seccion_manual": "La cámara: de la foto a la cocina y al plato"
           }
         ]
       },
@@ -154,18 +166,6 @@
             "nombre": "Claro, oscuro o el de tu teléfono",
             "que_hace": "En Ajustes eliges el tema: claro, oscuro o el que use tu teléfono. El semáforo se lee igual en los dos, con símbolo, palabra y color, y no hay destello al abrir.",
             "seccion_manual": "Tema: claro, oscuro o el del teléfono"
-          },
-          {
-            "id": "F36",
-            "nombre": "La cámara: de la foto a la cocina",
-            "que_hace": "En Hoy → Cámara tomas o eliges una foto de lo que hay en la cocina y la app te dice qué alimentos ve. Un modelo pequeño y gratuito solo nombra lo que ve; todo lo demás lo decide el código con tu plan. Se descarga una sola vez, cuando tú lo tocas, y después funciona sin señal; la foto se mira dentro del teléfono y se suelta, sin guardarse ni enviarse. Los alimentos entran a tu despensa solo con tu toque, y «Qué cocinar con lo que tienes» separa las recetas que puedes hacer ya, con un reemplazo de tu plan o casi, o arma una idea solo con lo que tu plan acepta. Cada resultado pide verificarlo con un adulto, y sin modelo queda «Marcar a mano».",
-            "seccion_manual": "La cámara: de la foto a la cocina y al plato"
-          },
-          {
-            "id": "F37",
-            "nombre": "Mirar el plato",
-            "que_hace": "Con la misma foto, la app lee lo que se ve contra tu plan para esa comida: cada alimento con símbolo, palabra y color («Está en tu plan», «Con medida», «Tu plan lo evita», «Choca con lo anotado como alergia o intolerancia»). Lo que tu plan no nombra nunca sale en verde, y dice qué grupos de tu plan no se vieron porque puede estar y no verse.",
-            "seccion_manual": "La cámara: de la foto a la cocina y al plato"
           }
         ]
       },
@@ -325,26 +325,26 @@
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 1291,
+      "valor": 1425,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-18 sobre la rama del día a día (S11), tras pagar la auditoría: 67 archivos, 1291 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-22 sobre la rama de la cámara (S12), tras pagar la auditoría: 79 archivos, 1425 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 320,
+      "valor": 360,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-18 sobre la rama del día a día (S11), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 320 pruebas en dos proyectos (corrida completa tras pagar la auditoría) (móvil Pixel 7 y escritorio), 318 en verde y 2 omitidas a propósito (el reloj firmado solo se prueba en el móvil, porque los dos proyectos comparten servidor); incluyen axe en los dos temas reales (claro y oscuro), la lonchera, el recetario y el modo viaje, el uso sin internet, los teléfonos con el centinela de texto en claro, los roles con firma, el plan B, los días especiales, la unión de dos planes, el bienestar con un cuidador y un colegio, el service worker real con el toque entregado por el protocolo del navegador y el reloj de 5 minutos."
+      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-22 sobre la rama de la cámara (S12), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 360 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 358 en verde y 2 omitidas por diseño; el modelo real nunca corre aquí, lo sustituye un worker simulado."
     },
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 97.11,
+      "valor": 97.27,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib el 2026-11-18 sobre la rama del día a día (97,11 % de líneas en total; src/lib/lunchbox 100 %, src/lib/recipes 100 %, src/lib/travel 100 %, src/lib/day-to-day 95,83 %), con umbrales del 80 % en vitest.config.ts (incluidas las cuatro carpetas del S11) y del 90 % para src/lib/family y src/lib/push."
+      "detalle": "v8 sobre src/lib el 2026-11-22 sobre la rama de la cámara (97,27 % de líneas en total), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
     },
     {
       "clave": "decisiones_registradas",

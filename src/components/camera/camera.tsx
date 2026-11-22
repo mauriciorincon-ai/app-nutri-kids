@@ -62,7 +62,8 @@ const mb = (bytes: number) => Math.round(bytes / 1e6);
  * La cámara (S12 · ADR-018). El modelo SOLO ve: devuelve nombres, y el código los coteja con el
  * catálogo y el plan. La foto entra por el selector de archivos del sistema (sin permiso de cámara
  * de la página), se reduce, se transfiere al worker y se suelta: nada la guarda ni la envía. La
- * única red es la descarga del modelo, y solo tras el toque de quien cuida.
+ * única red de la cámara es la descarga del modelo, solo tras el toque de quien cuida, y el worker
+ * solo puede hablar con la app y con el Hub (su guardia y la cabecera `connect-src`).
  */
 export function Camera() {
   const { locale, l } = useI18n();

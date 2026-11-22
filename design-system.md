@@ -192,7 +192,7 @@ El "por qué" del semáforo siempre en palabras simples.
 
 ## La cámara (S12 · ADR-018)
 
-- **Lo que el modelo vio no es un dato:** «Lo que vio» es una lista para revisar, no un resultado. Cada nombre que cuadra con el catálogo sale **sin marcar** y entra a la despensa solo cuando quien cuida lo toca («Lo tengo en casa»); lo que no cuadra se muestra aparte, sin acción, bajo «Vio esto, pero no está en tu catálogo». Elegir = marca ✓ + borde + relleno (`aria-pressed`, táctil ≥ 44 px), como en el resto.
+- **Lo que el modelo vio no es un dato:** «Lo que vio» es una lista para revisar, no un resultado. Cada nombre que cuadra con el catálogo sale **sin marcar** y entra a la despensa solo cuando quien cuida lo toca («Lo tengo en casa»); lo que no cuadra se muestra aparte, sin acción, bajo «Vio esto, pero la app no lo conoce». Elegir = marca ✓ + borde + relleno (`aria-pressed`, táctil ≥ 44 px), como en el resto.
 - **Mirar el plato usa el mismo lenguaje del semáforo:** cada alimento lleva `StatusChip` (símbolo + palabra + color); una alergia o intolerancia anotada se pinta como rojo con su propio texto («Choca con lo anotado…»); lo que el plan no nombra es **neutro con «?»**, jamás verde. Los grupos que faltan se dicen con «Puede estar y no verse», sin reproche.
 - **«Verifícalo con un adulto» va en un bloque fijo** (fondo `accent`, letra media) al inicio de todo resultado de la cámara y de «Qué cocinar», no en letra pequeña.
 - **Los títulos bajan de a un nivel:** en `/camara/cocina` los bloques de resultados son `h2` bajo el `h1` (axe `heading-order`); el panel «Cómo va el motor» y la rejilla «Marcar a mano» son `<details>` con su `summary` de 44 px, abiertos solos cuando el teléfono no puede con el modelo.
