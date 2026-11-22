@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useDeferredValue, useMemo } from "react";
 
+import { SHELL_PINS } from "@/components/app-shell/shell-pins";
 import type { DietPlan } from "@/lib/diet/schema";
 import {
   getDemoDiet,
@@ -52,6 +53,10 @@ export function DietProvider({ children }: { children: React.ReactNode }) {
     <DietContext.Provider value={deferred}>{children}</DietContext.Provider>
   );
 }
+
+// El proveedor vive en el cascarón: por él llegan a todas las pantallas los módulos anclados
+// (`shell-pins.ts`). Es una asignación real para que el empaquetador no la descarte.
+DietProvider.pins = SHELL_PINS;
 
 export function useDiet(): DietContextValue {
   const ctx = useContext(DietContext);
