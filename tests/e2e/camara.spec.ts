@@ -277,7 +277,7 @@ test.describe("La cámara", () => {
     const seen = page.getByTestId("camera-seen");
     await expect(seen).toContainText("chicken");
     await expect(seen).toContainText("Verifícalo con un adulto");
-    await expect(seen).toContainText("Vio esto, pero no está en tu catálogo");
+    await expect(seen).toContainText("Vio esto, pero la app no lo conoce");
     await expect(seen).toContainText("ginger");
     // Nada entra a la despensa sin el toque de quien cuida.
     expect(
@@ -319,6 +319,45 @@ test.describe("La cámara", () => {
     await axe(page, "cocina · con lo confirmado");
     // La foto jamás viajó: ninguna petición con cuerpo en toda la visita.
     expect(net.log.filter((r) => r.body)).toEqual([]);
+  });
+
+  test("si el modelo dice muchas cosas se muestran las primeras y el resto se cuenta", async ({
+    page,
+    baseURL,
+  }) => {
+    test.setTimeout(90_000);
+    const ctx = page.context();
+    await fakeWorker(ctx, {
+      texts: [
+        "kiwi, mango, papaya, guava, lychee, plum, pear, peach, grape, melon, lemon, lime, cherry, apricot, quince",
+      ],
+    });
+    await fakeHub(ctx);
+    watch(ctx, baseURL!);
+    await open(page);
+    await ready(page);
+    await photo(page);
+    await expect(page.getByTestId("camera-seen")).toContainText(
+      /Y \d+ más que no se muestran\./,
+    );
+    await axe(page, "cámara · muchos nombres, el resto se cuenta");
+  });
+
+  test("el worker real llega con su cabecera: la red solo a la app y al Hub", async ({
+    request,
+  }) => {
+    const res = await request.get("/ia/vision-worker.js");
+    expect(res.ok()).toBe(true);
+    const csp = res.headers()["content-security-policy"] ?? "";
+    expect(csp).toMatch(/^connect-src /);
+    expect(csp).toContain("'self'");
+    expect(csp).toContain("https://huggingface.co");
+    // Nada abierto: ni comodín solo, ni cualquier https, ni un tercero.
+    expect(csp.split(/\s+/)).not.toContain("*");
+    expect(csp.split(/\s+/)).not.toContain("https:");
+    expect(csp).not.toMatch(/jsdelivr|unpkg|cdnjs|googleapis/);
+    // Y el worker estampado no trae ninguna dirección escrita de terceros.
+    expect(await res.text()).not.toMatch(/https?:\/\//);
   });
 
   test("el panel «Cómo va el motor»: marcar ✓/✗ y copiar sin foto", async ({
@@ -450,6 +489,13 @@ test.describe("La cámara", () => {
       .click();
     await manual.getByRole("button", { name: /Usar lo elegido \(2\)/ }).click();
     await expect(page.getByTestId("camera-seen")).toContainText("pollo");
+    // Lo marcado a mano no pasó por un modelo: el aviso lo dice así, no «el modelo puede equivocarse».
+    await expect(page.getByTestId("camera-seen")).toContainText(
+      "esto lo leyó el código contra tu plan, no una foto",
+    );
+    await expect(page.getByTestId("camera-seen")).not.toContainText(
+      "el modelo puede equivocarse",
+    );
     await expect(page.getByTestId("camera-plate")).toBeVisible();
     await expect(
       page
@@ -594,7 +640,54 @@ test.describe("La cámara", () => {
       0,
     );
     await expect(page.getByTestId("camera-template-omelette")).toHaveCount(0);
+    // Y la pantalla lo dice: el plan lo evita, así que no se usa.
+    await expect(page.getByTestId("camera-cook-avoided")).toContainText(
+      "Tu plan lo evita, así que no se usa: huevos.",
+    );
+    await expect(page.getByTestId("camera-cook-avoided-allergy")).toHaveCount(
+      0,
+    );
     await axe(page, "cocina · un rojo en la despensa");
+  });
+
+  test("una alergia anotada por familia («lactosa») deja fuera el queso y lo dice", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await open(page, {
+      path: "/camara/cocina",
+      notes: [{ kind: "intolerance", text: "lactosa" }],
+      pantry: ["queso", "pollo", "arroz"],
+    });
+    const cook = page.getByTestId("camera-cook");
+    await expect(cook).toBeVisible();
+    await expect(page.getByTestId("camera-cook-avoided-allergy")).toContainText(
+      "Choca con lo anotado como alergia o intolerancia, así que no se usa: queso fresco.",
+    );
+    await expect(cook.locator("li").filter({ hasText: /queso/i })).toHaveCount(
+      0,
+    );
+    await axe(page, "cocina · una familia de alérgenos anotada");
+  });
+
+  test("una receta con algo que el plan no nombra lo dice con símbolo y palabra, y no sale verde", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await open(page, {
+      path: "/camara/cocina",
+      pantry: ["brocoli", "aguacate"],
+    });
+    const cook = page.getByTestId("camera-cook");
+    await expect(cook).toContainText("Algo no está en tu plan");
+    await expect(cook).toContainText(
+      "No está en tu plan: aguacate. Pregúntale a tu profesional si puede.",
+    );
+    // La receta que lleva el aguacate no sale en verde: su fila dice «Algo no está en tu plan».
+    const row = cook.locator("li").filter({ hasText: "Brócoli al vapor" });
+    await expect(row).toContainText("Algo no está en tu plan");
+    await expect(row).not.toContainText("Con lo de tu plan");
+    await axe(page, "cocina · algo que el plan no nombra");
   });
 });
 
