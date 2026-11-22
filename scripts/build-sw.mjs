@@ -7,7 +7,15 @@
  * con las rutas reales de `src/app`.
  */
 import { execSync } from "node:child_process";
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import {
+  copyFileSync,
+  mkdirSync,
+  readFileSync,
+  realpathSync,
+  writeFileSync,
+} from "node:fs";
+import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -30,6 +38,8 @@ export const SHELL_ROUTES = [
   "/lonchera",
   "/recetas",
   "/viaje",
+  "/camara",
+  "/camara/cocina",
 ];
 
 /** Cascarón del detalle de alimento: sirve de respaldo a `/dieta/<id>` sin visita previa. */
@@ -57,6 +67,69 @@ export function copyPdfJs() {
     const name = asset.split("/").pop();
     copyFileSync(join(from, name), join(to, name));
   }
+}
+
+/**
+ * El modelo que mira la foto (S12 · ADR-018): el runtime se sirve desde la app (ninguna CDN) y
+ * solo se pide tras el toque de «Descargar el modelo». NO se precachea: el SW guarda los `.js` y
+ * `.mjs` de `/ia/` al pedirlos la primera vez; el `.wasm` y los pesos los guarda el propio runtime
+ * en su caché (`nutrikids-model`), que el SW jamás borra.
+ */
+export const IA_RUNTIME = [
+  "transformers.min.js",
+  "ort-wasm-simd-threaded.asyncify.mjs",
+  "ort-wasm-simd-threaded.asyncify.wasm",
+];
+export const IA_WORKER = "/ia/vision-worker.js";
+
+export function modelConfig() {
+  const raw = JSON.parse(
+    readFileSync(join(root, "src/lib/camera/model.json"), "utf8"),
+  );
+  delete raw._comment;
+  return raw;
+}
+
+export function transformersVersion() {
+  return JSON.parse(
+    readFileSync(
+      join(root, "node_modules/@huggingface/transformers/package.json"),
+      "utf8",
+    ),
+  ).version;
+}
+
+export function renderWorker(template, model = modelConfig()) {
+  return template.replace("__MODEL__", () => JSON.stringify(model));
+}
+
+/** Nombre de la caché de `/ia/`: cambia si cambia el runtime o el worker estampado. */
+export function iaCacheName(worker, version = transformersVersion()) {
+  const h = createHash("sha256").update(version).update(worker).digest("hex");
+  return `nutrikids-ia-${h.slice(0, 12)}`;
+}
+
+/** Donde vive el `dist/` de onnxruntime-web que transformers fija como dependencia (misma versión que el JS empaquetado). */
+export function ortDist() {
+  const tf = realpathSync(join(root, "node_modules/@huggingface/transformers"));
+  const entry = createRequire(join(tf, "package.json")).resolve(
+    "onnxruntime-web",
+  );
+  return dirname(entry);
+}
+
+export function copyIa(worker) {
+  // transformers.min.js trae ort dentro; su `.wasm` sale de la onnxruntime-web de transformers.
+  const tf = realpathSync(join(root, "node_modules/@huggingface/transformers"));
+  const from = {
+    "transformers.min.js": join(tf, "dist"),
+    default: ortDist(),
+  };
+  const to = join(root, "public/ia");
+  mkdirSync(to, { recursive: true });
+  for (const name of IA_RUNTIME)
+    copyFileSync(join(from[name] ?? from.default, name), join(to, name));
+  writeFileSync(join(to, "vision-worker.js"), worker);
 }
 
 export function buildId() {
@@ -90,8 +163,14 @@ export function renderSw(
   routes = SHELL_ROUTES,
   pdfVersion = pdfJsVersion(),
   push = pushModule(),
+  iaCache = iaCacheName(
+    renderWorker(
+      readFileSync(join(root, "scripts/vision-worker.template.js"), "utf8"),
+    ),
+  ),
 ) {
   return template
+    .replace("__IA_CACHE__", iaCache)
     .replace("/* __PUSH_MODULE__ */", () => push)
     .replace("__DETAIL_SHELL__", JSON.stringify(DETAIL_SHELL))
     .replace("__BUILD_ID__", id)
@@ -103,7 +182,11 @@ export function renderSw(
 if (import.meta.url === `file://${process.argv[1]}`) {
   const template = readFileSync(join(root, "scripts/sw.template.js"), "utf8");
   const id = buildId();
+  const worker = renderWorker(
+    readFileSync(join(root, "scripts/vision-worker.template.js"), "utf8"),
+  );
   writeFileSync(join(root, "public/sw.js"), renderSw(template, id));
   copyPdfJs();
+  copyIa(worker);
   console.log(`sw.js ← ${id} (${SHELL_ROUTES.length} pantallas)`);
 }

@@ -33,11 +33,18 @@ export function normalizeText(input: string, locale: Locale = "es"): string {
 }
 
 /**
- * Singular ingenuo ES/EN: quita una "s" final en palabras >3 letras.
+ * Singular ingenuo ES/EN: quita una "s" final en palabras >3 letras (y las terminaciones «-ies», «-oes»,
+ * «-ches/-shes/-xes» y «-ones»).
  * Se aplica IGUAL a ambos lados del match, así que "uvas"↔"uva",
  * "manzanas"↔"manzana", "apples"↔"apple" se emparejan sin tabla de plurales.
  */
 function singularize(token: string): string {
+  // «cherries» → «cherry», «tomatoes» → «tomato», «peaches» → «peach», «limones» → «limon».
+  if (token.length > 4 && token.endsWith("ies"))
+    return `${token.slice(0, -3)}y`;
+  if (token.length > 5 && /[^aeiou]oes$/.test(token)) return token.slice(0, -2);
+  if (token.length > 5 && /(ch|sh|x)es$/.test(token)) return token.slice(0, -2);
+  if (token.length > 5 && token.endsWith("ones")) return token.slice(0, -2);
   if (token.length > 3 && token.endsWith("s") && !token.endsWith("ss")) {
     return token.slice(0, -1);
   }
@@ -152,7 +159,10 @@ export function matchItem(
     const status = resolveItemStatus(diet, id, date);
     if (!status) continue;
     const needle = toTokens(status.name[locale], locale);
-    if (containsPhrase(msgTokens, needle) && needle.length > (best?.span ?? 0)) {
+    if (
+      containsPhrase(msgTokens, needle) &&
+      needle.length > (best?.span ?? 0)
+    ) {
       best = { status, span: needle.length };
     }
   }

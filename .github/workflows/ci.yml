@@ -20,6 +20,8 @@ jobs:
       - run: pnpm lint
       - run: pnpm test            # vitest run --coverage (umbral 70% en vitest.config)
       - run: pnpm build
+      - name: El modelo de la camara no entra en ninguna ruta (S12, ADR-018)
+        run: node scripts/check-model-isolation.mjs
       - run: pnpm audit --audit-level high
       - name: Regla 18 — ningun paquete por debajo de main (kit v2.4.0)
         if: github.event_name == 'pull_request'

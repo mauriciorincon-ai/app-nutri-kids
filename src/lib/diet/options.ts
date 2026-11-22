@@ -1,3 +1,4 @@
+import { expandAvoid } from "./allergen-families";
 import { allItemIds, resolveItemStatus, type ItemStatus } from "./logic";
 import { containsPhrase, matchItem, toTokens } from "./search";
 import type { DietPlan, LocalizedText, Texture } from "./schema";
@@ -36,19 +37,42 @@ export function avoidedByNotes(
   name: LocalizedText,
   avoid: readonly string[],
 ): boolean {
-  for (const text of avoid) {
-    for (const locale of ["es", "en"] as const) {
-      const noted = toTokens(text, locale);
-      if (noted.length === 0) continue;
-      for (const side of ["es", "en"] as const) {
-        const hay = toTokens(name[side], side);
-        if (hay.length === 0) continue;
-        if (containsPhrase(hay, noted) || containsPhrase(noted, hay))
-          return true;
-      }
-    }
-  }
+  const noted = notedTokens(avoid);
+  if (noted.length === 0) return false;
+  const hays = [toTokens(name.es, "es"), toTokens(name.en, "en")].filter(
+    (h) => h.length > 0,
+  );
+  for (const n of noted)
+    for (const hay of hays)
+      if (containsPhrase(hay, n) || containsPhrase(n, hay)) return true;
   return false;
+}
+
+/**
+ * Lo anotado (ya con sus familias), partido en palabras en los dos idiomas y sin repetidos: se
+ * calcula una vez por lista y se guarda, porque `avoidedByNotes` se llama por cada ingrediente de
+ * cada receta y re-partir ~30 nombres en cada llamada era una tarea larga al abrir Recetas,
+ * Lonchera y Viaje (TBT, S12).
+ */
+const notedCache = new Map<string, string[][]>();
+function notedTokens(avoid: readonly string[]): string[][] {
+  if (avoid.length === 0) return [];
+  const key = avoid.join("\u0001");
+  const hit = notedCache.get(key);
+  if (hit) return hit;
+  const out: string[][] = [];
+  const seen = new Set<string>();
+  for (const text of expandAvoid(avoid))
+    for (const locale of ["es", "en"] as const) {
+      const t = toTokens(text, locale);
+      const k = t.join(" ");
+      if (t.length === 0 || seen.has(k)) continue;
+      seen.add(k);
+      out.push(t);
+    }
+  if (notedCache.size > 50) notedCache.clear();
+  notedCache.set(key, out);
+  return out;
 }
 
 /**

@@ -25,10 +25,23 @@ const EXTRA_ASSETS = __EXTRA_ASSETS__;
  * a bajar mientras la versión no cambie, y no se borra con las cachés del cascarón.
  */
 const PDFJS_CACHE = "nutrikids-pdfjs-__PDFJS_VERSION__";
+/**
+ * Caché PROPIA de `/ia/` (S12 · ADR-018): el runtime del modelo y su worker, guardados al pedirlos
+ * tras el toque. El nombre cambia solo si cambian el runtime o el worker.
+ */
+const IA_CACHE = "__IA_CACHE__";
+/**
+ * Al activarse, el SW borra SOLO sus cachés viejas (`nutrikids-shell-*`, `-pdfjs-*`, `-ia-*`).
+ * Cualquier otra —la del modelo, `nutrikids-model`, que guarda el runtime— no es suya y se queda:
+ * borrarla obligaría a bajar otra vez ≈ 160 MB tras cada versión.
+ */
+const OWN_CACHE = /^nutrikids-(shell|pdfjs|ia)-/;
 const NAV_TIMEOUT_MS = 3000;
 
 const ASSET_PATTERN = /\/_next\/static\/[^"'\s\\)<>]+/g;
 const STATIC_PATTERN = /\/(_next\/static|icons|pdfjs)\/|\.(?:png|ico|woff2?)$/;
+/** De `/ia/` el SW guarda el código (`.js`, `.mjs`); el `.wasm` lo guarda el runtime. */
+const IA_PATTERN = /^\/ia\/[^/]+\.m?js$/;
 
 /** Clave de caché de una pantalla: su ruta, sin query ni hash. */
 function shellKey(pathname) {
@@ -79,7 +92,13 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((k) => k !== CACHE && k !== PDFJS_CACHE)
+            .filter(
+              (k) =>
+                OWN_CACHE.test(k) &&
+                k !== CACHE &&
+                k !== PDFJS_CACHE &&
+                k !== IA_CACHE,
+            )
             .map((k) => caches.delete(k)),
         ),
       )
@@ -145,11 +164,12 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(navigate(event, request, url));
     return;
   }
-  if (!STATIC_PATTERN.test(url.pathname)) return;
+  const ia = IA_PATTERN.test(url.pathname);
+  if (!ia && !STATIC_PATTERN.test(url.pathname)) return;
 
   event.respondWith(
     caches
-      .open(url.pathname.startsWith("/pdfjs/") ? PDFJS_CACHE : CACHE)
+      .open(ia ? IA_CACHE : url.pathname.startsWith("/pdfjs/") ? PDFJS_CACHE : CACHE)
       .then(async (cache) => {
         const cached = await cache.match(request);
         if (cached) return cached;

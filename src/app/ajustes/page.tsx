@@ -8,6 +8,7 @@ import { Trash2 } from "lucide-react";
 import { useDiet } from "@/components/diet-provider";
 import { FamilySection } from "@/components/family/family-section";
 import { PushSection } from "@/components/push/push-section";
+import { CameraModelSection } from "@/components/settings/camera-model-section";
 import { errorText } from "@/components/family/parts";
 import { useFamily } from "@/components/family/use-family";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import {
   type ThemePref,
 } from "@/lib/diet/storage";
 import { notifyLocalStore, useLocalStore } from "@/lib/local-store";
+import { deleteModel } from "@/lib/camera/model-store";
 import { getFamily } from "@/lib/family/controller";
 import { getPush } from "@/lib/push/controller";
 import { formatShortDate } from "@/lib/format";
@@ -70,6 +72,8 @@ export default function SettingsPage() {
     // servidor, y `clearAllData` lo olvida. Si la familia falló arriba, no se llega aquí y nada
     // queda a medias. Sin red, la dirección caduca sola (el navegador ya la quitó).
     await getPush().disable();
+    // El modelo de la cámara también es de este teléfono: se va con el resto.
+    await deleteModel().catch(() => undefined);
     clearAllData();
     refresh();
     setConfirmOpen(false);
@@ -172,6 +176,8 @@ export default function SettingsPage() {
               })}
         </p>
       </section>
+
+      <CameraModelSection />
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg">{t.settings.clearTitle}</h2>

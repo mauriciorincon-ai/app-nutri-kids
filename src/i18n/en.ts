@@ -81,6 +81,7 @@ export const en: Dictionary = {
     dayToDayLunchbox: "Lunchbox",
     dayToDayRecipes: "Recipes",
     dayToDayTravel: "Travel",
+    dayToDayCamera: "Camera",
     profileLink: "Your child's profile",
   },
   reminder: {
@@ -389,11 +390,11 @@ export const en: Dictionary = {
     dietVersionInfo: "{title} · issued on {date}",
     clearTitle: "Delete data",
     clearBody:
-      "Deletes the loaded diet and your whole day record (checkmarks, times and notes) and what you noted in the profile (notes and textures) from this device, you stop receiving notices, and you leave the family if you were in one. What is already shared online is deleted from “Share with the family”. The app returns to the demo.",
+      "Deletes the loaded diet and your whole day record (checkmarks, times and notes) and what you noted in the profile (notes and textures) from this device, along with the camera model if you downloaded it, you stop receiving notices, and you leave the family if you were in one. What is already shared online is deleted from “Share with the family”. The app returns to the demo.",
     clearButton: "Delete my data",
     clearConfirmTitle: "Delete everything?",
     clearConfirmBody:
-      "The loaded diet and the whole day record (checkmarks, times and notes) and what you noted in the profile (notes and textures) will be deleted, you will stop receiving notices, and you will leave the family. This cannot be undone.",
+      "The loaded diet and the whole day record (checkmarks, times and notes) and what you noted in the profile (notes and textures) will be deleted, as well as the camera model if you downloaded it, you will stop receiving notices, and you will leave the family. This cannot be undone.",
     clearAlsoShared:
       "Also delete what is shared on the internet. The family's other phones keep their copy.",
     clearConfirmYes: "Yes, delete",

@@ -25,6 +25,8 @@ const SCREENS = [
   "/perfil",
   "/conoce",
   "/escenarios",
+  "/camara",
+  "/camara/cocina",
 ];
 
 async function firstVisit(page: Page) {

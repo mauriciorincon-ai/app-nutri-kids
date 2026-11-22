@@ -6,9 +6,9 @@
 <title>Guía de prueba — Nutrikids</title>
 <!--
   GUÍA DE PRUEBA VIVA Y ACUMULATIVA de Nutrikids. PRIMERA guía de la app (v1), pero ACUMULATIVA:
-  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil), S6 (PDF), S7 (familia), S8 (avisos), S9 (roles, plan B, días especiales, unir dos planes), S10 (bienestar: ánimo, aceptación, cómo está, hábitos) y S11 (lonchera, recetas, viaje y tema oscuro). Autocontenida
+  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil), S6 (PDF), S7 (familia), S8 (avisos), S9 (roles, plan B, días especiales, unir dos planes), S10 (bienestar: ánimo, aceptación, cómo está, hábitos), S11 (lonchera, recetas, viaje y tema oscuro) y S12 (la cámara: de la foto a la cocina y al plato). Autocontenida
   (cero CDNs). Origen por línea (S1/S2 heredadas ⇒ regresión · Nuevo/Mejorado · S3). Gate mínimo ⭐
-  = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s11.
+  = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s12.
 -->
 <style>
   :root {
@@ -102,10 +102,9 @@
 <body>
 <div class="pagina">
   <header>
-    <p class="eyebrow">Nutrikids · Guía de prueba viva y acumulativa · Sprint 7 · 2026-11-16</p>
+    <p class="eyebrow">Nutrikids · Guía de prueba viva y acumulativa · Sprint 12 · 2026-11-22</p>
     <h1>Guía de prueba</h1>
-    <p class="suave">Todas las pruebas vigentes de la app: las nuevas del S7 (compartir con la familia, cifrado), del S6 (leer el PDF) y del S5 (el perfil de tu
-      peque, las texturas y lo que el chat contesta del plan), y las heredadas de S1 a S4 —
+    <p class="suave">Todas las pruebas vigentes de la app: las nuevas del S12 (la cámara: de la foto a la cocina y al plato), y las de S1 a S11 —
       que corren como <strong>regresión</strong>. Filtra por origen para correr todo o solo
       lo que cambió. Las casillas se guardan solas en este navegador.</p>
     <p class="chica"><strong>Gate mínimo ⭐: 6 pruebas · ~30 min.</strong> Es lo que ninguna
@@ -114,7 +113,7 @@
       (unit, e2e, axe, budgets) lo respalda la CI y se corre en pases completos.</p>
     <div class="url-caja">
       <p class="eyebrow" style="margin:0 0 6px">URL de prueba</p>
-      <code>Preview de la rama <strong>sprint-007/familia-cifrada</strong> — se pega aquí al abrir el PR (Vercel la genera).</code>
+      <code>Preview de la rama <strong>sprint-012/camara</strong> — se pega aquí al abrir el PR (Vercel la genera).</code>
       <p class="chica suave" style="margin:8px 0 0">Dirección estable de la rama: no cambia aunque se
         suban correcciones. Si pide login de Vercel: Settings → Deployment Protection → Vercel
         Authentication → Disabled.</p>
@@ -128,7 +127,7 @@
     </div>
     <div class="filtros" role="group" aria-label="Filtrar pruebas por origen">
       <button type="button" data-filtro="todo" class="activo">Todo</button>
-      <button type="button" data-filtro="cambios">Lo que cambió (S5, S6 y S7)</button>
+      <button type="button" data-filtro="cambios">Lo que cambió (nuevo y mejorado)</button>
       <button type="button" data-filtro="minimo">Gate mínimo ⭐</button>
     </div>
   </div>
@@ -552,6 +551,34 @@
       documento con un enlace o con el nombre sin que un padre lo haya escrito; un texto que dé un consejo médico, culpe o alarme; un estado que solo se distinga por color; o un texto ilegible en el tema oscuro.</p></div>
   </section>
 
+  <!-- ============================ T · LA CÁMARA ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">T</span><h2>La cámara: de la foto a la cocina y al plato</h2></div>
+    <p class="meta-bloque chica suave">~12 min · pantallas <strong>Hoy</strong>, <strong>Cámara</strong>, <strong>Qué cocinar</strong>, <strong>Perfil</strong> y <strong>Ajustes</strong> · en el teléfono real, con wifi para bajar el modelo (unos 179 MB, una sola vez) y fotos de comida real de tu cocina (sin personas). <strong>Por decisión del dueño (2026-11-22), todas las pruebas con teléfono real de este sprint se hacen en el ensayo general del H-2</strong>: este bloque queda aquí para correrlo entonces, no se pierde.</p>
+    <ul class="pasos">
+      <li data-origen="nuevo"><input type="checkbox" id="t1"><label for="t1">Con el modo avión puesto y <strong>antes de descargar nada</strong>, abre <strong>Hoy → «Para el día a día» → Cámara</strong>. La pantalla ofrece <strong>«Descargar el modelo»</strong> (unos 179 MB, mejor con wifi) y no empieza sola. Toca el botón sin señal:
+        dice <strong>«No se pudo preparar el modelo»</strong> y deja abierto <strong>«Marcar a mano»</strong>: marca dos alimentos y <strong>«Usar lo elegido»</strong>; se leen igual, sin romper nada.
+        <span class="origen origen-nuevo">Nuevo · S12</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="t2"><label for="t2">Quita el modo avión, con wifi, y toca <strong>«Descargar el modelo»</strong>: sube el avance «de unos 179 MB» y termina en <strong>«Listo para mirar fotos»</strong>. Cierra la app, pon el modo avión y vuelve a Cámara: ya no pide descargar (dice <strong>«Preparar el modelo»</strong>, sin bajar nada) y mira fotos sin señal.
+        <span class="origen origen-nuevo">Nuevo · S12</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="t3"><label for="t3">Toca <strong>«Tomar una foto»</strong> (o <strong>«Elegir de la galería»</strong>) con comida real de tu cocina: se abre el selector del teléfono, sin pedir un permiso de cámara a la página. En <strong>«Lo que vio»</strong> salen los alimentos reconocidos y <strong>siempre</strong> la frase <strong>«Verifícalo con un adulto: el modelo puede equivocarse»</strong>. Lo que la app no conoce sale aparte como <strong>«Vio esto, pero la app no lo conoce»</strong>. Revisa la galería del teléfono: la app no dejó ninguna copia de la foto.
+        <span class="origen origen-nuevo">Nuevo · S12</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="t4"><label for="t4">En <strong>«¿Qué tienes en casa?»</strong> los alimentos salen <strong>sin marcar</strong> y no hay despensa hasta que toques alguno (el botón dice «Toca al menos uno para guardarlo»). Marca solo lo que de verdad tienes y toca <strong>«Guardar en la despensa (n)»</strong>: pasa a <strong>Qué cocinar con lo que tienes</strong>, con la despensa nombrada y las recetas separadas en <strong>«Puedes hacerlas ya»</strong>, <strong>«Con un reemplazo de tu plan»</strong> y <strong>«Casi: te falta poco»</strong>, cada una con símbolo y palabra.
+        <span class="origen origen-nuevo">Nuevo · S12</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="t5"><label for="t5">Guarda una despensa con la que ninguna receta salga tal cual (por ejemplo, solo dos o tres verduras): aparece <strong>«Una idea con lo que tienes»</strong> (salteado, sopa, tortilla, al horno, puré o arroz) con <strong>solo</strong> lo que tu plan acepta, su estado con símbolo y palabra y sus pasos, sin cantidades. Prueba con un alimento rojo de la demo («Snacks de paquete»): nunca entra a una idea.
+        <span class="origen origen-nuevo">Nuevo · S12</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="t6"><label for="t6">Toma una foto de un plato con algo que tu plan evita y otra con un alimento que tu plan no nombra. En <strong>«Mirar el plato»</strong> elige la comida (la de ahora u otra en el selector): cada alimento sale con símbolo, palabra y color (<strong>«Está en tu plan»</strong>, <strong>«Con medida»</strong>, <strong>«Tu plan lo evita»</strong> con el rojo nombrado, <strong>«Tu plan no lo nombra»</strong> nunca en verde) y la línea de <strong>qué grupos de tu plan no se vieron</strong> («Puede estar y no verse») o <strong>«Tu plan no dice qué grupos lleva esta comida»</strong>.
+        <span class="origen origen-nuevo">Nuevo · S12</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="t7"><label for="t7">En <strong>Perfil</strong> anota una alergia o intolerancia inventada (por ejemplo «maní»). Mira un plato con ese alimento: sale <strong>«Choca con lo anotado como alergia o intolerancia»</strong>, aunque el alimento no esté en tu plan ni en las recetas (y también por familia: «lactosa» incluye el queso), y ninguna receta ni idea lo usa. Con un teléfono de rol Cuidador, la despensa y el plato funcionan; con Colegio, solo el plato de sus comidas; con Nutricionista, sale «Con tu rol en la familia, este teléfono no puede usar esto».
+        <span class="origen origen-nuevo">Nuevo · S12</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="t8"><label for="t8">Abre el panel plegable <strong>«Cómo va el motor»</strong>: dice el motor, el tamaño, cuánto tardó en cargar y por foto; marca ✓ o ✗ por cada alimento visto y toca <strong>«Copiar resultados»</strong>: pega en una nota y comprueba que es solo texto con cifras, sin la foto.
+        <span class="origen origen-nuevo">Nuevo · S12</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="t9"><label for="t9">En <strong>Ajustes → «El modelo de la cámara»</strong> dice cuánto espacio ocupa; toca <strong>«Borrar el modelo»</strong> → «Modelo borrado.» y tu plan y tu registro siguen intactos; en Cámara vuelve a ofrecer la descarga. Descárgalo otra vez y usa <strong>«Borrar mis datos»</strong>: el modelo también se borra. Actualiza la app a una versión nueva con el modelo bajado: el modelo sigue ahí, no se vuelve a descargar.
+        <span class="origen origen-nuevo">Nuevo · S12</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> cualquier descarga que empiece antes de tocar «Descargar el modelo»; una foto que se guarde o salga del teléfono; un alimento que entre a la despensa sin que lo hayas tocado; un alimento rojo, con restricción vigente, con alergia o con una textura que no acepta dentro de una idea o una receta; un alimento que tu plan no nombra en verde; un resultado sin la frase «Verifícalo con un adulto»; un estado que solo se distinga por color; un texto que dé un consejo médico, culpe o alarme; o la cámara «rota» cuando no hay modelo en lugar de dejar «Marcar a mano».</p></div>
+  </section>
+
   <!-- ============================ J · SIN INTERNET ============================ -->
   <section class="bloque">
     <div class="bloque-cabeza"><span class="letra">J</span><h2>Sin internet y versión nueva</h2></div>
@@ -629,12 +656,15 @@
 
   <footer>
     <p class="chica suave">Guía <strong>viva y acumulativa</strong>: contiene TODAS las pruebas vigentes
-      de Nutrikids (S1 a S11) con su origen visible; una prueba solo se elimina cuando su feature
+      de Nutrikids (S1 a S12) con su origen visible; una prueba solo se elimina cuando su feature
       dejó de existir. Archivo autocontenido — se abre sin internet, se versiona con el repo y se comparte
       tal cual.</p>
     <details class="chica">
       <summary>Historial de la guía</summary>
       <ul>
+        <li><strong>S12 · 2026-11-22 (v10):</strong> nace el bloque T (la cámara: el modelo que se descarga una sola vez y solo al tocar, la foto que no se guarda ni se envía,
+          «Lo que vio» con su «verifícalo con un adulto», la despensa que solo se llena con lo que confirmas, «Qué cocinar» con las ideas armadas solo con lo que el plan acepta,
+          «Mirar el plato» contra el plan, «Marcar a mano» sin modelo, el panel «Cómo va el motor» y «Borrar el modelo»). Por decisión del dueño, sus pruebas con teléfono real se corren en el ensayo general del H-2. Ninguna prueba eliminada.</li>
         <li><strong>S11 · 2026-11-18 (v9):</strong> nace el bloque S (el día a día: la lonchera con su etiqueta de QR de solo texto, el recetario revisado contra el plan con «lo que tengo»
           y recetas propias, el modo viaje con su documento ES+EN y el tema oscuro). Mejorado: O («No hay nevera» ahora sale de lo que marca el plan). Ninguna prueba eliminada.</li>
         <li><strong>S10 · 2026-11-17 (v8):</strong> nace el bloque R (bienestar: el semáforo emocional, la bitácora de aceptación, cómo está hoy,
@@ -674,9 +704,9 @@
 
 <script>
   (function () {
-    // NS VERSIONADO POR SPRINT (regla dura): s11. Una regresión sin correr no aparece marcada por
+    // NS VERSIONADO POR SPRINT (regla dura): s12. Una regresión sin correr no aparece marcada por
     // una versión anterior de la guía.
-    var NS = "guia-nutri-kids:s11:";
+    var NS = "guia-nutri-kids:s12:";
     var casillas = Array.prototype.slice.call(document.querySelectorAll('input[type="checkbox"]'));
     var barra = document.getElementById("barra-avance");
     var contador = document.getElementById("contador");

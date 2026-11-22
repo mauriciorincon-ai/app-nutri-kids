@@ -8,7 +8,6 @@ import { clearPushState } from "../push/state";
 import { clearDayToDay } from "../day-to-day/store";
 import {
   dietCounts,
-  dietPlanSchema,
   parseDietJson,
   type DietPlan,
 } from "./schema";
@@ -37,9 +36,14 @@ export type DietSource = "demo" | "real";
 
 let demoDietCache: DietPlan | null = null;
 
-/** La demo del repo, validada por el mismo schema (si está malformada, los tests fallan). */
+/**
+ * La demo del repo. Se valida con el mismo schema en los tests (`demo-runtime.test.ts`
+ * prueba que `parse` devuelve el JSON idéntico), no en cada arranque: compilar y correr el
+ * schema entero al abrir Hoy era una parte de la tarea larga de la hidratación (TBT, S12).
+ * Lo que viene de fuera (la dieta real guardada o importada) pasa SIEMPRE por el schema.
+ */
 export function getDemoDiet(): DietPlan {
-  demoDietCache ??= dietPlanSchema.parse(demoRaw);
+  demoDietCache ??= structuredClone(demoRaw) as unknown as DietPlan;
   return demoDietCache;
 }
 

@@ -289,6 +289,7 @@ const TodayView = memo(function TodayView({ today }: { today: Date | null }) {
             ["/lonchera", t.today.dayToDayLunchbox],
             ["/recetas", t.today.dayToDayRecipes],
             ["/viaje", t.today.dayToDayTravel],
+            ["/camara", t.today.dayToDayCamera],
           ] as const
         ).map(([href, label]) => (
           <Link
