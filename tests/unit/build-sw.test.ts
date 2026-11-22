@@ -7,10 +7,12 @@ import {
   DETAIL_SHELL,
   IA_RUNTIME,
   IA_WORKER,
+  OCR_FILES,
   PDFJS_ASSETS,
   SHELL_ROUTES,
   iaCacheName,
   modelConfig,
+  ocrCacheName,
   ortDist,
   renderSw,
   renderWorker,
@@ -270,5 +272,41 @@ describe("contrato del worker de la cámara (S12 · ADR-018, regla 19)", () => {
     // Un worker distinto da una caché distinta (si no, un teléfono se quedaría con el viejo).
     expect(iaCacheName("a", "1.0.0")).not.toBe(iaCacheName("b", "1.0.0"));
     expect(iaCacheName("a", "1.0.0")).not.toBe(iaCacheName("a", "1.0.1"));
+  });
+
+  it("el SW guarda TODO /ocr/ (código, núcleo e idiomas) en su caché propia, que activate conserva", () => {
+    const out = renderSw(template, "x");
+    expect(out).toMatch(/const OCR_CACHE = "nutrikids-ocr-[0-9a-f]{12}"/);
+    expect(out).not.toContain("__OCR_CACHE__");
+    expect(out).toContain("k !== OCR_CACHE");
+    const own = /const OWN_CACHE = (\/.*\/);/.exec(out)?.[1];
+    const re = new Function(`return ${own}`)() as RegExp;
+    expect(re.test("nutrikids-ocr-abc")).toBe(true);
+    const pat = /const OCR_PATTERN = (\/.*\/);/.exec(out)?.[1];
+    const ocr = new Function(`return ${pat}`)() as RegExp;
+    // Contrato SW ↔ página (regla 19): cada archivo que el lector pide cae en su caché…
+    for (const name of Object.keys(OCR_FILES))
+      expect(ocr.test(`/ocr/${name}`), name).toBe(true);
+    // …y nada fuera de /ocr/ ni con un `..` se cuela.
+    expect(ocr.test("/ocr/../api/family")).toBe(false);
+    expect(ocr.test("/ia/transformers.min.js")).toBe(false);
+    expect(ocr.test("/ocr/lang/x.json")).toBe(false);
+    expect(ocrCacheName("7.0.0+7.0.0+1.0.0+1.0.0")).not.toBe(
+      ocrCacheName("7.0.0+7.0.1+1.0.0+1.0.0"),
+    );
+  });
+
+  it("los archivos del lector salen de node_modules (versión fijada), jamás de una CDN, y existen", () => {
+    for (const [name, rel] of Object.entries(OCR_FILES)) {
+      expect(rel, name).not.toMatch(/^https?:|\/\//);
+      expect(existsSync(join(root, "public/ocr", name)), name).toBe(true);
+    }
+    // Solo LSTM: los núcleos sin `-lstm` (legacy, más pesados) no se copian.
+    const core = Object.keys(OCR_FILES).filter((n) => n.startsWith("core/"));
+    expect(core.every((n) => n.endsWith("-lstm.wasm.js"))).toBe(true);
+    expect(Object.keys(OCR_FILES).filter((n) => n.startsWith("lang/")).sort()).toEqual([
+      "lang/eng.traineddata.gz",
+      "lang/spa.traineddata.gz",
+    ]);
   });
 });

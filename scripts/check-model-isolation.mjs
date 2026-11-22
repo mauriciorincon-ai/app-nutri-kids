@@ -2,7 +2,7 @@
 /**
  * Gate S12 · ADR-018: el modelo de la cámara y su runtime NO entran en ninguna ruta. Viven solo en
  * `public/ia/` (copiados por `scripts/build-sw.mjs`) y los carga el worker tras el toque de quien
- * cuida. Recorre los chunks del build (`.next/static` y `.next/server`) y falla si alguno trae
+ * cuida. Desde el S13 (ADR-019) cubre también el lector de etiquetas (`public/ocr/`). Recorre los chunks del build (`.next/static` y `.next/server`) y falla si alguno trae
  * rastros del runtime. Un build vacío no es verde: sin chunks que mirar, falla.
  *
  * Uso: node scripts/check-model-isolation.mjs [--dir .next]
@@ -20,6 +20,11 @@ export const MARKERS = [
   "AutoModelForVision2Seq",
   "InferenceSession",
   "@huggingface/transformers",
+  // S13 · ADR-019: el lector de etiquetas (tesseract.js, su worker y su núcleo).
+  "createScheduler",
+  "TesseractCore",
+  "tesseract.js-core",
+  "PSM_AUTO_OSD",
 ];
 
 function* files(root) {

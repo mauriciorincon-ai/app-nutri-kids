@@ -31,17 +31,24 @@ const PDFJS_CACHE = "nutrikids-pdfjs-__PDFJS_VERSION__";
  */
 const IA_CACHE = "__IA_CACHE__";
 /**
- * Al activarse, el SW borra SOLO sus cachés viejas (`nutrikids-shell-*`, `-pdfjs-*`, `-ia-*`).
+ * Caché PROPIA de `/ocr/` (S13 · ADR-019): el lector de etiquetas —su código, su núcleo WASM y los
+ * idiomas—, guardado al pedirlo tras el toque. Cambia solo si cambia una versión del lector.
+ */
+const OCR_CACHE = "__OCR_CACHE__";
+/**
+ * Al activarse, el SW borra SOLO sus cachés viejas (`nutrikids-shell-*`, `-pdfjs-*`, `-ia-*`, `-ocr-*`).
  * Cualquier otra —la del modelo, `nutrikids-model`, que guarda el runtime— no es suya y se queda:
  * borrarla obligaría a bajar otra vez ≈ 160 MB tras cada versión.
  */
-const OWN_CACHE = /^nutrikids-(shell|pdfjs|ia)-/;
+const OWN_CACHE = /^nutrikids-(shell|pdfjs|ia|ocr)-/;
 const NAV_TIMEOUT_MS = 3000;
 
 const ASSET_PATTERN = /\/_next\/static\/[^"'\s\\)<>]+/g;
 const STATIC_PATTERN = /\/(_next\/static|icons|pdfjs)\/|\.(?:png|ico|woff2?)$/;
 /** De `/ia/` el SW guarda el código (`.js`, `.mjs`); el `.wasm` lo guarda el runtime. */
 const IA_PATTERN = /^\/ia\/[^/]+\.m?js$/;
+/** De `/ocr/` el SW lo guarda TODO (código, núcleo y `.traineddata.gz`): el lector no tiene caché propia. */
+const OCR_PATTERN = /^\/ocr\/(?:[a-z]+\/)?[\w.-]+\.(?:js|gz)$/;
 
 /** Clave de caché de una pantalla: su ruta, sin query ni hash. */
 function shellKey(pathname) {
@@ -97,7 +104,8 @@ self.addEventListener("activate", (event) => {
                 OWN_CACHE.test(k) &&
                 k !== CACHE &&
                 k !== PDFJS_CACHE &&
-                k !== IA_CACHE,
+                k !== IA_CACHE &&
+                k !== OCR_CACHE,
             )
             .map((k) => caches.delete(k)),
         ),
@@ -164,12 +172,16 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(navigate(event, request, url));
     return;
   }
-  const ia = IA_PATTERN.test(url.pathname);
-  if (!ia && !STATIC_PATTERN.test(url.pathname)) return;
+  const own = IA_PATTERN.test(url.pathname)
+    ? IA_CACHE
+    : OCR_PATTERN.test(url.pathname)
+      ? OCR_CACHE
+      : null;
+  if (!own && !STATIC_PATTERN.test(url.pathname)) return;
 
   event.respondWith(
     caches
-      .open(ia ? IA_CACHE : url.pathname.startsWith("/pdfjs/") ? PDFJS_CACHE : CACHE)
+      .open(own ?? (url.pathname.startsWith("/pdfjs/") ? PDFJS_CACHE : CACHE))
       .then(async (cache) => {
         const cached = await cache.match(request);
         if (cached) return cached;
