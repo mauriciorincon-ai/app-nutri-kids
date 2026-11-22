@@ -36,7 +36,6 @@ const es = {
   seenTitle: "Lo que vio",
   seenNone: "No reconoció ningún alimento en esta foto.",
   inCatalog: "Ingrediente de tus recetas",
-  inPlan: "Está en tu plan",
   notKnownTitle: "Vio esto, pero no está en tu catálogo",
   notKnownHint: "No entra a ningún lado: solo se muestra.",
   trialTitle: "Cómo va el motor",
@@ -65,6 +64,39 @@ const es = {
   criteriaMet: "Cumple",
   criteriaPending: "Aún no",
   photosCount: "{n} de {of} fotos",
+  // F2 · de la foto a la cocina
+  confirmTitle: "¿Qué tienes en casa?",
+  confirmLead:
+    "Toca lo que de verdad tienes. Nada entra a tu despensa hasta que lo confirmes.",
+  haveIt: "Lo tengo en casa: {label}",
+  confirmButton: "Guardar en la despensa ({n})",
+  confirmPick: "Toca al menos uno para guardarlo.",
+  // Mirar el plato
+  plateTitle: "Mirar el plato",
+  plateLead: "Lo que vio, leído contra tu plan para esta comida.",
+  plateMealLabel: "Comida",
+  plateNone: "No vio ningún alimento que tu plan nombre.",
+  plateGreen: "Está en tu plan",
+  plateYellow: "Con medida",
+  plateRed: "Tu plan lo evita",
+  plateAllergy: "Choca con lo anotado como alergia o intolerancia",
+  plateUnknown: "Tu plan no lo nombra",
+  plateAllergyUnknown:
+    "Vio algo que choca con lo anotado como alergia o intolerancia: {foods}. Consúltalo con un adulto.",
+  groupsExpected: "Para esta comida tu plan nombra: {groups}.",
+  groupsMissing: "En la foto no vio: {groups}. Puede estar y no verse.",
+  groupsComplete: "En la foto vio lo que tu plan nombra para esta comida.",
+  groupsUnknown: "Tu plan no dice qué grupos lleva esta comida.",
+  roleBlocked: "Con tu rol en la familia, este teléfono no puede usar esto.",
+  // A mano, sin foto
+  manualTitle: "Marcar a mano",
+  manualLead:
+    "Sin foto: elige lo que tienes o lo que hay en el plato y se lee igual.",
+  manualIngredients: "Ingredientes",
+  manualPlan: "Alimentos de tu plan",
+  manualUse: "Usar lo elegido ({n})",
+  manualOn: "Elegido: {label}",
+  manualOff: "Elegir: {label}",
 };
 
 const en: typeof es = {
@@ -97,7 +129,6 @@ const en: typeof es = {
   seenTitle: "What it saw",
   seenNone: "It didn't recognize any food in this photo.",
   inCatalog: "An ingredient in your recipes",
-  inPlan: "It's in your plan",
   notKnownTitle: "It saw this, but it isn't in your catalog",
   notKnownHint: "It doesn't go anywhere: it is only shown.",
   trialTitle: "How the engine is doing",
@@ -126,7 +157,42 @@ const en: typeof es = {
   criteriaMet: "Met",
   criteriaPending: "Not yet",
   photosCount: "{n} of {of} photos",
+  // F2 · from the photo to the kitchen
+  confirmTitle: "What do you have at home?",
+  confirmLead:
+    "Tap what you really have. Nothing goes into your pantry until you confirm it.",
+  haveIt: "I have it at home: {label}",
+  confirmButton: "Save to the pantry ({n})",
+  confirmPick: "Tap at least one to save it.",
+  // Looking at the plate
+  plateTitle: "Look at the plate",
+  plateLead: "What it saw, read against your plan for this meal.",
+  plateMealLabel: "Meal",
+  plateNone: "It saw no food that your plan names.",
+  plateGreen: "It's in your plan",
+  plateYellow: "With a limit",
+  plateRed: "Your plan avoids it",
+  plateAllergy: "Clashes with what was noted as an allergy or intolerance",
+  plateUnknown: "Your plan doesn't name it",
+  plateAllergyUnknown:
+    "It saw something that clashes with what was noted as an allergy or intolerance: {foods}. Check it with an adult.",
+  groupsExpected: "For this meal your plan names: {groups}.",
+  groupsMissing:
+    "In the photo it didn't see: {groups}. It may be there and not show.",
+  groupsComplete: "In the photo it saw what your plan names for this meal.",
+  groupsUnknown: "Your plan doesn't say which groups this meal has.",
+  roleBlocked: "With your role in the family, this phone can't use this.",
+  // By hand, no photo
+  manualTitle: "Tick by hand",
+  manualLead:
+    "No photo: choose what you have or what is on the plate and it is read the same way.",
+  manualIngredients: "Ingredients",
+  manualPlan: "Foods in your plan",
+  manualUse: "Use the chosen ({n})",
+  manualOn: "Chosen: {label}",
+  manualOff: "Choose: {label}",
 };
 
 export type CameraText = typeof es;
+
 export const cameraText: Record<Locale, CameraText> = { es, en };

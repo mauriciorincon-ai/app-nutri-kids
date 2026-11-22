@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Camera as CameraIcon,
   Check,
@@ -12,11 +13,15 @@ import {
 
 import { useDiet } from "@/components/diet-provider";
 import { useToday } from "@/components/day-checklist/use-today";
-import { StatusChip } from "@/components/traffic-light/status-chip";
+import { RoleLimit } from "@/components/family/role-limit";
+import { useCan } from "@/components/family/use-family";
 import { Button } from "@/components/ui/button";
+import { useProfileNotes } from "@/components/use-profile-notes";
 import { fmt, useI18n } from "@/i18n";
 import { cameraText } from "@/i18n/camera";
 import { commonText } from "@/i18n/day-to-day/common";
+import { pantryWrite, plateWrite } from "@/lib/camera/access";
+import { plateMeal, readPlate } from "@/lib/camera/plate";
 import {
   VisionClient,
   canTry,
@@ -36,13 +41,20 @@ import {
   type TrialMeta,
   type TrialPhoto,
 } from "@/lib/camera/trial";
-import { resolveItemStatus } from "@/lib/diet/logic";
-import { INGREDIENTS } from "@/lib/recipes/catalog";
+import { getPantry, togglePantry } from "@/lib/day-to-day/store";
+import { notifyLocalStore } from "@/lib/local-store";
+import { INGREDIENTS, type IngredientId } from "@/lib/recipes/catalog";
 import { cn } from "@/lib/utils";
+
+import { ManualPick } from "./manual-pick";
+import { PlateReading } from "./plate-reading";
 
 type Phase = "checking" | "cant" | "idle" | "loading" | "ready" | "failed";
 
 type Shot = TrialPhoto & { result: SeenResult };
+
+/** Lo que se está leyendo ahora: una foto o lo elegido a mano. Es lo mismo para la despensa y el plato. */
+type Reading = { source: "photo" | "manual"; seen: SeenResult };
 
 const mb = (bytes: number) => Math.round(bytes / 1e6);
 
@@ -58,6 +70,9 @@ export function Camera() {
   const common = commonText[locale];
   const { diet } = useDiet();
   const today = useToday();
+  const notes = useProfileNotes();
+  const can = useCan();
+  const router = useRouter();
 
   const [phase, setPhase] = useState<Phase>("checking");
   const [cached, setCached] = useState(false);
@@ -67,6 +82,11 @@ export function Camera() {
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzeFailed, setAnalyzeFailed] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [reading, setReading] = useState<Reading | null>(null);
+  const [confirmed, setConfirmed] = useState<ReadonlySet<IngredientId>>(
+    new Set(),
+  );
+  const [mealId, setMealId] = useState<string | undefined>(undefined);
   const client = useRef<VisionClient | null>(null);
   const takeRef = useRef<HTMLInputElement>(null);
   const pickRef = useRef<HTMLInputElement>(null);
@@ -149,6 +169,11 @@ export function Camera() {
     }
   }, [cached, onProgress]);
 
+  const show = useCallback((r: Reading) => {
+    setReading(r);
+    setConfirmed(new Set());
+  }, []);
+
   const analyze = useCallback(
     async (input: HTMLInputElement) => {
       const file = input.files?.[0];
@@ -161,6 +186,7 @@ export function Camera() {
         const pixels = await pixelsFromFile(file);
         const { text, ms } = await client.current.analyze(pixels);
         const result = matchSeen(text, diet, today);
+        show({ source: "photo", seen: result });
         const labels = [...result.known.map((k) => k.label), ...result.unknown];
         setShots((prev) => [
           ...prev,
@@ -172,8 +198,30 @@ export function Camera() {
         setAnalyzing(false);
       }
     },
-    [diet, today],
+    [diet, today, show],
   );
+
+  const toggleConfirmed = (id: IngredientId) =>
+    setConfirmed((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+
+  // Solo lo confirmado se escribe en la despensa; las recetas se ven en su propia pantalla, que
+  // trae el recetario (así esta no lo carga).
+  const save = () => {
+    if (confirmed.size === 0) return;
+    const have = new Set(getPantry());
+    let wrote = false;
+    for (const id of confirmed)
+      if (!have.has(id)) {
+        togglePantry(id);
+        wrote = true;
+      }
+    if (wrote) notifyLocalStore();
+    router.push("/camara/cocina");
+  };
 
   const mark = (shot: number, label: string, value: Mark) =>
     setShots((prev) =>
@@ -226,6 +274,16 @@ export function Camera() {
       (s, p) => s + Math.min(p.loaded, p.total),
       0,
     ),
+  );
+  const canPantry = can(pantryWrite());
+  const meal = plateMeal(diet, today ?? new Date(0), mealId);
+  const canPlate = meal ? can(plateWrite(meal.id)) : true;
+  const plate = useMemo(
+    () =>
+      reading && today
+        ? readPlate(diet, reading.seen, today, notes.notes, mealId)
+        : null,
+    [reading, today, diet, notes.notes, mealId],
   );
   const last = shots.length - 1;
   const current = shots[last];
@@ -421,77 +479,119 @@ export function Camera() {
         </section>
       )}
 
-      {current && !analyzing && (
-        <section
-          className="flex flex-col gap-3 rounded-2xl border p-4"
-          aria-labelledby="cam-seen"
-          data-testid="camera-seen"
-        >
-          <h2 id="cam-seen" className="text-xl">
-            {c.seenTitle}
-          </h2>
-          <p className="rounded-xl bg-accent px-3 py-2 text-sm font-medium text-accent-foreground">
-            {c.check}
-          </p>
-          {current.seen.length === 0 && (
-            <p className="text-sm text-muted-foreground">{c.seenNone}</p>
-          )}
-          {current.result.known.length > 0 && (
-            <ul className="flex flex-col divide-y">
-              {current.result.known.map((k) => (
-                <li key={k.label} className="flex items-start gap-3 py-2">
-                  <div className="flex min-w-0 flex-1 flex-col gap-1">
-                    <span className="font-semibold">{k.label}</span>
-                    {k.ingredient && (
-                      <span className="text-sm text-muted-foreground">
-                        {c.inCatalog}: {l(INGREDIENTS[k.ingredient])}
-                      </span>
-                    )}
-                    {today &&
-                      k.planIds.map((id) => {
-                        const s = resolveItemStatus(diet, id, today);
-                        if (!s) return null;
-                        return (
-                          <span
-                            key={id}
-                            className="flex flex-wrap items-center gap-2 text-sm"
-                          >
-                            <span className="text-muted-foreground">
-                              {c.inPlan}: {l(s.name)}
-                            </span>
-                            <StatusChip color={s.color} />
-                          </span>
-                        );
-                      })}
+      {reading && !analyzing && (
+        <>
+          <section
+            className="flex flex-col gap-3 rounded-2xl border p-4"
+            aria-labelledby="cam-seen"
+            data-testid="camera-seen"
+          >
+            <h2 id="cam-seen" className="text-xl">
+              {c.seenTitle}
+            </h2>
+            <p className="rounded-xl bg-accent px-3 py-2 text-sm font-medium text-accent-foreground">
+              {c.check}
+            </p>
+            {reading.seen.known.length === 0 &&
+              reading.seen.unknown.length === 0 && (
+                <p className="text-sm text-muted-foreground">{c.seenNone}</p>
+              )}
+            {reading.seen.known.length > 0 && (
+              <>
+                {canPantry && (
+                  <div className="flex flex-col gap-1">
+                    <h3 className="font-semibold">{c.confirmTitle}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {c.confirmLead}
+                    </p>
                   </div>
-                  {markButtons(k.label)}
-                </li>
-              ))}
-            </ul>
+                )}
+                <ul className="flex flex-col divide-y">
+                  {reading.seen.known.map((k) => (
+                    <li key={k.label} className="flex items-center gap-3 py-2">
+                      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                        <span className="font-semibold">{k.label}</span>
+                        {k.ingredient && (
+                          <span className="text-sm text-muted-foreground">
+                            {c.inCatalog}: {l(INGREDIENTS[k.ingredient])}
+                          </span>
+                        )}
+                      </div>
+                      {canPantry && k.ingredient && (
+                        <ConfirmChip
+                          on={confirmed.has(k.ingredient)}
+                          label={l(INGREDIENTS[k.ingredient])}
+                          aria={fmt(c.haveIt, {
+                            label: l(INGREDIENTS[k.ingredient]),
+                          })}
+                          onToggle={() => toggleConfirmed(k.ingredient!)}
+                        />
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {reading.seen.unknown.length > 0 && (
+              <div className="flex flex-col gap-1">
+                <h3 className="font-semibold">{c.notKnownTitle}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {c.notKnownHint}
+                </p>
+                <ul className="flex flex-col divide-y">
+                  {reading.seen.unknown.map((label) => (
+                    <li key={label} className="py-2">
+                      {label}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {canPantry && reading.seen.known.some((k) => k.ingredient) && (
+              <div className="flex flex-col gap-1">
+                <Button
+                  className="min-h-11 self-start"
+                  disabled={confirmed.size === 0}
+                  onClick={save}
+                  data-testid="camera-save"
+                >
+                  {fmt(c.confirmButton, { n: confirmed.size })}
+                </Button>
+                {confirmed.size === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    {c.confirmPick}
+                  </p>
+                )}
+              </div>
+            )}
+          </section>
+
+          {plate && canPlate && (
+            <PlateReading
+              plate={plate}
+              meals={diet.dailyMenu}
+              mealId={mealId}
+              onMeal={setMealId}
+            />
           )}
-          {current.result.unknown.length > 0 && (
-            <div className="flex flex-col gap-1">
-              <h3 className="font-semibold">{c.notKnownTitle}</h3>
-              <p className="text-sm text-muted-foreground">{c.notKnownHint}</p>
-              <ul className="flex flex-col divide-y">
-                {current.result.unknown.map((label) => (
-                  <li key={label} className="flex items-center gap-3 py-2">
-                    <span className="min-w-0 flex-1">{label}</span>
-                    {markButtons(label)}
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {(!canPantry || !canPlate) && (
+            <p className="rounded-xl border bg-card px-4 py-3 text-sm">
+              {c.roleBlocked}
+            </p>
           )}
-        </section>
+          {(!canPantry || !canPlate) && <RoleLimit />}
+        </>
       )}
 
+      <ManualPick
+        diet={diet}
+        today={today}
+        open={phase === "cant" || phase === "failed"}
+        onUse={(seen) => show({ source: "manual", seen })}
+      />
+
       {meta && summary && (
-        <details
-          className="rounded-2xl border p-4"
-          open
-          data-testid="camera-trial"
-        >
+        <details className="rounded-2xl border p-4" data-testid="camera-trial">
           <summary className="min-h-11 cursor-pointer text-xl font-semibold">
             {c.trialTitle}
           </summary>
@@ -519,6 +619,19 @@ export function Camera() {
               <dt className="text-muted-foreground">{c.inventedLabel}</dt>
               <dd>{summary.invented}</dd>
             </dl>
+            {current && current.seen.length > 0 && (
+              <ul
+                className="flex flex-col divide-y"
+                aria-label={`${c.photoLabel} ${shots.length}`}
+              >
+                {current.seen.map((x) => (
+                  <li key={x.label} className="flex items-center gap-3 py-2">
+                    <span className="min-w-0 flex-1">{x.label}</span>
+                    {markButtons(x.label)}
+                  </li>
+                ))}
+              </ul>
+            )}
             <h3 className="font-semibold">{c.criteriaTitle}</h3>
             {criteria}
             <Button
@@ -533,5 +646,36 @@ export function Camera() {
         </details>
       )}
     </div>
+  );
+}
+
+function ConfirmChip({
+  on,
+  label,
+  aria,
+  onToggle,
+}: {
+  on: boolean;
+  label: string;
+  aria: string;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      aria-label={aria}
+      onClick={onToggle}
+      data-testid="camera-confirm"
+      className={cn(
+        "inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-3 text-sm font-medium",
+        on
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-border hover:bg-accent",
+      )}
+    >
+      {on && <Check aria-hidden className="size-4" />}
+      {label}
+    </button>
   );
 }

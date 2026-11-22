@@ -18,14 +18,19 @@ import {
 const root = join(__dirname, "../..");
 const template = readFileSync(join(root, "scripts/sw.template.js"), "utf8");
 
-/** Rutas estáticas reales: cada carpeta de src/app con page.tsx (sin las dinámicas). */
+/** Rutas estáticas reales: cada carpeta de src/app con page.tsx, anidadas incluidas (sin las dinámicas). */
 function appRoutes(): string[] {
-  const dir = join(root, "src/app");
+  const root0 = join(root, "src/app");
   const routes = ["/"];
-  for (const e of readdirSync(dir, { withFileTypes: true })) {
-    if (e.isDirectory() && existsSync(join(dir, e.name, "page.tsx")))
-      routes.push(`/${e.name}`);
-  }
+  const walk = (rel: string) => {
+    for (const e of readdirSync(join(root0, rel), { withFileTypes: true })) {
+      if (!e.isDirectory() || e.name === "api" || /[[(]/.test(e.name)) continue;
+      const next = rel ? `${rel}/${e.name}` : e.name;
+      if (existsSync(join(root0, next, "page.tsx"))) routes.push(`/${next}`);
+      walk(next);
+    }
+  };
+  walk("");
   return routes;
 }
 
@@ -57,7 +62,9 @@ describe("contrato service worker ↔ app (regla 19)", () => {
 
   it("pdf.js y su worker salen de la app y se precachean (el PDF se lee sin red, ADR-010)", () => {
     const out = renderSw(template, "x");
-    expect(out).toContain(`const EXTRA_ASSETS = ${JSON.stringify(PDFJS_ASSETS)}`);
+    expect(out).toContain(
+      `const EXTRA_ASSETS = ${JSON.stringify(PDFJS_ASSETS)}`,
+    );
     // …en su caché propia, nombrada con la versión de pdf.js, que `activate` conserva.
     expect(out).toMatch(/const PDFJS_CACHE = "nutrikids-pdfjs-\d+\.\d+\.\d+"/);
     expect(out).toContain("k !== PDFJS_CACHE");
@@ -143,9 +150,13 @@ describe("contrato del worker de la cámara (S12 · ADR-018, regla 19)", () => {
 
   it("la única red del worker: GET sin cuerpo a la app o al Hub; todo lo demás se bloquea", async () => {
     const { guarded, calls } = sandbox();
-    await expect(guarded("/ia/ort-wasm-simd-threaded.asyncify.wasm")).resolves.toBe("ok");
     await expect(
-      guarded(`https://huggingface.co/${model.id}/resolve/${model.revision}/config.json`),
+      guarded("/ia/ort-wasm-simd-threaded.asyncify.wasm"),
+    ).resolves.toBe("ok");
+    await expect(
+      guarded(
+        `https://huggingface.co/${model.id}/resolve/${model.revision}/config.json`,
+      ),
     ).resolves.toBe("ok");
     for (const [url, init] of [
       ["https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/x.wasm", undefined],
@@ -161,7 +172,9 @@ describe("contrato del worker de la cámara (S12 · ADR-018, regla 19)", () => {
   });
 
   it("los errores salen como código, jamás con el contenido", () => {
-    expect(worker).toMatch(/postMessage\(\{ type: "error", id: msg\.id, code \}\)/);
+    expect(worker).toMatch(
+      /postMessage\(\{ type: "error", id: msg\.id, code \}\)/,
+    );
     expect(worker).not.toMatch(/err\.stack|String\(err\)|err\.message\s*\}/);
   });
 

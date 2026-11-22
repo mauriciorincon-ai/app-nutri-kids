@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { cameraText } from "@/i18n/camera";
+import { cameraCookText } from "@/i18n/camera-cook";
+import { cameraModelText } from "@/i18n/camera-model";
 import { looksLikeMedicalAdvice } from "@/lib/diet/guardrails";
 
 const strings = (o: Record<string, string>) => Object.entries(o);
@@ -55,5 +57,50 @@ describe("textos de la cámara (es/en)", () => {
   it("ningún enlace ni dirección en los textos", () => {
     for (const [k, v] of [...es, ...en])
       expect(/https?:|www\.|@\w+\.\w+/i.test(v), `${k}: ${v}`).toBe(false);
+  });
+});
+
+describe("textos de «Borrar el modelo» (es/en)", () => {
+  const es = strings(cameraModelText.es);
+  const en = Object.fromEntries(strings(cameraModelText.en));
+  it("paridad, sin cifras escritas, sin culpa ni enlaces", () => {
+    expect(Object.keys(en)).toEqual(es.map(([k]) => k));
+    for (const [k, v] of es) {
+      expect(placeholders(en[k]), k).toEqual(placeholders(v));
+      for (const text of [v, en[k]]) {
+        expect(text.trim().length, k).toBeGreaterThan(0);
+        expect(/\d/.test(text.replace(/\{\w+\}/g, "")), `${k}: ${text}`).toBe(
+          false,
+        );
+        expect(looksLikeMedicalAdvice(text), `${k}: ${text}`).toBe(false);
+        expect(/https?:|www\./i.test(text), `${k}: ${text}`).toBe(false);
+      }
+    }
+  });
+});
+
+describe("textos de «Qué cocinar» (es/en)", () => {
+  const es = strings(cameraCookText.es);
+  const en = Object.fromEntries(strings(cameraCookText.en));
+  it("paridad, sin cifras escritas, sin consejo médico, sin culpa ni enlaces", () => {
+    expect(Object.keys(en)).toEqual(es.map(([k]) => k));
+    const BAD =
+      /\b(culpa\w*|urgente\w*|peligr\w*|grave\w*|alarm\w*|guilt\w*|urgent\w*|danger\w*|serious\w*)\b/i;
+    for (const [k, v] of es) {
+      expect(placeholders(en[k]), k).toEqual(placeholders(v));
+      for (const text of [v, en[k]]) {
+        expect(text.trim().length, k).toBeGreaterThan(0);
+        expect(/\d/.test(text.replace(/\{\w+\}/g, "")), `${k}: ${text}`).toBe(
+          false,
+        );
+        expect(looksLikeMedicalAdvice(text), `${k}: ${text}`).toBe(false);
+        expect(BAD.test(text), `${k}: ${text}`).toBe(false);
+        expect(/https?:|www\./i.test(text), `${k}: ${text}`).toBe(false);
+      }
+    }
+  });
+  it("todo resultado de cocina lleva «verifícalo con un adulto»", () => {
+    expect(cameraCookText.es.check).toMatch(/verifícalo con un adulto/i);
+    expect(cameraCookText.en.check).toMatch(/with an adult/i);
   });
 });
