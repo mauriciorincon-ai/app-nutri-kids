@@ -33,7 +33,7 @@ const FILLER = new Set(
     "includes appear appears appearing look looks seem seems present here in on at to as also " +
     "each has have topped grilled fried baked roasted boiled steamed mashed mixed served " +
     "garnished stuffed diced local time " +
-    "un una unos unas el la los las de del algunos algunas"
+    "un una unos unas el la los las algunos algunas"
   ).split(" "),
 );
 
@@ -57,11 +57,24 @@ function firstSentence(text: string): string {
   return m ? text.slice(0, m.index) : text;
 }
 
+/** Lo que viene después de la primera frase (la descripción de la escena). */
+function afterFirstSentence(text: string): string {
+  const m = /(?<!\b\d)[.!?](?:\s|$)/.exec(text);
+  return m ? text.slice(m.index + 1) : "";
+}
+
+/** Cuántos nombres como mucho se piden al cortar el texto: el tope de lo que se muestra más lo que se cuenta. */
+const SPLIT_LIMIT = 200;
+
 /** El texto del modelo → nombres sueltos, sin relleno ni repetidos. */
 export function splitSeen(text: string): string[] {
+  return splitAll(firstSentence(String(text ?? "")), MAX_SEEN);
+}
+
+function splitAll(text: string, limit: number): string[] {
   const out: string[] = [];
   const seen = new Set<string>();
-  for (const raw of firstSentence(String(text ?? "")).split(SEPARATORS)) {
+  for (const raw of text.replace(/\p{C}+/gu, " ").split(SEPARATORS)) {
     if (raw == null) continue;
     let label = raw
       .replace(/[*_"“”.!?()[\]/-]/g, " ")
@@ -80,7 +93,7 @@ export function splitSeen(text: string): string[] {
     if (!key || seen.has(key)) continue;
     seen.add(key);
     out.push(label);
-    if (out.length >= MAX_SEEN) break;
+    if (out.length >= limit) break;
   }
   return out;
 }
@@ -99,18 +112,22 @@ export type SeenResult = {
   known: Seen[];
   /** Lo que el modelo dijo y la app no conoce: se muestra y no entra a ningún lado. */
   unknown: string[];
+  /** Cuántos nombres más dijo el modelo y no se muestran (el tope por foto). */
+  more?: number;
 };
 
 /** El ingrediente cuya forma completa aparece en el nombre; si hay varios, el de la forma más larga. */
-function ingredientFor(tokens: string[]): IngredientId | null {
-  let best: { id: IngredientId; len: number } | null = null;
+function ingredientFor(
+  tokens: string[],
+): { id: IngredientId; form: string[] } | null {
+  let best: { id: IngredientId; form: string[] } | null = null;
   for (const id of Object.keys(INGREDIENTS) as IngredientId[]) {
     for (const f of forms(INGREDIENTS[id])) {
       if (!containsPhrase(tokens, f)) continue;
-      if (!best || f.length > best.len) best = { id, len: f.length };
+      if (!best || f.length > best.form.length) best = { id, form: f };
     }
   }
-  return best?.id ?? null;
+  return best;
 }
 
 /**
@@ -142,28 +159,71 @@ function planFor(diet: DietPlan, tokens: string[], now: Date): string[] {
   return exact.length ? exact : partial;
 }
 
-/** El plural inglés en «-oes» («potatoes», «tomatoes») que la búsqueda deja en «potatoe». */
-function singular(tokens: string[]): string[] {
-  return tokens.map((t) => (/[^aeiou]oe$/.test(t) && t.length > 4 ? t.slice(0, -1) : t));
-}
+/**
+ * Palabras que vuelven un alimento en algo procesado («potato chips», «chicken nuggets», «tomato
+ * ketchup», «carrot cake»): el alimento de dentro NO designa esto, así que ninguna coincidencia con
+ * el catálogo ni con un verde del plan vale. Sí valen un rojo, una restricción o un amarillo: ante la
+ * duda manda el peor. Va en singular, como salen los nombres de `toTokens`.
+ */
+const PROCESSED = new Set(
+  (
+    "chip crisp nugget ketchup catsup sauce dressing juice smoothie milkshake candy sweet chocolate cake " +
+    "cookie biscuit cracker pudding pie pastry donut doughnut muffin soda cola fry syrup jam jelly " +
+    "sausage hotdog bacon ham burger pizza snack bar icecream " +
+    "papita chito salsa jugo gaseosa dulce torta galleta pudin helado embutido salchicha jamon tocino " +
+    "hamburguesa mermelada jarabe chocolatina bombon"
+  ).split(" "),
+);
+/** ¿Lleva una palabra de lo procesado que NO es parte del nombre del ingrediente («rice cake» es tostadas)? */
+const isProcessed = (tokens: string[], own: readonly string[] = []) =>
+  tokens.some((t) => PROCESSED.has(t) && !own.includes(t)) ||
+  (containsPhrase(tokens, ["ice", "cream"]) && !own.includes("cream"));
 
 export function matchSeen(text: string, diet: DietPlan, now: Date): SeenResult {
   const known: Seen[] = [];
   const unknown: string[] = [];
   const same = new Set<string>();
-  for (const label of splitSeen(text)) {
-    const tokens = singular(toTokens(label, "en"));
-    const ingredient = ingredientFor(tokens);
-    const planIds = planFor(diet, tokens, now);
+  const raw = String(text ?? "");
+
+  const take = (label: string, onlyKnown: boolean): boolean => {
+    const tokens = toTokens(label, "en");
+    const found = ingredientFor(tokens);
+    let ingredient = found?.id ?? null;
+    let planIds = planFor(diet, tokens, now);
+    if (isProcessed(tokens, found?.form)) {
+      // Lo procesado no es el alimento de dentro: solo cuentan los avisos (rojo, restricción, medida).
+      ingredient = null;
+      planIds = planIds.filter(
+        (id) => resolveItemStatus(diet, id, now)?.kind !== "green",
+      );
+    }
     if (!ingredient && !planIds.length) {
-      unknown.push(label);
-      continue;
+      if (!onlyKnown) unknown.push(label);
+      return false;
     }
     // «pollo» y «chicken» son la misma cosa: una sola entrada.
     const key = ingredient ?? planIds.join("|");
-    if (same.has(key)) continue;
-    same.add(key);
-    known.push({ label, ingredient, planIds });
+    if (!same.has(key)) {
+      same.add(key);
+      known.push({ label, ingredient, planIds });
+    }
+    return true;
+  };
+
+  // La primera frase es la lista; lo que no cuadra sale de ahí. Las frases siguientes (la escena) solo
+  // aportan lo que SÍ cuadra: un rojo dicho después no se pierde, y el ruido no se muestra.
+  const all = splitAll(firstSentence(raw), SPLIT_LIMIT);
+  let shown = 0;
+  let more = 0;
+  for (const label of all) {
+    if (shown >= MAX_SEEN) {
+      more += 1;
+      continue;
+    }
+    take(label, false);
+    shown += 1;
   }
-  return { known, unknown };
+  for (const label of splitAll(afterFirstSentence(raw), SPLIT_LIMIT))
+    take(label, true);
+  return more > 0 ? { known, unknown, more } : { known, unknown };
 }

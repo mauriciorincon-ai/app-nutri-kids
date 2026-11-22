@@ -35,8 +35,11 @@ const es = {
     "No se pudo mirar esa foto. Prueba con otra, con más luz o más de cerca.",
   seenTitle: "Lo que vio",
   seenNone: "No reconoció ningún alimento en esta foto.",
+  seenMore: "Y {n} más que no se muestran.",
+  checkManual:
+    "Verifícalo con un adulto: esto lo leyó el código contra tu plan, no una foto.",
   inCatalog: "Ingrediente de tus recetas",
-  notKnownTitle: "Vio esto, pero no está en tu catálogo",
+  notKnownTitle: "Vio esto, pero la app no lo conoce",
   notKnownHint: "No entra a ningún lado: solo se muestra.",
   trialTitle: "Cómo va el motor",
   trialLead:
@@ -128,8 +131,11 @@ const en: typeof es = {
     "That photo couldn't be read. Try another one, with more light or closer up.",
   seenTitle: "What it saw",
   seenNone: "It didn't recognize any food in this photo.",
+  seenMore: "And {n} more that are not shown.",
+  checkManual:
+    "Double-check it with an adult: the code read this against your plan, not a photo.",
   inCatalog: "An ingredient in your recipes",
-  notKnownTitle: "It saw this, but it isn't in your catalog",
+  notKnownTitle: "It saw this, but the app doesn't know it",
   notKnownHint: "It doesn't go anywhere: it is only shown.",
   trialTitle: "How the engine is doing",
   trialLead:

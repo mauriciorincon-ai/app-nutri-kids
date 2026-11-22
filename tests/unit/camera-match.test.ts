@@ -15,7 +15,9 @@ const NOW = new Date("2026-07-06T12:45:00");
 describe("splitSeen: el texto del modelo → nombres", () => {
   it("parte por comas, «and», saltos y numeración; quita relleno, números y repetidos", () => {
     expect(
-      splitSeen("1. Two eggs, some sliced carrots and broccoli\n2) the EGGS; rice."),
+      splitSeen(
+        "1. Two eggs, some sliced carrots and broccoli\n2) the EGGS; rice.",
+      ),
     ).toEqual(["eggs", "carrots", "broccoli", "rice"]);
   });
 
@@ -38,22 +40,26 @@ describe("splitSeen: el texto del modelo → nombres", () => {
       ),
     ).toEqual(["carrot"]);
     expect(
-      splitSeen("The food items that can be seen include carrots, green leaves and some other vegetables. They appear"),
+      splitSeen(
+        "The food items that can be seen include carrots, green leaves and some other vegetables. They appear",
+      ),
     ).toEqual(["carrots", "leaves", "vegetables"]);
     expect(splitSeen("The food is mashed potatoes.")).toEqual(["potatoes"]);
     expect(
-      splitSeen("Broccoli, carrots, broccoli leaves, broccoli, meat, broccoli, broccoli, broccoli"),
+      splitSeen(
+        "Broccoli, carrots, broccoli leaves, broccoli, meat, broccoli, broccoli, broccoli",
+      ),
     ).toEqual(["broccoli", "carrots", "broccoli leaves", "meat"]);
-    expect(splitSeen("There are bananas on a table and some other fruits behind it")).toEqual([
-      "bananas",
-      "fruits",
-    ]);
+    expect(
+      splitSeen("There are bananas on a table and some other fruits behind it"),
+    ).toEqual(["bananas", "fruits"]);
   });
 
   it("nunca devuelve más de MAX_SEEN nombres", () => {
     const many = Array.from(
       { length: 40 },
-      (_, i) => `berry${String.fromCharCode(97 + (i % 26))}${String.fromCharCode(97 + Math.floor(i / 26))}`,
+      (_, i) =>
+        `berry${String.fromCharCode(97 + (i % 26))}${String.fromCharCode(97 + Math.floor(i / 26))}`,
     ).join(", ");
     expect(splitSeen(many)).toHaveLength(MAX_SEEN);
   });
@@ -62,7 +68,11 @@ describe("splitSeen: el texto del modelo → nombres", () => {
 describe("matchSeen: solo lo que la app conoce", () => {
   it("inglés y plural cuadran con el catálogo y con el plan", () => {
     const r = matchSeen("carrots, eggs, rice", diet, NOW);
-    expect(r.known.map((s) => s.ingredient)).toEqual(["zanahoria", "huevos", "arroz"]);
+    expect(r.known.map((s) => s.ingredient)).toEqual([
+      "zanahoria",
+      "huevos",
+      "arroz",
+    ]);
     expect(r.known[0].planIds).toEqual(["zanahoria"]);
     expect(r.unknown).toEqual([]);
   });
@@ -74,11 +84,21 @@ describe("matchSeen: solo lo que la app conoce", () => {
 
   it("lo que no es comida en las salidas reales se descarta: escena, horas, efectos", () => {
     expect(
-      splitSeen("Chicken wings for sale at a butcher shop, restaurant, 10pm local time UTC"),
+      splitSeen(
+        "Chicken wings for sale at a butcher shop, restaurant, 10pm local time UTC",
+      ),
     ).toEqual(["chicken wings"]);
-    expect(splitSeen("Eggs, butter, salt & pepper powder")).toEqual(["eggs", "butter", "salt", "pepper powder"]);
+    expect(splitSeen("Eggs, butter, salt & pepper powder")).toEqual([
+      "eggs",
+      "butter",
+      "salt",
+      "pepper powder",
+    ]);
     expect(splitSeen("Carrot, each with a collage effect")).toEqual(["carrot"]);
-    expect(splitSeen("Chicken breast topped with grilled potatoes")).toEqual(["chicken breast", "potatoes"]);
+    expect(splitSeen("Chicken breast topped with grilled potatoes")).toEqual([
+      "chicken breast",
+      "potatoes",
+    ]);
   });
 
   it("también en español (el modelo a veces contesta así)", () => {
@@ -87,7 +107,9 @@ describe("matchSeen: solo lo que la app conoce", () => {
   });
 
   it("gana la forma más larga: «rice cakes» es tostadas, no arroz", () => {
-    expect(matchSeen("rice cakes", diet, NOW).known[0].ingredient).toBe("tostadas");
+    expect(matchSeen("rice cakes", diet, NOW).known[0].ingredient).toBe(
+      "tostadas",
+    );
   });
 
   it("un rojo del plan se RECONOCE (por su id del plan) para que el código lo nombre, y no es ingrediente", () => {
@@ -111,12 +133,84 @@ describe("matchSeen: solo lo que la app conoce", () => {
   });
 
   it("los ids salen SIEMPRE del catálogo o del plan, nunca del texto", () => {
-    const r = matchSeen("pollo, chicken; huevos, ../../etc, <script>, gaseosas", diet, NOW);
+    const r = matchSeen(
+      "pollo, chicken; huevos, ../../etc, <script>, gaseosas",
+      diet,
+      NOW,
+    );
     const ids = new Set([...Object.keys(diet.trafficLight), "x"]);
     for (const s of r.known) {
-      for (const id of s.planIds) expect(JSON.stringify(diet)).toContain(`"id":"${id}"`);
+      for (const id of s.planIds)
+        expect(JSON.stringify(diet)).toContain(`"id":"${id}"`);
       expect(ids.has(s.label)).toBe(false);
     }
     expect(r.known.map((s) => s.ingredient)).toEqual(["pollo", "huevos", null]);
+  });
+});
+
+describe("matchSeen: lo procesado no es el alimento de dentro (auditoría)", () => {
+  it.each([
+    "potato chips",
+    "chicken nuggets",
+    "tomato ketchup",
+    "carrot cake",
+    "papitas de pollo",
+  ])("«%s» no entra como ingrediente de la despensa", (name) => {
+    const r = matchSeen(name, diet, NOW);
+    expect(r.known.map((s) => s.ingredient).filter(Boolean)).toEqual([]);
+  });
+
+  it("lo procesado conserva los avisos: un rojo del plan sigue nombrándose", () => {
+    const r = matchSeen("orange juice, soda", diet, NOW);
+    expect(r.known.some((s) => s.planIds.includes("gaseosas"))).toBe(true);
+    expect(r.known.every((s) => s.ingredient === null)).toBe(true);
+  });
+
+  it("el nombre propio del ingrediente no cuenta como procesado (tostadas, helado de la forma)", () => {
+    expect(matchSeen("rice cakes", diet, NOW).known[0].ingredient).toBe(
+      "tostadas",
+    );
+  });
+});
+
+describe("matchSeen: la primera frase manda y el tope se cuenta (auditoría)", () => {
+  it("más allá de MAX_SEEN no se muestran, pero se cuentan en `more`", () => {
+    const many = Array.from(
+      { length: 20 },
+      (_, i) =>
+        `zz${String.fromCharCode(97 + (i % 26))}${String.fromCharCode(97 + Math.floor(i / 26))}berry`,
+    ).join(", ");
+    const r = matchSeen(many, diet, NOW);
+    expect(r.unknown).toHaveLength(MAX_SEEN);
+    expect(r.more).toBeGreaterThan(0);
+  });
+
+  it("sin desborde `more` no aparece o es 0", () => {
+    expect(matchSeen("carrots, rice", diet, NOW).more ?? 0).toBe(0);
+  });
+
+  it("las frases siguientes solo aportan lo que la app conoce, nunca ruido desconocido", () => {
+    const r = matchSeen(
+      "Carrots and rice. There is also a flurblezot and some eggs.",
+      diet,
+      NOW,
+    );
+    expect(r.known.map((s) => s.ingredient)).toEqual([
+      "zanahoria",
+      "arroz",
+      "huevos",
+    ]);
+    expect(r.unknown).toEqual([]);
+  });
+
+  it("los caracteres de control y los invisibles no sobreviven en ningún nombre", () => {
+    const out = splitSeen("rice\u200B,\u0000 egg\u202Es, \u0007carrots");
+    expect(out).toEqual(["rice", "egg s", "carrots"]);
+    for (const name of out) expect(/\p{C}/u.test(name)).toBe(false);
+  });
+
+  it("los plurales ingleses en -ies, -ches y -oes cuadran con su singular", () => {
+    expect(matchSeen("berries", diet, NOW).unknown).toEqual(["berries"]);
+    expect(matchSeen("tomatoes", diet, NOW).known[0].ingredient).toBe("tomate");
   });
 });

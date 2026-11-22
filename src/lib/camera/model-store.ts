@@ -37,7 +37,8 @@ export async function modelBytes(): Promise<number> {
         const res = await cache.match(req);
         if (!res) continue;
         const len = Number(res.headers.get("content-length"));
-        total += Number.isFinite(len) && len > 0 ? len : (await res.blob()).size;
+        total +=
+          Number.isFinite(len) && len > 0 ? len : (await res.blob()).size;
       }
     }
   } catch {

@@ -60,9 +60,11 @@ export function CameraCook() {
       <p className="rounded-xl bg-accent px-4 py-3 text-sm text-accent-foreground">
         {common.notMedical}
       </p>
-      <p className="rounded-xl bg-accent px-4 py-3 text-sm font-medium text-accent-foreground">
-        {c.check}
-      </p>
+      {allowed && pantry.length > 0 && (
+        <p className="rounded-xl bg-accent px-4 py-3 text-sm font-medium text-accent-foreground">
+          {c.check}
+        </p>
+      )}
       {!allowed ? (
         <>
           <p className="rounded-xl border bg-card px-4 py-3 text-sm">

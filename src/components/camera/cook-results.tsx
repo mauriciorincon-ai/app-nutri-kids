@@ -1,5 +1,6 @@
 "use client";
 
+import { CircleHelp } from "lucide-react";
 import Link from "next/link";
 
 import { StatusChip } from "@/components/traffic-light/status-chip";
@@ -28,12 +29,30 @@ export function CookResults({
   const none =
     ready.length + swap.length + almost.length + cooked.templates.length === 0;
 
+  // Lo que el plan no nombra NUNCA se pinta verde: símbolo «?» + palabra, como en el recetario.
   const chip = (state: RecipeState) =>
     state === "caution" ? (
       <StatusChip color="yellow" label={c.stateCaution} />
+    ) : state === "unknown" ? (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-sm font-semibold">
+        <CircleHelp aria-hidden className="size-4 shrink-0" />
+        {c.stateUnknown}
+      </span>
     ) : (
       <StatusChip color="green" label={c.stateOk} />
     );
+
+  // Lo que la receta lleva y el plan no nombra, y la textura de hoy: lo mismo que dice /recetas.
+  const notes = (r: PantryRecipe) => (
+    <>
+      {r.unknown.length > 0 && (
+        <span className="text-sm">
+          {fmt(c.unknownLine, { foods: r.unknown.map(name).join(", ") })}
+        </span>
+      )}
+      {r.textureNotAccepted && <span className="text-sm">{c.textureNote}</span>}
+    </>
+  );
 
   const block = (title: string, rows: PantryRecipe[], testid: string) =>
     rows.length > 0 && (
@@ -57,6 +76,7 @@ export function CookResults({
                   })}
                 </span>
               ))}
+              {notes(r)}
               {r.swaps.map((s) => (
                 <span key={s.from} className="text-sm">
                   {fmt(c.swapLine, { from: name(s.from), to: l(s.planName) })}
@@ -84,6 +104,28 @@ export function CookResults({
       <p role="status" className="text-sm font-medium">
         {fmt(c.pantryLine, { foods: pantry.map(name).join(", ") })}
       </p>
+      {(
+        [
+          [false, c.pantryAvoided],
+          [true, c.pantryAllergy],
+        ] as const
+      ).map(([allergy, line]) => {
+        const ids = cooked.avoided.filter((a) => a.allergy === allergy);
+        return (
+          ids.length > 0 && (
+            <p
+              key={String(allergy)}
+              className="flex items-start gap-2 rounded-xl bg-tl-red-surface px-3 py-2 text-sm font-medium text-tl-red"
+              data-testid={`camera-cook-avoided${allergy ? "-allergy" : ""}`}
+            >
+              <span aria-hidden>✖</span>
+              <span>
+                {fmt(line, { foods: ids.map((a) => name(a.id)).join(", ") })}
+              </span>
+            </p>
+          )
+        );
+      })}
       {none && <p className="text-sm">{c.nothingToCook}</p>}
       {block(c.resultReady, ready, "camera-cook-ready")}
       {block(c.resultSwap, swap, "camera-cook-swap")}

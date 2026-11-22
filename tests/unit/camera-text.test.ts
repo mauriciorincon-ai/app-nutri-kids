@@ -28,6 +28,13 @@ describe("textos de la cámara (es/en)", () => {
     expect(cameraText.en.check).toMatch(/with an adult/i);
   });
 
+  it("lo leído a mano lo dice y el recorte se cuenta, en los dos idiomas", () => {
+    expect(cameraText.es.checkManual).toMatch(/verifícalo con un adulto/i);
+    expect(cameraText.en.checkManual).toMatch(/with an adult/i);
+    expect(cameraText.es.seenMore).toContain("{n}");
+    expect(cameraText.en.seenMore).toContain("{n}");
+  });
+
   it("la promesa de privacidad se dice: la foto no se guarda ni se envía", () => {
     expect(cameraText.es.lead).toMatch(/no se guarda ni se envía/);
     expect(cameraText.en.lead).toMatch(/not saved or sent/);
@@ -102,5 +109,11 @@ describe("textos de «Qué cocinar» (es/en)", () => {
   it("todo resultado de cocina lleva «verifícalo con un adulto»", () => {
     expect(cameraCookText.es.check).toMatch(/verifícalo con un adulto/i);
     expect(cameraCookText.en.check).toMatch(/with an adult/i);
+  });
+  it("lo que el plan evita se explica con el nombre del alimento, en los dos idiomas", () => {
+    for (const k of ["pantryAvoided", "pantryAllergy"] as const) {
+      expect(cameraCookText.es[k]).toContain("{foods}");
+      expect(cameraCookText.en[k]).toContain("{foods}");
+    }
   });
 });

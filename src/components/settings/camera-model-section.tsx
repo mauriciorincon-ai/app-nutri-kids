@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Check, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { fmt, useI18n } from "@/i18n";
@@ -71,8 +71,9 @@ export function CameraModelSection() {
       {done && (
         <p
           role="status"
-          className="rounded-xl bg-tl-green-surface px-4 py-3 text-sm font-semibold text-tl-green"
+          className="flex items-center gap-2 rounded-xl bg-tl-green-surface px-4 py-3 text-sm font-semibold text-tl-green"
         >
+          <Check aria-hidden className="size-4 shrink-0" />
           {c.done}
         </p>
       )}

@@ -21,6 +21,14 @@ const es = {
   cautionLine: "{food}: {limit}",
   stateOk: "Con lo de tu plan",
   stateCaution: "Con medida",
+  stateUnknown: "Algo no está en tu plan",
+  unknownLine:
+    "No está en tu plan: {foods}. Pregúntale a tu profesional si puede.",
+  textureNote:
+    "Hoy no acepta esa textura: depende de cómo la prepares y puedes ajustarla.",
+  pantryAvoided: "Tu plan lo evita, así que no se usa: {foods}.",
+  pantryAllergy:
+    "Choca con lo anotado como alergia o intolerancia, así que no se usa: {foods}.",
   minutes: "{n} min",
   seeRecipes: "Ver todas las recetas",
   nothingToCook:
@@ -54,6 +62,14 @@ const en: typeof es = {
   cautionLine: "{food}: {limit}",
   stateOk: "Fits your plan",
   stateCaution: "With a limit",
+  stateUnknown: "Something is not in your plan",
+  unknownLine:
+    "Not in your plan: {foods}. Ask your professional if it is fine.",
+  textureNote:
+    "They do not take that texture today: it depends on how you prepare it, and you can adjust it.",
+  pantryAvoided: "Your plan avoids it, so it is not used: {foods}.",
+  pantryAllergy:
+    "It clashes with what is noted as an allergy or intolerance, so it is not used: {foods}.",
   minutes: "{n} min",
   seeRecipes: "See all recipes",
   nothingToCook:

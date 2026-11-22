@@ -1,3 +1,4 @@
+import { expandAvoid } from "./allergen-families";
 import { allItemIds, resolveItemStatus, type ItemStatus } from "./logic";
 import { containsPhrase, matchItem, toTokens } from "./search";
 import type { DietPlan, LocalizedText, Texture } from "./schema";
@@ -36,7 +37,7 @@ export function avoidedByNotes(
   name: LocalizedText,
   avoid: readonly string[],
 ): boolean {
-  for (const text of avoid) {
+  for (const text of expandAvoid(avoid)) {
     for (const locale of ["es", "en"] as const) {
       const noted = toTokens(text, locale);
       if (noted.length === 0) continue;

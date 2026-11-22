@@ -335,7 +335,7 @@ export function Camera() {
             <Check aria-hidden className="size-4 text-tl-green" />
           ) : (
             <span aria-hidden className="inline-block size-4 text-center">
-              ·
+              ○
             </span>
           )}
           <span>
@@ -490,12 +490,17 @@ export function Camera() {
               {c.seenTitle}
             </h2>
             <p className="rounded-xl bg-accent px-3 py-2 text-sm font-medium text-accent-foreground">
-              {c.check}
+              {reading.source === "manual" ? c.checkManual : c.check}
             </p>
             {reading.seen.known.length === 0 &&
               reading.seen.unknown.length === 0 && (
                 <p className="text-sm text-muted-foreground">{c.seenNone}</p>
               )}
+            {(reading.seen.more ?? 0) > 0 && (
+              <p className="text-sm text-muted-foreground">
+                {fmt(c.seenMore, { n: reading.seen.more ?? 0 })}
+              </p>
+            )}
             {reading.seen.known.length > 0 && (
               <>
                 {canPantry && (
