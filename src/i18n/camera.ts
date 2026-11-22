@@ -27,6 +27,7 @@ const es = {
   failedBody:
     "Puede faltar espacio o señal. Vuelve a intentarlo, o marca a mano lo que tienes en Recetas.",
   retry: "Volver a intentar",
+  labelLink: "Leer la etiqueta de un producto",
   manualLink: "Marcar a mano en Recetas",
   takePhoto: "Tomar una foto",
   pickPhoto: "Elegir de la galería",
@@ -124,6 +125,7 @@ const en: typeof es = {
   failedBody:
     "Space or signal may be short. Try again, or tick what you have by hand in Recipes.",
   retry: "Try again",
+  labelLink: "Read a product label",
   manualLink: "Tick by hand in Recipes",
   takePhoto: "Take a photo",
   pickPhoto: "Choose from the gallery",
