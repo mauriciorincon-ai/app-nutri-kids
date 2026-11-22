@@ -13,10 +13,8 @@
  */
 import { expandAvoid } from "@/lib/diet/allergen-families";
 import { allItemIds, resolveItemStatus } from "@/lib/diet/logic";
-import { avoidTexts } from "@/lib/diet/options";
 import type { DietPlan, LocalizedText } from "@/lib/diet/schema";
-import { containsPhrase, toTokens } from "@/lib/diet/search";
-import { ALTERNATIVES } from "@/lib/recipes/review";
+import { ALTERNATIVES, containsPhrase, toTokens } from "@/lib/diet/search";
 
 import { ADDITIVE_ALIASES, CLASS_PHRASES } from "./additive-aliases";
 import {
@@ -256,9 +254,8 @@ export function checkLabel(input: LabelInput): LabelCheck {
   const notes = input.notes ?? [];
   for (const n of notes) {
     if (n.kind !== "allergy" && n.kind !== "intolerance") continue;
-    const [text] = avoidTexts([n]);
-    if (text?.trim())
-      avoid.push({ kind: n.kind, name: { es: text, en: text } });
+    if (n.text.trim())
+      avoid.push({ kind: n.kind, name: { es: n.text, en: n.text } });
   }
   for (const a of avoid)
     for (const hay of withImplied)

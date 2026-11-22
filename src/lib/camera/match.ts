@@ -6,10 +6,10 @@
  * toque de quien cuida. Puro: no lee storage ni red.
  */
 import { allItemIds, resolveItemStatus } from "@/lib/diet/logic";
-import { containsPhrase, toTokens } from "@/lib/diet/search";
+import { ALTERNATIVES, containsPhrase, toTokens } from "@/lib/diet/search";
 import type { DietPlan } from "@/lib/diet/schema";
 import { INGREDIENTS, type IngredientId } from "@/lib/recipes/catalog";
-import { ALTERNATIVES, forms, matchLevel } from "@/lib/recipes/review";
+import { forms, matchLevel } from "@/lib/recipes/review";
 
 /** Como mucho tantas cosas por foto: un texto desbocado no llena la pantalla. */
 export const MAX_SEEN = 12;

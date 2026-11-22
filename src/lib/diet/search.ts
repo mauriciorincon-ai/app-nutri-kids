@@ -59,6 +59,10 @@ export function toTokens(input: string, locale: Locale): string[] {
 }
 
 /** ¿aparece la secuencia `needle` de forma contigua dentro de `haystack`? */
+/** «Gaseosas y jugos de caja» nombra dos cosas: cada alternativa también cuenta (como parcial). */
+export const ALTERNATIVES =
+  /\s*(?:,|\/|;|\by\b|\be\b|\band\b|\bor\b|\bo\b|\bu\b)\s*/i;
+
 export function containsPhrase(haystack: string[], needle: string[]): boolean {
   if (needle.length === 0 || needle.length > haystack.length) return false;
   for (let i = 0; i + needle.length <= haystack.length; i++) {
