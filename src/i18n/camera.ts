@@ -84,6 +84,7 @@ const es = {
   plateRed: "Tu plan lo evita",
   plateAllergy: "Choca con lo anotado como alergia o intolerancia",
   plateUnknown: "Tu plan no lo nombra",
+  plateEnded: "Su restricción en tu plan ya terminó",
   plateAllergyUnknown:
     "Vio algo que choca con lo anotado como alergia o intolerancia: {foods}. Consúltalo con un adulto.",
   groupsExpected: "Para esta comida tu plan nombra: {groups}.",
@@ -180,6 +181,7 @@ const en: typeof es = {
   plateRed: "Your plan avoids it",
   plateAllergy: "Clashes with what was noted as an allergy or intolerance",
   plateUnknown: "Your plan doesn't name it",
+  plateEnded: "Its restriction in your plan has ended",
   plateAllergyUnknown:
     "It saw something that clashes with what was noted as an allergy or intolerance: {foods}. Check it with an adult.",
   groupsExpected: "For this meal your plan names: {groups}.",

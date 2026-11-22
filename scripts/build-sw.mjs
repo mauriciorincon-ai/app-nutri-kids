@@ -15,6 +15,7 @@ import {
   realpathSync,
   writeFileSync,
 } from "node:fs";
+import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -108,13 +109,21 @@ export function iaCacheName(worker, version = transformersVersion()) {
   return `nutrikids-ia-${h.slice(0, 12)}`;
 }
 
+/** Donde vive el `dist/` de onnxruntime-web que transformers fija como dependencia (misma versión que el JS empaquetado). */
+export function ortDist() {
+  const tf = realpathSync(join(root, "node_modules/@huggingface/transformers"));
+  const entry = createRequire(join(tf, "package.json")).resolve(
+    "onnxruntime-web",
+  );
+  return dirname(entry);
+}
+
 export function copyIa(worker) {
-  // transformers.min.js trae ort dentro; su `.wasm` es el de la onnxruntime-web que transformers
-  // fija como dependencia (misma versión que el JS empaquetado).
+  // transformers.min.js trae ort dentro; su `.wasm` sale de la onnxruntime-web de transformers.
   const tf = realpathSync(join(root, "node_modules/@huggingface/transformers"));
   const from = {
     "transformers.min.js": join(tf, "dist"),
-    default: join(tf, "../../onnxruntime-web/dist"),
+    default: ortDist(),
   };
   const to = join(root, "public/ia");
   mkdirSync(to, { recursive: true });

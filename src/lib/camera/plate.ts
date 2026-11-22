@@ -46,6 +46,8 @@ export type PlateFood = {
   limit?: LocalizedText;
   /** El grupo verde al que pertenece, si el plan lo trae. */
   groupId?: string;
+  /** El plan SÍ lo nombra, pero su restricción con fecha ya terminó: no se dice «el plan no lo nombra». */
+  restrictionEnded?: boolean;
 };
 
 export type Plate = {
@@ -136,10 +138,11 @@ function judge(
     const st = resolveItemStatus(diet, id, now);
     if (!st) continue;
     if (st.kind === "restricted")
-      out.push({
-        state: st.restrictionActive ? "red" : "unknown",
-        planName: st.name,
-      });
+      out.push(
+        st.restrictionActive
+          ? { state: "red", planName: st.name }
+          : { state: "unknown", planName: st.name, restrictionEnded: true },
+      );
     else if (st.kind === "red") out.push({ state: "red", planName: st.name });
     else if (st.kind === "yellow")
       out.push({ state: "yellow", planName: st.name, limit: st.limit });

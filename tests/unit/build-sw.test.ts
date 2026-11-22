@@ -11,6 +11,7 @@ import {
   SHELL_ROUTES,
   iaCacheName,
   modelConfig,
+  ortDist,
   renderSw,
   renderWorker,
 } from "../../scripts/build-sw.mjs";
@@ -115,13 +116,24 @@ describe("contrato del worker de la cámara (S12 · ADR-018, regla 19)", () => {
   /** Ejecuta el worker estampado con un `self` falso y devuelve su `guardedFetch`. */
   function sandbox() {
     const calls: string[] = [];
-    const self = {
+    const self: Record<string, unknown> = {
       location: { origin: "https://app.test" },
       postMessage: () => {},
-      onmessage: null as unknown,
+      onmessage: null,
+      // Las demás puertas de red que un worker trae de fábrica.
+      XMLHttpRequest: function Xhr() {},
+      WebSocket: function Ws() {},
+      EventSource: function Es() {},
     };
-    const fakeFetch = (input: string | { url: string }) => {
-      calls.push(typeof input === "string" ? input : input.url);
+    const fakeFetch = (input: unknown) => {
+      calls.push(
+        typeof input === "string"
+          ? input
+          : String(
+              (input as { url?: string; href?: string }).url ??
+                (input as { href?: string }).href,
+            ),
+      );
       return Promise.resolve("ok");
     };
     const guarded = new Function(
@@ -129,10 +141,10 @@ describe("contrato del worker de la cámara (S12 · ADR-018, regla 19)", () => {
       "fetch",
       `${worker.replace(/^export .*$/gm, "")}\nreturn guardedFetch;`,
     )(self, fakeFetch) as (
-      input: string,
+      input: unknown,
       init?: { method?: string; body?: unknown },
     ) => Promise<unknown>;
-    return { guarded, calls };
+    return { guarded, calls, self };
   }
 
   it("se estampa sin marcadores, con la revisión fijada por commit y el runtime de la app", () => {
@@ -148,32 +160,96 @@ describe("contrato del worker de la cámara (S12 · ADR-018, regla 19)", () => {
     expect(IA_RUNTIME.every((f) => !f.includes("/"))).toBe(true);
   });
 
-  it("la única red del worker: GET sin cuerpo a la app o al Hub; todo lo demás se bloquea", async () => {
+  it("el runtime que se copia es el que el JS pide: con prefijo de cadena, ort solo pide `asyncify`, y esos archivos existen", () => {
+    const js = readFileSync(
+      join(
+        root,
+        "node_modules/@huggingface/transformers/dist/transformers.min.js",
+      ),
+      "utf8",
+    );
+    // Los nombres de runtime que el código fija a mano (sin el camino de wasmPaths por defecto,
+    // que el worker nunca usa porque pone `wasmPaths = "/ia/"`).
+    expect(js).toContain('"ort-wasm-simd-threaded.asyncify.mjs"');
+    const wanted = new Set(
+      [...js.matchAll(/ort-wasm-simd-threaded\.asyncify\.(?:mjs|wasm)/g)].map(
+        (m) => m[0],
+      ),
+    );
+    for (const name of wanted) expect(IA_RUNTIME, name).toContain(name);
+    for (const name of IA_RUNTIME.filter((n) => n.startsWith("ort-")))
+      expect(existsSync(join(ortDist(), name)), name).toBe(true);
+  });
+
+  it("la puerta de red del worker: GET sin cuerpo al runtime de la app o al Hub; todo lo demás se bloquea", async () => {
     const { guarded, calls } = sandbox();
+    const hub = `https://huggingface.co/${model.id}/resolve/${model.revision}/config.json`;
     await expect(
       guarded("/ia/ort-wasm-simd-threaded.asyncify.wasm"),
     ).resolves.toBe("ok");
-    await expect(
-      guarded(
-        `https://huggingface.co/${model.id}/resolve/${model.revision}/config.json`,
-      ),
-    ).resolves.toBe("ok");
-    for (const [url, init] of [
-      ["https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/x.wasm", undefined],
-      ["https://evil.test/upload", undefined],
-      ["http://huggingface.co/x", undefined],
+    await expect(guarded(hub)).resolves.toBe("ok");
+    // El mismo destino como `URL` y como objeto tipo `Request` pasa igual…
+    await expect(guarded(new URL(hub))).resolves.toBe("ok");
+    await expect(guarded({ url: hub, method: "GET" })).resolves.toBe("ok");
+    expect(calls).toHaveLength(4);
+    // …y las formas que intentan colarse, no.
+    const bad: [unknown, { method?: string; body?: unknown }?][] = [
+      ["https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/x.wasm"],
+      ["https://evil.test/upload"],
+      ["http://huggingface.co/x"],
       ["https://huggingface.co/api/x", { method: "POST" }],
-      ["/api/family", { method: "PUT" }],
+      ["https://huggingface.co/api/x", { method: "post" }],
       ["https://huggingface.co/x", { body: "foto" }],
-    ] as const) {
-      await expect(guarded(url, init), url).rejects.toThrow("blocked-request");
+      ["https://huggingface.co:8443/x"],
+      ["https://user:pass@huggingface.co/x"],
+      ["https://huggingface.co.evil.test/x"],
+      ["https://evilhuggingface.co/x"],
+      ["//evil.test/upload"],
+      ["\\\\evil.test\\upload"],
+      ["/api/family"],
+      ["/api/family", { method: "PUT" }],
+      ["/ia/../api/family"],
+      [new URL("https://evil.test/x")],
+      [{ url: "https://evil.test/x", method: "GET" }],
+      [{ url: hub, method: "POST" }],
+      [{ url: hub, method: "GET", body: "foto" }],
+      [{ href: "https://evil.test/x" }],
+      ["data:text/plain,hola"],
+      ["blob:https://app.test/abc"],
+      ["javascript:alert(1)"],
+      [null],
+      [undefined],
+    ];
+    for (const [input, init] of bad) {
+      await expect(guarded(input, init), String(input)).rejects.toThrow(
+        "blocked-request",
+      );
     }
-    expect(calls).toHaveLength(2);
+    expect(calls).toHaveLength(4);
+  });
+
+  it("`self.fetch` queda reemplazado y XHR, WebSocket y EventSource ya no se pueden usar", async () => {
+    const { self, guarded, calls } = sandbox();
+    expect(self.fetch).toBe(guarded);
+    for (const name of ["XMLHttpRequest", "WebSocket", "EventSource"]) {
+      expect(() => new (self[name] as new () => unknown)(), name).toThrow(
+        "blocked-request",
+      );
+      // y no se puede volver a poner el original
+      expect(() => {
+        "use strict";
+        self[name] = function Back() {};
+      }, name).toThrow();
+    }
+    await expect(
+      (self.fetch as typeof guarded)("https://evil.test/x"),
+    ).rejects.toThrow("blocked-request");
+    expect(calls).toEqual([]);
   });
 
   it("los errores salen como código, jamás con el contenido", () => {
     expect(worker).toMatch(
-      /postMessage\(\{ type: "error", id: msg\.id, code \}\)/,
+      /postMessage\(\{ type: "error", id: msg\.id, of: msg\.type, code \}\)/,
     );
     expect(worker).not.toMatch(/err\.stack|String\(err\)|err\.message\s*\}/);
   });

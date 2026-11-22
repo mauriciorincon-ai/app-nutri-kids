@@ -15,11 +15,13 @@ export type ErrorCode =
 export type Progress = { file: string; loaded: number; total: number };
 
 type Pending = { resolve: (v: unknown) => void; reject: (e: Error) => void };
+/** `probe` y `load` no llevan id: cada uno tiene su propia clave, así uno no pisa al otro. */
+type Key = number | "probe" | "load";
 
 export class VisionClient {
   private worker: Worker;
   private seq = 0;
-  private pending = new Map<number, Pending>();
+  private pending = new Map<Key, Pending>();
   private onProgress: ((p: Progress) => void) | null = null;
 
   constructor(url = VISION_WORKER_URL) {
@@ -28,19 +30,35 @@ export class VisionClient {
     this.worker.onerror = () => this.failAll("load-failed");
   }
 
-  private receive(msg: { type?: string; id?: number; [k: string]: unknown }) {
+  private receive(msg: {
+    type?: string;
+    id?: number;
+    of?: string;
+    [k: string]: unknown;
+  }) {
     if (msg.type === "progress") {
       this.onProgress?.(msg as unknown as Progress);
       return;
     }
-    // probe / ready no llevan id: son la respuesta a la única petición en curso de su tipo.
-    const id = typeof msg.id === "number" ? msg.id : -1;
-    const p = this.pending.get(id) ?? this.pending.get(-1);
-    if (!p) return;
-    this.pending.delete(this.pending.has(id) ? id : -1);
+    const key = this.keyOf(msg);
+    const p = key === null ? undefined : this.pending.get(key);
+    if (!p || key === null) return;
+    this.pending.delete(key);
     if (msg.type === "error")
       p.reject(new Error(String(msg.code ?? "analyze-failed")));
     else p.resolve(msg);
+  }
+
+  /** A qué petición responde un mensaje: por su id, o por su tipo si no lleva (probe / ready / error de carga). */
+  private keyOf(msg: { type?: string; id?: number; of?: string }): Key | null {
+    if (typeof msg.id === "number") return msg.id;
+    if (msg.type === "probe") return "probe";
+    if (msg.type === "ready") return "load";
+    if (msg.type === "error") {
+      if (msg.of === "probe" || msg.of === "load") return msg.of;
+      return this.pending.has("load") ? "load" : "probe";
+    }
+    return null;
   }
 
   private failAll(code: ErrorCode) {
@@ -50,29 +68,34 @@ export class VisionClient {
 
   private ask<T>(
     message: object,
+    key: Key,
     transfer: Transferable[] = [],
-    withId = false,
   ): Promise<T> {
-    const id = withId ? ++this.seq : -1;
     return new Promise<T>((resolve, reject) => {
-      this.pending.set(id, {
+      this.pending.set(key, {
         resolve: resolve as (v: unknown) => void,
         reject,
       });
-      this.worker.postMessage(withId ? { ...message, id } : message, transfer);
+      this.worker.postMessage(
+        typeof key === "number" ? { ...message, id: key } : message,
+        transfer,
+      );
     });
   }
 
   probe() {
-    return this.ask<{ webgpu: boolean; wasm: boolean }>({ type: "probe" });
+    return this.ask<{ webgpu: boolean; wasm: boolean }>(
+      { type: "probe" },
+      "probe",
+    );
   }
 
   load(engine: Engine, onProgress: (p: Progress) => void) {
     this.onProgress = onProgress;
-    return this.ask<{ engine: Engine; ms: number; runtimeBytes: number }>({
-      type: "load",
-      engine,
-    });
+    return this.ask<{ engine: Engine; ms: number; runtimeBytes: number }>(
+      { type: "load", engine },
+      "load",
+    );
   }
 
   /** Los píxeles se transfieren: después de esta llamada la página ya no los tiene. */
@@ -83,8 +106,8 @@ export class VisionClient {
         type: "analyze",
         image: { width: image.width, height: image.height, data: buffer },
       },
+      ++this.seq,
       [buffer],
-      true,
     );
   }
 

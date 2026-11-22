@@ -108,6 +108,25 @@ describe("readPlate: semáforo de lo visto", () => {
     expect(stateOf(plate("apple", { now: after }), "apple")).not.toBe("red");
   });
 
+  it("la restricción vencida no se dice «tu plan no lo nombra»: el plan sí lo nombra y lo marca terminado", () => {
+    const after = new Date("2026-10-05T12:45:00");
+    const food = plate("apple", { now: after }).foods.find(
+      (f) => f.label === "apple",
+    );
+    expect(food?.state).toBe("unknown");
+    expect(food?.restrictionEnded).toBe(true);
+    expect(food?.planName?.es).toBeTruthy();
+    // vigente, no hay marca de terminada; y lo que el plan no nombra tampoco la lleva
+    expect(
+      plate("apple", { now: LUNCH }).foods.find((f) => f.label === "apple")
+        ?.restrictionEnded,
+    ).toBeUndefined();
+    expect(
+      plate("flurbleberry").foods.find((f) => f.label === "flurbleberry")
+        ?.restrictionEnded,
+    ).toBeUndefined();
+  });
+
   it("lo que el plan no nombra nunca sale verde", () => {
     const p = plate("pasta, bread");
     for (const f of p.foods) expect(f.state, f.label).not.toBe("green");

@@ -51,8 +51,13 @@ describe("VisionClient: la página habla con el worker", () => {
     expect(w.sent.at(-1)?.msg).toEqual({ type: "load", engine: "wasm" });
     w.reply({ type: "progress", file: "a.onnx", loaded: 1, total: 2 });
     w.reply({ type: "ready", engine: "wasm", ms: 5, runtimeBytes: 7 });
-    await expect(load).resolves.toMatchObject({ engine: "wasm", runtimeBytes: 7 });
-    expect(seen).toEqual([{ type: "progress", file: "a.onnx", loaded: 1, total: 2 }]);
+    await expect(load).resolves.toMatchObject({
+      engine: "wasm",
+      runtimeBytes: 7,
+    });
+    expect(seen).toEqual([
+      { type: "progress", file: "a.onnx", loaded: 1, total: 2 },
+    ]);
   });
 
   it("analyze TRANSFIERE los píxeles (la página se queda sin copia) y empareja la respuesta por id", async () => {
@@ -65,14 +70,27 @@ describe("VisionClient: la página habla con el worker", () => {
     expect(msg.type).toBe("analyze");
     expect(transfer).toEqual([data.buffer]);
     w.reply({ type: "result", id: msg.id, text: "eggs", ms: 3 });
-    await expect(job).resolves.toEqual({ type: "result", id: msg.id, text: "eggs", ms: 3 });
+    await expect(job).resolves.toEqual({
+      type: "result",
+      id: msg.id,
+      text: "eggs",
+      ms: 3,
+    });
   });
 
   it("un error del worker llega como código y rechaza; terminate rechaza lo pendiente", async () => {
     const c = new VisionClient();
     const w = FakeWorker.last!;
-    const job = c.analyze({ width: 1, height: 1, data: new Uint8ClampedArray(4) } as unknown as ImageData);
-    w.reply({ type: "error", id: w.sent.at(-1)!.msg.id, code: "blocked-request" });
+    const job = c.analyze({
+      width: 1,
+      height: 1,
+      data: new Uint8ClampedArray(4),
+    } as unknown as ImageData);
+    w.reply({
+      type: "error",
+      id: w.sent.at(-1)!.msg.id,
+      code: "blocked-request",
+    });
     await expect(job).rejects.toThrow("blocked-request");
 
     const load = c.load("webgpu", () => {});
@@ -85,6 +103,36 @@ describe("VisionClient: la página habla con el worker", () => {
     expect(w.terminated).toBe(true);
     // Una respuesta que ya nadie espera no rompe nada.
     w.reply({ type: "result", id: 99, text: "x" });
+  });
+
+  it("probe y load en vuelo a la vez no se pisan: cada respuesta llega a su petición", async () => {
+    const c = new VisionClient();
+    const w = FakeWorker.last!;
+    const probe = c.probe();
+    const load = c.load("wasm", () => {});
+    // La carga contesta primero, y su error dice de quién es.
+    w.reply({ type: "ready", engine: "wasm", ms: 1, runtimeBytes: 2 });
+    w.reply({ type: "probe", webgpu: true, wasm: true });
+    await expect(load).resolves.toMatchObject({ engine: "wasm" });
+    await expect(probe).resolves.toMatchObject({ webgpu: true });
+
+    const probe2 = c.probe();
+    const load2 = c.load("webgpu", () => {});
+    w.reply({ type: "error", of: "load", code: "load-failed" });
+    w.reply({ type: "probe", webgpu: false, wasm: true });
+    await expect(load2).rejects.toThrow("load-failed");
+    await expect(probe2).resolves.toMatchObject({ wasm: true });
+  });
+
+  it("un error sin id ni origen cae en la carga si hay una, y si no, en el probe", async () => {
+    const c = new VisionClient();
+    const w = FakeWorker.last!;
+    const load = c.load("wasm", () => {});
+    w.reply({ type: "error", code: "load-failed" });
+    await expect(load).rejects.toThrow("load-failed");
+    const probe = c.probe();
+    w.reply({ type: "error", code: "load-failed" });
+    await expect(probe).rejects.toThrow("load-failed");
   });
 
   it("canTry pide Worker y WebAssembly", () => {
@@ -102,9 +150,15 @@ describe("pixelsFromFile: la foto se reduce y el bitmap se cierra", () => {
     const drawn: number[][] = [];
     const context = ctx && {
       drawImage: (_b: unknown, ...a: number[]) => drawn.push(a),
-      getImageData: (_x: number, _y: number, w: number, h: number) => ({ width: w, height: h }),
+      getImageData: (_x: number, _y: number, w: number, h: number) => ({
+        width: w,
+        height: h,
+      }),
     };
-    vi.stubGlobal("createImageBitmap", vi.fn(async () => bitmap));
+    vi.stubGlobal(
+      "createImageBitmap",
+      vi.fn(async () => bitmap),
+    );
     vi.stubGlobal(
       "OffscreenCanvas",
       class {
@@ -123,7 +177,10 @@ describe("pixelsFromFile: la foto se reduce y el bitmap se cierra", () => {
   it("lado mayor al tamaño del modelo, sin agrandar las pequeñas", async () => {
     const { bitmap, drawn } = stubs(2048, 1024);
     const img = await pixelsFromFile(new Blob());
-    expect([img.width, img.height]).toEqual([model.imageEdge, model.imageEdge / 2]);
+    expect([img.width, img.height]).toEqual([
+      model.imageEdge,
+      model.imageEdge / 2,
+    ]);
     expect(drawn[0]).toEqual([0, 0, model.imageEdge, model.imageEdge / 2]);
     expect(bitmap.close).toHaveBeenCalledOnce();
 
@@ -142,7 +199,9 @@ describe("pixelsFromFile: la foto se reduce y el bitmap se cierra", () => {
 describe("model-store: mirar y borrar lo guardado, jamás descargar", () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  function fakeCaches(entries: Record<string, { url: string; len?: number; body?: number }[]>) {
+  function fakeCaches(
+    entries: Record<string, { url: string; len?: number; body?: number }[]>,
+  ) {
     const store = new Map(Object.entries(entries));
     const api = {
       has: async (n: string) => store.has(n),

@@ -78,7 +78,7 @@ export function PlateReading({
                 {f.state === "unknown" ? (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-sm font-semibold">
                     <CircleHelp aria-hidden className="size-4 shrink-0" />
-                    {label.unknown}
+                    {f.restrictionEnded ? c.plateEnded : label.unknown}
                   </span>
                 ) : (
                   <StatusChip

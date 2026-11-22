@@ -7,7 +7,9 @@
  *  - Carga el runtime desde la propia app (`/ia/`, ninguna CDN) y los pesos del Hub público,
  *    fijados por commit; quedan en la caché del navegador para usarse sin red.
  *  - La foto llega como píxeles en memoria, se analiza y se suelta: no se guarda ni sale.
- *  - `guardedFetch` es la ÚNICA red del worker: solo GET, sin cuerpo, solo a la app o al Hub.
+ *  - `guardedFetch` es la puerta de la red del worker (sustituye a `self.fetch`; XHR, WebSocket y
+ *    EventSource no existen): solo GET, sin cuerpo, solo al runtime de la app o al Hub. La cabecera
+ *    `connect-src` de este archivo acota además lo que el navegador deja salir.
  *  - Devuelve TEXTO. Qué es un alimento, su semáforo y la receta los decide el código de la app.
  */
 const MODEL = __MODEL__;
@@ -16,19 +18,50 @@ const RUNTIME = "/ia/transformers.min.js";
 let tf = null;
 let loaded = null; // { processor, model, engine }
 
+// El fetch de verdad se guarda ANTES de reemplazarlo: `guardedFetch` lo llama a él, no a `self.fetch`.
+const realFetch = fetch;
+
+function blocked() {
+  return new Error("blocked-request");
+}
+
+/**
+ * La puerta de TODA petición del worker, venga como cadena, `URL` o `Request`. Solo pasa un GET sin
+ * cuerpo, sin credenciales en la URL y a uno de dos sitios: la propia app bajo `/ia/` (el runtime) o
+ * el Hub por https en su puerto normal. Lo demás se rechaza ANTES de salir. Los saltos que el Hub
+ * hace a su CDN los acota la cabecera `connect-src` de este archivo (`next.config.ts`).
+ */
 function guardedFetch(input, init) {
-  const url = new URL(typeof input === "string" ? input : input.url, self.location.origin);
-  const method = (init && init.method) || (typeof input === "string" ? "GET" : input.method) || "GET";
-  const sameOrigin = url.origin === self.location.origin;
-  if (
-    method.toUpperCase() !== "GET" ||
-    (init && init.body != null) ||
-    url.protocol !== "https:" && !sameOrigin ||
-    !(sameOrigin || MODEL.allowedHosts.includes(url.hostname))
-  ) {
-    return Promise.reject(new Error("blocked-request"));
+  let url;
+  try {
+    const raw = typeof input === "string" ? input : (input && (input.url ?? input.href)) ?? String(input);
+    url = new URL(raw, self.location.origin);
+  } catch {
+    return Promise.reject(blocked());
   }
-  return fetch(input, init);
+  const method = String((init && init.method) || (input && input.method) || "GET").toUpperCase();
+  const hasBody = (init && init.body != null) || (input && typeof input === "object" && input.body != null);
+  const sameOrigin = url.origin === self.location.origin;
+  const clean = url.username === "" && url.password === "";
+  const toApp = sameOrigin && url.pathname.startsWith("/ia/");
+  const toHub =
+    url.protocol === "https:" && url.port === "" && MODEL.allowedHosts.includes(url.hostname);
+  if (method !== "GET" || hasBody || !clean || !(toApp || toHub)) return Promise.reject(blocked());
+  return realFetch(input, init);
+}
+
+// Ninguna otra puerta de red queda abierta en este worker: `fetch` es el guardado y las demás no existen.
+self.fetch = guardedFetch;
+for (const name of ["XMLHttpRequest", "WebSocket", "EventSource", "WebTransport"]) {
+  if (name in self) {
+    Object.defineProperty(self, name, {
+      value: function () {
+        throw blocked();
+      },
+      configurable: false,
+      writable: false,
+    });
+  }
 }
 
 async function runtime() {
@@ -113,6 +146,6 @@ self.onmessage = async (event) => {
   } catch (err) {
     // Solo un código: jamás el contenido (regla dura 6).
     const code = err && err.message === "blocked-request" ? "blocked-request" : msg.type === "load" ? "load-failed" : "analyze-failed";
-    self.postMessage({ type: "error", id: msg.id, code });
+    self.postMessage({ type: "error", id: msg.id, of: msg.type, code });
   }
 };
