@@ -32,11 +32,9 @@ Commits 21 · Sesiones 3 · Horas activas 4,2 h · Span 2026-11-20 23:09 → 202
   - Seguridad y privacidad: B7 → pagado (demo-rojo, sin commit) · B5 → sin cambio (la demo ya valida con Zod) · B4 → abierto, decisión del dueño.
   - Frases caducadas: M4 y textos de evidencia → pagado · 67e9636.
 - **Deuda (solo lo imposible):** B4 · pnpm-lock.yaml:4143 · build dev de onnxruntime-web: decisión del dueño (aceptar hasta G-Release o esperar la estable) · presupuesto TBT de Hoy · perf-budget.json:7 fija 300; Hoy 231 · decisión del dueño (S11): ¿250 para Hoy? · cita OMS 2019 · docs/MANUAL-DE-USO.md:362 · decisión del dueño.
-- **Modelo por fase:** F1 Opus 5.5 · high (requerido), activo no registrado · F2 Sonnet → Opus (relevo: dos intentos colgados con el worker en blob; método: worker en URL real) · F3 Sonnet → Opus (relevo: CI roja; método: medir main y la rama en la misma sesión) · cierre Haiku 5.5.
-- **Compactaciones:** 2 (F1→F2, F2→F3).
+- **Modelo por fase:** F1 Opus 5.5 · high (requerido), activo no registrado · F2 Sonnet → Opus (relevo: dos intentos colgados con el worker en blob; método: worker en URL real) · F3 Sonnet → Opus (relevo: CI roja; método: medir main y la rama en la misma sesión) · cierre Haiku 5.5 · compactaciones: 2 (F1→F2, F2→F3).
 - **Servidores al STOP:** `lsof` LISTEN en este repo: 0 míos (3600 cerrado). Reportado, no cerrado: node PID 70525, test-server de Playwright lanzado desde la extensión de VS Code el 16-nov.
 - **Aprendizajes:** un gate de rendimiento se decide en el runner, no en el Mac; una capa de cotejo en camino caliente se mide antes de llegar a la CI.
-- **Recomendación:** merge tras la decisión del dueño sobre B4; la prueba en teléfono, en el ensayo general. **Esfuerzo-beneficio:** alto.
-- PRs abiertos al pedir el merge: #21.
+- **Recomendación:** merge tras la decisión del dueño sobre B4; la prueba en teléfono, en el ensayo general. **Esfuerzo-beneficio:** alto. PRs abiertos al pedir el merge: #21.
 
 Para mergear: squash y borrar la rama; después `/cierre-sprint nutri-kids`.
