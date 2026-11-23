@@ -6,7 +6,8 @@ import { superText } from "@/i18n/super";
 import { looksLikeMedicalAdvice } from "@/lib/diet/guardrails";
 
 /** Textos del súper y de «Lector y catálogo» (S13 · ADR-019), con las mismas guardas que la etiqueta. */
-const placeholders = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
+const placeholders = (s: string) =>
+  [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 const BAD =
   /\b(culpa\w*|fall[óo]\w*|incumpl\w*|urgente\w*|peligr\w*|grave\w*|alarm\w*|malo|mala|failed|fail|guilt\w*|urgent\w*|danger\w*|serious\w*|bad)\b/i;
 const NO =
@@ -44,13 +45,21 @@ describe("el súper dice lo que promete", () => {
     expect(superText.es.lead).toMatch(/no se guarda ni se envía/);
     expect(superText.en.lead).toMatch(/not saved or sent/);
     expect(superText.es.catalogLead).toMatch(/solo si tocas el botón/);
-    expect(superText.en.catalogLead).toMatch(/only downloads if you tap the button/);
+    expect(superText.en.catalogLead).toMatch(
+      /only downloads if you tap the button/,
+    );
   });
 
   it("la atribución de ODbL está en el súper y en Ajustes, en los dos idiomas", () => {
-    for (const t of [superText.es.attribution, readerSettingsText.es.attribution])
+    for (const t of [
+      superText.es.attribution,
+      readerSettingsText.es.attribution,
+    ])
       expect(t).toMatch(/Open Food Facts.*ODbL/);
-    for (const t of [superText.en.attribution, readerSettingsText.en.attribution])
+    for (const t of [
+      superText.en.attribution,
+      readerSettingsText.en.attribution,
+    ])
       expect(t).toMatch(/Open Food Facts.*ODbL/);
   });
 
@@ -68,5 +77,27 @@ describe("el súper dice lo que promete", () => {
   it("la cámara enlaza al modo súper en los dos idiomas", () => {
     expect(cameraText.es.superLink).toMatch(/súper/);
     expect(cameraText.en.superLink).toMatch(/[Ss]upermarket/);
+  });
+});
+
+describe("«Borrar datos» dice todo lo que borra del súper (S13)", () => {
+  it("nombra el lector, el catálogo y lo que compró, en los dos idiomas, en el aviso y en la confirmación", async () => {
+    const { es } = await import("@/i18n/es");
+    const { en } = await import("@/i18n/en");
+    for (const t of [es.settings.clearBody, es.settings.clearConfirmBody]) {
+      expect(t).toMatch(/lector de etiquetas/i);
+      expect(t).toMatch(/cat[aá]logo/i);
+      expect(t).toMatch(/lo que compraste/i);
+    }
+    for (const t of [en.settings.clearBody, en.settings.clearConfirmBody]) {
+      expect(t).toMatch(/label reader/i);
+      expect(t).toMatch(/catalog/i);
+      expect(t).toMatch(/what you bought/i);
+    }
+  });
+
+  it("el borrado del lector pide confirmación y la dice en los dos idiomas", () => {
+    expect(readerSettingsText.es.confirm).toMatch(/se quedan/);
+    expect(readerSettingsText.en.confirm).toMatch(/stay/);
   });
 });

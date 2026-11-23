@@ -625,6 +625,24 @@ test.describe("Ajustes: lector y catálogo", () => {
     await page
       .getByRole("button", { name: "Borrar el lector y el catálogo" })
       .click();
+    // Pide confirmación: «Cancelar» no borra nada.
+    await expect(section).toContainText(
+      "Tu plan, tu registro y lo que compraste se quedan",
+    );
+    await axe(page, "ajustes · confirmar borrado");
+    await section.getByRole("button", { name: "Cancelar" }).click();
+    await expect(section).toContainText(/Ocupan unos \d+ MB en este teléfono/);
+    expect(
+      await page.evaluate(async () =>
+        (await caches.keys()).filter((k) =>
+          /^nutrikids-(ocr|scan|catalog)-/.test(k),
+        ),
+      ),
+    ).toHaveLength(3);
+    await page
+      .getByRole("button", { name: "Borrar el lector y el catálogo" })
+      .click();
+    await section.getByRole("button", { name: "Sí, borrar" }).click();
     await expect(
       page
         .getByRole("status")

@@ -23,6 +23,7 @@ export function ReaderCatalogSection() {
   // null = todavía mirando · 0 = nada guardado
   const [bytes, setBytes] = useState<number | null>(null);
   const [done, setDone] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   const look = useCallback(async () => {
     setBytes(await total());
@@ -38,6 +39,7 @@ export function ReaderCatalogSection() {
 
   const remove = async () => {
     await Promise.all([deleteOcr(), deleteScan()]);
+    setConfirming(false);
     setDone(true);
     await look();
   };
@@ -58,15 +60,46 @@ export function ReaderCatalogSection() {
           <p className="-mt-1 text-sm leading-relaxed text-muted-foreground">
             {fmt(c.body, { mb: Math.max(1, Math.round(bytes / 1e6)) })}
           </p>
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full"
-            onClick={() => void remove()}
-          >
-            <Trash2 aria-hidden className="size-5" />
-            {c.button}
-          </Button>
+          {confirming ? (
+            <div
+              role="group"
+              aria-label={c.button}
+              className="flex flex-col gap-2 rounded-xl border border-border p-3"
+            >
+              <p className="text-sm leading-relaxed">{c.confirm}</p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="min-h-11 flex-1"
+                  onClick={() => setConfirming(false)}
+                >
+                  {c.confirmNo}
+                </Button>
+                <Button
+                  size="lg"
+                  className="min-h-11 flex-1"
+                  onClick={() => void remove()}
+                >
+                  <Trash2 aria-hidden className="size-5" />
+                  {c.confirmYes}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full"
+              onClick={() => {
+                setDone(false);
+                setConfirming(true);
+              }}
+            >
+              <Trash2 aria-hidden className="size-5" />
+              {c.button}
+            </Button>
+          )}
         </>
       ) : (
         <p className="-mt-1 text-sm leading-relaxed text-muted-foreground">

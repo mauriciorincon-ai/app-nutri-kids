@@ -393,11 +393,11 @@ export const es = {
     dietVersionInfo: "{title} · emitida el {date}",
     clearTitle: "Borrar datos",
     clearBody:
-      "Borra la dieta cargada y todo tu registro del día (marcas, horas y notas) y lo que anotaste en el perfil (notas y texturas) de este dispositivo, junto con el modelo de la cámara si lo descargaste, dejas de recibir avisos y sales de la familia si estabas en una. Lo que ya está compartido en internet se borra desde «Compartir con la familia». La app vuelve a la demo.",
+      "Borra la dieta cargada y todo tu registro del día (marcas, horas y notas) y lo que anotaste en el perfil (notas y texturas) de este dispositivo, junto con el modelo de la cámara, el lector de etiquetas y el catálogo del súper si los descargaste, y la lista de lo que compraste, dejas de recibir avisos y sales de la familia si estabas en una. Lo que ya está compartido en internet se borra desde «Compartir con la familia». La app vuelve a la demo.",
     clearButton: "Borrar mis datos",
     clearConfirmTitle: "¿Borrar todo?",
     clearConfirmBody:
-      "Se borrará la dieta cargada y todo el registro de días (marcas, horas y notas) y lo que anotaste en el perfil (notas y texturas), además del modelo de la cámara si lo descargaste, dejarás de recibir avisos y saldrás de la familia. Esto no se puede deshacer.",
+      "Se borrará la dieta cargada y todo el registro de días (marcas, horas y notas) y lo que anotaste en el perfil (notas y texturas), además del modelo de la cámara, el lector de etiquetas y el catálogo del súper si los descargaste, y la lista de lo que compraste, dejarás de recibir avisos y saldrás de la familia. Esto no se puede deshacer.",
     clearAlsoShared:
       "También borrar lo compartido de internet. Los demás teléfonos de la familia conservan su copia.",
     clearConfirmYes: "Sí, borrar",
