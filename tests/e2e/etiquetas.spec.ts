@@ -417,7 +417,15 @@ test.describe("El modo súper", () => {
 
     // Lo anoto: queda en «lo que compré» con su aviso calmado.
     await page.getByTestId("super-add").click();
-    await expect(page.getByTestId("super-add")).toBeDisabled();
+    // El «anotado» es un aviso en texto legible (AA), no un botón apagado.
+    await expect(page.getByTestId("super-add")).toHaveText(
+      "Anotado en lo que compré.",
+    );
+    await expect(page.getByTestId("super-add")).toHaveAttribute(
+      "role",
+      "status",
+    );
+    await axe(page, "súper · anotado");
     const boughtNo = page.getByTestId(`bought-${NO_VA}`);
     await expect(boughtNo).toHaveAttribute("data-verdict", "no");
     await expect(boughtNo).toContainText(
@@ -435,6 +443,16 @@ test.describe("El modo súper", () => {
     await expect(page.getByTestId("super-result")).toContainText(
       /no sé qué lleva/i,
     );
+    // El chip dice lo que pasa de verdad (no hay lista), no «No pude leerla»: nada se leyó con la cámara.
+    await expect(page.getByTestId("super-result")).toContainText(
+      "Sin lista de ingredientes",
+    );
+    await expect(page.getByTestId("super-result")).not.toContainText(
+      "No pude leerla",
+    );
+    await expect(page.getByTestId("super-result")).toContainText(
+      "el catálogo puede estar incompleto",
+    );
     await expect(page.getByTestId("super-to-label")).toBeVisible();
     await axe(page, "súper · no sé qué lleva");
 
@@ -446,6 +464,10 @@ test.describe("El modo súper", () => {
     );
     await expect(page.getByTestId("super-result")).toContainText(
       /camar|marisco/i,
+    );
+    // Una traza no «lleva»: «puede llevar».
+    await expect(page.getByTestId("super-result")).toContainText(
+      "Puede llevar",
     );
 
     // 4. Revisa.
@@ -488,8 +510,13 @@ test.describe("El modo súper", () => {
       "No vi nada que choque",
     );
     await expect(page.getByTestId("super-result")).toContainText(
+      "En lo que dice el catálogo",
+    );
+    await expect(page.getByTestId("super-result")).toContainText(
       "Verifícalo con un adulto",
     );
+    // Si el producto va, no hay marcas aptas que ofrecer: la sección solo aparece cuando algo no encaja.
+    await expect(page.getByTestId("super-apt")).toHaveCount(0);
     await axe(page, "súper · no vi nada que choque");
 
     // ── Escanear y buscar: ni una petición del lector, del catálogo ni de un tercero, y ninguna con cuerpo.

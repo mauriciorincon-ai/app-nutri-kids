@@ -39,7 +39,8 @@ const es = {
   reading: "Buscando el código…",
   noCode:
     "No encontré un código de barras en la foto. Prueba más cerca y con más luz, o escribe los números.",
-  readFailed: "No se pudo leer esta foto. Prueba con otra o escribe los números.",
+  readFailed:
+    "No se pudo leer esta foto. Prueba con otra o escribe los números.",
   codeLength: "Un código de barras tiene 8, 12 o 13 números. Revísalo.",
   codeChecksum:
     "Ese código no es válido: revisa los números o vuelve a escanearlo.",
@@ -50,7 +51,15 @@ const es = {
   catalogText: "Lo que el catálogo dice que lleva",
   catalogNote:
     "Compáralo con la etiqueta del producto: el catálogo lo escriben personas y puede estar incompleto.",
-  noIngredients: "El catálogo no trae la lista de ingredientes de este producto.",
+  noIngredients:
+    "El catálogo no trae la lista de ingredientes de este producto.",
+  chipNoList: "Sin lista de ingredientes",
+  catalogCheck:
+    "Verifícalo con un adulto: el catálogo puede estar incompleto o desactualizado.",
+  catalogLeadOk:
+    "En lo que dice el catálogo no aparece nada que tu plan evite.",
+  catalogPartial:
+    "El catálogo no trae todo el texto: el producto puede llevar algo más.",
   leadUnreadable:
     "No sé qué lleva: el catálogo no trae su lista de ingredientes completa. Toma la foto de su etiqueta.",
   aptTitle: "Marcas que sí van con tu plan",
@@ -114,10 +123,10 @@ const en: typeof es = {
   reading: "Looking for the code…",
   noCode:
     "I didn't find a barcode in the photo. Try closer and with more light, or type the numbers.",
-  readFailed: "This photo couldn't be read. Try another one or type the numbers.",
+  readFailed:
+    "This photo couldn't be read. Try another one or type the numbers.",
   codeLength: "A barcode has 8, 12 or 13 numbers. Check it.",
-  codeChecksum:
-    "That code isn't valid: check the numbers or scan it again.",
+  codeChecksum: "That code isn't valid: check the numbers or scan it again.",
   notFoundTitle: "This product isn't in the catalog",
   notFoundBody:
     "I don't have it in the Colombia catalog. Take a photo of its label and I'll check it against your plan.",
@@ -126,13 +135,18 @@ const en: typeof es = {
   catalogNote:
     "Compare it with the product's label: the catalog is written by people and may be incomplete.",
   noIngredients: "The catalog doesn't have this product's ingredient list.",
+  chipNoList: "No ingredient list",
+  catalogCheck:
+    "Check it with an adult: the catalog may be incomplete or out of date.",
+  catalogLeadOk: "Nothing your plan avoids shows up in what the catalog says.",
+  catalogPartial:
+    "The catalog doesn't have all the text: the product may have something more.",
   leadUnreadable:
     "I don't know what it has: the catalog doesn't have its full ingredient list. Take a photo of its label.",
   aptTitle: "Brands that fit your plan",
   aptLead:
     "Similar products where I saw nothing that clashes with your plan. Compare them with their label.",
-  aptNone:
-    "I didn't find similar products in the catalog that fit your plan.",
+  aptNone: "I didn't find similar products in the catalog that fit your plan.",
   aptPending: "Looking for similar products…",
   add: "Add to what I bought",
   added: "Added to what I bought.",

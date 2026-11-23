@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Camera as CameraIcon, Download, ImageUp, ScanBarcode } from "lucide-react";
+import {
+  Camera as CameraIcon,
+  Check,
+  Download,
+  ImageUp,
+  ScanBarcode,
+} from "lucide-react";
 
 import { useDiet } from "@/components/diet-provider";
 import { useToday } from "@/components/day-checklist/use-today";
@@ -31,7 +37,12 @@ import {
 import { ODBL_URL, scanDownloadBytes } from "@/lib/scan/files";
 import { checkCode, type CodeProblem } from "@/lib/scan/gtin";
 import { scanCached } from "@/lib/scan/scan-store";
-import { addBought, getBought, removeBought, type Bought } from "@/lib/shopping/store";
+import {
+  addBought,
+  getBought,
+  removeBought,
+  type Bought,
+} from "@/lib/shopping/store";
 
 import { BoughtList } from "./bought-list";
 
@@ -206,6 +217,9 @@ export function SuperMode() {
     readTitle: s.catalogText,
     readNote: s.catalogNote,
     readEmpty: s.noIngredients,
+    check: s.catalogCheck,
+    leadOk: s.catalogLeadOk,
+    partial: s.catalogPartial,
   };
 
   return (
@@ -296,7 +310,11 @@ export function SuperMode() {
               disabled={busy}
               onClick={() => takeRef.current?.click()}
             >
-              {looked ? <ScanBarcode aria-hidden /> : <CameraIcon aria-hidden />}
+              {looked ? (
+                <ScanBarcode aria-hidden />
+              ) : (
+                <CameraIcon aria-hidden />
+              )}
               {looked ? s.another : s.takePhoto}
             </Button>
             <Button
@@ -429,6 +447,7 @@ export function SuperMode() {
                     t={catalogT}
                     testId="super-result"
                     lead={{ unreadable: s.leadUnreadable }}
+                    chipUnreadable={s.chipNoList}
                   />
                   {result.verdict === "unreadable" && (
                     <Link
@@ -440,15 +459,25 @@ export function SuperMode() {
                     </Link>
                   )}
                   {canWrite ? (
-                    <Button
-                      variant="outline"
-                      className="min-h-11 self-start"
-                      onClick={add}
-                      disabled={justAdded}
-                      data-testid="super-add"
-                    >
-                      {justAdded ? s.added : s.add}
-                    </Button>
+                    justAdded ? (
+                      <p
+                        role="status"
+                        className="flex min-h-11 items-center gap-2 self-start text-sm font-semibold text-tl-green"
+                        data-testid="super-add"
+                      >
+                        <Check aria-hidden className="size-4 shrink-0" />
+                        {s.added}
+                      </p>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="min-h-11 self-start"
+                        onClick={add}
+                        data-testid="super-add"
+                      >
+                        {s.add}
+                      </Button>
+                    )
                   ) : (
                     <>
                       <p className="rounded-xl border bg-card px-4 py-3 text-sm">
@@ -462,7 +491,7 @@ export function SuperMode() {
             </div>
           )}
 
-          {product && (
+          {product && result && result.verdict !== "ok" && (
             <section
               className="flex flex-col gap-2"
               aria-labelledby="super-apt"
@@ -526,11 +555,14 @@ export function SuperMode() {
         >
           {s.licenseLink}
         </a>
-        {meta &&
-          ` ${fmt(s.catalogInfo, {
-            date: formatShortDate(meta.generated, locale),
-            count: meta.count,
-          })}`}
+        {meta && (
+          <span className="block">
+            {fmt(s.catalogInfo, {
+              date: formatShortDate(meta.generated, locale),
+              count: meta.count,
+            })}
+          </span>
+        )}
       </p>
 
       <Link

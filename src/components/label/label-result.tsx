@@ -15,15 +15,18 @@ import type { LabelCheck, LabelHit, Verdict } from "@/lib/label/check";
 export function VerdictChip({
   verdict,
   t,
+  unreadableLabel,
 }: {
   verdict: Verdict;
   t: LabelText;
+  /** Otra palabra para «no pude leerla» (el catálogo dice «sin lista de ingredientes»). */
+  unreadableLabel?: string;
 }) {
   if (verdict === "unreadable")
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-sm font-semibold">
         <CircleHelp aria-hidden className="size-4 shrink-0" />
-        {t.verdictUnreadable}
+        {unreadableLabel ?? t.verdictUnreadable}
       </span>
     );
   const map = {
@@ -40,21 +43,28 @@ export function hitText(
   t: LabelText,
   l: (x: { es: string; en: string }) => string,
 ) {
+  // «Lleva X» si está en los ingredientes; «Puede llevar X» si solo aparece tras «puede contener».
+  const has = hit.where === "traces" ? t.mayHave : t.has;
   switch (hit.kind) {
     case "additive":
-      return fmt(t.reasonAdditive, { seen: hit.seen, name: l(hit.name) });
+      return fmt(t.reasonAdditive, { has, seen: hit.seen, name: l(hit.name) });
     case "red":
-      return fmt(t.reasonRed, { name: l(hit.name) });
+      return fmt(t.reasonRed, { has, name: l(hit.name) });
     case "restricted":
       return fmt(hit.active ? t.reasonRestricted : t.reasonRestrictedEnded, {
+        has,
         name: l(hit.name),
       });
     case "yellow":
-      return fmt(t.reasonYellow, { name: l(hit.name), limit: l(hit.limit) });
+      return fmt(t.reasonYellow, {
+        has,
+        name: l(hit.name),
+        limit: l(hit.limit),
+      });
     case "allergy":
-      return fmt(t.reasonAllergy, { name: l(hit.name) });
+      return fmt(t.reasonAllergy, { has, name: l(hit.name) });
     case "intolerance":
-      return fmt(t.reasonIntolerance, { name: l(hit.name) });
+      return fmt(t.reasonIntolerance, { has, name: l(hit.name) });
     case "similar":
       return fmt(t.reasonSimilar, { seen: hit.seen, name: l(hit.name) });
   }
@@ -66,6 +76,7 @@ export function LabelResult({
   t,
   testId = "label-result",
   lead,
+  chipUnreadable,
 }: {
   result: LabelCheck;
   /** Lo que se leyó (o el texto del catálogo): siempre a la vista. */
@@ -74,6 +85,8 @@ export function LabelResult({
   testId?: string;
   /** Otra entrada para «no pude leerla» (el catálogo dice «no sé qué lleva»). */
   lead?: Partial<Record<Verdict, string>>;
+  /** La palabra del chip cuando no se pudo leer (el catálogo: «Sin lista de ingredientes»). */
+  chipUnreadable?: string;
 }) {
   const { l } = useI18n();
   const leads: Record<Verdict, string> = {
@@ -95,7 +108,11 @@ export function LabelResult({
       data-verdict={result.verdict}
     >
       <div className="flex flex-col gap-2">
-        <VerdictChip verdict={result.verdict} t={t} />
+        <VerdictChip
+          verdict={result.verdict}
+          t={t}
+          unreadableLabel={chipUnreadable}
+        />
         <p className="font-medium">{leads[result.verdict]}</p>
       </div>
       {result.hits.length > 0 && (
@@ -106,11 +123,6 @@ export function LabelResult({
           {result.hits.map((h, i) => (
             <li key={i} className="rounded-xl bg-muted px-3 py-2">
               {hitText(h, t, l)}
-              {h.where === "traces" && (
-                <span className="block text-muted-foreground">
-                  {t.inTraces}
-                </span>
-              )}
             </li>
           ))}
         </ul>
