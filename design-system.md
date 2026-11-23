@@ -198,3 +198,13 @@ El "por qué" del semáforo siempre en palabras simples.
 - **Los títulos bajan de a un nivel:** en `/camara/cocina` los bloques de resultados son `h2` bajo el `h1` (axe `heading-order`); el panel «Cómo va el motor» y la rejilla «Marcar a mano» son `<details>` con su `summary` de 44 px, abiertos solos cuando el teléfono no puede con el modelo.
 - **Estados de la descarga con palabra, no solo barra:** «Descargando el modelo… N de unos M MB» (`role="status"`), «Preparando el modelo…» si ya estaba guardado, y el fallo con `role="alert"`, su salida («Marcar a mano en Recetas») y «Volver a intentar».
 - **Entrada a la cámara:** un enlace más en la fila «Para el día a día» de Hoy (Lonchera · Recetas · Viaje · Cámara); la barra inferior se queda en 6.
+
+## La etiqueta y el súper (S13 · ADR-019)
+
+- **Cuatro veredictos, todos con símbolo + palabra + color:** «No va» (rojo `StatusChip`), «Revisa» (amarillo), «No vi nada que choque» (verde) y «No pude leerla» (neutro con «?»: `CircleHelp` sobre `muted`, jamás verde). Un texto mal leído nunca se pinta como «apto»; «No vi nada que choque» describe lo que se leyó, no promete que sea seguro.
+- **Lo leído va a la vista:** «Lo que se leyó» es un `<details>` abierto con su `summary` de 44 px, para que quien cuida compare con la etiqueta; el texto respeta saltos de línea y no corta palabras.
+- **«Verifícalo con un adulto» va en el mismo bloque fijo** (fondo `accent`, letra media) que en la cámara, en todo resultado de la etiqueta y del súper, también cuando el veredicto sale del catálogo.
+- **El aviso de «Lo que compré» es calmado:** una fila con símbolo + palabra + color y una frase en tono práctico («Esto que compraste no va con tu plan: …»), sin rojo a pantalla completa, sin mayúsculas ni signos de alarma; «Quitar» es un botón de 44 px con `aria-label` que nombra el producto.
+- **La descarga se dice con palabras:** «Descargar el lector» / «Descargar el catálogo» con su tamaño antes del toque, «Descargando: N de M MB» (`role="status"`), el fallo con `role="alert"` y «Intentar de nuevo»; sin el lector o el catálogo siempre queda una salida (la foto de la etiqueta, escribir el código).
+- **La atribución ODbL es parte de la pantalla, no letra pequeña:** «Datos de productos © colaboradores de Open Food Facts, bajo la licencia ODbL» con «Ver la licencia», en el modo súper y en Ajustes.
+- **Entrada:** dos enlaces más en `/camara` («Leer la etiqueta de un producto», «Modo súper: escanear un código de barras»); la barra inferior se queda en 6 y Hoy no gana nada.

@@ -29,7 +29,7 @@
     "diferencial": "No califica al niño: sin calorías, peso, IMC ni percentiles, y sin convertir el «cumplimiento» en una nota. El chat contesta con tu plan dentro del teléfono y sin internet: no manda nada a ningún lado, ni siquiera para hacerle una pregunta. Lo que anotas del día, las horas y las notas sobre tu hijo solo viaja a tu familia si tú lo decides, y siempre cifrado desde el teléfono."
   },
   "funcionalidades": {
-    "total": 37,
+    "total": 39,
     "fuente_del_conteo": "docs/MANUAL-DE-USO.md",
     "descartadas": [],
     "grupos": [
@@ -68,6 +68,18 @@
             "nombre": "Mirar el plato",
             "que_hace": "Con la misma foto, la app lee lo que se ve contra tu plan para esa comida: cada alimento con símbolo, palabra y color («Está en tu plan», «Con medida», «Tu plan lo evita», «Choca con lo anotado como alergia o intolerancia»). Lo que tu plan no nombra nunca sale en verde, y dice qué grupos de tu plan no se vieron porque puede estar y no verse.",
             "seccion_manual": "La cámara: de la foto a la cocina y al plato"
+          },
+          {
+            "id": "F38",
+            "nombre": "Leer una etiqueta por foto",
+            "que_hace": "En Cámara → «Leer la etiqueta de un producto» fotografías la lista de ingredientes y la app la lee en tu teléfono y la coteja con tu plan: aditivos escritos de varias formas, alimentos rojos, restricciones y alergias, también en «puede contener». Dice «No va», «Revisa», «No vi nada que choque» o «No pude leerla», con símbolo, palabra y color, el motivo y el texto leído a la vista. Un texto mal leído nunca da «apto». El lector se descarga una sola vez, cuando tú lo tocas, y después funciona sin señal; la foto no se guarda ni se envía. Siempre «Verifícalo con un adulto» y sin cifras de nutrientes.",
+            "seccion_manual": "Leer una etiqueta y el modo súper"
+          },
+          {
+            "id": "F39",
+            "nombre": "Modo súper",
+            "que_hace": "En Cámara → «Modo súper» escaneas el código de barras de un producto y la app lo busca en un catálogo de Colombia de Open Food Facts (datos abiertos, licencia ODbL) que se baja una vez, cuando tú lo tocas. Te dice si va con tu plan, sugiere hasta cinco marcas que sí van de su categoría y guarda «Lo que compré», que se revisa de nuevo con tu plan de hoy y avisa con calma si algo ya no va. Lo escaneado no sale del teléfono.",
+            "seccion_manual": "Leer una etiqueta y el modo súper"
           }
         ]
       },
@@ -309,7 +321,7 @@
     {
       "clave": "funcionalidades",
       "etiqueta": "Funcionalidades",
-      "valor": 37,
+      "valor": 39,
       "unidad": "funcionalidades",
       "fuente": "medido",
       "detalle": "Contadas contra docs/MANUAL-DE-USO.md y verificadas por un test que compara el total con los bloques .feature del brochure. El marco no-médico (nota de primer uso y disclaimer permanente) no cuenta: es el encuadre de la app, no una funcionalidad."
@@ -381,7 +393,7 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 94168,
+      "valor": 96049,
       "unidad": "bytes",
       "fuente": "medido",
       "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-22 sobre la rama de la cámara (S12). Autocontenido: cero recursos externos, incluidas las seis muestras de interfaz (SVG en línea, no imágenes)."
