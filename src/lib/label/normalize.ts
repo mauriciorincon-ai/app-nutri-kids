@@ -35,18 +35,19 @@ export type CodeSeen = {
 };
 
 /**
- * E / INS / SIN, un separador opcional, 3 o 4 cifras (un «o» o una «l» leídos por error cuentan como
- * 0 y 1, siempre que haya al menos dos cifras de verdad), sufijo de letra y romano opcionales. Un
+ * E / INS / SIN / «aditivo», un separador opcional, 3 o 4 cifras (un «o» o una «l» leídos por error
+ * cuentan como 0 y 1, siempre que haya al menos dos cifras de verdad; un espacio, una coma o un punto
+ * entre cifras, como en «E 9 99» o «E,999», no las separa), sufijo de letra y romano opcionales. Un
  * número seguido de «%» o de «g» no es un aditivo («sin 100 %»).
  */
 const CODE =
-  /\b(e|ins|sin|i\.n\.s\.?)\s*[-.:]?\s*(?:n[o°º]?\s*\.?\s*)?([0-9ol]{3,4})(?![0-9])(?!\s*(?:%|g\b|mg\b|kg\b|ml\b))\s*([a-j](?![a-z]))?\s*(?:\(\s*(?:i{1,3}|iv|vi?)\s*\))?/g;
+  /\b(e|ins|sin|i\.n\.s\.?|aditivo|additive)\s*[-.:,]?\s*(?:n[o°º]?\s*\.?\s*)?([0-9ol](?:[\s,.]?[0-9ol]){2,3})(?![0-9])(?!\s*(?:%|g\b|mg\b|kg\b|ml\b))\s*([a-j](?![a-z]))?\s*(?:\(\s*(?:i{1,3}|iv|vi?)\s*\))?/g;
 
 export function findCodes(folded: string): CodeSeen[] {
   const out: CodeSeen[] = [];
   const seen = new Set<string>();
   for (const m of folded.matchAll(CODE)) {
-    const raw = m[2];
+    const raw = m[2].replace(/[\s,.]/g, "");
     if ((raw.match(/\d/g) ?? []).length < 2) continue;
     const digits = raw.replace(/o/g, "0").replace(/l/g, "1");
     const n = Number(digits);
@@ -60,6 +61,32 @@ export function findCodes(folded: string): CodeSeen[] {
   return out;
 }
 
+export type CodeGuess = {
+  /** Lo que se leyó tras el prefijo, sin separadores («9s9»): cifras y letras sueltas. */
+  pattern: string;
+  /** Cómo estaba escrito, para mostrarlo. */
+  seen: string;
+};
+
+/**
+ * Lo que PARECE un código de aditivo pero trae letras donde irían cifras («E9S9», «e-9O9»): el lector
+ * confunde S, O, B, Z, G con cifras. No es un código: solo sirve para decir «se parece a …» si
+ * coincide, con cada letra como comodín, con un aditivo del plan. Exige al menos dos cifras de verdad.
+ */
+const GUESS =
+  /\b(?:e|ins|sin|aditivo|additive)\s*[-.:,]?\s*([0-9a-z](?:[\s,.]?[0-9a-z]){2,3})(?![0-9a-z])/g;
+
+export function guessCodes(folded: string): CodeGuess[] {
+  const out: CodeGuess[] = [];
+  for (const m of folded.matchAll(GUESS)) {
+    const pattern = m[1].replace(/[\s,.]/g, "");
+    const digits = (pattern.match(/\d/g) ?? []).length;
+    if (digits < 2 || digits === pattern.length) continue;
+    out.push({ pattern, seen: m[0].trim().toUpperCase() });
+  }
+  return out;
+}
+
 /**
  * Lo que abre las trazas: lo que PUEDE llevar, no lo que lleva. Lo que sigue hasta el final de la
  * frase es traza; después vuelve a ser ingrediente («Contiene: leche.» es ingrediente).
@@ -67,8 +94,13 @@ export function findCodes(folded: string): CodeSeen[] {
 const TRACE_MARKER =
   /\b(?:pueden? contener|contiene trazas|puede tener trazas|trazas de|trazas|elaborad[oa] en (?:una |un )?(?:planta|linea|fabrica|instalacion|equipos?)|fabricad[oa] en (?:una |un )?(?:planta|linea|instalacion|equipos?)|procesad[oa] en (?:una |un )?(?:planta|linea|instalacion|equipos?)|may contain|contains traces|traces of|made (?:in|on) (?:a )?(?:facility|plant|line|shared equipment)|manufactured (?:in|on) (?:a )?(?:facility|plant|line|shared equipment)|processed (?:in|on) (?:a )?(?:facility|plant|line|shared equipment)|produced (?:in|on) (?:a )?(?:facility|plant|line|shared equipment)|shared (?:equipment|facility))\b/;
 
-/** Fin de frase: punto (no el de «No.» ni el decimal) o punto y coma seguidos de espacio o fin. */
-const SENTENCE_END = /(?<!\bn[o°º]?)(?<!\d)[.;](?=\s|$)/;
+/**
+ * Fin de frase: punto (no el de «No.» ni el decimal) o punto y coma seguidos de espacio o fin; o el
+ * título de otra sección («Ingredientes:», «Información nutricional»), porque una etiqueta leída sin
+ * su punto no debe tragarse lo que sigue como si fuera traza.
+ */
+const SENTENCE_END =
+  /(?<!\bn[o°º]?)(?<!\d)[.;](?=\s|$)|(?=\b(?:ingredientes?|ingredients?|informacion nutricional|nutrition facts)\s*:)/;
 
 export type Sections = { ingredients: string; traces: string };
 
@@ -86,7 +118,7 @@ export function splitSections(folded: string): Sections {
     const after = rest.slice(m.index);
     const end = SENTENCE_END.exec(after);
     traces.push(end ? after.slice(0, end.index) : after);
-    rest = end ? after.slice(end.index + 1) : "";
+    rest = end ? after.slice(end.index + end[0].length) : "";
   }
   const join = (parts: string[]) => parts.join(" ").replace(/\s+/g, " ").trim();
   return { ingredients: join(ingredients), traces: join(traces) };

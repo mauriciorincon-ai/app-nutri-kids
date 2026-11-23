@@ -47,6 +47,8 @@ const es = {
   reasonYellow: "Lleva {name}, con condición en tu plan: {limit}",
   reasonAllergy: "Lleva {name}, anotado como alergia.",
   reasonIntolerance: "Lleva {name}, anotado como intolerancia.",
+  reasonSimilar:
+    "Leí «{seen}», que se parece a {name} en tu plan. Puede que la foto lo haya cambiado: mira la etiqueta.",
   inTraces: "Aparece en «puede contener».",
   codesSeen: "Aditivos que vi con su número y tu plan no nombra: {codes}.",
   readTitle: "Lo que se leyó",
@@ -100,6 +102,8 @@ const en: typeof es = {
   reasonYellow: "It has {name}, allowed with a condition in your plan: {limit}",
   reasonAllergy: "It has {name}, noted as an allergy.",
   reasonIntolerance: "It has {name}, noted as an intolerance.",
+  reasonSimilar:
+    "I read “{seen}”, which looks like {name} in your plan. The photo may have changed a letter: check the label.",
   inTraces: "It shows up under “may contain”.",
   codesSeen: "Additives I saw by number that your plan doesn't name: {codes}.",
   readTitle: "What was read",

@@ -38,13 +38,28 @@ export function normalizeText(input: string, locale: Locale = "es"): string {
  * Se aplica IGUAL a ambos lados del match, así que "uvas"↔"uva",
  * "manzanas"↔"manzana", "apples"↔"apple" se emparejan sin tabla de plurales.
  */
+/** Dos escrituras de la misma palabra que el plan y las etiquetas mezclan («yogur», «yoghurt»). */
+const SPELLING: Record<string, string> = {
+  yogur: "yogurt",
+  yoghurt: "yogurt",
+  yogourt: "yogurt",
+};
+
 function singularize(token: string): string {
+  const one = singularizeRaw(token);
+  return SPELLING[one] ?? one;
+}
+
+function singularizeRaw(token: string): string {
   // «cherries» → «cherry», «tomatoes» → «tomato», «peaches» → «peach», «limones» → «limon».
   if (token.length > 4 && token.endsWith("ies"))
     return `${token.slice(0, -3)}y`;
   if (token.length > 5 && /[^aeiou]oes$/.test(token)) return token.slice(0, -2);
   if (token.length > 5 && /(ch|sh|x)es$/.test(token)) return token.slice(0, -2);
   if (token.length > 5 && token.endsWith("ones")) return token.slice(0, -2);
+  // «industriales» → «industrial», «yogures» → «yogur», «colores» → «color»: el plural de lo que acaba en l o r.
+  if (token.length > 5 && /[aeiou][lr]es$/.test(token))
+    return token.slice(0, -2);
   if (token.length > 3 && token.endsWith("s") && !token.endsWith("ss")) {
     return token.slice(0, -1);
   }

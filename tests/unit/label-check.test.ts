@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { getDemoDiet } from "@/lib/diet/storage";
 import type { DietPlan } from "@/lib/diet/schema";
-import { checkLabel, type LabelInput } from "@/lib/label/check";
+import { checkLabel, withinOne, type LabelInput } from "@/lib/label/check";
 import {
   findCodes,
   foldText,
@@ -171,16 +171,20 @@ describe("checkLabel: no va", () => {
   });
 
   it("una restricción vigente da «no va»; vencida, «revisa» (la reintroducción la guía el profesional)", () => {
-    const text = "Ingredientes: manzana deshidratada, harina de avena, sal, azúcar.";
+    const text =
+      "Ingredientes: manzana deshidratada, harina de avena, sal, azúcar.";
     expect(check(text).hits).toContainEqual(
-      expect.objectContaining({ kind: "restricted", id: "manzana", active: true }),
+      expect.objectContaining({
+        kind: "restricted",
+        id: "manzana",
+        active: true,
+      }),
     );
     expect(check(text).verdict).toBe("no");
     const later = check(text, { now: LATER });
     expect(later.verdict).toBe("check");
     expect(later.hits[0]).toMatchObject({ kind: "restricted", active: false });
   });
-
 
   it("una alergia del plan, en ingredientes y en trazas, también por su familia", () => {
     expect(check(`${CLEAN} Mariscos.`).hits[0]).toMatchObject({
@@ -315,5 +319,98 @@ describe("checkLabel: no vi nada que choque", () => {
         "Ingredients: rice flour, sugar, sunflower oil, salt, natural flavor.",
       ).verdict,
     ).toBe("ok");
+  });
+});
+
+describe("auditoría S13 · aditivos con espacios y comas, y letras por cifras", () => {
+  it.each([
+    "E 9 99",
+    "E,999",
+    "E.999",
+    "aditivo 999",
+    "additive 999",
+    "E-999",
+    "INS 999",
+  ])("«%s» es el aditivo E999 del plan", (form) => {
+    const r = check(`${CLEAN} Colorante ${form}.`);
+    expect(r.verdict).toBe("no");
+    expect(r.hits[0]).toMatchObject({ kind: "additive" });
+  });
+
+  it("una cifra pegada a otra unidad no es un aditivo (ni «sin 200 mg»)", () => {
+    expect(check(`${CLEAN} Sin 999 mg de nada.`).verdict).toBe("ok");
+    expect(check(`${CLEAN} Sin 999 %.`).verdict).toBe("ok");
+  });
+
+  it("«E9S9» (una S por un 9) da «revisa», nunca «no va» ni «no vi nada»", () => {
+    const r = check(`${CLEAN} Colorante E9S9.`);
+    expect(r.verdict).toBe("check");
+    expect(r.hits[0]).toMatchObject({
+      kind: "similar",
+      seen: expect.any(String),
+    });
+  });
+
+  it("un código con letras que NO cuadra con ningún aditivo del plan no dice nada", () => {
+    expect(check(`${CLEAN} Colorante E1S5.`).verdict).toBe("ok");
+  });
+});
+
+describe("auditoría S13 · una letra mal leída en lo que el plan evita", () => {
+  it("«camar6n» (alergia a los mariscos por familia) da «revisa»", () => {
+    const r = check(
+      "Ingredientes: harina de trigo, sal, aceite vegetal, camar6n molido y levadura.",
+    );
+    expect(r.verdict).not.toBe("ok");
+    expect(r.hits.some((h) => h.kind === "similar")).toBe(true);
+  });
+
+  it("una palabra corta cercana a otra no dispara el parecido", () => {
+    expect(check(`${CLEAN} Sal y mar.`).verdict).toBe("ok");
+  });
+
+  it("withinOne reconoce una letra cambiada, puesta, quitada y dos juntas", () => {
+    expect(withinOne("camaron", "camar6n")).toBe(true);
+    expect(withinOne("camaron", "camarron")).toBe(true);
+    expect(withinOne("camaron", "camaro")).toBe(true);
+    expect(withinOne("camaron", "camarno")).toBe(true);
+    expect(withinOne("camaron", "camerin")).toBe(false);
+    expect(withinOne("camaron", "camaron")).toBe(true);
+  });
+});
+
+describe("auditoría S13 · trazas sin punto y con un rojo", () => {
+  it("«puede contener» sin punto antes de «Información nutricional» no se la traga", () => {
+    const r = check(
+      `${CLEAN} Puede contener trazas de mariscos Información nutricional: porción.`,
+    );
+    expect(r.verdict).toBe("no");
+    expect(r.hits[0]).toMatchObject({ kind: "allergy", where: "traces" });
+  });
+
+  it("un rojo del plan tras «puede contener» también es «no va»", () => {
+    const r = check(`${CLEAN} Puede contener gaseosas.`);
+    expect(r.verdict).toBe("no");
+    expect(r.hits[0]).toMatchObject({ kind: "red", where: "traces" });
+  });
+
+  it("un texto ilegible nunca da apto, ni con nada que cuadre", () => {
+    expect(check("xq zk ñ ll ww", { confidence: 30 }).verdict).toBe(
+      "unreadable",
+    );
+  });
+});
+
+describe("auditoría S13 · singular, plural y otras escrituras", () => {
+  it.each([
+    ["yogur natural", "yellow"],
+    ["yoghurt", "yellow"],
+    ["yogures", "yellow"],
+    ["postre industrial", "red"],
+    ["postres industriales", "red"],
+    ["dulce industrial", "red"],
+  ])("«%s» se reconoce como lo que el plan nombra", (text, kind) => {
+    const r = check(`${CLEAN} ${text}.`);
+    expect(r.hits.some((h) => h.kind === kind)).toBe(true);
   });
 });

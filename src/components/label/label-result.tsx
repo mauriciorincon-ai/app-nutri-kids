@@ -55,6 +55,8 @@ export function hitText(
       return fmt(t.reasonAllergy, { name: l(hit.name) });
     case "intolerance":
       return fmt(t.reasonIntolerance, { name: l(hit.name) });
+    case "similar":
+      return fmt(t.reasonSimilar, { seen: hit.seen, name: l(hit.name) });
   }
 }
 

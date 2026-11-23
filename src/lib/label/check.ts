@@ -20,6 +20,7 @@ import { ADDITIVE_ALIASES, CLASS_PHRASES } from "./additive-aliases";
 import {
   findCodes,
   foldText,
+  guessCodes,
   splitSections,
   textQuality,
   type Quality,
@@ -53,7 +54,12 @@ export type LabelHit =
       limit: LocalizedText;
     }
   /** Una alergia o intolerancia: `name` es como la nombra el plan o como la anotó quien cuida. */
-  | { kind: "allergy" | "intolerance"; where: Where; name: LocalizedText };
+  | { kind: "allergy" | "intolerance"; where: Where; name: LocalizedText }
+  /**
+   * Algo que se PARECE a lo que el plan evita (una letra mal leída: «camar6n», «E9S9»): no es un
+   * «no va», pero tampoco se calla. `seen` es lo que se leyó y `name` lo que el plan nombra.
+   */
+  | { kind: "similar"; where: Where; name: LocalizedText; seen: string };
 
 export type Verdict =
   /** «No va»: algo del plan lo descarta. */
@@ -107,6 +113,48 @@ function namedIn(hay: string[], name: LocalizedText): boolean {
     }
   }
   return false;
+}
+
+/** ¿Se distinguen `a` y `b` por una sola letra (cambiada, puesta, quitada o dos juntas cambiadas)? */
+export function withinOne(a: string, b: string): boolean {
+  if (a === b) return true;
+  const d = a.length - b.length;
+  if (d > 1 || d < -1) return false;
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  if (d === 0) {
+    if (a.slice(i + 1) === b.slice(i + 1)) return true; // una letra cambiada
+    return (
+      a[i] === b[i + 1] &&
+      a[i + 1] === b[i] &&
+      a.slice(i + 2) === b.slice(i + 2)
+    ); // dos juntas
+  }
+  return d === 1
+    ? a.slice(i + 1) === b.slice(i)
+    : b.slice(i + 1) === a.slice(i);
+}
+
+/** Palabras de un nombre que el cotejo vigila de forma aproximada: de 6 letras o más, solas. */
+const MIN_FUZZY = 6;
+
+/** Las palabras sueltas (de 6 letras o más) que nombra un texto, en es y en; sus alternativas también. */
+function singleWords(text: LocalizedText | string): string[] {
+  const out = new Set<string>();
+  const parts =
+    typeof text === "string"
+      ? [
+          [text, "es"],
+          [text, "en"],
+        ]
+      : (["es", "en"] as const).flatMap((l) =>
+          text[l].split(ALTERNATIVES).map((p) => [p, l] as const),
+        );
+  for (const [part, locale] of parts) {
+    const t = toTokens(part, locale as "es" | "en");
+    if (t.length === 1 && t[0].length >= MIN_FUZZY) out.add(t[0]);
+  }
+  return [...out];
 }
 
 /** ¿Lo anotado (con su familia) aparece en el texto? Un solo sentido: el texto es largo. */
@@ -241,6 +289,26 @@ export function checkLabel(input: LabelInput): LabelCheck {
     }
   }
 
+  // Parecidos: un código con letras donde irían cifras («E9S9») que cuadra con un aditivo del plan.
+  const guesses = [
+    ...guessCodes(sections.ingredients).map((g) => ({
+      ...g,
+      where: "ingredients" as Where,
+    })),
+    ...guessCodes(sections.traces).map((g) => ({
+      ...g,
+      where: "traces" as Where,
+    })),
+  ];
+  for (const a of planAdditives) {
+    const digits = a.code.toUpperCase().replace(/^E/, "").toLowerCase();
+    for (const g of guesses) {
+      if (g.pattern.length !== digits.length) continue;
+      if ([...g.pattern].every((c, i) => /[a-z]/.test(c) || c === digits[i]))
+        push({ kind: "similar", where: g.where, name: a.name, seen: g.seen });
+    }
+  }
+
   // Alergias e intolerancias: las del plan y las que anotó quien cuida, con sus familias.
   const avoid: { kind: "allergy" | "intolerance"; name: LocalizedText }[] = [
     ...(diet.profile?.allergies ?? []).map((a) => ({
@@ -263,15 +331,45 @@ export function checkLabel(input: LabelInput): LabelCheck {
       if (avoidIn(hay.tokens, [a.name.es, a.name.en]))
         push({ kind: a.kind, where: hay.where, name: a.name });
 
+  // Palabras a una letra de lo que el plan evita (el lector cambió una): «revisa», jamás «no va».
+  const exact = new Set(hits.map((h) => ("name" in h ? h.name.es : "")));
+  const watched: { name: LocalizedText; words: string[] }[] = [];
+  for (const id of allItemIds(diet)) {
+    const status = resolveItemStatus(diet, id, now);
+    if (status && status.kind !== "green")
+      watched.push({ name: status.name, words: singleWords(status.name) });
+  }
+  for (const a of avoid)
+    watched.push({
+      name: a.name,
+      words: expandAvoid([a.name.es, a.name.en]).flatMap((t) => singleWords(t)),
+    });
+  for (const w of watched) {
+    if (exact.has(w.name.es) || !w.words.length) continue;
+    for (const hay of withImplied) {
+      const near = hay.tokens.find((t) =>
+        w.words.some(
+          (word) =>
+            t !== word && t.length >= MIN_FUZZY - 1 && withinOne(t, word),
+        ),
+      );
+      if (near) {
+        push({ kind: "similar", where: hay.where, name: w.name, seen: near });
+        break;
+      }
+    }
+  }
+
   const quality = textQuality(input.text, input.confidence);
 
   const isNo = hits.some(
     (h) =>
       h.kind === "additive" ||
       h.kind === "allergy" ||
-      ((h.kind === "red" ||
-        (h.kind === "restricted" && h.active) ||
-        h.kind === "intolerance") &&
+      // Un rojo del plan («Snacks de paquete») no es algo que se cuele como traza: si aparece tras
+      // «puede contener» sin un punto de por medio, lo más probable es que sea un ingrediente.
+      h.kind === "red" ||
+      (((h.kind === "restricted" && h.active) || h.kind === "intolerance") &&
         h.where === "ingredients"),
   );
   const verdict: Verdict = isNo
@@ -299,6 +397,7 @@ const RANK: Record<LabelHit["kind"], number> = {
   red: 3,
   intolerance: 4,
   yellow: 5,
+  similar: 6,
 };
 function sortHits(hits: LabelHit[]): LabelHit[] {
   return [...hits].sort(
