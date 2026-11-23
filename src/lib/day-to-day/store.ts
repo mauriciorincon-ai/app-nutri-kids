@@ -11,6 +11,8 @@ export const LUNCH_NAME_SLOT = "nutrikids.lunch-name.v1";
 export const PANTRY_SLOT = "nutrikids.pantry.v1";
 export const TRAVEL_CHECKS_SLOT = "nutrikids.travel.v1";
 export const OWN_RECIPES_SLOT = "nutrikids.recipes-own.v1";
+/** «Lo que compré» (S13): la lista vive en `src/lib/shopping/store.ts`; aquí solo se borra con lo demás. */
+export const BOUGHT_SLOT = "nutrikids.bought.v1";
 
 export const NAME_MAX = 40;
 export const OWN_MAX = 20;
@@ -181,6 +183,7 @@ export function clearDayToDay(): void {
     PANTRY_SLOT,
     TRAVEL_CHECKS_SLOT,
     OWN_RECIPES_SLOT,
+    BOUGHT_SLOT,
   ])
     write(k, null);
 }

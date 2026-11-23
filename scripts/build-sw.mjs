@@ -41,6 +41,7 @@ export const SHELL_ROUTES = [
   "/camara",
   "/camara/cocina",
   "/camara/etiqueta",
+  "/camara/super",
 ];
 
 /** Cascarón del detalle de alimento: sirve de respaldo a `/dieta/<id>` sin visita previa. */
@@ -195,6 +196,56 @@ export function copyOcr() {
   }
 }
 
+/**
+ * El súper (S13 · ADR-019): el worker que indexa el catálogo y lee códigos de barras, zxing-wasm
+ * (su lector y su `.wasm`) y el catálogo de Open Food Facts de Colombia (ODbL), servidos desde la
+ * app (ninguna CDN) y pedidos solo tras el toque de «Descargar el catálogo». NO se precachean: el
+ * SW los guarda en sus cachés propias al pedirlos la primera vez.
+ */
+export const SCAN_FILES = {
+  "scan-worker.js": "scripts/scan-worker.template.js",
+  "zxing-reader.js": "node_modules/zxing-wasm/dist/iife/reader/index.js",
+  "zxing_reader.wasm": "node_modules/zxing-wasm/dist/reader/zxing_reader.wasm",
+};
+export const CATALOG_SOURCE = "data/catalog/off-co.json";
+export const CATALOG_FILE = "off-co.json";
+
+export function zxingVersion() {
+  return JSON.parse(
+    readFileSync(join(root, "node_modules/zxing-wasm/package.json"), "utf8"),
+  ).version;
+}
+
+/** Nombre de la caché de `/scan/`: cambia si cambia zxing-wasm o el worker. */
+export function scanCacheName(
+  version = zxingVersion(),
+  worker = readFileSync(join(root, SCAN_FILES["scan-worker.js"]), "utf8"),
+) {
+  const h = createHash("sha256").update(version).update(worker).digest("hex");
+  return `nutrikids-scan-${h.slice(0, 12)}`;
+}
+
+/** Nombre de la caché de `/catalogo/`: cambia solo si cambia el contenido del catálogo. */
+export function catalogCacheName(
+  content = readFileSync(join(root, CATALOG_SOURCE)),
+) {
+  const h = createHash("sha256").update(content).digest("hex");
+  return `nutrikids-catalog-${h.slice(0, 12)}`;
+}
+
+export function copyScan() {
+  const to = join(root, "public/scan");
+  mkdirSync(to, { recursive: true });
+  for (const [name, rel] of Object.entries(SCAN_FILES))
+    copyFileSync(join(root, rel), join(to, name));
+}
+
+export function copyCatalog() {
+  const to = join(root, "public/catalogo");
+  mkdirSync(to, { recursive: true });
+  copyFileSync(join(root, CATALOG_SOURCE), join(to, CATALOG_FILE));
+}
+
 export function buildId() {
   let sha = (process.env.VERCEL_GIT_COMMIT_SHA ?? "").slice(0, 7);
   if (!sha) {
@@ -232,10 +283,14 @@ export function renderSw(
     ),
   ),
   ocrCache = ocrCacheName(),
+  scanCache = scanCacheName(),
+  catalogCache = catalogCacheName(),
 ) {
   return template
     .replace("__IA_CACHE__", iaCache)
     .replace("__OCR_CACHE__", ocrCache)
+    .replace("__SCAN_CACHE__", scanCache)
+    .replace("__CATALOG_CACHE__", catalogCache)
     .replace("/* __PUSH_MODULE__ */", () => push)
     .replace("__DETAIL_SHELL__", JSON.stringify(DETAIL_SHELL))
     .replace("__BUILD_ID__", id)
@@ -254,5 +309,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   copyPdfJs();
   copyIa(worker);
   copyOcr();
+  copyScan();
+  copyCatalog();
   console.log(`sw.js ← ${id} (${SHELL_ROUTES.length} pantallas)`);
 }

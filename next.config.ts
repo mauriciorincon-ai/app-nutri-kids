@@ -14,6 +14,12 @@ export const VISION_WORKER_CSP =
  */
 export const OCR_WORKER_CSP = "connect-src 'self' blob: data:";
 
+/**
+ * Red del worker del súper (S13 · ADR-019): solo la propia app. El catálogo y el `.wasm` de zxing
+ * se sirven desde `/catalogo/` y `/scan/`; lo escaneado y los productos no tienen adónde salir.
+ */
+export const SCAN_WORKER_CSP = "connect-src 'self'";
+
 const nextConfig: NextConfig = {
   // El badge dev de Next flota sobre la nav inferior móvil e intercepta taps
   // (rompía los e2e móviles); el overlay de errores sigue activo.
@@ -39,6 +45,10 @@ const nextConfig: NextConfig = {
       {
         source: "/ocr/worker.min.js",
         headers: [{ key: "Content-Security-Policy", value: OCR_WORKER_CSP }],
+      },
+      {
+        source: "/scan/scan-worker.js",
+        headers: [{ key: "Content-Security-Policy", value: SCAN_WORKER_CSP }],
       },
     ];
   },

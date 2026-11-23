@@ -160,9 +160,10 @@ export function checkLabel(input: LabelInput): LabelCheck {
       if (!seenCodes.has(c.code) || where === "ingredients")
         seenCodes.set(c.code, { ...c, where });
   for (const raw of declared.codes ?? []) {
-    const code = raw.toUpperCase();
-    if (/^E\d{3,4}$/.test(code) && !seenCodes.has(code))
-      seenCodes.set(code, { seen: code, where: "ingredients" });
+    // «E150D» se mira como «E150»: así lo guarda el plan (`^E\d+$`), sin el sufijo.
+    const code = /^E\d{3,4}/.exec(raw.toUpperCase())?.[0];
+    if (code && !seenCodes.has(code))
+      seenCodes.set(code, { seen: raw.toUpperCase(), where: "ingredients" });
   }
   for (const hay of hays)
     for (const [code, alias] of Object.entries(ADDITIVE_ALIASES))

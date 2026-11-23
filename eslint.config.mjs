@@ -20,6 +20,8 @@ const eslintConfig = defineConfig([
     "public/ia/**",
     // Lector de etiquetas, copiado de node_modules por build-sw (ADR-019).
     "public/ocr/**",
+    "public/scan/**",
+    "public/catalogo/**",
   ]),
 ]);
 

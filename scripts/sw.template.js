@@ -36,11 +36,18 @@ const IA_CACHE = "__IA_CACHE__";
  */
 const OCR_CACHE = "__OCR_CACHE__";
 /**
- * Al activarse, el SW borra SOLO sus cachés viejas (`nutrikids-shell-*`, `-pdfjs-*`, `-ia-*`, `-ocr-*`).
+ * Cachés PROPIAS del súper (S13 · ADR-019): `/scan/` (el worker y zxing-wasm) y `/catalogo/` (el
+ * catálogo de Open Food Facts, ODbL), guardados al pedirlos tras el toque. La de `/scan/` cambia
+ * solo si cambia zxing o el worker; la del catálogo, solo si cambia el catálogo.
+ */
+const SCAN_CACHE = "__SCAN_CACHE__";
+const CATALOG_CACHE = "__CATALOG_CACHE__";
+/**
+ * Al activarse, el SW borra SOLO sus cachés viejas (`nutrikids-shell-*`, `-pdfjs-*`, `-ia-*`, `-ocr-*`, `-scan-*`, `-catalog-*`).
  * Cualquier otra —la del modelo, `nutrikids-model`, que guarda el runtime— no es suya y se queda:
  * borrarla obligaría a bajar otra vez ≈ 160 MB tras cada versión.
  */
-const OWN_CACHE = /^nutrikids-(shell|pdfjs|ia|ocr)-/;
+const OWN_CACHE = /^nutrikids-(shell|pdfjs|ia|ocr|scan|catalog)-/;
 const NAV_TIMEOUT_MS = 3000;
 
 const ASSET_PATTERN = /\/_next\/static\/[^"'\s\\)<>]+/g;
@@ -49,6 +56,9 @@ const STATIC_PATTERN = /\/(_next\/static|icons|pdfjs)\/|\.(?:png|ico|woff2?)$/;
 const IA_PATTERN = /^\/ia\/[^/]+\.m?js$/;
 /** De `/ocr/` el SW lo guarda TODO (código, núcleo y `.traineddata.gz`): el lector no tiene caché propia. */
 const OCR_PATTERN = /^\/ocr\/(?:[a-z]+\/)?[\w.-]+\.(?:js|gz)$/;
+/** De `/scan/` el SW guarda el worker, zxing y su `.wasm`; de `/catalogo/`, el catálogo (JSON). */
+const SCAN_PATTERN = /^\/scan\/[\w.-]+\.(?:js|wasm)$/;
+const CATALOG_PATTERN = /^\/catalogo\/[\w.-]+\.json$/;
 
 /** Clave de caché de una pantalla: su ruta, sin query ni hash. */
 function shellKey(pathname) {
@@ -105,7 +115,9 @@ self.addEventListener("activate", (event) => {
                 k !== CACHE &&
                 k !== PDFJS_CACHE &&
                 k !== IA_CACHE &&
-                k !== OCR_CACHE,
+                k !== OCR_CACHE &&
+                k !== SCAN_CACHE &&
+                k !== CATALOG_CACHE,
             )
             .map((k) => caches.delete(k)),
         ),
@@ -176,7 +188,11 @@ self.addEventListener("fetch", (event) => {
     ? IA_CACHE
     : OCR_PATTERN.test(url.pathname)
       ? OCR_CACHE
-      : null;
+      : SCAN_PATTERN.test(url.pathname)
+        ? SCAN_CACHE
+        : CATALOG_PATTERN.test(url.pathname)
+          ? CATALOG_CACHE
+          : null;
   if (!own && !STATIC_PATTERN.test(url.pathname)) return;
 
   event.respondWith(

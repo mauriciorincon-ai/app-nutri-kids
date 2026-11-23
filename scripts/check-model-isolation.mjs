@@ -2,7 +2,7 @@
 /**
  * Gate S12 · ADR-018: el modelo de la cámara y su runtime NO entran en ninguna ruta. Viven solo en
  * `public/ia/` (copiados por `scripts/build-sw.mjs`) y los carga el worker tras el toque de quien
- * cuida. Desde el S13 (ADR-019) cubre también el lector de etiquetas (`public/ocr/`). Recorre los chunks del build (`.next/static` y `.next/server`) y falla si alguno trae
+ * cuida. Desde el S13 (ADR-019) cubre también el lector de etiquetas (`public/ocr/`), el lector de códigos de barras (`public/scan/`) y el catálogo de productos (`public/catalogo/`). Recorre los chunks del build (`.next/static` y `.next/server`) y falla si alguno trae
  * rastros del runtime. Un build vacío no es verde: sin chunks que mirar, falla.
  *
  * Uso: node scripts/check-model-isolation.mjs [--dir .next]
@@ -25,6 +25,15 @@ export const MARKERS = [
   "TesseractCore",
   "tesseract.js-core",
   "PSM_AUTO_OSD",
+  // S13 · ADR-019 (F2): el lector de códigos de barras (zxing-wasm) y el catálogo de productos
+  // (dato de Open Food Facts, ODbL), que viven en `public/scan/` y `public/catalogo/`.
+  // Los nombres de la API (`prepareZXingModule`…) los borra la minificación del build de producción
+  // (lo demostró `demo-rojo`: el gate pasaba con zxing dentro de una ruta). Sobreviven los textos
+  // propios de la librería, que ningún archivo nuestro lleva.
+  "Pharmazentralnummer",
+  "Cannot pass non-string to std::string",
+  "prepareZXingModule",
+  "countries_tags_en=colombia",
 ];
 
 function* files(root) {
