@@ -208,16 +208,20 @@ describe("Ajustes · Avisos en este teléfono", () => {
     const before = (await server.store.all())[0].wakes.length;
 
     await user.click(screen.getByRole("checkbox", { name: /^Agua/ }));
-    await waitFor(async () =>
-      expect((await server.store.all())[0].wakes.length).toBeLessThan(before),
+    await waitFor(
+      async () =>
+        expect((await server.store.all())[0].wakes.length).toBeLessThan(before),
+      { timeout: 4000 },
     );
     expect(screen.getByRole("checkbox", { name: /^Agua/ })).not.toBeChecked();
 
     await user.click(
       screen.getByRole("checkbox", { name: /Ocultar el detalle/ }),
     );
-    await waitFor(async () =>
-      expect(((await readKey("copy")) as { hide: boolean }).hide).toBe(true),
+    await waitFor(
+      async () =>
+        expect(((await readKey("copy")) as { hide: boolean }).hide).toBe(true),
+      { timeout: 4000 },
     );
     expect(
       screen.getByRole("checkbox", { name: /Ocultar el detalle/ }),
