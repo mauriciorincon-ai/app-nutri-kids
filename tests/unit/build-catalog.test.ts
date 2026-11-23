@@ -11,7 +11,10 @@ import {
   cleanProduct,
   csvRowToRaw,
   isFood,
+  plainName,
   plainTags,
+  refineCatalog,
+  refineProduct,
   validGtin,
 } from "../../scripts/build-catalog.mjs";
 import { catalogMetaSchema, productSchema } from "@/lib/catalog/schema";
@@ -83,7 +86,14 @@ describe("cleanIngredients: sin contacto ni trámites", () => {
   });
 
   it("un texto con ruido, vacío o sin palabras queda vacío: el catálogo dirá «no sé qué lleva»", () => {
-    for (const noisy of ["", "   ", "x%$# 12 @@ ¿¿ ~~ ||| 4 5 6", "#### ----", 42, null])
+    for (const noisy of [
+      "",
+      "   ",
+      "x%$# 12 @@ ¿¿ ~~ ||| 4 5 6",
+      "#### ----",
+      42,
+      null,
+    ])
       expect(cleanIngredients(noisy as string), String(noisy)).toBe("");
     expect(cleanIngredients("a b")).toBe("");
   });
@@ -119,7 +129,10 @@ describe("cleanProduct", () => {
       "en:hygiene",
       "en:pet-food",
     ])
-      expect(cleanProduct(raw({ categories_tags: ["en:snacks", cat] })), cat).toBeNull();
+      expect(
+        cleanProduct(raw({ categories_tags: ["en:snacks", cat] })),
+        cat,
+      ).toBeNull();
     expect(isFood(["en:snacks"])).toBe(true);
   });
 
@@ -127,7 +140,9 @@ describe("cleanProduct", () => {
     expect(cleanProduct(raw({ code: "7702535016689" }))).toBeNull();
     expect(cleanProduct(raw({ code: "123" }))).toBeNull();
     expect(cleanProduct(raw({ code: undefined }))).toBeNull();
-    expect(cleanProduct(raw({ product_name: "", product_name_es: "" }))).toBeNull();
+    expect(
+      cleanProduct(raw({ product_name: "", product_name_es: "" })),
+    ).toBeNull();
     expect(cleanProduct(raw({ product_name: "  " }))).toBeNull();
   });
 
@@ -148,7 +163,9 @@ describe("cleanProduct", () => {
     expect(cleanProduct(raw({ product_name: "7700304206575" }))).toBeNull();
     expect(cleanProduct(raw({ product_name: "RSAA0217502" }))).toBeNull();
     expect(cleanProduct(raw({ product_name: "12" }))).toBeNull();
-    expect(cleanProduct(raw({ product_name: "Leche 1 L" }))?.name).toBe("Leche 1 L");
+    expect(cleanProduct(raw({ product_name: "Leche 1 L" }))?.name).toBe(
+      "Leche 1 L",
+    );
   });
 
   it("una marca que parece un contacto no entra", () => {
@@ -156,10 +173,9 @@ describe("cleanProduct", () => {
   });
 
   it("las etiquetas que no son del inglés de Open Food Facts no entran", () => {
-    expect(plainTags(["en:milk", "es:leche", "fr:lait", "en:Bad", "en:tree-nuts"])).toEqual([
-      "milk",
-      "tree-nuts",
-    ]);
+    expect(
+      plainTags(["en:milk", "es:leche", "fr:lait", "en:Bad", "en:tree-nuts"]),
+    ).toEqual(["milk", "tree-nuts"]);
     expect(additiveCode("en:e150d")).toBe("E150D");
     expect(additiveCode("en:e12")).toBeNull();
     expect(additiveCode("en:e9999")).toBeNull();
@@ -213,7 +229,9 @@ describe("csvRowToRaw: una fila del volcado CSV", () => {
 
   it("una fila de otro país no entra, ni una cuyo país solo se parece", () => {
     expect(csvRowToRaw(index, row({ countries_tags: "en:france" }))).toBeNull();
-    expect(csvRowToRaw(index, row({ countries_tags: "en:colombia-demo" }))).toBeNull();
+    expect(
+      csvRowToRaw(index, row({ countries_tags: "en:colombia-demo" })),
+    ).toBeNull();
   });
 
   it("los alérgenos con espacios se vuelven la etiqueta de siempre; lo de otro idioma, no", () => {
@@ -221,7 +239,9 @@ describe("csvRowToRaw: una fila del volcado CSV", () => {
       index,
       row({ allergens_en: "Sulphur dioxide and sulphites,fr:avoine" }),
     );
-    expect(rawProduct?.allergens_tags).toEqual(["en:sulphur-dioxide-and-sulphites"]);
+    expect(rawProduct?.allergens_tags).toEqual([
+      "en:sulphur-dioxide-and-sulphites",
+    ]);
   });
 
   it("una fila corta no revienta: los campos que faltan salen vacíos", () => {
@@ -244,18 +264,21 @@ describe("buildCatalog", () => {
     );
     expect(c.license).toBe(LICENSE);
     expect(c.generated).toBe("2026-11-22");
-    expect(c.products.map((p: { code: string }) => p.code)).toEqual([
-      "7702535016688",
-      "96385074",
-    ].sort());
-    expect(c.products.find((p: { code: string }) => p.code === "7702535016688").name).toBe("Galletas demo");
+    expect(c.products.map((p: { code: string }) => p.code)).toEqual(
+      ["7702535016688", "96385074"].sort(),
+    );
+    expect(
+      c.products.find((p: { code: string }) => p.code === "7702535016688").name,
+    ).toBe("Galletas demo");
   });
 });
 
 /** El catálogo real que viaja en el repo: aquí se prueba lo que queda DESPUÉS de la limpieza. */
 describe("data/catalog/off-co.json (el que baja el teléfono)", () => {
   const file = join(root, "data/catalog/off-co.json");
-  const catalog = existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : null;
+  const catalog = existsSync(file)
+    ? JSON.parse(readFileSync(file, "utf8"))
+    : null;
 
   it("existe y trae su licencia ODbL, su fuente y su fecha", () => {
     expect(catalog).not.toBeNull();
@@ -294,11 +317,208 @@ describe("data/catalog/off-co.json (el que baja el teléfono)", () => {
 
   it("nada de lo que no es comida", () => {
     for (const p of catalog.products)
-      expect(isFood(p.cat), p.code).toBe(true);
+      expect(isFood(p.cat, p.name), p.code).toBe(true);
   });
 
   it("jamás lleva nada de un plan ni de una familia: solo los campos del producto público", () => {
     for (const p of catalog.products)
-      expect(Object.keys(p).sort()).toEqual(["add", "alg", "brand", "cat", "code", "ing", "name", "tr"]);
+      expect(Object.keys(p).sort()).toEqual([
+        "add",
+        "alg",
+        "brand",
+        "cat",
+        "code",
+        "ing",
+        "name",
+        "tr",
+      ]);
+  });
+
+  it("ni calorías ni tabla nutricional ni «% VD» en lo que baja el teléfono (regla dura 2)", () => {
+    const bad =
+      /\bkcal\b|\bkj\b|calor\p{L}*|nutrition facts|supplement facts|informaci[oó]n nutricional|serving size|valor(?:es)? diarios?|%\s?(?:vd|dv)\b/iu;
+    for (const p of catalog.products)
+      expect(bad.test(`${p.name} ${p.ing}`), `${p.code}: ${p.name}`).toBe(
+        false,
+      );
+  });
+
+  it("ni direcciones, empresas, ciudades ni registros en los ingredientes", () => {
+    const bad =
+      /\b(?:parque industrial|zona franca|ltda|s\.a\.s|bogot[aá]|medell[ií]n|barranquilla|colombia|ecuador|calle|carrera|vereda)\b|\bn[o°º]\.?\s*\d+[a-z]?\s*[-–#]\s*\d/iu;
+    for (const p of catalog.products)
+      expect(bad.test(p.ing), `${p.code}: ${p.ing.slice(0, 80)}`).toBe(false);
+  });
+
+  it("la lista de ingredientes que queda tiene letras de verdad o está vacía (el catálogo no adivina)", () => {
+    for (const p of catalog.products) {
+      if (!p.ing) continue;
+      const letters = (p.ing.match(/\p{L}/gu) ?? []).length;
+      expect(letters / p.ing.replace(/\s/g, "").length, p.code).toBeGreaterThan(
+        0.6,
+      );
+    }
+  });
+});
+
+describe("isFood: lo que no se come, por categoría y por nombre", () => {
+  it.each([
+    ["Shampoo anticaída", []],
+    ["Jabón líquido", []],
+    ["Crema hidratante día", []],
+    ["Serum facial", []],
+    ["Tratamiento capilar", []],
+    ["Detergente líquido", []],
+    ["Citrato de magnesio", []],
+    ["Creatina", []],
+    ["vitamina c", []],
+    ["Vitamin D3 2000", []],
+    ["Producto raro", ["en:dietary-supplements"]],
+    ["Producto raro", ["en:hair-care"]],
+    ["Producto raro", ["en:cosmetics"]],
+    ["Producto raro", ["en:vitamins"]],
+  ])("«%s» %j no es comida", (name, cats) => {
+    expect(isFood(cats, name)).toBe(false);
+  });
+
+  it.each([
+    ["Pasta Cabello de Ángel", []],
+    ["Yogurt Griego con Colágeno Hidrolizado", ["en:yogurts"]],
+    ["Cápsulas de café Nutresa", []],
+    ["Avena Pro con extra Magnesio", []],
+    ["Crema de maní con vitamina C", []],
+    ["Harina de maíz fortificada con hierro y vitaminas", []],
+    ["Choco Krispis", ["en:breakfast-cereals-fortified-with-vitamins"]],
+    ["Papas fritas", ["en:potato-skins", "en:snacks"]],
+    ["Leche con Omega 3", ["en:milks"]],
+  ])(
+    "«%s» sí es comida (no se descarta por una palabra suelta)",
+    (name, cats) => {
+      expect(isFood(cats, name)).toBe(true);
+    },
+  );
+});
+
+describe("cleanIngredients: la tabla del empaque, las direcciones y las instrucciones", () => {
+  it("una tabla nutricional sin ingredientes después deja el texto vacío", () => {
+    expect(
+      cleanIngredients(
+        "INFORMACION NUTRICIONAL Porciones por envase: 9 Cantidad por porcion de 200 ml Grasa Total 3 g",
+      ),
+    ).toBe("");
+    expect(
+      cleanIngredients(
+        "Nutrition Facts Serving Size 2 tbsp Calories 180 %Daily Value",
+      ),
+    ).toBe("");
+  });
+
+  it("con «Ingredientes:» después de la tabla, se queda desde ahí", () => {
+    const out = cleanIngredients(
+      "Información nutricional Calorías 120 kcal Ingredientes: harina de trigo, azúcar, sal y levadura",
+    );
+    expect(out).toBe("harina de trigo, azúcar, sal y levadura");
+  });
+
+  it("«levadura nutricional» es un ingrediente, no una tabla", () => {
+    expect(
+      cleanIngredients("avena, levadura nutricional, sal marina"),
+    ).toContain("levadura nutricional");
+  });
+
+  it.each([
+    "680 No. 39F-51 Sur, Bogotá D.C.",
+    "Para: KOBA Colombia S.A.S. Parque Industrial del Norte",
+    "Hecho en México para Genomm",
+    "Industria colombiana",
+    "Instrucciones de uso: agregue una cucharadita",
+    "Ver lote y fecha de vencimiento en el empaque",
+    "Línea de servicio al consumidor",
+    "celino Kubitschek de Oliveira, 13.300, /0020-47.",
+  ])("«%s» no es lista de ingredientes", (trash) => {
+    expect(cleanIngredients(`harina de trigo, azúcar, sal. ${trash}`)).toBe(
+      "harina de trigo, azúcar, sal.",
+    );
+  });
+
+  it("decodifica las entidades HTML que trae Open Food Facts", () => {
+    expect(
+      cleanIngredients("contiene &quot;maní&quot; y &amp; almendra, sal, agua"),
+    ).toBe('contiene "maní" y & almendra, sal, agua');
+  });
+});
+
+describe("plainName y refineCatalog", () => {
+  it.each([
+    ["Margarina light en calorias", "Margarina"],
+    ["Mayonesa reducida en grasa y calorías", "Mayonesa reducida en grasa"],
+    ["Mr.Tea Cero Calorías Durazno", "Mr.Tea Durazno"],
+    ["Colombiana Sin Calorías", "Colombiana"],
+    ["Yogurt Descremado Light en Calorías", "Yogurt Descremado"],
+    ["Galletas de avena", "Galletas de avena"],
+  ])("«%s» → «%s»", (name, expected) => {
+    expect(plainName(name)).toBe(expected);
+  });
+
+  it("refineProduct aplica las mismas reglas que cleanProduct a un producto ya armado", () => {
+    const base = {
+      code: "7702535016688",
+      brand: "Marca",
+      cat: ["snacks"],
+      add: [],
+      alg: [],
+      tr: [],
+    };
+    expect(
+      refineProduct({ ...base, name: "Shampoo demo", ing: "" }),
+    ).toBeNull();
+    expect(
+      refineProduct({
+        ...base,
+        name: "Galletas demo",
+        ing: "Calorías 120 kcal",
+      })?.ing,
+    ).toBe("");
+    expect(
+      refineProduct({
+        ...base,
+        name: "Galletas light en calorías",
+        ing: "harina, sal, azúcar",
+      }),
+    ).toMatchObject({ name: "Galletas", ing: "harina, sal, azúcar" });
+  });
+
+  it("refineCatalog conserva licencia y fuente, y es idempotente", () => {
+    const catalog = {
+      generated: "2026-11-22",
+      license: LICENSE,
+      source: "x",
+      products: [
+        {
+          code: "7702535016688",
+          name: "Galletas demo",
+          brand: "",
+          cat: [],
+          ing: "harina, azúcar, sal",
+          add: [],
+          alg: [],
+          tr: [],
+        },
+        {
+          code: "7702535016695",
+          name: "Jabón demo",
+          brand: "",
+          cat: [],
+          ing: "",
+          add: [],
+          alg: [],
+          tr: [],
+        },
+      ],
+    };
+    const once = refineCatalog(catalog);
+    expect(once.products).toHaveLength(1);
+    expect(once.license).toBe(LICENSE);
+    expect(refineCatalog(once)).toEqual(once);
   });
 });
