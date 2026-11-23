@@ -70,12 +70,17 @@ export async function axe(page: Page, scope = "axe") {
   for (const colorScheme of ["light", "dark"] as const) {
     await page.emulateMedia({ colorScheme, reducedMotion: "reduce" });
     // Un botón que acaba de habilitarse aún transita de color: axe mediría el tono a medias.
-    await page.evaluate(() =>
+    await page.evaluate(async () => {
+      // Dos cuadros primero: el cambio de tema arranca sus transiciones de color en el cuadro siguiente,
+      // y `getAnimations` aún no las vería (S13: una pasada «light» midió el texto a medio camino).
+      await new Promise<void>((r) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => r())),
+      );
       // Una animación cancelada (el diálogo al cambiar a «menos movimiento») no es un error.
-      Promise.all(
+      await Promise.all(
         document.getAnimations().map((a) => a.finished.catch(() => null)),
-      ),
-    );
+      );
+    });
     const found = summarize((await analyze(page, colorScheme)).violations);
     expect(found, `${scope} · ${colorScheme}`).toEqual([]);
   }
