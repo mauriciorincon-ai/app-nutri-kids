@@ -14,7 +14,7 @@ export const OCR_BASE = "/ocr/";
 export const OCR_SCRIPT = "/ocr/tesseract.min.js";
 export const OCR_WORKER = "/ocr/worker.min.js";
 /** El lado mayor de la foto que se lee: suficiente para la letra chica, sin agotar la memoria. */
-export const OCR_EDGE = 2000;
+export const OCR_EDGE = 1600;
 /** Tiempos límite: un worker que no responde no deja la pantalla en «Leyendo…» para siempre. */
 const INIT_TIMEOUT_MS = 90_000;
 const READ_TIMEOUT_MS = 90_000;
