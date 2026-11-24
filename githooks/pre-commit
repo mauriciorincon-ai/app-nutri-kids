@@ -16,4 +16,9 @@ if command -v gitleaks >/dev/null 2>&1; then
 else
   echo "aviso: gitleaks no esta instalado (winget install Gitleaks.Gitleaks) — commit SIN scan de secretos."
 fi
+
+# kit v2.5.0 — regla 10: la marca la aprueba el dueño ANTES de construir encima (exigencia 2026-11-23). Sobre el índice.
+if [ -f scripts/gate-marca.mjs ]; then
+  node scripts/gate-marca.mjs || exit 1
+fi
 exit 0
