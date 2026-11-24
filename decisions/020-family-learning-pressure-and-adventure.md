@@ -136,4 +136,12 @@ The sheet needs the day, so it renders after the lessons, and nothing above it m
 
 ## Part 2 — the adventure
 
-Pending the owner's choice of look (`docs/diseno/marca/juego.html`). It is written in F2 with the owner's phrase, word for word.
+**Owner's choice of look (2026-11-24),** on `docs/diseno/marca/juego.html`, in their words: «Las quiero todas». Asked how the three worlds live together, they chose «El niño elige su mundo». So the child picks A, B or C:
+
+- **A, «El huerto de Brote»:** energy shows as drops.
+- **B, «La expedición de Lumo»:** energy shows as sparks of light.
+- **C, «El cielo de Nubo»:** energy shows as stars.
+
+The child can change worlds at any time. Energy is one count shared by the three worlds. Changing world never erases it or splits it.
+
+This is the only exception to «Jamás será: gamificado infantil» (`design-system.md`). The rest is written in F2.

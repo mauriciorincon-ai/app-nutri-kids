@@ -15,4 +15,4 @@ sigue siendo decisión del dueño, con su frase, antes de construirlo. Las mirad
 
 | Fecha | Pieza | Página | Frase del dueño | ADR |
 |---|---|---|---|---|
-| 2026-11-24 | La aventura del niño (S14) | `docs/diseno/marca/juego.html` | (pendiente de su respuesta) | ADR-020 |
+| 2026-11-24 | La aventura del niño (S14) | `docs/diseno/marca/juego.html` | «Las quiero todas» y, sobre cómo conviven, «El niño elige su mundo» (A, B y C; la misma energía en los tres) | ADR-020 |

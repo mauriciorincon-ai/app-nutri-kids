@@ -7,7 +7,7 @@
 ## Personalidad
 
 **Es:** cálido · cercano · sereno.
-**Jamás será:** clínico/hospitalario · gamificado infantil · corporativo.
+**Jamás será:** clínico/hospitalario · gamificado infantil · corporativo. Única excepción, decidida por el dueño el 2026-11-24 (S14, ADR-020): la aventura del modo niño (`/aventura`) — «Las quiero todas»: el huerto de Brote, la expedición de Lumo y el cielo de Nubo, y «El niño elige su mundo». Fuera de ella la app sigue sin gamificar; y ni en ella la comida es premio ni la energía baja.
 
 Es una herramienta de cuidado que usan adultos (la mamá, en su teléfono, a la hora de la
 merienda). El tono visual es el de una cocina familiar ordenada: colores de despensa (crema,
