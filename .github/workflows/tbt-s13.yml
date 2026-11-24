@@ -1,0 +1,58 @@
+# TEMPORAL (S13): mide el TBT en el runner, rama contra main en el mismo trabajo, mediana de 10 por ruta.
+# Toda ruta importa el proveedor de la dieta (que ancla `shell-pins.ts`), así que se miden las 16. Se borra antes del PR.
+name: tbt-s13
+on:
+  push:
+    branches: [sprint-013/etiquetas]
+    paths: [".github/workflows/tbt-s13.yml"]
+jobs:
+  tbt:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        route:
+          - /
+          - /dieta
+          - /chat
+          - /historial
+          - /conoce
+          - /cargar
+          - /ajustes
+          - /escenarios
+          - /bienestar
+          - /lonchera
+          - /recetas
+          - /viaje
+          - /camara
+          - /camara/cocina
+          - /camara/etiqueta
+          - /camara/super
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: main fuera del árbol de la rama (el tsc de la rama no debe verlo)
+        run: mkdir -p "$RUNNER_TEMP/base" && git archive origin/main | tar -x -C "$RUNNER_TEMP/base"
+      - uses: pnpm/action-setup@v4
+        with: { version: 11 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm install --frozen-lockfile && pnpm build
+        working-directory: ${{ runner.temp }}/base
+      - run: npm i -g @lhci/cli
+      - name: ${{ matrix.route }}, main contra la rama, alternando (2 x 5 corridas cada uno)
+        run: |
+          ROUTE="${{ matrix.route }}"
+          measure() { # $1 = nombre, $2 = directorio
+            (cd "$2" && rm -rf .lighthouseci && lhci autorun --collect.startServerCommand="pnpm exec next start -H 127.0.0.1 -p 3600" --collect.url="http://127.0.0.1:3600$ROUTE" --collect.numberOfRuns=5 --assert.budgetsFile=./perf-budget.json >/dev/null 2>&1 || true
+             for f in .lighthouseci/lhr-*.json; do node -e 'const j=require(process.argv[1]);console.log(process.argv[2],Math.round(j.audits["total-blocking-time"].numericValue))' "$PWD/$f" "$1"; done) | tee -a "$RUNNER_TEMP/tbt.txt"
+          }
+          measure main "$RUNNER_TEMP/base"
+          measure rama .
+          measure main "$RUNNER_TEMP/base"
+          measure rama .
+      - name: Medianas
+        run: |
+          node -e 'const l=require("fs").readFileSync(process.argv[1],"utf8").trim().split("\n").map(x=>x.split(" "));for(const n of ["main","rama"]){const v=l.filter(x=>x[0]===n).map(x=>+x[1]).sort((a,b)=>a-b);const m=v.length%2?v[(v.length-1)/2]:(v[v.length/2-1]+v[v.length/2])/2;console.log("RUTA ${{ matrix.route }}",n,"n="+v.length,"mediana="+m,"valores="+v.join(","))}' "$RUNNER_TEMP/tbt.txt"
