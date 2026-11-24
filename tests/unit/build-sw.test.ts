@@ -8,6 +8,7 @@ import {
   IA_RUNTIME,
   IA_WORKER,
   CATALOG_FILE,
+  CATALOG_SOURCE,
   OCR_FILES,
   PDFJS_ASSETS,
   SCAN_FILES,
@@ -16,6 +17,7 @@ import {
   iaCacheName,
   modelConfig,
   ocrCacheName,
+  ocrSource,
   ortDist,
   renderSw,
   renderWorker,
@@ -330,12 +332,17 @@ describe("contrato del worker de la cámara (S12 · ADR-018, regla 19)", () => {
     expect(catalogCacheName(Buffer.from("a"))).toBe(catalogCacheName(Buffer.from("a")));
   });
 
+  // Se mira el ORIGEN de cada copia: `public/scan/` y `public/catalogo/` los arma el build (gitignore) y la
+  // CI corre las unitarias antes del build; que la copia llegue lo prueban el build y la e2e.
   it("los archivos del súper salen de node_modules (zxing 3.1.6 fijado), de scripts/ y de data/, y existen", () => {
     for (const [name, rel] of Object.entries(SCAN_FILES)) {
       expect(rel, name).not.toMatch(/^https?:|\/\//);
-      expect(existsSync(join(root, "public/scan", name)), name).toBe(true);
+      expect(rel, name).toMatch(/^(node_modules\/zxing-wasm\/|scripts\/)/);
+      expect(existsSync(join(root, rel)), name).toBe(true);
     }
-    expect(existsSync(join(root, "public/catalogo", CATALOG_FILE))).toBe(true);
+    expect(CATALOG_SOURCE).toBe("data/catalog/off-co.json");
+    expect(CATALOG_FILE).toBe("off-co.json");
+    expect(existsSync(join(root, CATALOG_SOURCE))).toBe(true);
     expect(Object.keys(SCAN_FILES).sort()).toEqual([
       "scan-worker.js",
       "zxing-reader.js",
@@ -348,7 +355,9 @@ describe("contrato del worker de la cámara (S12 · ADR-018, regla 19)", () => {
   it("los archivos del lector salen de node_modules (versión fijada), jamás de una CDN, y existen", () => {
     for (const [name, rel] of Object.entries(OCR_FILES)) {
       expect(rel, name).not.toMatch(/^https?:|\/\//);
-      expect(existsSync(join(root, "public/ocr", name)), name).toBe(true);
+      // El origen de la copia (node_modules), no `public/ocr/`, que lo arma el build.
+      expect(ocrSource(rel), name).toMatch(/[/\\]node_modules[/\\]/);
+      expect(existsSync(ocrSource(rel)), name).toBe(true);
     }
     // Solo LSTM: los núcleos sin `-lstm` (legacy, más pesados) no se copian.
     const core = Object.keys(OCR_FILES).filter((n) => n.startsWith("core/"));

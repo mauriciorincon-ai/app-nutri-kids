@@ -154,7 +154,8 @@ export const OCR_FILES = {
 };
 
 /** Resuelve un archivo del lector: tesseract.js-core es dependencia de tesseract.js, no nuestra. */
-function ocrSource(rel) {
+/** Dónde vive en node_modules cada archivo del lector (el núcleo, junto al tesseract.js que lo pide). */
+export function ocrSource(rel) {
   if (rel.startsWith("tesseract.js-core/")) {
     const tj = realpathSync(join(root, "node_modules/tesseract.js"));
     const core = dirname(

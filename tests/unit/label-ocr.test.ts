@@ -3,7 +3,7 @@ import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { OCR_FILES } from "../../scripts/build-sw.mjs";
+import { OCR_FILES, ocrSource } from "../../scripts/build-sw.mjs";
 import ocr from "@/lib/label/ocr.json";
 import {
   OCR_BASE,
@@ -24,8 +24,10 @@ const root = join(__dirname, "../..");
 describe("lo que el teléfono baja", () => {
   it("ocr.json coincide byte a byte con lo que build-sw copia, archivo por archivo", () => {
     expect(Object.keys(ocr.files).sort()).toEqual(Object.keys(OCR_FILES).sort());
+    // copyOcr copia tal cual: se mide el origen en node_modules (la CI corre esto antes del build).
+    const files = OCR_FILES as Record<string, string>;
     for (const [name, bytes] of Object.entries(ocr.files))
-      expect(statSync(join(root, "public/ocr", name)).size, name).toBe(bytes);
+      expect(statSync(ocrSource(files[name])).size, name).toBe(bytes);
   });
 
   it("el núcleo se elige como lo elige tesseract: relaxed SIMD, SIMD o el básico", () => {
