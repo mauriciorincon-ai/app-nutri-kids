@@ -38,6 +38,8 @@ export function FamilyLearn() {
 
       <Link
         href="/familia/presion"
+        // Pantallas hermanas y secundarias: ninguna paga los bytes de la otra al abrir (S14).
+        prefetch={false}
         className="flex min-h-14 items-center gap-3 rounded-2xl border bg-card px-4 py-3"
         data-testid="family-pressure-link"
       >
@@ -54,6 +56,51 @@ export function FamilyLearn() {
         <ChevronRight aria-hidden className="size-5 shrink-0" />
       </Link>
 
+      <section
+        className="flex flex-col gap-3"
+        aria-labelledby="lessons-title"
+        data-testid="family-lessons"
+      >
+        <h2 id="lessons-title" className="text-2xl">
+          {t.lessonsTitle}
+        </h2>
+        <p className="-mt-1 text-muted-foreground">{t.lessonsLead}</p>
+        {LESSONS.map((lesson) => (
+          <details
+            key={lesson.id}
+            className="rounded-2xl border bg-card px-4 py-3"
+            data-testid={`lesson-${lesson.id}`}
+          >
+            <summary className="flex min-h-11 cursor-pointer flex-col justify-center">
+              <span className="text-lg font-semibold">
+                {lesson.title[locale]}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {lesson.gist[locale]}
+              </span>
+            </summary>
+            <div className="mt-2 flex flex-col gap-2">
+              {lesson.points.map((p, i) => (
+                <p key={i}>{p[locale]}</p>
+              ))}
+              <p className="mt-1 font-semibold">{t.sayTitle}</p>
+              <ul className="flex flex-col gap-1">
+                {lesson.say.map((s, i) => (
+                  <li key={i} className="rounded-xl bg-accent px-3 py-2">
+                    {s[locale]}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-1 text-sm font-semibold">{t.sourcesTitle}</p>
+              <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
+                {lesson.sources.map((s) => (
+                  <li key={s}>{LESSON_SOURCES[s].cite[locale]}</li>
+                ))}
+              </ul>
+            </div>
+          </details>
+        ))}
+      </section>
       <section
         className="flex flex-col gap-3"
         aria-labelledby="yes-no-title"
@@ -135,52 +182,6 @@ export function FamilyLearn() {
             </p>
           </>
         )}
-      </section>
-
-      <section
-        className="flex flex-col gap-3"
-        aria-labelledby="lessons-title"
-        data-testid="family-lessons"
-      >
-        <h2 id="lessons-title" className="text-2xl">
-          {t.lessonsTitle}
-        </h2>
-        <p className="-mt-1 text-muted-foreground">{t.lessonsLead}</p>
-        {LESSONS.map((lesson) => (
-          <details
-            key={lesson.id}
-            className="rounded-2xl border bg-card px-4 py-3"
-            data-testid={`lesson-${lesson.id}`}
-          >
-            <summary className="flex min-h-11 cursor-pointer flex-col justify-center">
-              <span className="text-lg font-semibold">
-                {lesson.title[locale]}
-              </span>
-              <span className="text-sm text-muted-foreground">
-                {lesson.gist[locale]}
-              </span>
-            </summary>
-            <div className="mt-2 flex flex-col gap-2">
-              {lesson.points.map((p, i) => (
-                <p key={i}>{p[locale]}</p>
-              ))}
-              <p className="mt-1 font-semibold">{t.sayTitle}</p>
-              <ul className="flex flex-col gap-1">
-                {lesson.say.map((s, i) => (
-                  <li key={i} className="rounded-xl bg-accent px-3 py-2">
-                    {s[locale]}
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-1 text-sm font-semibold">{t.sourcesTitle}</p>
-              <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
-                {lesson.sources.map((s) => (
-                  <li key={s}>{LESSON_SOURCES[s].cite[locale]}</li>
-                ))}
-              </ul>
-            </div>
-          </details>
-        ))}
       </section>
     </div>
   );

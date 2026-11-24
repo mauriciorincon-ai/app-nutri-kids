@@ -11,7 +11,7 @@ import { useProfileNotes } from "@/components/use-profile-notes";
 import { Button } from "@/components/ui/button";
 import { ChoiceRow } from "@/components/wellbeing/choice-row";
 import { fmt, useI18n } from "@/i18n";
-import { familyText } from "@/i18n/family";
+import { pressureText } from "@/i18n/pressure";
 import { getDeviceId } from "@/lib/device";
 import { dateKey } from "@/lib/diet/logic";
 import { buildScenario } from "@/lib/diet/scenarios";
@@ -52,7 +52,7 @@ const server = () => EMPTY;
 export function PressureLog() {
   const { diet } = useDiet();
   const { locale, l } = useI18n();
-  const t = familyText[locale];
+  const t = pressureText[locale];
   const view = useFamily();
   const notes = useProfileNotes();
   const today = useToday();
@@ -122,6 +122,7 @@ export function PressureLog() {
     <div className="flex flex-col gap-5 pb-6">
       <Link
         href="/familia"
+        prefetch={false}
         className="-mb-2 inline-flex min-h-11 items-center gap-1 self-start text-sm font-semibold"
       >
         <ChevronLeft aria-hidden className="size-4" />

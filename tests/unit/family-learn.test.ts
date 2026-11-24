@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import demo from "../../data/demo-diet.json";
 import { familyText } from "@/i18n/family";
+import { pressureText } from "@/i18n/pressure";
 import { en } from "@/i18n/en";
 import { es } from "@/i18n/es";
 import { looksLikeMedicalAdvice } from "@/lib/diet/guardrails";
@@ -93,7 +94,8 @@ function allText(locale: "es" | "en"): Pair[] {
     },
     "dict",
   );
-  return [...lessons, ...strat, ...strings(familyText[locale], "ui"), ...today];
+  return [...lessons, ...strat, ...strings(familyText[locale], "ui"),
+    ...strings(pressureText[locale], "uiPressure"), ...today];
 }
 
 const ALL = [...allText("es"), ...allText("en")];
@@ -263,7 +265,7 @@ describe("cuando le ofrecen algo: estrategias y lo que se puede anotar", () => {
   });
 
   it("cada lugar y cada respuesta tienen su palabra en los dos idiomas", () => {
-    for (const t of [familyText.es, familyText.en]) {
+    for (const t of [pressureText.es, pressureText.en]) {
       for (const p of PLACES) expect(t.places[p]).toBeTruthy();
       for (const a of ANSWERS) expect(t.answers[a]).toBeTruthy();
     }
