@@ -26,6 +26,7 @@ import {
   type Reading,
 } from "@/lib/label/ocr-client";
 import { ocrCached } from "@/lib/label/ocr-store";
+import { cn } from "@/lib/utils";
 
 import { LabelResult } from "./label-result";
 
@@ -57,8 +58,9 @@ export function LabelReader() {
   const takeRef = useRef<HTMLInputElement>(null);
   const pickRef = useRef<HTMLInputElement>(null);
   const total = useMemo(
-    () => (phase === "checking" ? 0 : ocrDownloadBytes()),
-    [phase],
+    // También mientras mira: la tarjeta reserva su sitio con su texto real (sin CLS).
+    () => ocrDownloadBytes(),
+    [],
   );
 
   useEffect(() => {
@@ -149,11 +151,19 @@ export function LabelReader() {
         </section>
       )}
 
-      {(phase === "idle" || phase === "loading" || phase === "failed") && (
+      {/* Mientras mira si el lector ya está, la tarjeta se dibuja invisible: guarda su sitio (CLS). */}
+      {(phase === "checking" ||
+        phase === "idle" ||
+        phase === "loading" ||
+        phase === "failed") && (
         <section
-          className="flex flex-col gap-3 rounded-2xl border p-4"
+          className={cn(
+            "flex flex-col gap-3 rounded-2xl border p-4",
+            phase === "checking" && "invisible",
+          )}
           aria-labelledby="label-reader"
-          data-testid="label-reader"
+          aria-hidden={phase === "checking" || undefined}
+          data-testid={phase === "checking" ? undefined : "label-reader"}
         >
           <h2 id="label-reader" className="text-xl">
             {t.readerTitle}
@@ -185,6 +195,7 @@ export function LabelReader() {
           ) : (
             <Button
               className="min-h-11 self-start"
+              disabled={phase === "checking"}
               onClick={() => void start()}
             >
               <Download aria-hidden />

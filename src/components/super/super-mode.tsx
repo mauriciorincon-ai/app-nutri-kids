@@ -28,6 +28,7 @@ import type { Product } from "@/lib/catalog/schema";
 import { dateKey } from "@/lib/diet/logic";
 import { formatShortDate } from "@/lib/format";
 import { notifyLocalStore, useLocalStore } from "@/lib/local-store";
+import { cn } from "@/lib/utils";
 import {
   ScanClient,
   canScan,
@@ -86,7 +87,8 @@ export function SuperMode() {
   const takeRef = useRef<HTMLInputElement>(null);
   const pickRef = useRef<HTMLInputElement>(null);
   const total = useMemo(
-    () => (phase === "checking" ? 0 : scanDownloadBytes(native)),
+    // Mientras mira, el tamaño sin detector nativo (el mayor): la tarjeta reserva su sitio (sin CLS).
+    () => scanDownloadBytes(phase === "checking" ? false : native),
     [phase, native],
   );
 
@@ -249,11 +251,20 @@ export function SuperMode() {
         </section>
       )}
 
-      {(phase === "idle" || phase === "loading" || phase === "failed") && (
+      {/* Mientras mira si el catálogo ya está, la tarjeta se dibuja invisible: guarda su sitio y lo de
+          abajo no salta al aparecer (CLS). */}
+      {(phase === "checking" ||
+        phase === "idle" ||
+        phase === "loading" ||
+        phase === "failed") && (
         <section
-          className="flex flex-col gap-3 rounded-2xl border p-4"
+          className={cn(
+            "flex flex-col gap-3 rounded-2xl border p-4",
+            phase === "checking" && "invisible",
+          )}
           aria-labelledby="super-catalog"
-          data-testid="super-catalog"
+          aria-hidden={phase === "checking" || undefined}
+          data-testid={phase === "checking" ? undefined : "super-catalog"}
         >
           <h2 id="super-catalog" className="text-xl">
             {s.catalogTitle}
@@ -285,6 +296,7 @@ export function SuperMode() {
           ) : (
             <Button
               className="min-h-11 self-start"
+              disabled={phase === "checking"}
               onClick={() => void start()}
             >
               <Download aria-hidden />
