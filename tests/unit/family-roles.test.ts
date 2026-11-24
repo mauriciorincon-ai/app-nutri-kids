@@ -35,6 +35,7 @@ import { freshFamilyState } from "@/lib/family/state";
 import { addOp, addOpResult, sealedSize, syncOnce } from "@/lib/family/sync";
 import { ITEM_MAX_CT } from "@/lib/family/server/limits";
 import { entryPayload, noticePayload } from "@/lib/family/trust";
+import { sealPressure } from "@/lib/pressure/shared";
 import { foodKey, MAP_CAPS } from "@/lib/wellbeing/values";
 
 import { network, phone, setup } from "./family-harness";
@@ -1039,6 +1040,7 @@ describe("bienestar: qué puede escribir cada rol", () => {
       "day-note",
       "notice",
       "roster",
+      "pressure",
     ]);
     expect([...covered].sort()).toEqual([...WRITE_KINDS].sort());
   });
@@ -1458,5 +1460,95 @@ describe("lonchera contra el doble del servidor (S11)", () => {
       "eaten",
     ])
       expect(wire).not.toContain(word);
+  });
+});
+
+describe("«cuando le ofrecen algo» contra el doble del servidor (S14 · G-Plan 1a)", () => {
+  const entry = (p: Phone, id: string, what = "SENTINEL-FOOD", t = 50) => ({
+    id,
+    t,
+    date: DAY,
+    by: p.id,
+    who: "other",
+    what,
+    place: "relatives" as const,
+    answer: "calm-no" as const,
+  });
+
+  it("todos los roles pueden anotar; nadie sin rol", () => {
+    for (const role of ROLES) {
+      const m = { role, meals: role === "school" ? ["almuerzo"] : undefined };
+      expect(may(m as Member, { k: "pressure" }), role).toBe(true);
+    }
+    expect(may(null, { k: "pressure" })).toBe(false);
+  });
+
+  it("lo que anota cada teléfono llega a madre o padre firmado; el cuidador, el colegio y la nutricionista solo guardan lo suyo", async () => {
+    const { a, c, s, n, sync } = await family();
+    c.data.pressure.own = [entry(c, "cccccccc01")];
+    s.data.pressure.own = [entry(s, "ssssssss01")];
+    n.data.pressure.own = [entry(n, "nnnnnnnn01")];
+    a.data.pressure.own = [entry(a, "aaaaaaaa01")];
+    for (const p of [c, s, n, a]) await sync(p);
+    for (const p of [c, s, n, a]) await sync(p);
+    expect(Object.keys(a.data.pressure.others).sort()).toEqual(
+      [c.id, n.id, s.id].sort(),
+    );
+    expect(a.state!.rejected).toBe(0);
+    for (const p of [c, s, n]) {
+      expect(p.data.pressure.others, p.id).toEqual({});
+      expect(p.data.pressure.own).toHaveLength(1);
+    }
+  });
+
+  it("lo que alguien borra de lo suyo también se borra en el teléfono de madre o padre", async () => {
+    const { a, c, sync } = await family();
+    c.data.pressure.own = [entry(c, "cccccccc01")];
+    await sync(c);
+    await sync(a);
+    expect(a.data.pressure.others[c.id]).toHaveLength(1);
+    c.data.pressure.own = [];
+    await sync(c);
+    await sync(a);
+    expect(a.data.pressure.others[c.id]).toBeUndefined();
+  });
+
+  it("nadie escribe en el registro de otro: lo firmado con otra llave o con anotaciones ajenas se descarta entero", async () => {
+    const { a, c, s, forge, sync } = await family();
+    const sc = await c.signer;
+    // El cuidador firma con su llave un registro con el nombre del colegio.
+    await forge(c, {
+      name: `pressure:${s.id}`,
+      data: await sealPressure(sc, s.id, [entry(s, "ssssssss09")]),
+    });
+    // Y uno suyo que mete una anotación «del colegio».
+    const mixed = [entry(c, "cccccccc09"), entry(s, "ssssssss08", "x", 51)];
+    await forge(c, {
+      name: `pressure:${c.id}`,
+      data: { by: c.id, ev: mixed, s: (await sealPressure(sc, c.id, mixed)).s },
+    });
+    await sync(a);
+    expect(a.data.pressure.others).toEqual({});
+    expect(a.state!.rejected + a.state!.unreadable).toBeGreaterThan(0);
+  });
+
+  it("un teléfono que deja de ser de madre o padre olvida lo de los demás", async () => {
+    const { a, c, sync } = await family();
+    c.data.pressure.others = { [a.id]: [entry(a, "aaaaaaaa02")] };
+    await sync(c);
+    expect(c.data.pressure.others).toEqual({});
+  });
+
+  it("el servidor no ve qué se ofreció (centinela en todo lo que cruza la red)", async () => {
+    const { net, c, sync } = await family();
+    const before = net.wire.length;
+    c.data.pressure.own = [entry(c, "cccccccc03", "SENTINEL-FOOD")];
+    await sync(c);
+    const sent = net.wire.slice(before).join("\n");
+    // Algo subió de verdad (el nombre del registro también viaja cifrado: no se puede buscar).
+    expect(sent).toMatch(/\/api\/family\/push/);
+    expect(sent).not.toContain("SENTINEL-FOOD");
+    expect(sent).not.toContain("pressure");
+    expect(sent).not.toContain("relatives");
   });
 });

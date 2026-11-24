@@ -16,9 +16,18 @@ import {
 } from "./records";
 import { appendEvent } from "./log";
 import {
+  acceptPressure,
+  pressureHash,
+  pressureName,
+  sealPressure,
+  type PressureShared,
+} from "@/lib/pressure/shared";
+import type { PressureEntry } from "@/lib/pressure/values";
+import {
   appendOp,
   chooseChain,
   foldRoster,
+  may,
   opHash,
   ROSTER_MAX_OPS,
   type OpBody,
@@ -75,6 +84,14 @@ export type LocalData = {
   notices(): Record<string, NoticeShared>;
   /** Suma un aviso que llegó; true si es nuevo en este teléfono. */
   mergeNotice(id: string, notice: NoticeShared): boolean;
+  /**
+   * S14 · «cuando le ofrecen algo» (ADR-020): lo que ESTE teléfono anotó, lo que llegó de otro
+   * (solo lo guarda el de madre o padre) y el olvido de lo ajeno cuando este deja de serlo.
+   * Opcionales: un teléfono sin el registro simplemente no lo comparte.
+   */
+  pressure?(): PressureEntry[];
+  mergePressure?(by: string, ev: PressureEntry[]): boolean;
+  dropPressureOthers?(): boolean;
 };
 
 export type StateStore = {
@@ -309,6 +326,23 @@ async function candidates(
       out.push({ named: { name: logName(own), data }, hash: h });
     }
   }
+  // S14 · lo que este teléfono anotó de «cuando le ofrecen algo», firmado entero por él. Jamás
+  // entra en la bitácora de la familia: nadie más que madre y padre debe saber que se anotó.
+  const pressure = (d.local.pressure?.() ?? []).filter((e) => e.by === own);
+  // Si borró todo lo suyo y ya había subido algo, sube la lista vacía para que el borrado llegue.
+  if (pressure.length || st.pushed[pressureName(own)]) {
+    const name = pressureName(own);
+    const h = pressureHash(pressure);
+    let s = st.sigs[name]?.h === h ? st.sigs[name].s : undefined;
+    if (!s && signer) {
+      s = (await sealPressure(signer, own, pressure)).s;
+      st.sigs[name] = { h, s };
+    }
+    if (s) {
+      const data: PressureShared = { by: own, ev: pressure, s };
+      out.push({ named: { name, data }, hash: h });
+    }
+  }
   return { list: out, planTooBig, oversize };
 }
 
@@ -487,6 +521,23 @@ export async function syncOnce(d: SyncDeps): Promise<SyncResult> {
         st.rejected += c.dropped;
         if (d.local.mergeDay(named.name.slice(4), c.regs)) changed = true;
         st.pushed[named.name] = await digest(named.data);
+      } else if (named.name.startsWith("pressure:")) {
+        // S14 · G-Plan 1a: madre y padre guardan lo que anotaron los demás; cualquier otro rol lo
+        // deja pasar sin guardarlo ni mostrarlo (ADR-020: la regla la cumple la app, no la llave).
+        const id = named.name.slice(9);
+        const data = named.data as PressureShared;
+        if (id === own) {
+          if (data.s !== st.sigs[named.name]?.s) delete st.pushed[named.name];
+        } else if (roster?.members[own]?.role === "parent") {
+          const m = roster.members[id];
+          const ev =
+            m && may(m, { k: "pressure" })
+              ? await acceptPressure(data, m.pub)
+              : null;
+          if (ev) {
+            if (d.local.mergePressure?.(id, ev)) changed = true;
+          } else st.rejected++;
+        }
       } else if (named.name.startsWith("notice:")) {
         const notice = named.data as NoticeShared;
         // Un aviso ajeno o el eco del propio: el almacén local solo suma lo nuevo.
@@ -546,6 +597,10 @@ export async function syncOnce(d: SyncDeps): Promise<SyncResult> {
       }
       roster = await rosterOf(st.roster);
     }
+
+    // 1d · S14: un teléfono que no es de madre o padre no conserva lo que anotaron los demás.
+    if (roster?.members[own]?.role !== "parent" && d.local.dropPressureOthers?.())
+      changed = true;
 
     // 2 · El plan, entero y por versión.
     if (remotePlan) {

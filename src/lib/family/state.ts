@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { dropPressureOthers } from "@/lib/pressure/store";
 
 import { logEventSchema } from "./log";
 import { opSchema } from "./roster";
@@ -161,4 +162,6 @@ export function clearFamilyLocal(): void {
   } catch {
     /* nada */
   }
+  // S14 · fuera de la familia, lo que anotaron los demás no se queda en este teléfono (ADR-020).
+  dropPressureOthers();
 }

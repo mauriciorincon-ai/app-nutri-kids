@@ -2,6 +2,7 @@ import demoRaw from "../../../data/demo-diet.json";
 import { clearDevice, getDeviceId } from "../device";
 import { clearKeys, clearSigner } from "../family/keystore";
 import { clearNotices } from "../family/notices";
+import { clearPressure } from "../pressure/store";
 import { clearFamilyLocal } from "../family/state";
 import { log } from "../log";
 import { clearPushState } from "../push/state";
@@ -274,6 +275,8 @@ export function clearAllData(): void {
   // copia del trabajador las quita «Borrar datos» en Ajustes (necesitan red y IndexedDB).
   clearNotices();
   clearPushState();
+  // S14: «cuando le ofrecen algo» (lo propio y lo de los demás).
+  clearPressure();
   log.info({ event: "data-cleared" });
 }
 
