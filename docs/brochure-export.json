@@ -329,50 +329,50 @@
     {
       "clave": "pantallas",
       "etiqueta": "Pantallas de la app",
-      "valor": 17,
+      "valor": 19,
       "unidad": "pantallas",
       "fuente": "medido",
-      "detalle": "Dieciséis rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes, perfil, escenarios, unir, bienestar, lonchera, recetas, viaje, cámara y qué cocinar con lo que tienes) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
+      "detalle": "Dieciocho rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes, perfil, escenarios, unir, bienestar, lonchera, recetas, viaje, cámara, qué cocinar con lo que tienes, leer una etiqueta y el modo súper) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
     },
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 1425,
+      "valor": 1642,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-22 sobre la rama de la cámara (S12), tras pagar la auditoría: 79 archivos, 1425 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-22 sobre la rama de las etiquetas y el súper (S13), tras pagar la auditoría: 89 archivos, 1642 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 360,
+      "valor": 368,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-22 sobre la rama de la cámara (S12), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 360 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 358 en verde y 2 omitidas por diseño; el modelo real nunca corre aquí, lo sustituye un worker simulado."
+      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-22 sobre la rama de las etiquetas y el súper (S13), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 368 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 366 en verde y 2 omitidas por diseño; ni el modelo de la cámara, ni el lector de etiquetas ni el escáner reales corren aquí: los sustituyen workers simulados, y un catálogo inventado."
     },
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 97.27,
+      "valor": 97.28,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib el 2026-11-22 sobre la rama de la cámara (97,27 % de líneas en total), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
+      "detalle": "v8 sobre src/lib el 2026-11-22 sobre la rama de las etiquetas y el súper (97,28 % de líneas en total), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
     },
     {
       "clave": "decisiones_registradas",
       "etiqueta": "Decisiones de arquitectura registradas",
-      "valor": 18,
+      "valor": 19,
       "unidad": "ADR",
       "fuente": "medido",
-      "detalle": "Archivos de decisions/ el 2026-11-22; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono, la 013 fija los roles con firma por persona, la 014 el plan B, los días especiales y la unión de dos planes, y la 015 el bienestar (se anota, nunca se interpreta, con la franja de edad en vez de la fecha de nacimiento). La 016 fija el tema oscuro (se elige en Ajustes, se recuerda y no destella) y la 017 la lonchera, el recetario y el modo viaje: todo se arma con el plan y en el teléfono. La 018 fija que la cámara solo ve: un modelo pequeño que corre en el teléfono nombra lo que ve y el código decide todo lo demás, sin que la foto se guarde ni salga."
+      "detalle": "Archivos de decisions/ el 2026-11-22; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono, la 013 fija los roles con firma por persona, la 014 el plan B, los días especiales y la unión de dos planes, y la 015 el bienestar (se anota, nunca se interpreta, con la franja de edad en vez de la fecha de nacimiento). La 016 fija el tema oscuro (se elige en Ajustes, se recuerda y no destella) y la 017 la lonchera, el recetario y el modo viaje: todo se arma con el plan y en el teléfono. La 018 fija que la cámara solo ve: un modelo pequeño que corre en el teléfono nombra lo que ve y el código decide todo lo demás, sin que la foto se guarde ni salga. La 019 fija que el lector de etiquetas solo transcribe y el código decide: el texto se lee en el teléfono, se coteja con el plan y un texto mal leído jamás da «apto»; el catálogo de productos de Colombia (Open Food Facts, ODbL) se baja una vez y se busca en el teléfono, sin que la foto ni lo escaneado salgan."
     },
     {
       "clave": "dependencias_runtime",
       "etiqueta": "Dependencias en tiempo de ejecución",
-      "valor": 16,
+      "valor": 20,
       "unidad": "paquetes",
       "fuente": "medido",
-      "detalle": "Campo `dependencies` de package.json el 2026-11-22 sobre la rama de la cámara (S12): una dependencia nueva, @huggingface/transformers 4.3.2 (publicada el 2026-10-27, licencia Apache-2.0), el motor que corre el modelo de la cámara en el teléfono, servido por la propia app y sin CDN, que ninguna ruta importa (ADR-018). Sigue incluyendo qrcode-generator 2.0.4 (MIT), que dibuja el QR de la etiqueta solo con texto (ADR-017), y pdfjs-dist, fijado y servido por la propia app (ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
+      "detalle": "Campo `dependencies` de package.json el 2026-11-22 sobre la rama de las etiquetas y el súper (S13): cuatro dependencias nuevas, todas servidas por la propia app y sin CDN, que ninguna ruta importa (ADR-019): tesseract.js 7.0.0 (Apache-2.0, publicada el 2025-12-15), el lector de texto de las etiquetas, con sus datos de idioma @tesseract.js-data/spa y @tesseract.js-data/eng 1.0.0 (MIT, 2023-09-04), y zxing-wasm 3.1.6 (MIT, publicada el 2026-10-19), que lee el código de barras solo si el navegador no trae su propio detector. Sigue incluyendo @huggingface/transformers 4.3.2 (Apache-2.0, ADR-018), qrcode-generator 2.0.4 (MIT, ADR-017) y pdfjs-dist (fijado y servido por la propia app, ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
     },
     {
       "clave": "requests_del_registro",
@@ -393,10 +393,10 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 96049,
+      "valor": 96630,
       "unidad": "bytes",
       "fuente": "medido",
-      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-22 sobre la rama de la cámara (S12). Autocontenido: cero recursos externos, incluidas las seis muestras de interfaz (SVG en línea, no imágenes)."
+      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-22 sobre la rama de las etiquetas y el súper (S13). Autocontenido: cero recursos externos, incluidas las seis muestras de interfaz (SVG en línea, no imágenes)."
     }
   ],
   "stack": [
