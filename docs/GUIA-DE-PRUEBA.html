@@ -6,9 +6,9 @@
 <title>Guía de prueba — Nutrikids</title>
 <!--
   GUÍA DE PRUEBA VIVA Y ACUMULATIVA de Nutrikids. PRIMERA guía de la app (v1), pero ACUMULATIVA:
-  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil), S6 (PDF), S7 (familia), S8 (avisos), S9 (roles, plan B, días especiales, unir dos planes), S10 (bienestar: ánimo, aceptación, cómo está, hábitos), S11 (lonchera, recetas, viaje y tema oscuro) S12 (la cámara: de la foto a la cocina y al plato) y S13 (leer etiquetas y modo súper). Autocontenida
+  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil), S6 (PDF), S7 (familia), S8 (avisos), S9 (roles, plan B, días especiales, unir dos planes), S10 (bienestar: ánimo, aceptación, cómo está, hábitos), S11 (lonchera, recetas, viaje y tema oscuro) S12 (la cámara: de la foto a la cocina y al plato), S13 (leer etiquetas y modo súper) y S14 (la familia y el niño: lecciones, «cuando le ofrecen algo» y la aventura). Autocontenida
   (cero CDNs). Origen por línea (S1/S2 heredadas ⇒ regresión · Nuevo/Mejorado · S3). Gate mínimo ⭐
-  = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s13.
+  = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s14.
 -->
 <style>
   :root {
@@ -102,9 +102,9 @@
 <body>
 <div class="pagina">
   <header>
-    <p class="eyebrow">Nutrikids · Guía de prueba viva y acumulativa · Sprint 13 · 2026-11-23</p>
+    <p class="eyebrow">Nutrikids · Guía de prueba viva y acumulativa · Sprint 14 · 2026-11-24</p>
     <h1>Guía de prueba</h1>
-    <p class="suave">Todas las pruebas vigentes de la app: las nuevas del S13 (leer una etiqueta por foto y el modo súper), y las de S1 a S12 —
+    <p class="suave">Todas las pruebas vigentes de la app: las nuevas del S14 (las lecciones para la familia, «cuando le ofrecen algo» y la aventura del niño), y las de S1 a S13 —
       que corren como <strong>regresión</strong>. Filtra por origen para correr todo o solo
       lo que cambió. Las casillas se guardan solas en este navegador.</p>
     <p class="chica"><strong>Gate mínimo ⭐: 6 pruebas · ~30 min.</strong> Es lo que ninguna
@@ -113,7 +113,7 @@
       (unit, e2e, axe, budgets) lo respalda la CI y se corre en pases completos.</p>
     <div class="url-caja">
       <p class="eyebrow" style="margin:0 0 6px">URL de prueba</p>
-      <code>Preview de la rama <strong>sprint-013/etiquetas</strong> — se pega aquí al abrir el PR (Vercel la genera).</code>
+      <code>Preview de la rama <strong>sprint-014/familia-y-nino</strong> — se pega aquí al abrir el PR (Vercel la genera).</code>
       <p class="chica suave" style="margin:8px 0 0">Dirección estable de la rama: no cambia aunque se
         suban correcciones. Si pide login de Vercel: Settings → Deployment Protection → Vercel
         Authentication → Disabled.</p>
@@ -608,6 +608,33 @@
     <div class="reportame"><p><strong>Repórtame sí o sí:</strong> cualquier descarga que empiece antes de tocar «Descargar el lector» o «Descargar el catálogo»; una foto o un código que salgan del teléfono o queden guardados; un veredicto sin «Verifícalo con un adulto»; un texto mal leído que dé «No vi nada que choque»; un producto que no va y aparezca entre las marcas aptas; un estado que solo se distinga por color; cifras de nutrientes, calorías o cantidades; un texto que dé un consejo médico, culpe o alarme; o la pantalla «rota» sin catálogo o sin lector en lugar de ofrecer la descarga y la foto de la etiqueta.</p></div>
   </section>
 
+  <!-- ============================ V · LA FAMILIA Y EL NIÑO ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">V</span><h2>La familia y el niño: lecciones, «cuando le ofrecen algo» y la aventura</h2></div>
+    <p class="meta-bloque chica suave">~20 min · pantallas <strong>Hoy</strong>, <strong>Para la familia</strong>, <strong>Cuando le ofrecen algo</strong>, <strong>La aventura</strong> y <strong>Ajustes</strong> · en el teléfono real, con tu plan real y, para el paso 6, dos teléfonos de la familia. Por decisión del dueño, estas pruebas con teléfono real se corren en el ensayo general del H-2.</p>
+    <ul class="pasos">
+      <li data-origen="nuevo"><input type="checkbox" id="v1"><label for="v1">Abre <strong>Hoy</strong>: bajo <strong>«Para la familia»</strong> hay tres enlaces, cada uno con su texto y su flecha (<strong>«Qué sí y qué no, y lo que ayuda»</strong>, <strong>«Cuando le ofrecen algo»</strong> y <strong>«La aventura de tu peque»</strong>). Ninguno abre solo ni cambia el resto de Hoy.
+        <span class="origen origen-nuevo">Nuevo · S14</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="v2"><label for="v2">Entra a <strong>«Qué sí y qué no, y lo que ayuda»</strong>: hay <strong>cinco lecciones</strong>. Abre cada una: se lee en menos de dos minutos, trae <strong>«Puedes decir»</strong> y <strong>«De dónde sale»</strong> con su fuente, y en ninguna aparece culpa, un premio con comida ni un consejo médico. Pruébalo también en inglés.
+        <span class="origen origen-nuevo">Nuevo · S14</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="v3"><label for="v3">Más abajo, <strong>«Qué sí y qué no»</strong> con <strong>tu plan real</strong>: <strong>No puede</strong> (rojos, restricciones vigentes, alergias e intolerancias y los códigos de aditivos), <strong>Con condición</strong> (<strong>sin su cifra</strong>: «Pregúntale a quien lo cuida antes de darlo») y <strong>Sí puede</strong> por grupos. Compáralo con tu plan: no falta nada de lo que prohíbe y <strong>no aparece ningún alimento que tu plan no nombre</strong>.
+        <span class="origen origen-nuevo">Nuevo · S14</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="v4"><label for="v4">Abre <strong>«Cuando le ofrecen algo»</strong> y anota lo que pasó en una reunión de familia (inventado si prefieres): <strong>qué</strong>, <strong>dónde</strong> y <strong>cómo se respondió</strong>, sin escribir texto libre. Al guardar sale <strong>«Para la próxima vez»</strong> con pasos para ese lugar, <strong>qué decirle a quien lo ofreció</strong> y <strong>«Lo que sí puedes ofrecer de su plan»</strong>, solo de la lista verde. Nada culpa a nadie.
+        <span class="origen origen-nuevo">Nuevo · S14</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="v5"><label for="v5">Anota <strong>dos veces el mismo alimento en el mismo lugar</strong>: aparece <strong>«Lo que se repite»</strong> con «2 veces este mes: …» y el conteo por lugar, <strong>sin decir quién</strong>. El bote de basura quita la tuya.
+        <span class="origen origen-nuevo">Nuevo · S14</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="v6"><label for="v6"><strong>Con la familia activada y dos teléfonos</strong> (madre y cuidador): anota algo en cada uno. La madre ve <strong>las dos</strong> y el patrón; el cuidador ve <strong>solo la suya</strong> y la pantalla le dice <strong>«Ves lo que anotó este teléfono»</strong>. Nada de esto aparece en la bitácora de la familia.
+        <span class="origen origen-nuevo">Nuevo · S14</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="v7"><label for="v7">Abre <strong>«La aventura de tu peque»</strong>: tres mundos (<strong>Brote, Lumo y Nubo</strong>) y el niño elige el suyo; al cambiar, <strong>la energía es la misma</strong>. Anota sueño en <strong>Bienestar</strong>: la energía sube una vez. Anota que comió, aceptó o rechazó un alimento: <strong>no se mueve</strong>. Un alimento nuevo que mira o toca, sí. La cocina es lo único que toca el niño, una vez por día. Revisa los tres mundos en claro y en oscuro.
+        <span class="origen origen-nuevo">Nuevo · S14</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="v8"><label for="v8">En el panel de adultos toca <strong>«Activar modo niño»</strong>: pantalla completa, <strong>sin plan, sin Ajustes y sin barra</strong>. Prueba <strong>Atrás</strong> y escribir otra dirección: te devuelven a la aventura. Un toque suelto en <strong>«Salir · adulto»</strong> no hace nada; mantenlo <strong>dos segundos</strong>, escribe mal la suma (no sale) y luego bien (sale). Que el peque la toque unos minutos y mira si se frustra o si le gusta.
+        <span class="origen origen-nuevo">Nuevo · S14</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="v9"><label for="v9"><strong>Ajustes → «Borrar mis datos»</strong>: la energía vuelve a cero, el modo niño se apaga y el registro de «Cuando le ofrecen algo» queda vacío. Es la única forma en que la energía baja.
+        <span class="origen origen-nuevo">Nuevo · S14</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> cualquier frase que culpe, que premie con comida o que suene a indicación médica; un alimento en «Qué sí y qué no» que tu plan no nombra, o un amarillo con su cifra; un nombre de otra persona guardado en lo anotado; un cuidador que vea lo que anotó otro teléfono; una energía que suba por comer o que baje; una forma de salir del modo niño sin la pulsación larga y la suma; cualquier pantalla del juego que se vea rota o ilegible en claro o en oscuro.</p></div>
+  </section>
+
   <!-- ============================ J · SIN INTERNET ============================ -->
   <section class="bloque">
     <div class="bloque-cabeza"><span class="letra">J</span><h2>Sin internet y versión nueva</h2></div>
@@ -685,12 +712,13 @@
 
   <footer>
     <p class="chica suave">Guía <strong>viva y acumulativa</strong>: contiene TODAS las pruebas vigentes
-      de Nutrikids (S1 a S13) con su origen visible; una prueba solo se elimina cuando su feature
+      de Nutrikids (S1 a S14) con su origen visible; una prueba solo se elimina cuando su feature
       dejó de existir. Archivo autocontenido — se abre sin internet, se versiona con el repo y se comparte
       tal cual.</p>
     <details class="chica">
       <summary>Historial de la guía</summary>
       <ul>
+        <li><strong>S14 · 2026-11-24 (v12):</strong> nace el bloque V (la familia y el niño: las cinco lecciones con su fuente, «Qué sí y qué no» armada con el plan y sin cifras, «Cuando le ofrecen algo» sin texto libre con su estrategia y lo que se repite, la regla de quién ve qué entre madre y cuidador, la aventura con sus tres mundos y una sola energía que solo sube, el modo niño con la salida del adulto y su borrado). Por decisión del dueño, sus pruebas con teléfono real se corren en el ensayo general del H-2. Ninguna prueba eliminada.</li>
         <li><strong>S13 · 2026-11-23 (v11):</strong> nace el bloque U (la etiqueta y el súper: el lector de texto y el catálogo que se descargan una sola vez y solo al tocar, la foto de la etiqueta con «Lo que se leyó» y su «verifícalo con un adulto», «No pude leerla» en lugar de un «apto» dudoso, el modo súper con el código de barras, las marcas que sí van, «lo que compré» con su aviso calmado, el código escrito a mano y «Borrar el lector y el catálogo»). Por decisión del dueño, sus pruebas con teléfono real se corren en el ensayo general del H-2. Ninguna prueba eliminada.</li>
         <li><strong>S12 · 2026-11-22 (v10):</strong> nace el bloque T (la cámara: el modelo que se descarga una sola vez y solo al tocar, la foto que no se guarda ni se envía,
           «Lo que vio» con su «verifícalo con un adulto», la despensa que solo se llena con lo que confirmas, «Qué cocinar» con las ideas armadas solo con lo que el plan acepta,
@@ -734,9 +762,9 @@
 
 <script>
   (function () {
-    // NS VERSIONADO POR SPRINT (regla dura): s13. Una regresión sin correr no aparece marcada por
+    // NS VERSIONADO POR SPRINT (regla dura): s14. Una regresión sin correr no aparece marcada por
     // una versión anterior de la guía.
-    var NS = "guia-nutri-kids:s13:";
+    var NS = "guia-nutri-kids:s14:";
     var casillas = Array.prototype.slice.call(document.querySelectorAll('input[type="checkbox"]'));
     var barra = document.getElementById("barra-avance");
     var contador = document.getElementById("contador");
