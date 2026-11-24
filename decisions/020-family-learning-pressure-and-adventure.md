@@ -16,7 +16,7 @@ The rest are builder defaults, listed below.
 The ADR has two parts:
 
 - **Part 1:** the family (F1).
-- **Part 2:** the adventure (F2). It is written once the owner chooses the look.
+- **Part 2:** the adventure (F2). It is written after the owner chose the look.
 
 ## Context
 
@@ -144,4 +144,56 @@ The sheet needs the day, so it renders after the lessons, and nothing above it m
 
 The child can change worlds at any time. Energy is one count shared by the three worlds. Changing world never erases it or splits it.
 
-This is the only exception to «Jamás será: gamificado infantil» (`design-system.md`). The rest is written in F2.
+This is the only exception to «Jamás será: gamificado infantil» (`design-system.md`).
+
+### 5. Energy (`src/lib/adventure/energy.ts`, pure)
+
+The energy comes from habits and exploring, never from eating. A day gives at most one **spark** per source:
+
+- `sleep`, `activity` and `sun`: the habit has more than 0 minutes;
+- `water`: there is a water mark;
+- `try`: an exposure to a **new** food, whatever its stage (looked, touched, tasted) and whatever the verdict. It is an exposure, not a bite;
+- `kitchen`: the child taps it in the adventure (builder default; the habit did not exist).
+
+Screen time is **not** a source: it is neither rewarded nor punished. Meals, supplements, quantities and «accepted / refused» are not sources either.
+
+**The spark ledger** is `nutrikids.adventure.v1`: a set of keys `YYYY-MM-DD:source`, append-only. Energy is the number of keys, so it **never goes down**, even if a habit is corrected afterwards. There are no streaks and no goals. The ledger is local and does not sync. «Borrar datos» empties it: that is an explicit deletion by the user, the only way down, and it is declared here.
+
+The three worlds draw **one** energy. The world step is `floor(energy / 5)`, capped at 5, the same in A, B and C. Changing world changes the drawing and the unit (drops, sparks of light, stars), never the count.
+
+Hard tests (`tests/unit/adventure.test.tsx`, fixed clock):
+
+- no meal, supplement, quantity, verdict or screen time moves the energy; five new foods in one day are one spark;
+- under 400 random sequences the ledger always contains the previous ledger;
+- correcting a habit afterwards removes nothing; changing world changes nothing;
+- the child cannot leave kid mode without the adult (below).
+
+### 6. Kid mode (G-Plan 2a)
+
+`nutrikids.kidmode.v1` is a local flag. While it is «1»:
+
+- `/aventura` is full screen, with no header, no bottom nav, no plan and no Ajustes. Buttons are 64 px or more;
+- the shell sends any other screen back to `/aventura`, also on Back (`KidGuard`) and on a typed URL (a line in the `<head>` script, before paint). Both read only the flag: `kidmode.ts` is a tiny module on purpose, so the shell does not drag the drawings (script margins are 0.6 KB on the tightest route);
+- the **adult exit** needs two things: hold the button for 2 seconds, then type the result of a sum read in words (two numbers from six to nineteen). A tap, half a hold or a wrong sum leave the flag on (`canExit` is pure and tested, and so is the component).
+
+There is no new role: the phone belongs to an adult, who turns the mode on and off. Anyone who can hold a button for two seconds and add two numbers from six to nineteen is an adult for this purpose; that is a screen for a child who cannot read or add yet, not a lock against a determined one. The family's data does not sit behind it: the plan and Ajustes are not on this screen, and nothing the child can reach changes them.
+
+### 7. Screen and weight
+
+`/aventura` is in `SHELL_ROUTES` and in `lighthouse-urls.json` (19 routes). Hoy links to it from «Para la familia» with `prefetch={false}`. Lighthouse, same command as the `lighthouse` job, median of 3, local `CI=1` build:
+
+| Route              | Script   | CLS   | TBT   |
+| ------------------ | -------- | ----- | ----- |
+| `/`                | 430.2 KB | 0.009 | 43 ms |
+| `/aventura`        | 344.3 KB | 0     | 69 ms |
+| `/familia`         | 438.6 KB | 0     | 35 ms |
+| `/familia/presion` | 439.4 KB | 0     | 38 ms |
+| `/escenarios`      | 434.8 KB | 0     | 33 ms |
+
+The kid-mode guard cost about 1 KB on every route (`/familia/presion` went from 438.4 to 439.4 KB).
+
+### Consequences of part 2
+
+- One exception to «Jamás será: gamificado infantil», limited to `/aventura`, written by the owner's phrase.
+- The ledger is local. A new phone starts at zero; the energy does not travel with the family.
+- The adult exit is a screen lock for children, not a security boundary. This is declared, not hidden.

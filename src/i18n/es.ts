@@ -85,6 +85,7 @@ export const es = {
     dayToDayCamera: "Cámara",
     familyLabel: "Para la familia",
     familyLearn: "Qué sí y qué no, y lo que ayuda",
+    familyAdventure: "La aventura de tu peque",
     familyPressure: "Cuando le ofrecen algo",
     profileLink: "Perfil de tu peque",
   },

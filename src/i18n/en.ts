@@ -84,6 +84,7 @@ export const en: Dictionary = {
     dayToDayCamera: "Camera",
     familyLabel: "For the family",
     familyLearn: "What yes and what no, and what helps",
+    familyAdventure: "Your child's adventure",
     familyPressure: "When they're offered something",
     profileLink: "Your child's profile",
   },
