@@ -106,58 +106,59 @@ export function AdultExit({ onLeave }: { onLeave: () => void }) {
           className="fixed inset-0 z-[60] flex items-end justify-center bg-scrim p-4 sm:items-center"
           data-testid="adult-exit-dialog"
         >
-          <form
+          <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="exit-title"
-            onSubmit={submit}
-            className="flex w-full max-w-sm flex-col gap-3 rounded-2xl border bg-card p-5 text-card-foreground shadow-lg"
+            className="w-full max-w-sm rounded-2xl border bg-card p-5 text-card-foreground shadow-lg"
           >
-            <h2 id="exit-title" className="text-xl">
-              {t.exitTitle}
-            </h2>
-            <p>
-              {fmt(t.exitSum, {
-                a: wordsOf(challenge.a, locale),
-                b: wordsOf(challenge.b, locale),
-              })}
-            </p>
-            <label className="flex flex-col gap-1 text-sm font-semibold">
-              {t.exitField}
-              <input
-                value={answer}
-                onChange={(e) => {
-                  setAnswer(e.target.value.replace(/\D/g, "").slice(0, 3));
-                  setWrong(false);
-                }}
-                inputMode="numeric"
-                pattern="[0-9]*"
-                autoComplete="off"
-                autoFocus
-                data-testid="adult-exit-input"
-                className="min-h-12 rounded-xl border bg-background px-3 text-lg"
-              />
-            </label>
-            {wrong && (
-              <p role="status" className="text-sm font-semibold">
-                {t.exitWrong}
+            <form onSubmit={submit} className="flex flex-col gap-3">
+              <h2 id="exit-title" className="text-xl">
+                {t.exitTitle}
+              </h2>
+              <p>
+                {fmt(t.exitSum, {
+                  a: wordsOf(challenge.a, locale),
+                  b: wordsOf(challenge.b, locale),
+                })}
               </p>
-            )}
-            <button
-              type="submit"
-              data-testid="adult-exit-confirm"
-              className="min-h-12 rounded-xl bg-primary px-4 font-semibold text-primary-foreground"
-            >
-              {t.exitConfirm}
-            </button>
-            <button
-              type="button"
-              onClick={close}
-              className="min-h-12 rounded-xl border px-4 font-semibold"
-            >
-              {t.exitStay}
-            </button>
-          </form>
+              <label className="flex flex-col gap-1 text-sm font-semibold">
+                {t.exitField}
+                <input
+                  value={answer}
+                  onChange={(e) => {
+                    setAnswer(e.target.value.replace(/\D/g, "").slice(0, 3));
+                    setWrong(false);
+                  }}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="off"
+                  autoFocus
+                  data-testid="adult-exit-input"
+                  className="min-h-12 rounded-xl border bg-background px-3 text-lg"
+                />
+              </label>
+              {wrong && (
+                <p role="status" className="text-sm font-semibold">
+                  {t.exitWrong}
+                </p>
+              )}
+              <button
+                type="submit"
+                data-testid="adult-exit-confirm"
+                className="min-h-12 rounded-xl bg-primary px-4 font-semibold text-primary-foreground"
+              >
+                {t.exitConfirm}
+              </button>
+              <button
+                type="button"
+                onClick={close}
+                className="min-h-12 rounded-xl border px-4 font-semibold"
+              >
+                {t.exitStay}
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </>
