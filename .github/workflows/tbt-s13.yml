@@ -12,20 +12,8 @@ jobs:
       fail-fast: false
       matrix:
         route:
-          - /
-          - /dieta
-          - /chat
-          - /historial
-          - /conoce
-          - /cargar
-          - /ajustes
-          - /escenarios
-          - /bienestar
-          - /lonchera
           - /recetas
-          - /viaje
-          - /camara
-          - /camara/cocina
+          - /lonchera
           - /camara/etiqueta
           - /camara/super
     steps:
@@ -42,7 +30,7 @@ jobs:
       - run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ${{ runner.temp }}/base
       - run: npm i -g @lhci/cli
-      - name: ${{ matrix.route }}, main contra la rama, alternando (2 x 5 corridas cada uno)
+      - name: ${{ matrix.route }}, main contra la rama, alternando (2 x 5 corridas cada uno; segunda pasada)
         run: |
           ROUTE="${{ matrix.route }}"
           measure() { # $1 = nombre, $2 = directorio
