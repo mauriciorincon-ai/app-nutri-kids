@@ -21,10 +21,25 @@ import {
 } from "@/lib/diet/storage";
 import { notifyLocalStore, useLocalStore } from "@/lib/local-store";
 import { deleteModel } from "@/lib/camera/model-store";
+import { deleteReaderCaches } from "@/lib/reader-caches";
 import { getFamily } from "@/lib/family/controller";
 import { getPush } from "@/lib/push/controller";
 import { formatShortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+
+// «Lector y catálogo» mide y borra cachés de otras pantallas: se baja con Ajustes, no con cada pantalla
+// (Ajustes va en la barra inferior, así que lo que pese aquí lo paga todo el mundo).
+const ReaderCatalogSection = dynamic(
+  () =>
+    import("@/components/settings/reader-catalog-section").then(
+      (m) => m.ReaderCatalogSection,
+    ),
+  {
+    ssr: false,
+    // Reserva su sitio: la sección aparece al hidratar y no debe empujar lo de abajo.
+    loading: () => <div className="min-h-40" aria-hidden />,
+  },
+);
 
 // El diálogo se baja al pulsar «Borrar mis datos», no al abrir Ajustes.
 const ClearDataDialog = dynamic(
@@ -74,6 +89,8 @@ export default function SettingsPage() {
     await getPush().disable();
     // El modelo de la cámara también es de este teléfono: se va con el resto.
     await deleteModel().catch(() => undefined);
+    // El lector de etiquetas, el escáner y el catálogo, también (S13).
+    await deleteReaderCaches().catch(() => undefined);
     clearAllData();
     refresh();
     setConfirmOpen(false);
@@ -178,6 +195,8 @@ export default function SettingsPage() {
       </section>
 
       <CameraModelSection />
+
+      <ReaderCatalogSection />
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg">{t.settings.clearTitle}</h2>

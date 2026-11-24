@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 
 import { useToday } from "@/components/day-checklist/use-today";
 import { useWellbeingDays } from "@/components/wellbeing/use-wellbeing";
@@ -51,7 +51,9 @@ const EMPTY_PANTRY: IngredientId[] = [];
 export function Recipes() {
   const d = useRecipesDt();
   const { l } = useI18n();
-  const today = useToday();
+  // La fecha llega al hidratar y re-renderiza toda la pantalla en síncrono (una tarea larga, TBT):
+  // diferida, React la pinta como transición en tramos que ceden el hilo.
+  const today = useDeferredValue(useToday());
   const input = useReviewInput(today);
   const days = useWellbeingDays();
   const pantryIds = useLocalStore(getPantry, EMPTY_PANTRY);

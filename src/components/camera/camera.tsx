@@ -354,6 +354,22 @@ export function Camera() {
       <p className="rounded-xl bg-accent px-4 py-3 text-sm text-accent-foreground">
         {common.notMedical}
       </p>
+      <Link
+        href="/camara/etiqueta"
+        prefetch={false}
+        className="inline-flex min-h-11 items-center self-start text-sm font-medium text-primary hover:underline"
+        data-testid="camera-to-label"
+      >
+        {c.labelLink}
+      </Link>
+      <Link
+        href="/camara/super"
+        prefetch={false}
+        className="-mt-3 inline-flex min-h-11 items-center self-start text-sm font-medium text-primary hover:underline"
+        data-testid="camera-to-super"
+      >
+        {c.superLink}
+      </Link>
 
       {phase === "cant" && (
         <section

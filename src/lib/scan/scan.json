@@ -1,0 +1,9 @@
+{
+  "_comment": "El súper (S13 · ADR-019): el worker, zxing-wasm 3.1.6 y el catálogo de Open Food Facts de Colombia (ODbL), servidos desde /scan/ y /catalogo/. Bytes de cada archivo: un test los coteja con los que build-sw copia. El teléfono baja el worker y el catálogo, y —solo si su navegador no trae BarcodeDetector— zxing con su .wasm.",
+  "files": {
+    "scan-worker.js": 3836,
+    "zxing-reader.js": 37951,
+    "zxing_reader.wasm": 946860,
+    "off-co.json": 1896823
+  }
+}

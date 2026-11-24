@@ -1,0 +1,16 @@
+{
+  "_comment": "El lector de etiquetas (S13 · ADR-019): tesseract.js 7.0.0, su núcleo LSTM y los idiomas spa y eng (4.0.0_best_int), servidos desde /ocr/. Bytes de cada archivo: un test los coteja con los que build-sw copia. El teléfono baja el código, UNO de los tres núcleos (el que su navegador puede correr) y los dos idiomas.",
+  "langs": [
+    "spa",
+    "eng"
+  ],
+  "files": {
+    "tesseract.min.js": 62961,
+    "worker.min.js": 111307,
+    "core/tesseract-core-relaxedsimd-lstm.wasm.js": 3905767,
+    "core/tesseract-core-simd-lstm.wasm.js": 3899472,
+    "core/tesseract-core-lstm.wasm.js": 3896484,
+    "lang/spa.traineddata.gz": 2100190,
+    "lang/eng.traineddata.gz": 2952873
+  }
+}

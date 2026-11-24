@@ -295,6 +295,8 @@ const TodayView = memo(function TodayView({ today }: { today: Date | null }) {
           <Link
             key={href}
             href={href}
+            // La cámara y sus pantallas son pesadas y secundarias: Hoy no paga sus bytes al abrir (S13).
+            prefetch={href === "/camara" ? false : undefined}
             className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
             {label}

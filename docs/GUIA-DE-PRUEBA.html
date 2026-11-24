@@ -6,9 +6,9 @@
 <title>Guía de prueba — Nutrikids</title>
 <!--
   GUÍA DE PRUEBA VIVA Y ACUMULATIVA de Nutrikids. PRIMERA guía de la app (v1), pero ACUMULATIVA:
-  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil), S6 (PDF), S7 (familia), S8 (avisos), S9 (roles, plan B, días especiales, unir dos planes), S10 (bienestar: ánimo, aceptación, cómo está, hábitos), S11 (lonchera, recetas, viaje y tema oscuro) y S12 (la cámara: de la foto a la cocina y al plato). Autocontenida
+  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil), S6 (PDF), S7 (familia), S8 (avisos), S9 (roles, plan B, días especiales, unir dos planes), S10 (bienestar: ánimo, aceptación, cómo está, hábitos), S11 (lonchera, recetas, viaje y tema oscuro) S12 (la cámara: de la foto a la cocina y al plato) y S13 (leer etiquetas y modo súper). Autocontenida
   (cero CDNs). Origen por línea (S1/S2 heredadas ⇒ regresión · Nuevo/Mejorado · S3). Gate mínimo ⭐
-  = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s12.
+  = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s13.
 -->
 <style>
   :root {
@@ -102,9 +102,9 @@
 <body>
 <div class="pagina">
   <header>
-    <p class="eyebrow">Nutrikids · Guía de prueba viva y acumulativa · Sprint 12 · 2026-11-22</p>
+    <p class="eyebrow">Nutrikids · Guía de prueba viva y acumulativa · Sprint 13 · 2026-11-23</p>
     <h1>Guía de prueba</h1>
-    <p class="suave">Todas las pruebas vigentes de la app: las nuevas del S12 (la cámara: de la foto a la cocina y al plato), y las de S1 a S11 —
+    <p class="suave">Todas las pruebas vigentes de la app: las nuevas del S13 (leer una etiqueta por foto y el modo súper), y las de S1 a S12 —
       que corren como <strong>regresión</strong>. Filtra por origen para correr todo o solo
       lo que cambió. Las casillas se guardan solas en este navegador.</p>
     <p class="chica"><strong>Gate mínimo ⭐: 6 pruebas · ~30 min.</strong> Es lo que ninguna
@@ -113,7 +113,7 @@
       (unit, e2e, axe, budgets) lo respalda la CI y se corre en pases completos.</p>
     <div class="url-caja">
       <p class="eyebrow" style="margin:0 0 6px">URL de prueba</p>
-      <code>Preview de la rama <strong>sprint-012/camara</strong> — se pega aquí al abrir el PR (Vercel la genera).</code>
+      <code>Preview de la rama <strong>sprint-013/etiquetas</strong> — se pega aquí al abrir el PR (Vercel la genera).</code>
       <p class="chica suave" style="margin:8px 0 0">Dirección estable de la rama: no cambia aunque se
         suban correcciones. Si pide login de Vercel: Settings → Deployment Protection → Vercel
         Authentication → Disabled.</p>
@@ -579,6 +579,35 @@
     <div class="reportame"><p><strong>Repórtame sí o sí:</strong> cualquier descarga que empiece antes de tocar «Descargar el modelo»; una foto que se guarde o salga del teléfono; un alimento que entre a la despensa sin que lo hayas tocado; un alimento rojo, con restricción vigente, con alergia o con una textura que no acepta dentro de una idea o una receta; un alimento que tu plan no nombra en verde; un resultado sin la frase «Verifícalo con un adulto»; un estado que solo se distinga por color; un texto que dé un consejo médico, culpe o alarme; o la cámara «rota» cuando no hay modelo en lugar de dejar «Marcar a mano».</p></div>
   </section>
 
+  <!-- ============================ U · LA ETIQUETA Y EL SÚPER ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">U</span><h2>La etiqueta y el súper</h2></div>
+    <p class="meta-bloque chica suave">~15 min · pantallas <strong>Cámara</strong>, <strong>Leer una etiqueta</strong>, <strong>Modo súper</strong>, <strong>Perfil</strong> y <strong>Ajustes</strong> · en el teléfono real, con wifi para bajar el lector y el catálogo (una sola vez), con productos empacados reales de tu casa o del súper (sin personas). <strong>Por decisión del dueño (2026-11-22), todas las pruebas con teléfono real de este sprint se hacen en el ensayo general del H-2</strong>: este bloque queda aquí para correrlo entonces, no se pierde.</p>
+    <ul class="pasos">
+      <li data-origen="nuevo"><input type="checkbox" id="u1"><label for="u1">Con el modo avión puesto y <strong>antes de descargar nada</strong>, abre <strong>Hoy → «Para el día a día» → Cámara → «Leer la etiqueta de un producto»</strong>. La pantalla ofrece <strong>«Descargar el lector»</strong> con su tamaño y no empieza sola. Toca el botón sin señal: dice <strong>«No se pudo preparar el lector»</strong> y deja <strong>«Intentar de nuevo»</strong>; la app no se rompe.
+        <span class="origen origen-nuevo">Nuevo · S13</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="u2"><label for="u2">Quita el modo avión, con wifi, y toca <strong>«Descargar el lector»</strong>: sube el avance y termina en <strong>«Toma la foto de los ingredientes»</strong>. Cierra la app, pon el modo avión y vuelve: ya no pide descargar (dice <strong>«Preparar el lector»</strong>, sin bajar nada) y lee etiquetas sin señal.
+        <span class="origen origen-nuevo">Nuevo · S13</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="u3"><label for="u3">Toma la foto de la etiqueta de un producto empacado real (la lista de ingredientes). Sale <strong>«Lo que se leyó»</strong> a la vista, <strong>siempre</strong> la frase <strong>«Verifícalo con un adulto: el lector puede equivocarse»</strong> y un veredicto con símbolo, palabra y color: <strong>«No va»</strong>, <strong>«Revisa»</strong> o <strong>«No vi nada que choque»</strong>. Revisa la galería del teléfono: la app no dejó ninguna copia de la foto ni mostró cifras de nutrientes.
+        <span class="origen origen-nuevo">Nuevo · S13</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="u4"><label for="u4">Prueba una etiqueta con algo que tu plan evita (un aditivo, un rojo o la alergia anotada en <strong>Perfil</strong>, también en «puede contener»): sale <strong>«No va»</strong> y nombra el motivo. Luego fotografía una etiqueta borrosa, torcida o con poca luz: sale <strong>«No pude leerla»</strong>, nunca <strong>«No vi nada que choque»</strong>. Un texto mal leído jamás da «apto».
+        <span class="origen origen-nuevo">Nuevo · S13</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="u5"><label for="u5">Abre <strong>Cámara → «Modo súper: escanear un código de barras»</strong>. Antes de tocar nada, la pantalla ofrece <strong>«Descargar el catálogo»</strong> (con su tamaño) y trae la atribución <strong>«Datos de productos © colaboradores de Open Food Facts, bajo la licencia ODbL»</strong> con <strong>«Ver la licencia»</strong>; no baja nada sola. Toca el botón con wifi y termina en <strong>«Escanea un producto»</strong>; pon el modo avión y vuelve: escanea sin señal.
+        <span class="origen origen-nuevo">Nuevo · S13</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="u6"><label for="u6">Escanea el código de barras de un producto colombiano real (<strong>«Escanear código»</strong> o <strong>«Elegir una foto»</strong>): sale el producto con su veredicto. Si el catálogo no trae su lista de ingredientes dice <strong>«No sé qué lleva»</strong> y ofrece <strong>«Leer una etiqueta»</strong>; si el producto no está, <strong>«Este producto no está en el catálogo»</strong> y el mismo camino a la foto de la etiqueta. El catálogo es de Colombia y la mayoría de sus productos no traen ingredientes: es lo esperado.
+        <span class="origen origen-nuevo">Nuevo · S13</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="u7"><label for="u7">Escanea un producto que <strong>no</strong> va con tu plan: debajo aparece <strong>«Marcas que sí van con tu plan»</strong> (hasta cinco, de su misma categoría, solo con «No vi nada que choque»; jamás una marca en «Revisa» ni «No pude leerla»). Toca <strong>«Anotar en lo que compré»</strong>: el producto pasa a <strong>«Lo que compré»</strong>.
+        <span class="origen origen-nuevo">Nuevo · S13</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="u8"><label for="u8">En <strong>Perfil</strong> anota una alergia inventada que coincida con algo de un producto que ya anotaste y vuelve al modo súper: en <strong>«Lo que compré»</strong> sale, con calma y sin alarma, <strong>«Esto que compraste no va con tu plan: …»</strong> con su <strong>«Verifícalo con un adulto»</strong>. Quita un producto con <strong>«Quitar …»</strong>. Con un teléfono de rol Colegio o Nutricionista, el producto se ve pero no se puede anotar (<strong>«Con tu rol puedes mirar el producto, pero no anotarlo en lo que compré»</strong>).
+        <span class="origen origen-nuevo">Nuevo · S13</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="u9"><label for="u9">Escribe un código a mano en <strong>«O escribe el código»</strong>: «12345» dice <strong>«Un código de barras tiene 8, 12 o 13 números»</strong>; un código con un número cambiado dice <strong>«Ese código no es válido»</strong>; uno bueno se busca igual que el escaneado.
+        <span class="origen origen-nuevo">Nuevo · S13</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="u10"><label for="u10">En <strong>Ajustes → «Lector de etiquetas y catálogo»</strong>: dice cuánto espacio ocupan y trae la atribución ODbL. Toca <strong>«Borrar el lector y el catálogo»</strong> → «Lector y catálogo borrados.»; tu plan, tu registro y <strong>lo que compré</strong> siguen intactos y las dos pantallas vuelven a ofrecer la descarga. Descárgalos otra vez y usa <strong>«Borrar mis datos»</strong>: el lector, el catálogo y lo que compré también se borran.
+        <span class="origen origen-nuevo">Nuevo · S13</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> cualquier descarga que empiece antes de tocar «Descargar el lector» o «Descargar el catálogo»; una foto o un código que salgan del teléfono o queden guardados; un veredicto sin «Verifícalo con un adulto»; un texto mal leído que dé «No vi nada que choque»; un producto que no va y aparezca entre las marcas aptas; un estado que solo se distinga por color; cifras de nutrientes, calorías o cantidades; un texto que dé un consejo médico, culpe o alarme; o la pantalla «rota» sin catálogo o sin lector en lugar de ofrecer la descarga y la foto de la etiqueta.</p></div>
+  </section>
+
   <!-- ============================ J · SIN INTERNET ============================ -->
   <section class="bloque">
     <div class="bloque-cabeza"><span class="letra">J</span><h2>Sin internet y versión nueva</h2></div>
@@ -656,12 +685,13 @@
 
   <footer>
     <p class="chica suave">Guía <strong>viva y acumulativa</strong>: contiene TODAS las pruebas vigentes
-      de Nutrikids (S1 a S12) con su origen visible; una prueba solo se elimina cuando su feature
+      de Nutrikids (S1 a S13) con su origen visible; una prueba solo se elimina cuando su feature
       dejó de existir. Archivo autocontenido — se abre sin internet, se versiona con el repo y se comparte
       tal cual.</p>
     <details class="chica">
       <summary>Historial de la guía</summary>
       <ul>
+        <li><strong>S13 · 2026-11-23 (v11):</strong> nace el bloque U (la etiqueta y el súper: el lector de texto y el catálogo que se descargan una sola vez y solo al tocar, la foto de la etiqueta con «Lo que se leyó» y su «verifícalo con un adulto», «No pude leerla» en lugar de un «apto» dudoso, el modo súper con el código de barras, las marcas que sí van, «lo que compré» con su aviso calmado, el código escrito a mano y «Borrar el lector y el catálogo»). Por decisión del dueño, sus pruebas con teléfono real se corren en el ensayo general del H-2. Ninguna prueba eliminada.</li>
         <li><strong>S12 · 2026-11-22 (v10):</strong> nace el bloque T (la cámara: el modelo que se descarga una sola vez y solo al tocar, la foto que no se guarda ni se envía,
           «Lo que vio» con su «verifícalo con un adulto», la despensa que solo se llena con lo que confirmas, «Qué cocinar» con las ideas armadas solo con lo que el plan acepta,
           «Mirar el plato» contra el plan, «Marcar a mano» sin modelo, el panel «Cómo va el motor» y «Borrar el modelo»). Por decisión del dueño, sus pruebas con teléfono real se corren en el ensayo general del H-2. Ninguna prueba eliminada.</li>
@@ -704,9 +734,9 @@
 
 <script>
   (function () {
-    // NS VERSIONADO POR SPRINT (regla dura): s12. Una regresión sin correr no aparece marcada por
+    // NS VERSIONADO POR SPRINT (regla dura): s13. Una regresión sin correr no aparece marcada por
     // una versión anterior de la guía.
-    var NS = "guia-nutri-kids:s12:";
+    var NS = "guia-nutri-kids:s13:";
     var casillas = Array.prototype.slice.call(document.querySelectorAll('input[type="checkbox"]'));
     var barra = document.getElementById("barra-avance");
     var contador = document.getElementById("contador");

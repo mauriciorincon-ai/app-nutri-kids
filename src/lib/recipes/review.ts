@@ -9,7 +9,7 @@
  */
 import { resolveItemStatus, allItemIds } from "@/lib/diet/logic";
 import { avoidedByNotes, isSafeOption } from "@/lib/diet/options";
-import { containsPhrase, toTokens } from "@/lib/diet/search";
+import { ALTERNATIVES, containsPhrase, toTokens } from "@/lib/diet/search";
 import type { DietPlan, LocalizedText, Texture } from "@/lib/diet/schema";
 import { orderByTexture } from "@/lib/diet/texture";
 import { avoidList } from "@/lib/lunchbox/engine";
@@ -54,9 +54,6 @@ function overlap(a: string[], b: string[]): 0 | 1 | 2 {
   if (a.length === b.length && a.every((x, i) => x === b[i])) return 2;
   return containsPhrase(a, b) || containsPhrase(b, a) ? 1 : 0;
 }
-
-/** «Gaseosas y jugos de caja» nombra dos cosas: cada alternativa también cuenta (como parcial). */
-export const ALTERNATIVES = /\s*(?:,|\/|;|\by\b|\be\b|\band\b|\bor\b|\bo\b|\bu\b)\s*/i;
 
 /** El mejor cotejo de un nombre del plan (en los dos idiomas) con las formas del ingrediente. */
 export function matchLevel(ing: string[][], name: LocalizedText): 0 | 1 | 2 {

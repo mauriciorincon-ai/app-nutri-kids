@@ -20,6 +20,10 @@ public/sw.js
 public/pdfjs/
 # Runtime del modelo de la cámara, copiado de @huggingface/transformers por scripts/build-sw.mjs (ADR-018)
 public/ia/
+# Lector de etiquetas, copiado de tesseract.js y @tesseract.js-data por scripts/build-sw.mjs (ADR-019)
+public/ocr/
+public/scan/
+public/catalogo/
 
 # Lighthouse CI artifacts
 .lighthouseci/
