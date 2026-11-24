@@ -73,13 +73,16 @@ export async function axe(page: Page, scope = "axe") {
     await page.evaluate(async () => {
       // Dos cuadros primero: el cambio de tema arranca sus transiciones de color en el cuadro siguiente,
       // y `getAnimations` aún no las vería (S13: una pasada «light» midió el texto a medio camino).
-      await new Promise<void>((r) =>
-        requestAnimationFrame(() => requestAnimationFrame(() => r())),
-      );
-      // Una animación cancelada (el diálogo al cambiar a «menos movimiento») no es un error.
-      await Promise.all(
-        document.getAnimations().map((a) => a.finished.catch(() => null)),
-      );
+      // Se repite hasta que un cuadro pasa sin animaciones: una transición puede arrancar un cuadro tarde.
+      for (let i = 0; i < 6; i++) {
+        await new Promise<void>((r) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => r())),
+        );
+        const running = document.getAnimations();
+        if (running.length === 0) break;
+        // Una animación cancelada (el diálogo al cambiar a «menos movimiento») no es un error.
+        await Promise.all(running.map((a) => a.finished.catch(() => null)));
+      }
     });
     const found = summarize((await analyze(page, colorScheme)).violations);
     expect(found, `${scope} · ${colorScheme}`).toEqual([]);
