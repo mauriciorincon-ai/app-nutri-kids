@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Check, ChevronRight, House, Package, Printer, X } from "lucide-react";
@@ -46,7 +46,9 @@ const STATE_ICON = { packed: Package, eaten: Check, back: House } as const;
 export function Lunchbox() {
   const d = useLunchDt();
   const { l, locale } = useI18n();
-  const today = useToday();
+  // La fecha llega al hidratar y re-renderiza toda la pantalla en síncrono (una tarea larga, TBT):
+  // diferida, React la pinta como transición en tramos que ceden el hilo.
+  const today = useDeferredValue(useToday());
   const can = useCan();
   const family = useFamily();
   const [offset, setOffset] = useState(0);
