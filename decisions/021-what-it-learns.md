@@ -94,4 +94,15 @@ All of it is pure code in `src/lib/insights/days.ts` (`judgeDay`).
 
 ### 6. The look (owner decision)
 
-_Pending: the owner's sentence, verbatim, on `docs/diseno/marca/aprende.html` (three directions)._
+The owner chose on 2026-11-25, over `docs/diseno/marca/aprende.html`, with this sentence, verbatim:
+
+> «Me gustaria uan mezcla entre B y C, todo lo del C me gusta pero el B me gustan lo que complementa especialemnte el calendario de lo que aprende»
+
+Reading (builder, reported in the closing report): direction **C** («la mochila y el hilo») in full is the base. From **B** come the parts that complement it, above all the **four-week calendar** on «Lo que aprende», drawn in C's colours, and a legend for the three levels under the day card. So:
+
+- the day level is a backpack that fills (light, with something more, full), in plum, never the foods' red;
+- this week is a thread of seven beads, with the four-week calendar below it;
+- patterns are grouped by when, where and what matched, each with a count ring;
+- what it learns is a list with its evidence, and «Borrar lo aprendido» has a lock.
+
+`design-system.md` § «Lo que aprende y el día en Hoy» holds the rules.
