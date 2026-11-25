@@ -1,3 +1,4 @@
+import { clearTwin } from "@/lib/insights/twin-store";
 import demoRaw from "../../../data/demo-diet.json";
 import { clearDevice, getDeviceId } from "../device";
 import { clearKeys, clearSigner } from "../family/keystore";
@@ -274,6 +275,8 @@ export function clearAllData(): void {
   clearPushState();
   // S14: «cuando le ofrecen algo» (lo propio y lo de los demás).
   clearPressure();
+  // S15: lo que el gemelo aprendió (solo «desde cuándo cuenta»; todo lo demás se recalcula).
+  clearTwin();
   // S14: la aventura (el libro de chispas, el mundo y el modo niño). Es el único camino que baja la energía.
   clearAdventure();
   log.info({ event: "data-cleared" });

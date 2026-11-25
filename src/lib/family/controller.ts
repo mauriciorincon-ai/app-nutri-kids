@@ -10,6 +10,7 @@ import { newNoticeId } from "./notices";
 import { formatCode, formatInvite } from "./phrase";
 import {
   INVITE_TTL_MS,
+  joinedAt,
   may,
   newInviteTag,
   type Member,
@@ -76,6 +77,8 @@ export type MemberRow = {
   meals: string[];
   self: boolean;
   seen: number;
+  /** Cuándo entró (ms), o null si es de quienes fundaron la familia. */
+  joined: number | null;
 };
 /** Un teléfono que entró y aún no tiene rol (o es del S7 y aún no se actualiza). */
 export type PendingRow = {
@@ -255,6 +258,7 @@ export function createController(deps: ControllerDeps) {
           meals: m.meals ?? [],
           self: m.id === own.id,
           seen: m.id === own.id ? st.lastSync : (st.devices[m.id]?.seen ?? 0),
+          joined: joinedAt(st.roster, m.id),
         }))
         .sort((a, b) => Number(b.self) - Number(a.self) || b.seen - a.seen);
       const open = (tag: string | undefined) => {

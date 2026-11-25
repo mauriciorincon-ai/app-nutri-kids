@@ -1,4 +1,4 @@
-# ADR-015 — Wellbeing record: how they are, how they come to the table, what they accept, their habits (it records, never interprets)
+# ADR-015 — Wellbeing record: how they are, how they come to the table, what they accept, their habits (it records here; what repeats is counted by ADR-021, never interpreted as a cause)
 
 **Status:** accepted · **Date:** 2026-11-17 · **Sprint:** S010 · **Revises:** ADR-013 (new write kinds in `may()`, new change-log kind `wellbeing`) and ADR-011 (the day record carries four more maps) · **Owner decisions:** G-Plan S10 «1a» (a parent picks the age range; the date of birth is never stored).
 

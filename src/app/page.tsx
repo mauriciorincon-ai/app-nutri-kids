@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useDeferredValue, useMemo } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ChevronRight, Droplets, Pill } from "lucide-react";
 
@@ -12,6 +13,7 @@ import { useDayLog, useToday } from "@/components/day-checklist/use-today";
 import { useDiet } from "@/components/diet-provider";
 import { RoleLimit } from "@/components/family/role-limit";
 import { useCan, useWho } from "@/components/family/use-family";
+import { useLearnText, useViewer } from "@/components/learn/use-learn";
 import { FamilyNotices } from "@/components/notices/family-notices";
 import { PlanBCard } from "@/components/plan-b/plan-b-card";
 import { FoodLogSlot } from "@/components/wellbeing/food-log-slot";
@@ -31,7 +33,14 @@ import {
 } from "@/lib/diet/logic";
 import { setMood } from "@/lib/diet/day-log";
 import { formatTime } from "@/lib/format";
+import { seesAll } from "@/lib/pressure/pattern";
 import { acceptableFoods } from "@/lib/wellbeing/foods";
+
+// El motor del día (riesgo, gemelo) y sus textos viajan en su propio trozo: no engordan las demás
+// rutas (S15, ADR-020). Sigue prerrenderizado, así la tarjeta no se mueve al hidratar.
+const DayCard = dynamic(() =>
+  import("@/components/learn/day-card").then((m) => m.DayCard),
+);
 
 type Row = ChecklistItem & { done: boolean };
 
@@ -55,6 +64,8 @@ const TodayView = memo(function TodayView({ today }: { today: Date | null }) {
   const { t, l, locale } = useI18n();
   const who = useWho();
   const can = useCan();
+  const learnText = useLearnText();
+  const learnsHere = seesAll(useViewer());
   const { record, doneIds, toggle, saveNote } = useDayLog(today);
   const w = useWt();
   const wellbeing = useWellbeing(today);
@@ -208,6 +219,8 @@ const TodayView = memo(function TodayView({ today }: { today: Date | null }) {
 
       <RoleLimit />
 
+      <DayCard today={today} />
+
       {checklist ? (
         <DaySummary checklist={checklist} labelFor={labelFor} />
       ) : (
@@ -321,6 +334,8 @@ const TodayView = memo(function TodayView({ today }: { today: Date | null }) {
             ["/familia", t.today.familyLearn],
             ["/familia/presion", t.today.familyPressure],
             ["/aventura", t.today.familyAdventure],
+            // Lo que aprende lo ve solo madre o padre (S15 · G-Plan 2a).
+            ...(learnsHere ? ([["/aprende", learnText.open]] as const) : []),
           ] as const
         ).map(([href, label]) => (
           <Link

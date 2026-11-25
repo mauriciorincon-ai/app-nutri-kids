@@ -100,6 +100,11 @@ export const daySchema = z.object({
     z.record(z.string().min(1).max(LUNCH_KEY_MAX), reg(z.enum(LUNCH_STATES))),
     MAP_CAPS.lunch,
   ).optional(),
+  // S15 · contexto del día (ADR-021): evento social, fuera de casa, alguien nuevo; solo «sí».
+  ctx: capped(
+    z.record(wellKey, reg(z.literal(true))),
+    MAP_CAPS.ctx,
+  ).optional(),
 });
 export const profileSchema = z.object({
   textures: reg(z.array(textureSchema)).optional(),

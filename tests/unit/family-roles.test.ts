@@ -1003,6 +1003,8 @@ describe("bienestar: qué puede escribir cada rol", () => {
     // S11 · lonchera: la pone un padre o quien cuida; el nombre de la etiqueta, solo un padre.
     { k: "lunch" },
     { k: "lunch-label" },
+    // S15 · contexto del día: un padre, quien cuida y el colegio; la nutricionista no.
+    { k: "ctx" },
   ];
   const label = (w: Write) =>
     "check" in w ? `${w.k}:${w.check}` : "meal" in w ? `${w.k}:${w.meal}` : w.k;
@@ -1017,8 +1019,9 @@ describe("bienestar: qué puede escribir cada rol", () => {
       "well",
       "habit",
       "lunch",
+      "ctx",
     ],
-    school: ["mood:meal:almuerzo", "food:almuerzo"],
+    school: ["mood:meal:almuerzo", "food:almuerzo", "ctx"],
     nutritionist: [],
   };
   for (const role of ROLES)
@@ -1373,6 +1376,11 @@ describe("bienestar contra el doble del servidor", () => {
       (i) => `opt:${long}-${long}-${i}`.slice(0, 100),
       () => "back",
     );
+    regs.ctx = fill(
+      MAP_CAPS.ctx,
+      (i) => ["social", "away", "new"][i],
+      () => true,
+    );
     expect(sealedSize(regs)).toBeLessThan(ITEM_MAX_CT);
   });
 });
@@ -1459,6 +1467,81 @@ describe("lonchera contra el doble del servidor (S11)", () => {
       "packed",
       "eaten",
     ])
+      expect(wire).not.toContain(word);
+  });
+});
+
+describe("contexto del día contra el doble del servidor (S15 · ADR-021)", () => {
+  const T = 70;
+  const ctx = (p: Phone, key = "social") => ({
+    [key]: { t: T, by: p.id, v: true },
+  });
+
+  it("lo que anota un cuidador o el colegio llega al padre, firmado y entero", async () => {
+    for (const who of ["c", "s"] as const) {
+      const f = await family();
+      const p = f[who];
+      p.data.days[DAY] = { marks: {}, notes: {}, ctx: ctx(p) } as never;
+      await f.sync(p);
+      await f.sync(f.a);
+      const got = f.a.data.days[DAY].ctx as Record<
+        string,
+        { v: boolean; by: string; s?: string }
+      >;
+      expect(got.social, who).toMatchObject({ v: true, by: p.id });
+      expect(got.social.s, who).toBeTruthy();
+      expect(f.a.state!.rejected, who).toBe(0);
+    }
+  });
+
+  it("la nutricionista no anota el contexto: el teléfono del padre lo descarta", async () => {
+    const f = await family();
+    f.n.data.days[DAY] = { marks: {}, notes: {}, ctx: ctx(f.n, "away") } as never;
+    await f.sync(f.n);
+    await f.sync(f.a);
+    expect(f.a.data.days[DAY]?.ctx).toBeUndefined();
+    expect(f.a.state!.rejected).toBe(1);
+  });
+
+  it("un padre bien firmado con una clave que no existe o un valor que no es «sí»: el registro no se abre", async () => {
+    const bad = [
+      ["cumpleanos", true],
+      ["social", false],
+      ["social", "yes"],
+    ] as const;
+    for (const [key, value] of bad) {
+      const { a, c, forge, sync } = await family();
+      const sa = await a.signer;
+      const r = { t: 80, by: a.id, v: value };
+      await forge(a, {
+        name: `day:${DAY}`,
+        data: {
+          marks: {},
+          notes: {},
+          ctx: {
+            [key]: {
+              ...r,
+              s: await sign(sa, entryPayload(`day:${DAY}`, key, r)),
+            },
+          },
+        } as never,
+      });
+      await sync(c);
+      expect(c.data.days[DAY]?.ctx, `${key}=${value}`).toBeUndefined();
+      expect(
+        c.state!.rejected + c.state!.unreadable,
+        `${key}=${value}`,
+      ).toBeGreaterThan(0);
+    }
+  });
+
+  it("el servidor no ve qué contexto hubo (todo cruza cifrado)", async () => {
+    const { net, c, sync } = await family();
+    c.data.days[DAY] = { marks: {}, notes: {}, ctx: ctx(c, "away") } as never;
+    await sync(c);
+    expect(net.wire.length).toBeGreaterThan(0);
+    const wire = net.wire.join("\n");
+    for (const word of ["ctx", "away", "social"])
       expect(wire).not.toContain(word);
   });
 });

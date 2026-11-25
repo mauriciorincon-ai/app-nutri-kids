@@ -45,6 +45,7 @@ export const SHELL_ROUTES = [
   "/familia",
   "/familia/presion",
   "/aventura",
+  "/aprende",
 ];
 
 /** Cascarón del detalle de alimento: sirve de respaldo a `/dieta/<id>` sin visita previa. */

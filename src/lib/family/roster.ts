@@ -263,7 +263,9 @@ export type Write =
   | { k: "lunch" }
   | { k: "lunch-label" }
   // S14 · «cuando le ofrecen algo» (ADR-020, G-Plan 1a): cualquiera de la familia anota lo suyo.
-  | { k: "pressure" };
+  | { k: "pressure" }
+  // S15 · contexto del día (ADR-021): evento social, fuera de casa, alguien nuevo.
+  | { k: "ctx" };
 
 /** Todas las clases de escritura, para la prueba de permisos de cada rol contra cada una. */
 export const WRITE_KINDS = [
@@ -282,6 +284,7 @@ export const WRITE_KINDS = [
   "lunch",
   "lunch-label",
   "pressure",
+  "ctx",
 ] as const satisfies readonly Write["k"][];
 
 /** El corazón de los permisos: lo usan la pantalla (esconde) y la sincronía (descarta). */
@@ -303,10 +306,11 @@ export function may(
         w.k === "well" ||
         w.k === "habit" ||
         w.k === "lunch" ||
-        w.k === "pressure"
+        w.k === "pressure" ||
+        w.k === "ctx"
       );
     case "school":
-      if (w.k === "notice" || w.k === "pressure") return true;
+      if (w.k === "notice" || w.k === "pressure" || w.k === "ctx") return true;
       if (w.k === "mark" || w.k === "day-note" || w.k === "mood") {
         const m = /^meal:(.+)$/.exec(w.check);
         return !!m && (member.meals ?? []).includes(m[1]);
@@ -319,6 +323,20 @@ export function may(
         w.k === "day-note" || w.k === "profile-note" || w.k === "pressure"
       );
   }
+}
+
+/**
+ * Cuándo entró un teléfono a la familia: la hora (ms) de su primer `set` firmado en la cadena.
+ * `null` si es de los que fundaron la familia (génesis) o si no aparece. Lo usa «alguien nuevo»
+ * del riesgo del día (S15 · ADR-021); no toca llaves ni firmas.
+ */
+export function joinedAt(ops: readonly Op[], id: string): number | null {
+  for (const op of ops) {
+    const b = op.body;
+    if (b.type === "genesis" && b.members.some((m) => m.id === id)) return null;
+    if (b.type === "set" && b.member.id === id) return op.t;
+  }
+  return null;
 }
 
 /** Una etiqueta corta para invitar (4 caracteres Crockford). */

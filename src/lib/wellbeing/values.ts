@@ -7,7 +7,7 @@ import type { Reg, RegMap } from "@/lib/family/merge";
  * los cargan las pantallas que los muestran.
  *
  * Nada de esto es una escala clínica ni un puntaje: son palabras de casa que quien cuida elige.
- * La app jamás las interpreta, las suma ni las compara entre sí.
+ * Aquí jamás se interpretan, suman ni comparan entre sí; lo que se repite lo cuenta `lib/insights` (S15), en conteos y sin causas.
  */
 
 /** Cómo llega a la comida (semáforo emocional). Un toque, junto a la marca de esa comida. */
@@ -87,12 +87,22 @@ export type LunchState = (typeof LUNCH_STATES)[number];
 /** Largo máximo de la clave de un alimento de la lonchera (lo valida también la familia). */
 export const LUNCH_KEY_MAX = 100;
 
+/**
+ * El contexto del día (S15 · ADR-021): lo que un adulto sabe de hoy y la app no puede ver. Tres
+ * avisos de sí o no, sin texto libre: hay un evento social, hoy está fuera de casa, hay alguien
+ * nuevo cuidándolo. «Alguien nuevo» también se calcula de la familia; este es el aviso a mano.
+ */
+export const CTX_KEYS = ["social", "away", "new"] as const;
+export type CtxId = (typeof CTX_KEYS)[number];
+
 export type WellbeingMaps = {
   moods: RegMap<MoodId>;
   food: RegMap<FoodValue>;
   well: RegMap<string>;
   habits: RegMap<number>;
   lunch: RegMap<LunchState>;
+  /** Contexto del día: cada clave vale `true` o no está (la lápida la quita). */
+  ctx: RegMap<true>;
 };
 export const WELLBEING_MAPS = [
   "moods",
@@ -100,6 +110,7 @@ export const WELLBEING_MAPS = [
   "well",
   "habits",
   "lunch",
+  "ctx",
 ] as const;
 export type WellbeingMap = (typeof WELLBEING_MAPS)[number];
 
@@ -110,6 +121,7 @@ export const MAP_CAPS: Record<WellbeingMap, number> = {
   well: SYMPTOM_IDS.length + 2,
   habits: HABITS.length,
   lunch: 14,
+  ctx: CTX_KEYS.length,
 };
 
 /** Franja de edad que un padre elige en el perfil (decisión 1a del G-Plan). Jamás una fecha. */
@@ -195,6 +207,11 @@ export const isLunchState = (v: unknown): v is LunchState =>
 /** La clave de un alimento de la lonchera: su id del plan, o `opt:<nombre>` si es una opción de equivalencia. */
 export const lunchKeyOk = (k: unknown): k is string =>
   typeof k === "string" && k.length > 0 && k.length <= LUNCH_KEY_MAX;
+
+export const isCtx = (k: unknown): k is CtxId => has(CTX_KEYS, k);
+/** El contexto solo dice «sí»: lo demás no se guarda (quitarlo es una lápida). */
+export const coerceCtx = (key: string, raw: unknown): true | null =>
+  isCtx(key) && raw === true ? true : null;
 
 export const isHabit = (k: string): k is HabitId => has(HABITS, k);
 export const isSymptom = (k: string): k is SymptomId =>

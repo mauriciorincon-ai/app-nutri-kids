@@ -12,7 +12,7 @@
     "enlaces.produccion": "null cuando la app no tiene URL pública. `razon` explica por qué, y es lo que la vitrina muestra en lugar del enlace. Nunca se rellena con un enlace de repositorio ni con una promesa."
   },
   "schema_version": "1.0.0",
-  "actualizado": "2026-11-24",
+  "actualizado": "2026-11-25",
   "app": {
     "slug": "nutri-kids",
     "nombre": "Nutrikids",
@@ -29,7 +29,7 @@
     "diferencial": "No califica al niño: sin calorías, peso, IMC ni percentiles, y sin convertir el «cumplimiento» en una nota. El chat contesta con tu plan dentro del teléfono y sin internet: no manda nada a ningún lado, ni siquiera para hacerle una pregunta. Lo que anotas del día, las horas y las notas sobre tu hijo solo viaja a tu familia si tú lo decides, y siempre cifrado desde el teléfono."
   },
   "funcionalidades": {
-    "total": 42,
+    "total": 45,
     "fuente_del_conteo": "docs/MANUAL-DE-USO.md",
     "descartadas": [],
     "grupos": [
@@ -178,6 +178,12 @@
             "nombre": "Claro, oscuro o el de tu teléfono",
             "que_hace": "En Ajustes eliges el tema: claro, oscuro o el que use tu teléfono. El semáforo se lee igual en los dos, con símbolo, palabra y color, y no hay destello al abrir.",
             "seccion_manual": "Tema: claro, oscuro o el del teléfono"
+          },
+          {
+            "id": "F43",
+            "nombre": "El día de hoy y qué preparar",
+            "que_hace": "En Hoy hay una tarjeta con una mochila que se llena según el día: «Mochila ligera», «con algo más» o «llena», en ciruela y con símbolo y palabras, nunca en rojo. Dice por qué (una noche más corta que la referencia de su edad, un evento con más gente, fuera de casa, alguien nuevo cuidándolo) y qué preparar, con enlaces a lo que la app ya tiene. Madre o padre, cuidador y colegio anotan el contexto con un toque, y «alguien nuevo» también se nota solo. No avisa ni suena: se ve al abrir Hoy.",
+            "seccion_manual": "Lo que aprende y el día de hoy"
           }
         ]
       },
@@ -287,7 +293,7 @@
         "orden": 6,
         "estrella": false,
         "nombre": "Entre varios, y cuando algo falla",
-        "linea": "Cada quien con su rol y una bitácora de quién cambió qué, un plan B hecho con tu plan, fichas para los días especiales y la unión de dos planes",
+        "linea": "Cada quien con su rol y una bitácora de quién cambió qué, un plan B hecho con tu plan, fichas para los días especiales y la unión de dos planes, lecciones para la familia, la aventura del niño y lo que se aprende de lo anotado",
         "features": [
           {
             "id": "F24",
@@ -330,6 +336,18 @@
             "nombre": "La aventura del niño",
             "que_hace": "En Hoy → «Para la familia» → «La aventura de tu peque», un juego tranquilo con tres mundos (el huerto de Brote, la expedición de Lumo y el cielo de Nubo) que el niño elige. La energía es una sola, sale de cuidarse y explorar (dormir, moverse, el sol, el agua, ayudar en la cocina, conocer algo nuevo), nunca de comer, y solo sube. El modo niño deja el teléfono de un adulto sin plan ni Ajustes; solo un adulto sale, con una pulsación larga y una suma escrita en palabras.",
             "seccion_manual": "La aventura del niño"
+          },
+          {
+            "id": "F44",
+            "nombre": "Lo que aprende: la semana y lo que se repite",
+            "que_hace": "En Hoy → «Para la familia» → «Lo que aprende», solo para madre y padre: la semana frente al plan en palabras y conteos («5 de 7 días anotados dentro del plan»), nunca un porcentaje, con lo que más cuesta y un calendario de cuatro semanas. Un día sin anotar no resta. «Lo que se repite» muestra, con su conteo, lo que coincidió al menos 3 veces (cuándo, dónde y qué coincidió); con menos de 7 días anotados calla y dice cuántos faltan. Jamás dice por qué pasa algo ni cambia el plan.",
+            "seccion_manual": "Lo que aprende y el día de hoy"
+          },
+          {
+            "id": "F45",
+            "nombre": "Lo que va aprendiendo",
+            "que_hace": "La estadística propia de la app, dentro del teléfono y sin ningún servicio ni inteligencia artificial: con menos de 14 días anotados dice «Aún aprendiendo (N de 14 días)» y no cambia nada; después cuenta qué pesa en el día, qué acepta mejor y qué alimentos de tu plan aún no ha probado. Solo madre y padre lo ven, nunca sale del teléfono, y «Borrar lo aprendido» lo deja en cero sin tocar lo anotado.",
+            "seccion_manual": "Lo que aprende y el día de hoy"
           }
         ]
       }
@@ -339,7 +357,7 @@
     {
       "clave": "funcionalidades",
       "etiqueta": "Funcionalidades",
-      "valor": 39,
+      "valor": 45,
       "unidad": "funcionalidades",
       "fuente": "medido",
       "detalle": "Contadas contra docs/MANUAL-DE-USO.md y verificadas por un test que compara el total con los bloques .feature del brochure. El marco no-médico (nota de primer uso y disclaimer permanente) no cuenta: es el encuadre de la app, no una funcionalidad."
@@ -347,42 +365,42 @@
     {
       "clave": "pantallas",
       "etiqueta": "Pantallas de la app",
-      "valor": 22,
+      "valor": 23,
       "unidad": "pantallas",
       "fuente": "medido",
-      "detalle": "Veintiún rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes, perfil, escenarios, unir, bienestar, lonchera, recetas, viaje, cámara, qué cocinar con lo que tienes, leer una etiqueta, el modo súper, las lecciones para la familia, «cuando le ofrecen algo» y la aventura del niño) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
+      "detalle": "Veintidós rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes, perfil, escenarios, unir, bienestar, lonchera, recetas, viaje, cámara, qué cocinar con lo que tienes, leer una etiqueta, el modo súper, las lecciones para la familia, «cuando le ofrecen algo», la aventura del niño y lo que aprende) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
     },
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 1728,
+      "valor": 1801,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-24 sobre la rama de la familia y el niño (S14): 95 archivos, 1728 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-25 sobre la rama de lo que aprende (S15): 98 archivos, 1801 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 376,
+      "valor": 384,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-24 sobre la rama de la familia y el niño (S14), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 376 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 374 en verde y 2 omitidas por diseño; ni el modelo de la cámara, ni el lector de etiquetas ni el escáner reales corren aquí: los sustituyen workers simulados, y un catálogo inventado."
+      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-25 sobre la rama de lo que aprende (S15), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 384 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 382 en verde y 2 omitidas por diseño; ni el modelo de la cámara, ni el lector de etiquetas ni el escáner reales corren aquí: los sustituyen workers simulados, y un catálogo inventado."
     },
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 97.22,
+      "valor": 97.29,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre las 19 carpetas de src/lib el 2026-11-24 sobre la rama de la familia y el niño (97,22 % de líneas en total; cada carpeta en 80 % o más), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
+      "detalle": "v8 sobre las 20 carpetas de src/lib el 2026-11-25 sobre la rama de lo que aprende (97,29 % de líneas en total; cada carpeta en 80 % o más), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
     },
     {
       "clave": "decisiones_registradas",
       "etiqueta": "Decisiones de arquitectura registradas",
-      "valor": 20,
+      "valor": 21,
       "unidad": "ADR",
       "fuente": "medido",
-      "detalle": "Archivos de decisions/ el 2026-11-24; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono, la 013 fija los roles con firma por persona, la 014 el plan B, los días especiales y la unión de dos planes, y la 015 el bienestar (se anota, nunca se interpreta, con la franja de edad en vez de la fecha de nacimiento). La 016 fija el tema oscuro (se elige en Ajustes, se recuerda y no destella) y la 017 la lonchera, el recetario y el modo viaje: todo se arma con el plan y en el teléfono. La 018 fija que la cámara solo ve: un modelo pequeño que corre en el teléfono nombra lo que ve y el código decide todo lo demás, sin que la foto se guarde ni salga. La 019 fija que el lector de etiquetas solo transcribe y el código decide: el texto se lee en el teléfono, se coteja con el plan y un texto mal leído jamás da «apto»; el catálogo de productos de Colombia (Open Food Facts, ODbL) se baja una vez y se busca en el teléfono, sin que la foto ni lo escaneado salgan. La 020 fija las lecciones para la familia (parafraseadas y con su fuente), el registro «Cuando le ofrecen algo» (sin texto libre; madre y padre ven todo, la regla la cumple la app y no la criptografía) y la aventura del niño: una sola energía que solo sube y que nunca sale de comer, y el modo niño con salida de adulto."
+      "detalle": "Archivos de decisions/ el 2026-11-25; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono, la 013 fija los roles con firma por persona, la 014 el plan B, los días especiales y la unión de dos planes, y la 015 el bienestar (se anota, nunca se interpreta, con la franja de edad en vez de la fecha de nacimiento). La 016 fija el tema oscuro (se elige en Ajustes, se recuerda y no destella) y la 017 la lonchera, el recetario y el modo viaje: todo se arma con el plan y en el teléfono. La 018 fija que la cámara solo ve: un modelo pequeño que corre en el teléfono nombra lo que ve y el código decide todo lo demás, sin que la foto se guarde ni salga. La 019 fija que el lector de etiquetas solo transcribe y el código decide: el texto se lee en el teléfono, se coteja con el plan y un texto mal leído jamás da «apto»; el catálogo de productos de Colombia (Open Food Facts, ODbL) se baja una vez y se busca en el teléfono, sin que la foto ni lo escaneado salgan. La 020 fija las lecciones para la familia (parafraseadas y con su fuente), el registro «Cuando le ofrecen algo» (sin texto libre; madre y padre ven todo, la regla la cumple la app y no la criptografía) y la aventura del niño: una sola energía que solo sube y que nunca sale de comer, y el modo niño con salida de adulto. La 021 fija lo que aprende la app: la adherencia en palabras y conteos (jamás un porcentaje), lo que se repite sin causa y con su conteo, el día de hoy y qué preparar, y un gemelo que es estadística propia en el teléfono, sin IA, que calla hasta tener 14 días anotados; madre y padre ven lo aprendido y quien cuida ese día ve el día de hoy."
     },
     {
       "clave": "dependencias_runtime",
@@ -411,10 +429,10 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 99891,
+      "valor": 102672,
       "unidad": "bytes",
       "fuente": "medido",
-      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-24 sobre la rama de la familia y el niño (S14). Autocontenido: cero recursos externos, incluidas las seis muestras de interfaz (SVG en línea, no imágenes)."
+      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-25 sobre la rama de lo que aprende (S15). Autocontenido: cero recursos externos, incluidas las seis muestras de interfaz (SVG en línea, no imágenes)."
     }
   ],
   "stack": [

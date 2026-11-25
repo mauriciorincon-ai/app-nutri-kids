@@ -9,7 +9,7 @@ import type { Locale } from "./index";
 
 const es = {
   title: "Bienestar",
-  lead: "Anota en segundos cómo está hoy, cómo llega a la mesa y cómo van sus hábitos. Solo se anota: la app no interpreta nada.",
+  lead: "Anota en segundos cómo está hoy, cómo llega a la mesa y cómo van sus hábitos. Aquí solo se anota; lo que se repite lo cuenta «Lo que aprende», sin diagnosticar.",
   notMedical:
     "Esto se anota para que la familia lo vea junto. No es un diagnóstico y no reemplaza a tu pediatra.",
 
@@ -177,7 +177,7 @@ const es = {
 
 const en: typeof es = {
   title: "Wellbeing",
-  lead: "Note in seconds how they are today, how they come to the table and how their habits are going. It only records: the app interprets nothing.",
+  lead: "Note in seconds how they are today, how they come to the table and how their habits are going. Here you only note; what repeats is counted by “What it learns”, without diagnosing.",
   notMedical:
     "This is noted so the family can see it together. It is not a diagnosis and does not replace your pediatrician.",
 
