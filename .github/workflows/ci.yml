@@ -34,6 +34,10 @@ jobs:
         run: |
           HOMEPAGE="$(gh api "repos/${GITHUB_REPOSITORY}" --jq '.homepage // ""')"
           node scripts/cero-enlaces.mjs --homepage "$HOMEPAGE"
+      # kit v2.5.0 — regla 10: ni design-system.md ni una pantalla de la maqueta sin la marca del dueño en
+      # docs/diseno/MARCA.md (aquí «heredada»: G-Diseño del S1, 2026-07-07). Demo en rojo: tests/unit/gate-marca.test.ts.
+      - name: Marca aprobada por el dueño antes de construir encima (regla 10, kit v2.5.0)
+        run: node scripts/gate-marca.mjs
 
   e2e:
     runs-on: ubuntu-latest

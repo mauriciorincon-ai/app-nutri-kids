@@ -25,6 +25,7 @@ import { aadFor, open, recordId, seal, type FamilyKeys } from "./crypto";
 import { logSharedSchema } from "./log";
 import { rosterSchema } from "./roster";
 import { PUB_RE, SIG_RE } from "./sign";
+import { pressureSharedSchema } from "@/lib/pressure/shared";
 
 /**
  * Lo que viaja, ANTES de cifrarse (S7 · decisión 2 del G-Plan · ADR-011): el plan, el día
@@ -167,7 +168,9 @@ export type Named =
   | { name: `device:${string}`; data: DeviceShared }
   | { name: `notice:${string}`; data: NoticeShared }
   | { name: "roster"; data: z.infer<typeof rosterSchema> }
-  | { name: `log:${string}`; data: z.infer<typeof logSharedSchema> };
+  | { name: `log:${string}`; data: z.infer<typeof logSharedSchema> }
+  // S14 · lo que este teléfono anotó de «cuando le ofrecen algo» (ADR-020).
+  | { name: `pressure:${string}`; data: z.infer<typeof pressureSharedSchema> };
 
 /** Tipo que ve el servidor: solo distingue el plan (más grande) del resto. */
 export type Kind = "plan" | "item";
@@ -226,6 +229,12 @@ export function parseNamed(value: unknown): Named | null {
     const data = pick(logSharedSchema);
     return data && data.by === n.slice(4)
       ? { name: n as `log:${string}`, data }
+      : null;
+  }
+  if (n.startsWith("pressure:")) {
+    const data = pick(pressureSharedSchema);
+    return data && data.by === n.slice(9)
+      ? { name: n as `pressure:${string}`, data }
       : null;
   }
   return null;

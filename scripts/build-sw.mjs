@@ -42,6 +42,9 @@ export const SHELL_ROUTES = [
   "/camara/cocina",
   "/camara/etiqueta",
   "/camara/super",
+  "/familia",
+  "/familia/presion",
+  "/aventura",
 ];
 
 /** Cascarón del detalle de alimento: sirve de respaldo a `/dieta/<id>` sin visita previa. */

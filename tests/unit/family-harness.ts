@@ -13,6 +13,7 @@ import { appendOp, foldRoster } from "@/lib/family/roster";
 import { newSigner, type Signer } from "@/lib/family/sign";
 import { freshFamilyState, type FamilyState } from "@/lib/family/state";
 import type { LocalData, PlanSide } from "@/lib/family/sync";
+import type { PressureStore } from "@/lib/pressure/store";
 
 export const SENTINELS = [
   "SENTINEL-NAME",
@@ -68,6 +69,8 @@ export function phone(id: string, name: string, now = { t: 1_000 }) {
     plan: null as PlanSide | null,
     name,
     notices: {} as Record<string, NoticeShared>,
+    // S14 · «cuando le ofrecen algo»: lo propio y, solo en madre o padre, lo de los demás.
+    pressure: { own: [], others: {} } as PressureStore,
   };
   let state: FamilyState | null = null;
   const signer: Promise<Signer> = newSigner();
@@ -111,6 +114,19 @@ export function phone(id: string, name: string, now = { t: 1_000 }) {
     mergeNotice(nid, n) {
       if (data.notices[nid]) return false;
       data.notices[nid] = n;
+      return true;
+    },
+    pressure: () => data.pressure.own,
+    mergePressure(by, ev) {
+      const before = JSON.stringify(data.pressure.others[by] ?? []);
+      if (before === JSON.stringify(ev)) return false;
+      if (ev.length) data.pressure.others[by] = ev;
+      else delete data.pressure.others[by];
+      return true;
+    },
+    dropPressureOthers() {
+      if (Object.keys(data.pressure.others).length === 0) return false;
+      data.pressure.others = {};
       return true;
     },
     plan: () => data.plan,

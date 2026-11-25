@@ -7,7 +7,7 @@
 ## Personalidad
 
 **Es:** cálido · cercano · sereno.
-**Jamás será:** clínico/hospitalario · gamificado infantil · corporativo.
+**Jamás será:** clínico/hospitalario · gamificado infantil · corporativo. Única excepción, decidida por el dueño el 2026-11-24 (S14, ADR-020): la aventura del modo niño (`/aventura`) — «Las quiero todas»: el huerto de Brote, la expedición de Lumo y el cielo de Nubo, y «El niño elige su mundo». Fuera de ella la app sigue sin gamificar; y ni en ella la comida es premio ni la energía baja.
 
 Es una herramienta de cuidado que usan adultos (la mamá, en su teléfono, a la hora de la
 merienda). El tono visual es el de una cocina familiar ordenada: colores de despensa (crema,
@@ -209,3 +209,13 @@ El "por qué" del semáforo siempre en palabras simples.
 - **La descarga se dice con palabras:** «Descargar el lector» / «Descargar el catálogo» con su tamaño antes del toque, «Descargando: N de M MB» (`role="status"`), el fallo con `role="alert"` y «Intentar de nuevo»; sin el lector o el catálogo siempre queda una salida (la foto de la etiqueta, escribir el código).
 - **La atribución ODbL es parte de la pantalla, no letra pequeña:** «Datos de productos © colaboradores de Open Food Facts, bajo la licencia ODbL» con «Ver la licencia», en el modo súper y en Ajustes.
 - **Entrada:** dos enlaces más en `/camara` («Leer la etiqueta de un producto», «Modo súper: escanear un código de barras»); la barra inferior se queda en 6 y Hoy no gana nada.
+
+## La familia y la aventura (S14 · ADR-020)
+
+- **Para la familia y «Cuando le ofrecen algo» son pantallas calmadas, sin alarma:** lecciones en `<details>` de 44 px con su fuente al pie; «Qué sí y qué no» con `StatusChip` (rojo «No», amarillo «Con condición», verde «Sí») y sin una sola cifra; el registro se llena con `ChoiceRow` (cuatro preguntas, sin texto libre) y el patrón dice «dónde» y «qué», jamás «quién». Los enlaces entre estas pantallas no precargan (`prefetch={false}`).
+- **La aventura es la única excepción a «gamificado infantil»,** y es del dueño: «Las quiero todas» y «El niño elige su mundo» (`docs/diseno/marca/juego.html`). Son tres mundos, un solo juego. **Brote** (el huerto; la energía son gotas), **Lumo** (la expedición; chispas de luz) y **Nubo** (el cielo; estrellas) dibujan la MISMA energía: cambiar de mundo no la borra ni la parte, y se puede hacer en cualquier momento. Sus colores son los tokens `--adv-*` de `globals.css` (claro y oscuro); no se usan fuera de `/aventura`.
+- **La energía solo sube y jamás sale de comer.** Sale de dormir, moverse o jugar, el agua, el sol, ayudar en la cocina y conocer algo nuevo (mirarlo o tocarlo cuenta igual que probarlo); la pantalla no cuenta. Una chispa por hábito y día, sin rachas, sin metas, sin pérdida: nada se marchita, se apaga ni se pierde de vista. Lo que falta para el siguiente paso se dice en positivo («Con 2 gotas más nace una flor nueva»); al final, «Las gotas siguen sumando».
+- **Cada ficha lleva símbolo + palabra + color, y lo hecho lleva ✓ y «hecho»:** seis fichas (dormir, moverse, agua, sol, cocina, algo nuevo) con los mismos seis símbolos en los tres mundos (`glyph.tsx`). Las fichas de lo que ya está en el día de la familia solo se ven; la de la cocina es un botón de 64 px que toca el niño. La forma cambia por mundo (tarjetas, sellos redondos, píldoras), nunca el significado.
+- **Pantalla completa y táctil de niño:** sin cabecera, sin barra inferior, sin plan ni Ajustes; botones de 64 px o más (los tres mundos y la cocina), texto de 12 px como mínimo en las fichas, `aria-label` en cada dibujo y `prefers-reduced-motion` respetado (el farol de Lumo solo respira cuando se permite el movimiento). Pasa por axe en los dos temas reales.
+- **El modo niño es de un adulto:** se activa en `/aventura` («Activar modo niño») y el teléfono se queda ahí, también con Atrás y con una URL escrita (el script del `<head>` y `KidGuard`). La salida pide al adulto mantener pulsado dos segundos y resolver una suma que se lee en palabras, escrita con el teclado numérico. El aviso «no reemplaza a tu pediatra» va al pie de la pantalla, sin enlace a Ajustes.
+- **Entrada:** un tercer enlace en «Para la familia» de Hoy («La aventura de tu peque»); la barra inferior se queda en 6.

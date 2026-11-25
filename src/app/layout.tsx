@@ -5,6 +5,7 @@ import "./globals.css";
 import { AppHeader } from "@/components/app-shell/app-header";
 import { BottomNav } from "@/components/app-shell/bottom-nav";
 import { DisclaimerFooter } from "@/components/app-shell/disclaimer-footer";
+import { KidGuard } from "@/components/app-shell/kid-guard";
 import { FirstUseDialog } from "@/components/app-shell/first-use-dialog";
 import { SwRegister } from "@/components/app-shell/sw-register";
 import { ThemeSync } from "@/components/app-shell/theme-sync";
@@ -71,7 +72,7 @@ export default function RootLayout({
             Debe correr ANTES de pintar — por eso es inline y síncrono. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `${THEME_SCRIPT}try{var p=JSON.parse(localStorage.getItem("nutrikids.prefs.v1")||"{}");if(p.disclaimerSeen)document.documentElement.setAttribute("data-first-use-seen","");if(p.chatIntroSeen)document.documentElement.setAttribute("data-chat-intro-seen","")}catch(e){}`,
+            __html: `${THEME_SCRIPT}try{var p=JSON.parse(localStorage.getItem("nutrikids.prefs.v1")||"{}");if(p.disclaimerSeen)document.documentElement.setAttribute("data-first-use-seen","");if(p.chatIntroSeen)document.documentElement.setAttribute("data-chat-intro-seen","")}catch(e){}try{if(localStorage.getItem("nutrikids.kidmode.v1")==="1"&&location.pathname!=="/aventura")location.replace("/aventura")}catch(e){}`,
           }}
         />
         <I18nProvider>
@@ -87,6 +88,7 @@ export default function RootLayout({
             <FirstUseDialog />
             <ThemeSync />
             <SwRegister />
+            <KidGuard />
             <FamilySync />
             <PushSync />
           </DietProvider>

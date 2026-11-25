@@ -305,6 +305,37 @@ const TodayView = memo(function TodayView({ today }: { today: Date | null }) {
         ))}
       </nav>
 
+      <nav
+        aria-labelledby="family-links-label"
+        className="flex flex-wrap items-center gap-x-4"
+        data-testid="family-links"
+      >
+        <span
+          id="family-links-label"
+          className="w-full text-sm font-semibold text-muted-foreground"
+        >
+          {t.today.familyLabel}
+        </span>
+        {(
+          [
+            ["/familia", t.today.familyLearn],
+            ["/familia/presion", t.today.familyPressure],
+            ["/aventura", t.today.familyAdventure],
+          ] as const
+        ).map(([href, label]) => (
+          <Link
+            key={href}
+            href={href}
+            // Secundarias: Hoy no paga sus bytes al abrir (S14, como la cámara en el S13).
+            prefetch={false}
+            className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-primary hover:underline"
+          >
+            {label}
+            <ChevronRight aria-hidden className="size-4" />
+          </Link>
+        ))}
+      </nav>
+
       <Link
         href="/perfil"
         className="inline-flex min-h-11 items-center gap-1 self-start text-sm font-medium text-primary hover:underline"

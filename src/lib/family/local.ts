@@ -4,6 +4,12 @@ import { applyRemotePlan, readSharedPlan } from "@/lib/diet/storage";
 import { dateKey } from "@/lib/diet/logic";
 import { getDeviceId, getDeviceName } from "@/lib/device";
 
+import {
+  dropPressureOthers,
+  mergePressureOthers,
+  readPressure,
+} from "@/lib/pressure/store";
+
 import { noticeRecords, putNotice } from "./notices";
 import type { LocalData } from "./sync";
 
@@ -20,5 +26,8 @@ export function browserLocal(): LocalData {
     applyPlan: applyRemotePlan,
     notices: () => noticeRecords(dateKey(new Date())),
     mergeNotice: (id, notice) => putNotice(id, notice, dateKey(new Date())),
+    pressure: () => readPressure().own,
+    mergePressure: (by, ev) => mergePressureOthers(by, ev),
+    dropPressureOthers: () => dropPressureOthers(),
   };
 }

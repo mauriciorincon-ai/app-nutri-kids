@@ -1,5 +1,5 @@
 {
-  "_comment": "Rutas auditadas por Lighthouse CI contra perf-budget.json. Añadir aquí cada ruta nueva con LCP-sensibilidad (S1: / y /dieta; S2: +/chat; S3: +/historial; entrega brochure: +/conoce; S6: +/cargar, el PDF se lee con pdf.js cargado solo al elegirlo; S7: +/ajustes, donde vive compartir con la familia; S9: +/escenarios, offline y sin red; S10: +/bienestar, la pantalla nueva de hábitos; S11: +/lonchera, /recetas y /viaje, las tres del día a día, sin red; S12: +/camara y /camara/cocina, la cámara y «qué cocinar»; el modelo no se descarga ni se pide al abrirlas; S13: +/camara/etiqueta y /camara/super, ni el lector ni el catálogo se descargan al abrirlas). Todas son públicas en preview.",
+  "_comment": "Rutas auditadas por Lighthouse CI contra perf-budget.json. Añadir aquí cada ruta nueva con LCP-sensibilidad (S1: / y /dieta; S2: +/chat; S3: +/historial; entrega brochure: +/conoce; S6: +/cargar, el PDF se lee con pdf.js cargado solo al elegirlo; S7: +/ajustes, donde vive compartir con la familia; S9: +/escenarios, offline y sin red; S10: +/bienestar, la pantalla nueva de hábitos; S11: +/lonchera, /recetas y /viaje, las tres del día a día, sin red; S12: +/camara y /camara/cocina, la cámara y «qué cocinar»; el modelo no se descarga ni se pide al abrirlas; S13: +/camara/etiqueta y /camara/super, ni el lector ni el catálogo se descargan al abrirlas; S14: +/familia, /familia/presion y /aventura, lecciones, registro y el modo niño sin red). Todas son públicas en preview.",
   "urls": [
     "http://127.0.0.1:3600",
     "http://127.0.0.1:3600/dieta",
@@ -16,6 +16,9 @@
     "http://127.0.0.1:3600/camara",
     "http://127.0.0.1:3600/camara/cocina",
     "http://127.0.0.1:3600/camara/etiqueta",
-    "http://127.0.0.1:3600/camara/super"
+    "http://127.0.0.1:3600/camara/super",
+    "http://127.0.0.1:3600/familia",
+    "http://127.0.0.1:3600/familia/presion",
+    "http://127.0.0.1:3600/aventura"
   ]
 }

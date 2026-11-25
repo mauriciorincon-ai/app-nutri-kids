@@ -22,6 +22,9 @@ export function BottomNav() {
   const pathname = usePathname();
   const { t } = useI18n();
 
+  // La aventura es pantalla completa: sin barra ni Ajustes a la vista (S14 · modo niño).
+  if (pathname === "/aventura") return null;
+
   const items = [
     { href: "/", label: t.nav.today, Icon: CalendarCheck },
     { href: "/dieta", label: t.nav.diet, Icon: Salad },

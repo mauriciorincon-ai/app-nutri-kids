@@ -303,6 +303,15 @@ function ScenarioBody({ data, l }: { data: ScenarioData; l: LocalizeFn }) {
           {safe && <p>{sayText(t.scenarios.sayOfferedAlt)}</p>}
         </Block>
         {avoidBlock}
+        <Link
+          href="/familia/presion"
+          prefetch={false}
+          className="inline-flex min-h-11 items-center gap-1 self-start text-sm font-medium text-primary hover:underline"
+          data-testid="scenario-note-it"
+        >
+          {t.scenarios.noteIt}
+          <ChevronRight aria-hidden className="size-4" />
+        </Link>
         {doubt}
       </>
     );

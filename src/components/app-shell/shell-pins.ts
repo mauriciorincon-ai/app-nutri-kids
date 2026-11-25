@@ -9,6 +9,14 @@
  * Importado desde el cascarón, el módulo pertenece a todas las pantallas y viaja una sola vez. El
  * gate es el presupuesto de script de Lighthouse (`perf-budget.json`): sin el ancla, sale en rojo.
  */
+import { roleCan } from "@/components/family/roles";
+import { Checkbox } from "@/components/ui/checkbox";
 import { expandAvoid } from "@/lib/diet/allergen-families";
 
-export const SHELL_PINS = [expandAvoid] as const;
+/**
+ * S14: el `Checkbox` de Radix y `family/roles` viajaban juntos en una fusión compartida por ocho
+ * pantallas. Al crecer el grafo, turbopack la partió y una de las dos piezas se copió dentro de
+ * cada pantalla (`/camara` bajaba cuatro copias de `roles`). Van ancladas en pareja: con una sola,
+ * la otra se duplica.
+ */
+export const SHELL_PINS = [expandAvoid, Checkbox, roleCan] as const;

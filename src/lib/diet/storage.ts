@@ -2,15 +2,13 @@ import demoRaw from "../../../data/demo-diet.json";
 import { clearDevice, getDeviceId } from "../device";
 import { clearKeys, clearSigner } from "../family/keystore";
 import { clearNotices } from "../family/notices";
+import { clearAdventure } from "../adventure/store";
+import { clearPressure } from "../pressure/store";
 import { clearFamilyLocal } from "../family/state";
 import { log } from "../log";
 import { clearPushState } from "../push/state";
 import { clearDayToDay } from "../day-to-day/store";
-import {
-  dietCounts,
-  parseDietJson,
-  type DietPlan,
-} from "./schema";
+import { dietCounts, parseDietJson, type DietPlan } from "./schema";
 import { clearDayLog } from "./day-log";
 import { clearProfileNotes } from "./profile-notes";
 import { clearPlanDraft } from "./plan-draft";
@@ -274,6 +272,10 @@ export function clearAllData(): void {
   // copia del trabajador las quita «Borrar datos» en Ajustes (necesitan red y IndexedDB).
   clearNotices();
   clearPushState();
+  // S14: «cuando le ofrecen algo» (lo propio y lo de los demás).
+  clearPressure();
+  // S14: la aventura (el libro de chispas, el mundo y el modo niño). Es el único camino que baja la energía.
+  clearAdventure();
   log.info({ event: "data-cleared" });
 }
 

@@ -82,6 +82,10 @@ export const en: Dictionary = {
     dayToDayRecipes: "Recipes",
     dayToDayTravel: "Travel",
     dayToDayCamera: "Camera",
+    familyLabel: "For the family",
+    familyLearn: "What yes and what no, and what helps",
+    familyAdventure: "Your child's adventure",
+    familyPressure: "When they're offered something",
     profileLink: "Your child's profile",
   },
   reminder: {
@@ -885,6 +889,7 @@ export const en: Dictionary = {
       "“{alias} follows a food plan. We need to order without: {avoid}. Could you help us choose something they can have?”",
     sayOffered:
       "“Thank you, that's kind. {alias} can't have that, but thanks so much for thinking of them.”",
+    noteIt: "Note it and see what to say next time",
     sayOfferedAlt:
       "If you want to offer an alternative: “We'll give them their own: {safe}.”",
     sayNoAvoid:

@@ -12,14 +12,14 @@
     "enlaces.produccion": "null cuando la app no tiene URL pública. `razon` explica por qué, y es lo que la vitrina muestra en lugar del enlace. Nunca se rellena con un enlace de repositorio ni con una promesa."
   },
   "schema_version": "1.0.0",
-  "actualizado": "2026-11-22",
+  "actualizado": "2026-11-24",
   "app": {
     "slug": "nutri-kids",
     "nombre": "Nutrikids",
     "ciclo": "H-2",
     "estado": "inicial",
     "sellado_en": null,
-    "sprints_cerrados": 12,
+    "sprints_cerrados": 13,
     "version_repo": "0.1.0"
   },
   "promesa": {
@@ -29,7 +29,7 @@
     "diferencial": "No califica al niño: sin calorías, peso, IMC ni percentiles, y sin convertir el «cumplimiento» en una nota. El chat contesta con tu plan dentro del teléfono y sin internet: no manda nada a ningún lado, ni siquiera para hacerle una pregunta. Lo que anotas del día, las horas y las notas sobre tu hijo solo viaja a tu familia si tú lo decides, y siempre cifrado desde el teléfono."
   },
   "funcionalidades": {
-    "total": 39,
+    "total": 42,
     "fuente_del_conteo": "docs/MANUAL-DE-USO.md",
     "descartadas": [],
     "grupos": [
@@ -312,6 +312,24 @@
             "nombre": "Varias dietas: unir dos planes",
             "que_hace": "Agregas el plan de otro profesional como segundo plan y los ves lado a lado. Al unirlos, lo prohibido gana solo y lo que dicen distinto lo eliges tú. Cada línea guarda de qué plan salió, y una madre o un padre puede cambiar cualquiera, también una en rojo, confirmando una vez.",
             "seccion_manual": "Varias dietas: unir dos planes"
+          },
+          {
+            "id": "F40",
+            "nombre": "Lecciones y «Qué sí y qué no»",
+            "que_hace": "En Hoy → «Para la familia» hay cinco lecciones cortas para quien acompaña la mesa (apoyar sin regañar, la comida no es premio ni castigo, no forzar bocados, probar muchas veces sin presión y qué decir cuando pide lo que no puede), con frases para decir y su fuente (AAP, Ellyn Satter Institute y USDA, parafraseadas). La hoja «Qué sí y qué no» se arma con tu plan: lo que no puede, lo que va con condición (sin cifras) y lo que sí puede. Nunca inventa un alimento ni da consejo médico.",
+            "seccion_manual": "Para la familia: lecciones, «Qué sí y qué no» y «Cuando le ofrecen algo»"
+          },
+          {
+            "id": "F41",
+            "nombre": "Cuando le ofrecen algo",
+            "que_hace": "En «Cuando le ofrecen algo» anotas en cuatro toques, sin escribir texto, qué le ofrecieron, dónde y cómo se respondió; la app da «Para la próxima vez» (pasos para ese lugar, qué decirle a quien lo ofreció y lo que sí puedes ofrecer de su plan) y muestra lo que se repite (qué y dónde, nunca quién). Madre y padre ven el registro completo; cada otro rol ve solo lo que anotó su teléfono. Se queda en el teléfono y, con la familia, viaja cifrado y firmado.",
+            "seccion_manual": "Para la familia: lecciones, «Qué sí y qué no» y «Cuando le ofrecen algo»"
+          },
+          {
+            "id": "F42",
+            "nombre": "La aventura del niño",
+            "que_hace": "En Hoy → «Para la familia» → «La aventura de tu peque», un juego tranquilo con tres mundos (el huerto de Brote, la expedición de Lumo y el cielo de Nubo) que el niño elige. La energía es una sola, sale de cuidarse y explorar (dormir, moverse, el sol, el agua, ayudar en la cocina, conocer algo nuevo), nunca de comer, y solo sube. El modo niño deja el teléfono de un adulto sin plan ni Ajustes; solo un adulto sale, con una pulsación larga y una suma escrita en palabras.",
+            "seccion_manual": "La aventura del niño"
           }
         ]
       }
@@ -329,42 +347,42 @@
     {
       "clave": "pantallas",
       "etiqueta": "Pantallas de la app",
-      "valor": 19,
+      "valor": 22,
       "unidad": "pantallas",
       "fuente": "medido",
-      "detalle": "Dieciocho rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes, perfil, escenarios, unir, bienestar, lonchera, recetas, viaje, cámara, qué cocinar con lo que tienes, leer una etiqueta y el modo súper) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
+      "detalle": "Veintiún rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes, perfil, escenarios, unir, bienestar, lonchera, recetas, viaje, cámara, qué cocinar con lo que tienes, leer una etiqueta, el modo súper, las lecciones para la familia, «cuando le ofrecen algo» y la aventura del niño) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
     },
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 1642,
+      "valor": 1728,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-22 sobre la rama de las etiquetas y el súper (S13), tras pagar la auditoría: 89 archivos, 1642 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-24 sobre la rama de la familia y el niño (S14): 95 archivos, 1728 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 368,
+      "valor": 376,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-22 sobre la rama de las etiquetas y el súper (S13), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 368 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 366 en verde y 2 omitidas por diseño; ni el modelo de la cámara, ni el lector de etiquetas ni el escáner reales corren aquí: los sustituyen workers simulados, y un catálogo inventado."
+      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-24 sobre la rama de la familia y el niño (S14), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 376 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 374 en verde y 2 omitidas por diseño; ni el modelo de la cámara, ni el lector de etiquetas ni el escáner reales corren aquí: los sustituyen workers simulados, y un catálogo inventado."
     },
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 97.28,
+      "valor": 97.22,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre src/lib el 2026-11-22 sobre la rama de las etiquetas y el súper (97,28 % de líneas en total), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
+      "detalle": "v8 sobre las 19 carpetas de src/lib el 2026-11-24 sobre la rama de la familia y el niño (97,22 % de líneas en total; cada carpeta en 80 % o más), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
     },
     {
       "clave": "decisiones_registradas",
       "etiqueta": "Decisiones de arquitectura registradas",
-      "valor": 19,
+      "valor": 20,
       "unidad": "ADR",
       "fuente": "medido",
-      "detalle": "Archivos de decisions/ el 2026-11-22; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono, la 013 fija los roles con firma por persona, la 014 el plan B, los días especiales y la unión de dos planes, y la 015 el bienestar (se anota, nunca se interpreta, con la franja de edad en vez de la fecha de nacimiento). La 016 fija el tema oscuro (se elige en Ajustes, se recuerda y no destella) y la 017 la lonchera, el recetario y el modo viaje: todo se arma con el plan y en el teléfono. La 018 fija que la cámara solo ve: un modelo pequeño que corre en el teléfono nombra lo que ve y el código decide todo lo demás, sin que la foto se guarde ni salga. La 019 fija que el lector de etiquetas solo transcribe y el código decide: el texto se lee en el teléfono, se coteja con el plan y un texto mal leído jamás da «apto»; el catálogo de productos de Colombia (Open Food Facts, ODbL) se baja una vez y se busca en el teléfono, sin que la foto ni lo escaneado salgan."
+      "detalle": "Archivos de decisions/ el 2026-11-24; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono, la 013 fija los roles con firma por persona, la 014 el plan B, los días especiales y la unión de dos planes, y la 015 el bienestar (se anota, nunca se interpreta, con la franja de edad en vez de la fecha de nacimiento). La 016 fija el tema oscuro (se elige en Ajustes, se recuerda y no destella) y la 017 la lonchera, el recetario y el modo viaje: todo se arma con el plan y en el teléfono. La 018 fija que la cámara solo ve: un modelo pequeño que corre en el teléfono nombra lo que ve y el código decide todo lo demás, sin que la foto se guarde ni salga. La 019 fija que el lector de etiquetas solo transcribe y el código decide: el texto se lee en el teléfono, se coteja con el plan y un texto mal leído jamás da «apto»; el catálogo de productos de Colombia (Open Food Facts, ODbL) se baja una vez y se busca en el teléfono, sin que la foto ni lo escaneado salgan. La 020 fija las lecciones para la familia (parafraseadas y con su fuente), el registro «Cuando le ofrecen algo» (sin texto libre; madre y padre ven todo, la regla la cumple la app y no la criptografía) y la aventura del niño: una sola energía que solo sube y que nunca sale de comer, y el modo niño con salida de adulto."
     },
     {
       "clave": "dependencias_runtime",
@@ -372,7 +390,7 @@
       "valor": 20,
       "unidad": "paquetes",
       "fuente": "medido",
-      "detalle": "Campo `dependencies` de package.json el 2026-11-22 sobre la rama de las etiquetas y el súper (S13): cuatro dependencias nuevas, todas servidas por la propia app y sin CDN, que ninguna ruta importa (ADR-019): tesseract.js 7.0.0 (Apache-2.0, publicada el 2025-12-15), el lector de texto de las etiquetas, con sus datos de idioma @tesseract.js-data/spa y @tesseract.js-data/eng 1.0.0 (MIT, 2023-09-04), y zxing-wasm 3.1.6 (MIT, publicada el 2026-10-19), que lee el código de barras solo si el navegador no trae su propio detector. Sigue incluyendo @huggingface/transformers 4.3.2 (Apache-2.0, ADR-018), qrcode-generator 2.0.4 (MIT, ADR-017) y pdfjs-dist (fijado y servido por la propia app, ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
+      "detalle": "Campo `dependencies` de package.json el 2026-11-24 sobre la rama de la familia y el niño (S14), que no suma ninguna dependencia. Las cuatro del S13, todas servidas por la propia app y sin CDN, que ninguna ruta importa (ADR-019): tesseract.js 7.0.0 (Apache-2.0, publicada el 2025-12-15), el lector de texto de las etiquetas, con sus datos de idioma @tesseract.js-data/spa y @tesseract.js-data/eng 1.0.0 (MIT, 2023-09-04), y zxing-wasm 3.1.6 (MIT, publicada el 2026-10-19), que lee el código de barras solo si el navegador no trae su propio detector. Sigue incluyendo @huggingface/transformers 4.3.2 (Apache-2.0, ADR-018), qrcode-generator 2.0.4 (MIT, ADR-017) y pdfjs-dist (fijado y servido por la propia app, ADR-010). Ya no incluye ningún SDK ni adaptador de proveedor de IA: un test falla si alguno vuelve."
     },
     {
       "clave": "requests_del_registro",
@@ -393,10 +411,10 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 96630,
+      "valor": 99891,
       "unidad": "bytes",
       "fuente": "medido",
-      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-22 sobre la rama de las etiquetas y el súper (S13). Autocontenido: cero recursos externos, incluidas las seis muestras de interfaz (SVG en línea, no imágenes)."
+      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-24 sobre la rama de la familia y el niño (S14). Autocontenido: cero recursos externos, incluidas las seis muestras de interfaz (SVG en línea, no imágenes)."
     }
   ],
   "stack": [
@@ -446,7 +464,7 @@
     "conversacion_persistida": false,
     "red_saliente": true,
     "usa_ia": true,
-    "detalle": "Sin familia, la dieta, las marcas, las horas y las notas viven solo en el teléfono y la app no hace ninguna petición. Si la familia decide compartir, el plan, el día y el perfil viajan cifrados desde el teléfono (AES-GCM, con una clave que nace de la frase de la familia y no sale del aparato): el servidor guarda datos ilegibles, jamás ve texto, nombres, la frase ni la clave, y un test de punta a punta revisa cada petición con un centinela. El chat no manda nada a internet: contesta con programación sobre el plan cargado, dentro del teléfono y también sin señal. La cámara tampoco manda nada: la foto se mira en el teléfono con un modelo pequeño que se descarga una sola vez (lo único que usa internet) y se suelta, sin guardarse ni enviarse; ningún servicio de pago ni de terceros la procesa."
+    "detalle": "Sin familia, la dieta, las marcas, las horas y las notas viven solo en el teléfono y la app no hace ninguna petición. Si la familia decide compartir, el plan, el día y el perfil viajan cifrados desde el teléfono (AES-GCM, con una clave que nace de la frase de la familia y no sale del aparato): el servidor guarda datos ilegibles, jamás ve texto, nombres, la frase ni la clave, y un test de punta a punta revisa cada petición con un centinela. El chat no manda nada a internet: contesta con programación sobre el plan cargado, dentro del teléfono y también sin señal. La cámara tampoco manda nada: la foto se mira en el teléfono con un modelo pequeño que se descarga una sola vez (lo único que usa internet) y se suelta, sin guardarse ni enviarse; ningún servicio de pago ni de terceros la procesa. Lo anotado en «Cuando le ofrecen algo» no lleva texto libre ni nombres de terceros: vive en el teléfono y, con la familia, viaja cifrado y firmado, y solo madre y padre bajan lo que anotaron los demás. La aventura del niño se queda en el teléfono."
   },
   "enlaces": {
     "produccion": null,

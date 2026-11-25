@@ -261,7 +261,9 @@ export type Write =
   | { k: "age" }
   // S11 · lonchera (ADR-017): lo que va en la lonchera del día, y el nombre de la etiqueta.
   | { k: "lunch" }
-  | { k: "lunch-label" };
+  | { k: "lunch-label" }
+  // S14 · «cuando le ofrecen algo» (ADR-020, G-Plan 1a): cualquiera de la familia anota lo suyo.
+  | { k: "pressure" };
 
 /** Todas las clases de escritura, para la prueba de permisos de cada rol contra cada una. */
 export const WRITE_KINDS = [
@@ -279,6 +281,7 @@ export const WRITE_KINDS = [
   "age",
   "lunch",
   "lunch-label",
+  "pressure",
 ] as const satisfies readonly Write["k"][];
 
 /** El corazón de los permisos: lo usan la pantalla (esconde) y la sincronía (descarta). */
@@ -299,10 +302,11 @@ export function may(
         w.k === "food" ||
         w.k === "well" ||
         w.k === "habit" ||
-        w.k === "lunch"
+        w.k === "lunch" ||
+        w.k === "pressure"
       );
     case "school":
-      if (w.k === "notice") return true;
+      if (w.k === "notice" || w.k === "pressure") return true;
       if (w.k === "mark" || w.k === "day-note" || w.k === "mood") {
         const m = /^meal:(.+)$/.exec(w.check);
         return !!m && (member.meals ?? []).includes(m[1]);
@@ -311,7 +315,9 @@ export function may(
       if (w.k === "food") return (member.meals ?? []).includes(w.meal);
       return false;
     case "nutritionist":
-      return w.k === "day-note" || w.k === "profile-note";
+      return (
+        w.k === "day-note" || w.k === "profile-note" || w.k === "pressure"
+      );
   }
 }
 

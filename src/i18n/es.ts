@@ -83,6 +83,10 @@ export const es = {
     dayToDayRecipes: "Recetas",
     dayToDayTravel: "Viaje",
     dayToDayCamera: "Cámara",
+    familyLabel: "Para la familia",
+    familyLearn: "Qué sí y qué no, y lo que ayuda",
+    familyAdventure: "La aventura de tu peque",
+    familyPressure: "Cuando le ofrecen algo",
     profileLink: "Perfil de tu peque",
   },
   reminder: {
@@ -887,6 +891,7 @@ export const es = {
       "«{alias} sigue un plan de alimentación. Necesitamos pedir sin: {avoid}. ¿Nos ayudan a elegir algo que sí pueda?»",
     sayOffered:
       "«Gracias, qué amable. {alias} no puede comer eso, pero muchas gracias por pensar en él.»",
+    noteIt: "Anotarlo y ver qué decir la próxima vez",
     sayOfferedAlt:
       "Si quieres ofrecer una alternativa: «Mejor le damos lo suyo: {safe}.»",
     sayNoAvoid:

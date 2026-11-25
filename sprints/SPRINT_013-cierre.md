@@ -14,7 +14,7 @@ pr: 22
 - **Resultado:** `/camara/etiqueta` (lector), `/camara/super` (escáner, marcas aptas), «Lo que compré», Ajustes «Lector y catálogo». Catálogo Open Food Facts Colombia (ODbL): 8.850 productos, 1.896.823 bytes, 18 % con ingredientes (antes 9.027).
 - **Tiempo:** estimado 6,5 h · real 7,4 h (`horas-sprint.mjs`, 32 commits, 3 sesiones, es un piso) · diferencia +0,9 h (+14 %). F1 2,7 h · F2 0,9 h · F3 3,9 h.
 - **Lector (10 etiquetas inventadas, Chromium):** 10/10 a 1600 px en dos series; 9/10 a 2000 px; 0 falsos «no vi nada que choque»; 0 peticiones al leer.
-- **No completado:** fotos reales de pasillo y lector en teléfono real: ensayo general (decisión del dueño, 2026-11-22). Deuda en `src/lib/label/ocr-client.ts:127`.
+- **No completado:** fotos reales de pasillo y lector en teléfono real: ensayo general (decisión del dueño, 2026-11-22). Deuda en `docs/GUIA-DE-PRUEBA.html:585` (bloque U, se prueba en el ensayo general).
 **Desviaciones**
 - Catálogo por CSV del volcado de Colombia, no por la API (la API corta a 10 páginas).
 - F1: Opus falló dos veces con el presupuesto de script (440 KB); relevo a Fable por emergencia del dueño; método: anclar `allergen-families` al cascarón (`5e80e59`).
