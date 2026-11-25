@@ -355,10 +355,10 @@
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 1724,
+      "valor": 1728,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-24 sobre la rama de la familia y el niño (S14): 94 archivos, 1724 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-24 sobre la rama de la familia y el niño (S14): 95 archivos, 1728 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
