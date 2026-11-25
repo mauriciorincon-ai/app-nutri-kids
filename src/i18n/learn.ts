@@ -1,7 +1,9 @@
 import type { Weekday } from "@/lib/diet/schema";
 import type { DayStatus } from "@/lib/insights/days";
+import type { Prepare, RiskFactor, RiskLevel } from "@/lib/insights/risk";
 import type { Signal } from "@/lib/insights/radar";
 import type { Place } from "@/lib/pressure/values";
+import type { CtxId, PresentationId } from "@/lib/wellbeing/values";
 
 import type { Locale } from "./index";
 
@@ -35,16 +37,66 @@ type Text = {
   signal: string;
   signalNote: string;
   radarFooter: string;
+  groups: { when: string; where: string; what: string };
   weekdays: Record<Weekday, string>;
   weekdayShort: Record<Weekday, string>;
   places: Record<Place, string>;
   signals: Record<Signal, string>;
+  // --- El día de hoy y qué preparar (Hoy) ---
+  dayTitle: string;
+  dayLead: string;
+  levels: Record<RiskLevel, string>;
+  levelHints: Record<RiskLevel, string>;
+  legendTitle: string;
+  whyTitle: string;
+  why: Record<RiskFactor, string>;
+  whyNone: string;
+  sleepMissing: { "no-band": string; "no-sleep": string };
+  computedNew: string;
+  prepareTitle: string;
+  prepare: Record<Prepare, string>;
+  ctxTitle: string;
+  ctx: Record<CtxId, string>;
+  ctxOn: string;
+  ctxOff: string;
+  adjustedUp: string;
+  adjustedDown: string;
+  open: string;
+  // --- Lo que aprende (solo madre o padre) ---
+  roleLimit: string;
+  calendarTitle: string;
+  calendarHint: string;
+  calendarDay: string;
+  legendCalendar: string;
+  twinTitle: string;
+  twinLead: string;
+  twinLearning: string;
+  twinLearningHint: string;
+  twinFactorsTitle: string;
+  twinNoFactors: string;
+  factorNames: Record<RiskFactor, string>;
+  factorUp: string;
+  factorDown: string;
+  acceptsTitle: string;
+  acceptsNone: string;
+  acceptGroup: string;
+  acceptTexture: string;
+  acceptPresentation: string;
+  presentations: Record<PresentationId, string>;
+  triesTitle: string;
+  triesLine: string;
+  triesFooter: string;
+  eraseButton: string;
+  eraseAsk: string;
+  eraseYes: string;
+  eraseNo: string;
+  eraseDone: string;
 };
 
 const es: Text = {
   title: "Lo que aprende",
   lead: "De lo que anotan en casa. No es un diagnóstico.",
-  back: "Para la familia",
+  back: "Hoy",
   weekTitle: "Esta semana",
   status: { in: "dentro del plan", off: "algo distinto", none: "sin anotar" },
   weekLine: "{inPlan} de {recorded} días anotados dentro del plan",
@@ -70,6 +122,7 @@ const es: Text = {
   signalNote:
     "Una coincidencia no dice por qué pasa: coméntalo con tu nutricionista.",
   radarFooter: "Nada de esto cambia el plan: lo cambia solo tu profesional.",
+  groups: { when: "Cuándo", where: "Dónde", what: "Qué coincidió" },
   weekdays: {
     mon: "Los lunes",
     tue: "Los martes",
@@ -104,12 +157,106 @@ const es: Text = {
     reaction: "una reacción",
     stool: "deposiciones distintas",
   },
+  dayTitle: "El día de hoy",
+  dayLead: "Lo que ya se sabe de hoy y qué conviene tener a mano.",
+  levels: {
+    low: "Mochila ligera",
+    mid: "Mochila con algo más",
+    high: "Mochila llena",
+  },
+  levelHints: {
+    low: "Hoy no hay nada especial que preparar.",
+    mid: "Hay una cosa para tener a mano.",
+    high: "Hay varias cosas para tener a mano.",
+  },
+  legendTitle: "Los tres niveles",
+  whyTitle: "Por qué",
+  why: {
+    sleep: "La noche fue más corta que la referencia de su edad.",
+    social: "Hay un evento con más gente.",
+    away: "Hoy están fuera de casa.",
+    new: "Hay alguien nuevo cuidándolo.",
+  },
+  whyNone: "No hay nada fuera de lo de siempre.",
+  sleepMissing: {
+    "no-band":
+      "Elige su edad en Bienestar y anota el sueño de anoche: así también cuenta.",
+    "no-sleep": "Si anotas cuánto durmió anoche, también cuenta.",
+  },
+  computedNew: "Se nota alguien nuevo en la familia hoy.",
+  prepareTitle: "Qué preparar",
+  prepare: {
+    birthday: "Mira el plan para un cumpleaños",
+    "when-asked": "Repasa qué decir cuando le ofrecen algo",
+    "plan-out": "Ten a mano el plan B para cuando están fuera",
+    lunchbox: "Prepara la lonchera",
+    "family-yes-no": "Repasa con quien llega qué sí y qué no",
+    "plan-late": "Ten a mano el plan B por si se hace tarde para comer",
+    accepted: "Piensa en lo que ya acepta",
+  },
+  ctxTitle: "¿Cómo es hoy?",
+  ctx: {
+    social: "Hay un evento con más gente",
+    away: "Hoy están fuera de casa",
+    new: "Hay alguien nuevo cuidándolo",
+  },
+  ctxOn: "Anotado",
+  ctxOff: "Sin anotar",
+  adjustedUp:
+    "Con lo anotado, los días con «{factor}» tuvieron algo distinto al plan {withOff} de {withDays} veces: pesa un poco más.",
+  adjustedDown:
+    "Con lo anotado, los días con «{factor}» tuvieron algo distinto al plan {withOff} de {withDays} veces: pesa un poco menos.",
+  open: "Lo que aprende",
+  roleLimit:
+    "Esta pantalla es para madre o padre. El día de hoy y qué preparar se ven en Hoy.",
+  calendarTitle: "Las últimas cuatro semanas",
+  calendarHint: "Cada cuadro es un día; los días sin anotar no restan.",
+  calendarDay: "{day}: {status}",
+  legendCalendar: "Cómo leerlo",
+  twinTitle: "Lo que va aprendiendo",
+  twinLead:
+    "Cuenta lo que anotan. Todo pasa en este teléfono y no usa ningún servicio.",
+  twinLearning: "Aún aprendiendo ({noted} de {needed} días)",
+  twinLearningHint:
+    "Hasta tener {needed} días anotados no cambia nada del día de hoy.",
+  twinFactorsTitle: "Qué pesa en el día",
+  twinNoFactors: "Por ahora nada del día se nota distinto.",
+  factorNames: {
+    sleep: "una noche corta",
+    social: "un evento con más gente",
+    away: "estar fuera de casa",
+    new: "alguien nuevo",
+  },
+  factorUp:
+    "Con {factor}: {withOff} de {withDays} días anotados tuvieron algo distinto al plan; sin eso, {withoutOff} de {withoutDays}. Pesa un poco más.",
+  factorDown:
+    "Con {factor}: {withOff} de {withDays} días anotados tuvieron algo distinto al plan; sin eso, {withoutOff} de {withoutDays}. Pesa un poco menos.",
+  acceptsTitle: "Lo que acepta mejor",
+  acceptsNone: "Todavía nada se acepta claramente mejor que lo demás.",
+  acceptGroup: "Del grupo «{name}»: lo aceptó {hits} de {of} veces.",
+  acceptTexture: "Con textura {name}: lo aceptó {hits} de {of} veces.",
+  acceptPresentation: "{name}: lo aceptó {hits} de {of} veces.",
+  presentations: {
+    apart: "Por separado",
+    mixed: "Mezclado",
+    bites: "En trocitos",
+    "with-favorite": "Junto a algo que le gusta",
+  },
+  triesTitle: "Para ofrecer, del mismo grupo",
+  triesLine: "Del grupo «{group}», que ya acepta, aún sin ofrecer: {foods}.",
+  triesFooter: "Todo sale de tu plan; ofrecerlo o no lo decides tú.",
+  eraseButton: "Borrar lo aprendido",
+  eraseAsk:
+    "¿Empezar de cero? Lo que anotan en el día no se toca; solo se olvida lo aprendido hasta hoy.",
+  eraseYes: "Sí, borrar",
+  eraseNo: "No, dejarlo",
+  eraseDone: "Listo: empieza de cero desde hoy.",
 };
 
 const en: Text = {
   title: "What it learns",
   lead: "From what your family notes. It isn't a diagnosis.",
-  back: "For the family",
+  back: "Today",
   weekTitle: "This week",
   status: {
     in: "within the plan",
@@ -137,6 +284,7 @@ const en: Text = {
   signalNote:
     "Matching doesn't say why it happens: talk it over with your nutritionist.",
   radarFooter: "None of this changes the plan: only your professional does.",
+  groups: { when: "When", where: "Where", what: "What matched" },
   weekdays: {
     mon: "On Mondays",
     tue: "On Tuesdays",
@@ -171,6 +319,104 @@ const en: Text = {
     reaction: "a reaction",
     stool: "different stools",
   },
+  dayTitle: "Today",
+  dayLead:
+    "What is already known about today and what is worth having at hand.",
+  levels: {
+    low: "Light backpack",
+    mid: "Backpack with a little more",
+    high: "Full backpack",
+  },
+  levelHints: {
+    low: "Nothing special to prepare today.",
+    mid: "There is one thing to have at hand.",
+    high: "There are a few things to have at hand.",
+  },
+  legendTitle: "The three levels",
+  whyTitle: "Why",
+  why: {
+    sleep: "Last night was shorter than the reference for their age.",
+    social: "There is an event with more people.",
+    away: "You are away from home today.",
+    new: "Someone new is looking after them.",
+  },
+  whyNone: "Nothing outside the usual.",
+  sleepMissing: {
+    "no-band":
+      "Pick their age in Wellbeing and note last night's sleep: that counts too.",
+    "no-sleep": "If you note how long they slept last night, that counts too.",
+  },
+  computedNew: "Someone new in the family shows up today.",
+  prepareTitle: "What to prepare",
+  prepare: {
+    birthday: "Look at the plan for a birthday",
+    "when-asked": "Go over what to say when they are offered something",
+    "plan-out": "Keep plan B at hand for when you are out",
+    lunchbox: "Pack the lunchbox",
+    "family-yes-no": "Go over what is a yes and a no with whoever arrives",
+    "plan-late": "Keep plan B at hand in case it gets late for a meal",
+    accepted: "Think about what they already accept",
+  },
+  ctxTitle: "What is today like?",
+  ctx: {
+    social: "There is an event with more people",
+    away: "You are away from home today",
+    new: "Someone new is looking after them",
+  },
+  ctxOn: "Noted",
+  ctxOff: "Not noted",
+  adjustedUp:
+    "From what was noted, days with “{factor}” had something different from the plan {withOff} of {withDays} times: it weighs a little more.",
+  adjustedDown:
+    "From what was noted, days with “{factor}” had something different from the plan {withOff} of {withDays} times: it weighs a little less.",
+  open: "What it learns",
+  roleLimit:
+    "This screen is for a mother or father. Today and what to prepare show in Today.",
+  calendarTitle: "The last four weeks",
+  calendarHint:
+    "Each square is a day; days not noted never count against anyone.",
+  calendarDay: "{day}: {status}",
+  legendCalendar: "How to read it",
+  twinTitle: "What it is learning",
+  twinLead:
+    "It counts what you note. Everything happens on this phone and uses no service.",
+  twinLearning: "Still learning ({noted} of {needed} days)",
+  twinLearningHint:
+    "Until {needed} days are noted, nothing about today changes.",
+  twinFactorsTitle: "What weighs on a day",
+  twinNoFactors: "For now nothing about the day stands out.",
+  factorNames: {
+    sleep: "a short night",
+    social: "an event with more people",
+    away: "being away from home",
+    new: "someone new",
+  },
+  factorUp:
+    "With {factor}: {withOff} of {withDays} noted days had something different from the plan; without it, {withoutOff} of {withoutDays}. It weighs a little more.",
+  factorDown:
+    "With {factor}: {withOff} of {withDays} noted days had something different from the plan; without it, {withoutOff} of {withoutDays}. It weighs a little less.",
+  acceptsTitle: "What they accept best",
+  acceptsNone: "Nothing is clearly accepted better than the rest yet.",
+  acceptGroup: "From the group “{name}”: accepted {hits} of {of} times.",
+  acceptTexture: "With a {name} texture: accepted {hits} of {of} times.",
+  acceptPresentation: "{name}: accepted {hits} of {of} times.",
+  presentations: {
+    apart: "Served apart",
+    mixed: "Mixed in",
+    bites: "In small bites",
+    "with-favorite": "Next to something they like",
+  },
+  triesTitle: "To offer, from the same group",
+  triesLine:
+    "From the group “{group}”, which they already accept, not offered yet: {foods}.",
+  triesFooter:
+    "All of it comes from your plan; whether to offer it is up to you.",
+  eraseButton: "Erase what it learned",
+  eraseAsk:
+    "Start from zero? What you note each day is not touched; only what it learned up to today is forgotten.",
+  eraseYes: "Yes, erase",
+  eraseNo: "No, keep it",
+  eraseDone: "Done: it starts from zero from today.",
 };
 
 export type LearnText = Text;
