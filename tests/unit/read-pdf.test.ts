@@ -82,3 +82,30 @@ describe("readPdfFile", () => {
     if (r.ok) expect(r.reading.unrecognized.length).toBeGreaterThan(0);
   });
 });
+
+describe("el pdf.js de la propia app (/pdfjs/), cargado solo al elegir un PDF", () => {
+  it("lo carga una vez, le pone su worker de /pdfjs/ y lee; si falla, el siguiente intento lo vuelve a pedir", async () => {
+    const { vi } = await import("vitest");
+    let calls = 0;
+    const pdfjs = (await fakeJs([{ items: [{ str: "Desayuno" }] }])!()) as {
+      GlobalWorkerOptions: { workerSrc: string };
+    };
+    vi.doMock("/pdfjs/pdf.min.mjs", async () => {
+      calls += 1;
+      if (calls === 1) throw new Error("sin red");
+      return pdfjs;
+    });
+    vi.resetModules();
+    const first = await import("@/lib/pdf/read-pdf");
+    expect(await first.readPdfFile(file(pdfBytes))).toEqual({
+      ok: false,
+      error: "unreadable",
+    });
+    // El mismo módulo, sin recargar: el fallo no queda guardado y el segundo intento lee.
+    expect((await first.readPdfFile(file(pdfBytes))).ok).toBe(true);
+    expect((await first.readPdfFile(file(pdfBytes))).ok).toBe(true);
+    expect(calls).toBe(2);
+    expect(pdfjs.GlobalWorkerOptions.workerSrc).toBe("/pdfjs/pdf.worker.min.mjs");
+    vi.doUnmock("/pdfjs/pdf.min.mjs");
+  });
+});

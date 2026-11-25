@@ -29,6 +29,15 @@ export default defineConfig({
         "src/lib/day-to-day/**",
         // S12: la cámara (cotejo, prueba, cliente del worker y caché del modelo).
         "src/lib/camera/**",
+        // S13: el lector de etiquetas, el catálogo, el escáner y la compra (quedaron fuera al entrar).
+        "src/lib/label/**",
+        "src/lib/catalog/**",
+        "src/lib/scan/**",
+        "src/lib/shopping/**",
+        // S14: las lecciones y «Qué sí y qué no», el registro de presión y la aventura.
+        "src/lib/family-learn/**",
+        "src/lib/pressure/**",
+        "src/lib/adventure/**",
       ],
       thresholds: {
         lines: 80,

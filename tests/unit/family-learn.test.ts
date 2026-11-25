@@ -253,6 +253,29 @@ describe("«Qué sí y qué no» desde el plan inventado", () => {
     expect(s.no.find((n) => n.name.es === green)?.kind).toBe("noted");
     expect(s.yes.flatMap((g) => g.items.map((i) => i.es))).not.toContain(green);
   });
+
+  it("un alimento que el plan nombra dos veces sale una sola vez, con la primera razón", () => {
+    const red = diet.trafficLight.red.items[0].name;
+    const twice = {
+      ...diet,
+      profile: {
+        ...diet.profile,
+        allergies: [{ name: red }],
+      },
+    } as typeof diet;
+    const s = familyYesNo(twice, NOW);
+    const hits = s.no.filter((n) => n.name.es === red.es);
+    expect(hits).toHaveLength(1);
+    expect(hits[0].kind).toBe("red");
+  });
+
+  it("un plan sin perfil (ni alergias ni intolerancias) también sale entero", () => {
+    const bare = { ...diet, profile: undefined } as unknown as typeof diet;
+    const s = familyYesNo(bare, NOW);
+    expect(s.no.some((n) => n.kind === "allergy" || n.kind === "intolerance")).toBe(false);
+    expect(s.no.some((n) => n.kind === "red")).toBe(true);
+    expect(s.yes.length).toBeGreaterThan(0);
+  });
 });
 
 describe("cuando le ofrecen algo: estrategias y lo que se puede anotar", () => {
