@@ -188,6 +188,17 @@ test("dos teléfonos: la madre ve todo y el patrón; el cuidador solo lo suyo (1
     });
   });
   await a.page.getByTestId(`family-confirm-${bId}`).click();
+  // La confirmación firma el roster en segundo plano: sin esperarla, salir de la pantalla la corta.
+  await expect(a.page.getByTestId(`family-person-${bId}`)).toContainText(
+    "Cuidador",
+  );
+  await b.page.goto("/ajustes");
+  await reloadUntil(b.page, async () => {
+    await expect(b.page.getByTestId("family-my-role")).toContainText(
+      "Cuidador",
+      { timeout: 1000 },
+    );
+  });
 
   // La madre anota en el colegio; el cuidador, en una fiesta.
   await a.page.goto("/familia/presion");
