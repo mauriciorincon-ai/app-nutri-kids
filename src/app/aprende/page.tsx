@@ -274,42 +274,55 @@ function Learned() {
         <div
           role="grid"
           aria-label={t.calendarTitle}
-          className="grid grid-cols-7 gap-1"
+          className="flex flex-col gap-1"
           data-testid="learn-calendar"
         >
-          {(["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const).map(
-            (wd) => (
-              <span
-                key={wd}
-                role="columnheader"
-                className="text-center text-xs text-muted-foreground"
-              >
-                {t.weekdayShort[wd]}
-              </span>
-            ),
-          )}
-          {cal.flat().map((c, i) => {
-            if (!c)
-              return <span key={i} aria-hidden className="aspect-square" />;
-            const Icon = STATUS_ICON[c.status];
-            return (
-              <span
-                key={c.day}
-                role="gridcell"
-                aria-label={fill(t.calendarDay, {
-                  day: dayWord(c.day),
-                  status: t.status[c.status],
-                })}
-                data-testid={`cal-${c.status}`}
-                className={cn(
-                  "grid aspect-square place-items-center rounded-lg border",
-                  STATUS_TONE[c.status],
-                )}
-              >
-                <Icon aria-hidden className="size-4" />
-              </span>
-            );
-          })}
+          <div role="row" className="grid grid-cols-7 gap-1">
+            {(["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const).map(
+              (wd) => (
+                <span
+                  key={wd}
+                  role="columnheader"
+                  className="text-center text-xs text-muted-foreground"
+                >
+                  {t.weekdayShort[wd]}
+                </span>
+              ),
+            )}
+          </div>
+          {cal.map((week, w) => (
+            <div key={w} role="row" className="grid grid-cols-7 gap-1">
+              {week.map((c, i) => {
+                if (!c)
+                  return (
+                    <span
+                      key={i}
+                      role="gridcell"
+                      aria-hidden
+                      className="aspect-square"
+                    />
+                  );
+                const Icon = STATUS_ICON[c.status];
+                return (
+                  <span
+                    key={c.day}
+                    role="gridcell"
+                    aria-label={fill(t.calendarDay, {
+                      day: dayWord(c.day),
+                      status: t.status[c.status],
+                    })}
+                    data-testid={`cal-${c.status}`}
+                    className={cn(
+                      "grid aspect-square place-items-center rounded-lg border",
+                      STATUS_TONE[c.status],
+                    )}
+                  >
+                    <Icon aria-hidden className="size-4" />
+                  </span>
+                );
+              })}
+            </div>
+          ))}
         </div>
         <p className="text-xs text-muted-foreground">{t.calendarHint}</p>
         <ul

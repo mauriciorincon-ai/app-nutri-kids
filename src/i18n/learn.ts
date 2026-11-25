@@ -180,8 +180,8 @@ const es: Text = {
   whyNone: "No hay nada fuera de lo de siempre.",
   sleepMissing: {
     "no-band":
-      "Elige su edad en Bienestar y anota el sueño de anoche: así también cuenta.",
-    "no-sleep": "Si anotas cuánto durmió anoche, también cuenta.",
+      "Elige su edad en el Perfil y anota cuánto durmió anoche en Bienestar: así también cuenta.",
+    "no-sleep": "Si anotas cuánto durmió anoche en Bienestar, también cuenta.",
   },
   computedNew: "Se nota alguien nuevo en la familia hoy.",
   prepareTitle: "Qué preparar",
@@ -343,8 +343,8 @@ const en: Text = {
   whyNone: "Nothing outside the usual.",
   sleepMissing: {
     "no-band":
-      "Pick their age in Wellbeing and note last night's sleep: that counts too.",
-    "no-sleep": "If you note how long they slept last night, that counts too.",
+      "Pick their age in Profile and note how long they slept last night in Wellbeing: that counts too.",
+    "no-sleep": "If you note how long they slept last night in Wellbeing, that counts too.",
   },
   computedNew: "Someone new in the family shows up today.",
   prepareTitle: "What to prepare",
