@@ -77,7 +77,10 @@ const LOOK: Record<
     grid: "grid-cols-2",
     tile: "min-h-16 flex-row justify-start gap-2 rounded-full px-4 text-xs",
     done: "border-[var(--adv-sky-2)] bg-accent",
-    energy: "bottom-3 right-3.5 text-[var(--adv-star)]",
+    // La cuenta va en una pastilla del cielo oscuro de Nubo: sobre el extremo claro del degradado
+    // la estrella quedaba en 2,98:1 (auditoría S14); así queda en 5,84:1 en claro y 11,37:1 en oscuro.
+    energy:
+      "bottom-3 right-3.5 rounded-full bg-[var(--adv-sky)] px-3 py-1 text-[var(--adv-star)]",
   },
 };
 
