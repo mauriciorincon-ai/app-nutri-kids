@@ -106,3 +106,61 @@ Reading (builder, reported in the closing report): direction **C** («la mochila
 - what it learns is a list with its evidence, and «Borrar lo aprendido» has a lock.
 
 `design-system.md` § «Lo que aprende y el día en Hoy» holds the rules.
+
+## Part 2 — the day's context, the risk and the twin
+
+All builder defaults (technical). Nothing here loosens a hard rule.
+
+### 7. The day's context: a new map, `ctx`
+
+- The day record gets one more map, `ctx`: `social` (an event), `away` (out of the house), `new` (someone new caring). Each is a stamped boolean in the same last-writer-wins register as the rest of the wellbeing maps (`src/lib/wellbeing/values.ts`, `CTX_KEYS`; `src/lib/family/records.ts`, `daySchema.ctx`).
+- **Who writes it:** `parent`, `caregiver` and `school` (`roster.ts`, `may`). Not the nutritionist. A `ctx` op signed by another role is rejected by `WELLBEING_RULES.ctx` in `trust.ts` (valid value: `true` or a tombstone).
+- It travels encrypted and signed like the rest of the day. The key is a closed list: any other key is dropped on read.
+- **Contract (rule 19):** two places hardcoded the list of day maps, so a new map never synced. `sync.ts` (`hasDay`) and the test double of the server now iterate `WELLBEING_MAPS`. A contract test in `family-roles.test.ts` covers the map against the double, with every role.
+- A day with only context is not «noted»: `wellbeingIsEmpty` ignores `ctx` (and lunch), so context alone never makes a day count as adherence or as history.
+
+### 8. «Someone new» is also computed
+
+`src/lib/insights/newcomer.ts` (`NEWCOMER_DAYS = 14`) plus `joinedAt` in `roster.ts`: the time of the first `set` op of a member in the roster chain. A member counts as new today when they joined ≤ 14 days ago **and** marked or noted something today (`by`). Founders have no `set` op: they are `null` and never count. No cryptography is touched. Without a family, only the manual toggle exists, and the screen says so.
+
+### 9. The day's risk (no push)
+
+`src/lib/insights/risk.ts`. Factors: **short sleep** (last night under the minimum of the age band, `readHabit` against the AASM table; no age band or no sleep noted → the factor does not add and the card says so), **social**, **away**, **new**.
+
+- Points = factors present, plus the twin's adjustments (only for the parent, rule 2a), never below 0.
+- 0 → light, 1 → with something more, ≥ 2 → full. The levels are the backpacks of the owner's direction, in plum (`--mood-anxious`), never the foods' red. The word «riesgo» does not appear in the copy.
+- It shows **why** in words per factor and **what to prepare**, each item a link to something that already exists: birthday scenario, «when someone asks», plan B (out of food, late), lunchbox, «what yes and what no» (`PREPARE_HREF`).
+- It is computed when «Hoy» opens. No notification, no timer.
+
+### 10. The twin
+
+`src/lib/insights/twin.ts`: the app's own explainable statistics, on the phone, no model.
+
+| Constant                              | Value | Meaning                                                                                                  |
+| ------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------- |
+| `TWIN_MIN_DAYS`                       | 14    | With fewer noted days since the last erase it says «aún aprendiendo (N de 14 días)» and adjusts nothing. |
+| `TWIN_MIN_WITH`                       | 3     | A factor is compared only if present on ≥ 3 noted days.                                                  |
+| `TWIN_LIFT_UP`                        | 1.5   | Laplace-smoothed rate of «something different» with the factor ÷ without it: ≥ 1.5 adds one point.       |
+| `TWIN_LIFT_DOWN`                      | 0.67  | …and ≤ 0.67 takes one away (never below «light»).                                                        |
+| `TWIN_ACCEPT_HITS`                    | 3     | What it accepts (green group of the plan, texture, presentation): ≥ 3 times…                             |
+| `TWIN_ACCEPT_SHARE`                   | 0.6   | …and ≥ 60 % of the times an opinion was noted. Shown as a count («5 de 6»).                              |
+| `TWIN_MAX_ACCEPTS` / `TWIN_MAX_TRIES` | 4 / 3 | Caps of the list; «to try» only suggests foods **of the plan**, same group, not yet tried.               |
+| `TWIN_WINDOW`                         | 90    | Looks at most three months back.                                                                         |
+
+A «hard day» is a noted day with at least one deviation (section 1). It never says «predicts»: it says «va aprendiendo de lo que anotan».
+
+**Erase.** `nutrikids.twin.v1` holds only `since` (`twin-store.ts`). «Borrar lo aprendido» sets `since` to today and the twin counts days **strictly after** it, so it goes back to zero without touching the log. It is local, never synced, and `clearAllData` clears it. Only a parent sees the button, in two steps.
+
+### 11. Who sees what (G-Plan 2a)
+
+- **The risk card in «Hoy»:** every role, with the base factors. The twin's adjustment and its lines are shown only when `seesAll` (`pressure/pattern.ts`: no family, or `parent`).
+- **`/aprende`** (adherence, calendar, radar, twin): `seesAll` only. Any other role sees the role-limit notice. The nutritionist sees the day card read-only.
+- The link «Lo que aprende» in «Para la familia» appears only for whoever can open it.
+
+### 12. Weight and layout shift
+
+The card renders in its baseline state (nothing noted, no age band) during prerender, as the rows of «Hoy» already do, so hydration does not move it: Lighthouse CLS on `/` went from 0.376 (card appearing after hydration) to 0.000. Local Lighthouse CI, median of 3: `/` 420.2 KB of script, `/aprende` 433.8 KB, both under 440 KB (ADR-020). `/aprende` has about 6 KB of margin: anything added to it must be loaded lazily.
+
+### 13. Logs and Sentry
+
+Nothing noted or learned is logged. The only events are `kind` and counts, as before.
