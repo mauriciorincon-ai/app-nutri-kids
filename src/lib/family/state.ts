@@ -84,6 +84,12 @@ export const familyStateSchema = z.object({
   rosterIssue: z.enum(["pin", "invalid"]).nullable().default(null),
   /** La lista de personas ya no admite más cambios (tope de número o de peso): no se deshace sola. */
   rosterFull: z.boolean().default(false),
+  /**
+   * S14: ya bajó TODO lo anotado de «cuando le ofrecen algo» siendo madre o padre. El cursor `since`
+   * avanza también mientras el teléfono aún no lo es (y entonces lo ajeno no se guarda): al pasar a
+   * madre o padre, baja una vez desde el principio para no perder lo anotado antes.
+   */
+  pressureAll: z.boolean().default(false),
 });
 
 export type FamilyState = z.infer<typeof familyStateSchema>;
@@ -126,6 +132,7 @@ export function freshFamilyState(
     rejected: 0,
     rosterIssue: null,
     rosterFull: false,
+    pressureAll: false,
   };
 }
 

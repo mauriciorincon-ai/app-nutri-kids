@@ -1532,6 +1532,46 @@ describe("«cuando le ofrecen algo» contra el doble del servidor (S14 · G-Plan
     expect(a.state!.rejected + a.state!.unreadable).toBeGreaterThan(0);
   });
 
+  it("quien pasa a madre o padre DESPUÉS ve también lo anotado antes, sin que nadie lo anote otra vez", async () => {
+    const { a, c, s, forge, sync } = await family();
+    c.data.pressure.own = [entry(c, "cccccccc05")];
+    await sync(c);
+    // El colegio baja el registro de la tía y lo deja pasar: aún no es de madre o padre.
+    await sync(s);
+    expect(s.data.pressure.others).toEqual({});
+    expect(s.state!.pressureAll).toBe(false);
+    const rejectedBefore = s.state!.rejected;
+
+    // Mamá sube al colegio a madre o padre.
+    const sa = await a.signer;
+    const ss = await s.signer;
+    const ops = a.state!.roster;
+    const up = await appendOp(ops, sa, a.id, 70, {
+      type: "set",
+      member: { id: s.id, name: "x", role: "parent", pub: ss.pub },
+    });
+    await forge(a, { name: "roster", data: { ops: [...ops, up] } });
+    await sync(a);
+    await sync(s);
+    await sync(s);
+    expect(s.data.pressure.others[c.id]).toHaveLength(1);
+    expect(s.state!.pressureAll).toBe(true);
+    // La bajada completa no vuelve a contar lo ya visto.
+    expect(s.state!.rejected).toBe(rejectedBefore);
+
+    // Y si deja de serlo, olvida lo ajeno y la próxima vez que lo sea vuelve a bajarlo todo.
+    const down = await appendOp([...ops, up], sa, a.id, 71, {
+      type: "set",
+      member: { id: s.id, name: "x", role: "school", pub: ss.pub, meals: ["almuerzo"] },
+    });
+    await forge(a, { name: "roster", data: { ops: [...ops, up, down] } });
+    await sync(a);
+    await sync(s);
+    await sync(s);
+    expect(s.data.pressure.others).toEqual({});
+    expect(s.state!.pressureAll).toBe(false);
+  });
+
   it("un teléfono que deja de ser de madre o padre olvida lo de los demás", async () => {
     const { a, c, sync } = await family();
     c.data.pressure.others = { [a.id]: [entry(a, "aaaaaaaa02")] };

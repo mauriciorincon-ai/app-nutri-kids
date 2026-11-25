@@ -419,19 +419,34 @@ export async function syncOnce(d: SyncDeps): Promise<SyncResult> {
   st.log.own = signed.log;
 
   for (let round = 0; round < ROUNDS; round++) {
-    // 1 · Bajar lo nuevo.
-    const pulled = await pullSince(d.api, d.ctx, st.since);
+    // 1 · Bajar lo nuevo. Madre o padre recién llegados al rol bajan una vez desde el principio:
+    // lo que anotaron los demás antes pasó cuando este teléfono aún no lo guardaba (G-Plan 1a).
+    let roster = await rosterOf(st.roster);
+    const parentNow = roster?.members[own]?.role === "parent";
+    const from = parentNow && !st.pressureAll ? 0 : st.since;
+    const pulled = await pullSince(d.api, d.ctx, from);
     if (!pulled.ok) return fail(pulled.reason);
     st.locked = false;
+    if (parentNow) st.pressureAll = true;
     // Se acumula: lo que no se pudo abrir se salta para siempre, y el aviso no debe desaparecer solo.
-    st.unreadable += pulled.value.unreadable;
+    // La bajada completa ve otra vez lo ya contado: ahí cuenta el total, no la suma.
+    st.unreadable =
+      from === st.since
+        ? st.unreadable + pulled.value.unreadable
+        : Math.max(st.unreadable, pulled.value.unreadable);
     let remotePlan: (PlanSide & { s?: string }) | null = null;
-    let roster = await rosterOf(st.roster);
     const items = [...pulled.value.items].sort(
       (a, b) => rank(a.named.name) - rank(b.named.name),
     );
 
     for (const { named, ver } of items) {
+      // En la bajada completa, lo ya visto en esa versión no se vuelve a procesar (ni a contar).
+      if (
+        from !== st.since &&
+        st.vers[named.name] === ver &&
+        !named.name.startsWith("pressure:")
+      )
+        continue;
       st.vers[named.name] = ver;
       if (named.name === "roster") {
         const data = named.data as { ops: FamilyState["roster"] };
@@ -599,8 +614,10 @@ export async function syncOnce(d: SyncDeps): Promise<SyncResult> {
     }
 
     // 1d · S14: un teléfono que no es de madre o padre no conserva lo que anotaron los demás.
-    if (roster?.members[own]?.role !== "parent" && d.local.dropPressureOthers?.())
-      changed = true;
+    if (roster?.members[own]?.role !== "parent") {
+      st.pressureAll = false;
+      if (d.local.dropPressureOthers?.()) changed = true;
+    }
 
     // 2 · El plan, entero y por versión.
     if (remotePlan) {
