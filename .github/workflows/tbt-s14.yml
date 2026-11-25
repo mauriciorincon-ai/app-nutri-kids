@@ -1,5 +1,5 @@
 # TEMPORAL (S14): mide el TBT en el runner, rama contra main en el mismo trabajo, mediana de 10 por ruta.
-# El cascarón (layout, KidGuard) y storage.ts cambiaron: las 19 rutas importan algo cambiado. Se borra antes del PR.
+# El cascarón (layout, KidGuard) y storage.ts cambiaron: las 19 rutas importan algo cambiado. Se borra antes del PR. Segunda corrida tras los pagos de la auditoría.
 name: tbt-s14
 on:
   push:
