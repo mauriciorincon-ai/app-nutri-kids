@@ -344,7 +344,8 @@ const en: Text = {
   sleepMissing: {
     "no-band":
       "Pick their age in Profile and note how long they slept last night in Wellbeing: that counts too.",
-    "no-sleep": "If you note how long they slept last night in Wellbeing, that counts too.",
+    "no-sleep":
+      "If you note how long they slept last night in Wellbeing, that counts too.",
   },
   computedNew: "Someone new in the family shows up today.",
   prepareTitle: "What to prepare",
