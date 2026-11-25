@@ -100,7 +100,9 @@ test("las lecciones, «Qué sí y qué no» y el camino desde Hoy", async ({
 
   await page.goto("/");
   const links = page.getByTestId("family-links");
-  await expect(links.getByRole("link")).toHaveCount(3);
+  // Tres de la familia y el niño (S14) y «Lo que aprende» (S15, solo madre o padre: aquí, sin familia).
+  await expect(links.getByRole("link")).toHaveCount(4);
+  await expect(links.getByRole("link").last()).toContainText("Lo que aprende");
   await axe(page, "Hoy con «Para la familia»");
   await links.getByRole("link").first().click();
   await page.waitForURL("**/familia");
