@@ -159,7 +159,9 @@ A «hard day» is a noted day with at least one deviation (section 1). It never 
 
 ### 12. Weight and layout shift
 
-The card renders in its baseline state (nothing noted, no age band) during prerender, as the rows of «Hoy» already do, so hydration does not move it: Lighthouse CLS on `/` went from 0.376 (card appearing after hydration) to 0.000. Local Lighthouse CI, median of 3: `/` 420.2 KB of script, `/aprende` 433.8 KB, both under 440 KB (ADR-020). `/aprende` has about 6 KB of margin: anything added to it must be loaded lazily.
+The card renders in its baseline state (nothing noted, no age band) during prerender, as the rows of «Hoy» already do, so hydration does not move it: Lighthouse CLS on `/` went from 0.376 (card appearing after hydration) to 0.000. Local Lighthouse CI, 3 runs, all 20 routes: every one is under 440 KB (ADR-020); the largest are `/camara` 438.1 KB and `/recetas` 437.2 KB, `/` is 421.9 KB and `/aprende` 430.6 KB.
+
+The first build of the sprint put the day card, the twin and the texts of «lo que aprende» in a chunk that every route loaded, and `/camara` (441.6 KB) and `/recetas` (440.7 KB) went over. `Hoy` now loads `DayCard` with `next/dynamic` (still prerendered, so no layout shift): the other routes dropped from +8 KB to about +5 KB over `main`. `/camara` has less than 2 KB of margin: anything added to a shell route must be loaded lazily, and the 400 KB target belongs to S17.
 
 ### 13. Logs and Sentry
 
