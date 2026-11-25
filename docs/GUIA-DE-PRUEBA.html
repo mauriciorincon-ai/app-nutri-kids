@@ -6,7 +6,7 @@
 <title>Guía de prueba — Nutrikids</title>
 <!--
   GUÍA DE PRUEBA VIVA Y ACUMULATIVA de Nutrikids. PRIMERA guía de la app (v1), pero ACUMULATIVA:
-  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil), S6 (PDF), S7 (familia), S8 (avisos), S9 (roles, plan B, días especiales, unir dos planes), S10 (bienestar: ánimo, aceptación, cómo está, hábitos), S11 (lonchera, recetas, viaje y tema oscuro) S12 (la cámara: de la foto a la cocina y al plato), S13 (leer etiquetas y modo súper) y S14 (la familia y el niño: lecciones, «cuando le ofrecen algo» y la aventura). Autocontenida
+  cubre TODAS las pruebas vigentes de S1 (dieta viva), S2 (chat), S3 (día completo) · S4 (sin internet), S5 (perfil), S6 (PDF), S7 (familia), S8 (avisos), S9 (roles, plan B, días especiales, unir dos planes), S10 (bienestar: ánimo, aceptación, cómo está, hábitos), S11 (lonchera, recetas, viaje y tema oscuro) S12 (la cámara: de la foto a la cocina y al plato), S13 (leer etiquetas y modo súper) S14 (la familia y el niño: lecciones, «cuando le ofrecen algo» y la aventura) y S15 (lo que aprende y el día de hoy). Autocontenida
   (cero CDNs). Origen por línea (S1/S2 heredadas ⇒ regresión · Nuevo/Mejorado · S3). Gate mínimo ⭐
   = solo lo que ninguna automatización puede verificar. NS de localStorage versionado: s14.
 -->
@@ -102,9 +102,9 @@
 <body>
 <div class="pagina">
   <header>
-    <p class="eyebrow">Nutrikids · Guía de prueba viva y acumulativa · Sprint 14 · 2026-11-24</p>
+    <p class="eyebrow">Nutrikids · Guía de prueba viva y acumulativa · Sprint 15 · 2026-11-25</p>
     <h1>Guía de prueba</h1>
-    <p class="suave">Todas las pruebas vigentes de la app: las nuevas del S14 (las lecciones para la familia, «cuando le ofrecen algo» y la aventura del niño), y las de S1 a S13 —
+    <p class="suave">Todas las pruebas vigentes de la app: las nuevas del S15 (lo que aprende y el día de hoy), y las de S1 a S14 —
       que corren como <strong>regresión</strong>. Filtra por origen para correr todo o solo
       lo que cambió. Las casillas se guardan solas en este navegador.</p>
     <p class="chica"><strong>Gate mínimo ⭐: 6 pruebas · ~30 min.</strong> Es lo que ninguna
@@ -633,6 +633,33 @@
         <span class="origen origen-nuevo">Nuevo · S14</span></label></li>
     </ul>
     <div class="reportame"><p><strong>Repórtame sí o sí:</strong> cualquier frase que culpe, que premie con comida o que suene a indicación médica; un alimento en «Qué sí y qué no» que tu plan no nombra, o un amarillo con su cifra; un nombre de otra persona guardado en lo anotado; un cuidador que vea lo que anotó otro teléfono; una energía que suba por comer o que baje; una forma de salir del modo niño sin la pulsación larga y la suma; cualquier pantalla del juego que se vea rota o ilegible en claro o en oscuro.</p></div>
+  </section>
+
+  <!-- ============================ W · LO QUE APRENDE ============================ -->
+  <section class="bloque">
+    <div class="bloque-cabeza"><span class="letra">W</span><h2>Lo que aprende y el día de hoy</h2></div>
+    <p class="meta-bloque chica suave">~15 min · pantallas <strong>Hoy</strong>, <strong>Lo que aprende</strong>, <strong>Bienestar</strong> y <strong>Ajustes</strong> · en el teléfono real, con tu plan real y, para los pasos 7 y 8, dos teléfonos de la familia. Por decisión del dueño, estas pruebas con teléfono real se corren en el ensayo general del H-2.</p>
+    <ul class="pasos">
+      <li data-origen="nuevo"><input type="checkbox" id="w1"><label for="w1">Abre <strong>Hoy</strong>: sobre las comidas hay una tarjeta <strong>«El día de hoy»</strong> con una mochila y <strong>«Mochila ligera»</strong>, el motivo «No hay nada fuera de lo de siempre.» y la leyenda de los <strong>tres niveles</strong>. El nivel se ve con símbolo y palabras, en ciruela, <strong>nunca en rojo</strong>; no suena ni avisa nada. Pruébalo también en inglés y en tema oscuro.
+        <span class="origen origen-nuevo">Nuevo · S15</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="w2"><label for="w2">Toca <strong>«Hay un evento con más gente»</strong>: la casilla queda <strong>«Anotado»</strong>, la mochila pasa a <strong>«Mochila con algo más»</strong>, el porqué dice «Hay un evento con más gente.» y sale <strong>«Qué preparar»</strong> con enlaces (cumpleaños, qué decir cuando le ofrecen algo) que abren pantallas que ya existen. Toca <strong>«Hoy están fuera de casa»</strong>: <strong>«Mochila llena»</strong>. Quita uno y luego el otro: baja un nivel cada vez.
+        <span class="origen origen-nuevo">Nuevo · S15</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="w3"><label for="w3">En el <strong>Perfil</strong> elige una franja de edad y en <strong>Bienestar → Hábitos</strong> anota que anoche durmió <strong>mucho menos</strong> de lo que dice su referencia: en Hoy el sueño aparece entre los motivos. Si falta la franja o el sueño, la tarjeta dice qué falta para que cuente, sin culpar a nadie.
+        <span class="origen origen-nuevo">Nuevo · S15</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="w4"><label for="w4">Abre <strong>Hoy → «Para la familia» → «Lo que aprende»</strong> con tu plan real y varios días anotados: <strong>«Esta semana»</strong> dice, en palabras, algo como «5 de 7 días anotados dentro del plan» con la semana pasada y <strong>lo que más cuesta</strong>; <strong>jamás un porcentaje</strong>. Un día que no anotaste aparece <strong>«sin anotar»</strong> y no resta. El calendario de las <strong>últimas cuatro semanas</strong> trae un símbolo y una palabra por cuadro.
+        <span class="origen origen-nuevo">Nuevo · S15</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="w5"><label for="w5">Con menos de <strong>7 días anotados</strong>, <strong>«Lo que se repite»</strong> calla y dice cuántos faltan. Con más, solo aparece lo que coincidió <strong>al menos 3 veces</strong> («coincidió 3 de 4 veces»), agrupado en <strong>cuándo, dónde y qué coincidió</strong>. <strong>Ninguna frase dice por qué pasa algo</strong>, nombra una alergia o te manda a quitar un alimento: cada coincidencia con una señal cierra con «coméntalo con tu nutricionista».
+        <span class="origen origen-nuevo">Nuevo · S15</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="w6"><label for="w6"><strong>«Lo que va aprendiendo»</strong>: con menos de <strong>14 días anotados</strong> dice <strong>«Aún aprendiendo (N de 14 días)»</strong> y no cambia nada de Hoy. Con 14 o más, cuenta qué pesa en el día y qué acepta mejor, y propone solo alimentos <strong>de tu plan</strong>. Toca <strong>«Borrar lo aprendido»</strong> → <strong>«Sí, borrar»</strong>: vuelve a «0 de 14 días» y lo anotado en Hoy, Bienestar e Historial <strong>sigue igual</strong>.
+        <span class="origen origen-nuevo">Nuevo · S15</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="w7"><label for="w7"><strong>Con la familia activada y dos teléfonos</strong> (madre y cuidador): el cuidador ve <strong>«El día de hoy»</strong> y puede tocar los tres contextos, pero <strong>no tiene el enlace «Lo que aprende»</strong> y, si escribe <strong>/aprende</strong>, la pantalla le explica que es para madre o padre. Lo que el cuidador anota en Hoy llega a la madre con el mismo nivel. Con el rol de <strong>nutricionista</strong> los tres contextos se ven y <strong>no se pueden cambiar</strong>.
+        <span class="origen origen-nuevo">Nuevo · S15</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="w8"><label for="w8">Entra a la familia con un teléfono cuya persona ingresó <strong>hace menos de 14 días</strong> y marca algo en Hoy: en el teléfono de la madre, el motivo <strong>«Se nota alguien nuevo en la familia hoy.»</strong> aparece solo, sin tocar nada. Sin familia, ese contexto se marca a mano.
+        <span class="origen origen-nuevo">Nuevo · S15</span></label></li>
+      <li data-origen="nuevo"><input type="checkbox" id="w9"><label for="w9"><strong>Ajustes → «Borrar mis datos»</strong>: «Lo que aprende» vuelve a cero y su pantalla dice «Aún aprendiendo (0 de 14 días)».
+        <span class="origen origen-nuevo">Nuevo · S15</span></label></li>
+    </ul>
+    <div class="reportame"><p><strong>Repórtame sí o sí:</strong> un porcentaje o una nota en lugar de palabras y conteos; una frase que culpe, que diga por qué pasa algo, que nombre una alergia o que suene a indicación médica; una alarma, un rojo o un aviso que suene por el nivel del día; «Lo que aprende» visible para un cuidador, el colegio o la nutricionista; un patrón con menos de 3 coincidencias o con menos de 7 días anotados; el gemelo opinando antes de los 14 días; algo del plan que cambie solo; un estado que solo se distinga por color; texto que se salga de la pantalla.</p></div>
   </section>
 
   <!-- ============================ J · SIN INTERNET ============================ -->
