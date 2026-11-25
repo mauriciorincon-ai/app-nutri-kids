@@ -365,42 +365,42 @@
     {
       "clave": "pantallas",
       "etiqueta": "Pantallas de la app",
-      "valor": 22,
+      "valor": 23,
       "unidad": "pantallas",
       "fuente": "medido",
-      "detalle": "Veintiún rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes, perfil, escenarios, unir, bienestar, lonchera, recetas, viaje, cámara, qué cocinar con lo que tienes, leer una etiqueta, el modo súper, las lecciones para la familia, «cuando le ofrecen algo» y la aventura del niño) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
+      "detalle": "Veintidós rutas con su page.tsx bajo src/app/ (Hoy, dieta, suplementos, chat, historial, cargar, ajustes, perfil, escenarios, unir, bienestar, lonchera, recetas, viaje, cámara, qué cocinar con lo que tienes, leer una etiqueta, el modo súper, las lecciones para la familia, «cuando le ofrecen algo», la aventura del niño y lo que aprende) más el detalle de un alimento, que es una sola pantalla con muchos alimentos. La ruta /conoce sirve este brochure y no es una pantalla del producto."
     },
     {
       "clave": "pruebas_unitarias",
       "etiqueta": "Pruebas unitarias y de integración",
-      "valor": 1728,
+      "valor": 1801,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-24 sobre la rama de la familia y el niño (S14): 95 archivos, 1728 pruebas, todas en verde."
+      "detalle": "Salida de `npx vitest run --coverage` el 2026-11-25 sobre la rama de lo que aprende (S15): 98 archivos, 1801 pruebas, todas en verde."
     },
     {
       "clave": "pruebas_e2e",
       "etiqueta": "Pruebas end-to-end",
-      "valor": 376,
+      "valor": 384,
       "unidad": "pruebas",
       "fuente": "medido",
-      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-24 sobre la rama de la familia y el niño (S14), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 376 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 374 en verde y 2 omitidas por diseño; ni el modelo de la cámara, ni el lector de etiquetas ni el escáner reales corren aquí: los sustituyen workers simulados, y un catálogo inventado."
+      "detalle": "Salida de `CI=1 npx playwright test` el 2026-11-25 sobre la rama de lo que aprende (S15), contra un build de producción, el doble en memoria del almacén y llaves de prueba (jamás la base ni llaves reales): 384 pruebas en dos proyectos (móvil Pixel 7 y escritorio), 382 en verde y 2 omitidas por diseño; ni el modelo de la cámara, ni el lector de etiquetas ni el escáner reales corren aquí: los sustituyen workers simulados, y un catálogo inventado."
     },
     {
       "clave": "cobertura_lineas",
       "etiqueta": "Cobertura de líneas del motor",
-      "valor": 97.22,
+      "valor": 97.29,
       "unidad": "%",
       "fuente": "medido",
-      "detalle": "v8 sobre las 19 carpetas de src/lib el 2026-11-24 sobre la rama de la familia y el niño (97,22 % de líneas en total; cada carpeta en 80 % o más), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
+      "detalle": "v8 sobre las 20 carpetas de src/lib el 2026-11-25 sobre la rama de lo que aprende (97,29 % de líneas en total; cada carpeta en 80 % o más), con umbrales del 80 % en vitest.config.ts y del 90 % para src/lib/family y src/lib/push."
     },
     {
       "clave": "decisiones_registradas",
       "etiqueta": "Decisiones de arquitectura registradas",
-      "valor": 20,
+      "valor": 21,
       "unidad": "ADR",
       "fuente": "medido",
-      "detalle": "Archivos de decisions/ el 2026-11-24; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono, la 013 fija los roles con firma por persona, la 014 el plan B, los días especiales y la unión de dos planes, y la 015 el bienestar (se anota, nunca se interpreta, con la franja de edad en vez de la fecha de nacimiento). La 016 fija el tema oscuro (se elige en Ajustes, se recuerda y no destella) y la 017 la lonchera, el recetario y el modo viaje: todo se arma con el plan y en el teléfono. La 018 fija que la cámara solo ve: un modelo pequeño que corre en el teléfono nombra lo que ve y el código decide todo lo demás, sin que la foto se guarde ni salga. La 019 fija que el lector de etiquetas solo transcribe y el código decide: el texto se lee en el teléfono, se coteja con el plan y un texto mal leído jamás da «apto»; el catálogo de productos de Colombia (Open Food Facts, ODbL) se baja una vez y se busca en el teléfono, sin que la foto ni lo escaneado salgan. La 020 fija las lecciones para la familia (parafraseadas y con su fuente), el registro «Cuando le ofrecen algo» (sin texto libre; madre y padre ven todo, la regla la cumple la app y no la criptografía) y la aventura del niño: una sola energía que solo sube y que nunca sale de comer, y el modo niño con salida de adulto."
+      "detalle": "Archivos de decisions/ el 2026-11-25; la 011 fija que la familia comparte cifrado de punta a punta; la 008 (chat code-first) reemplaza a la 004 y la 005, la 009 fija el perfil en el aparato y el schema v2, la 010 fija que el PDF se lee en el aparato y se revisa parte por parte, la 012 fija que los avisos son toques vacíos y el aviso se arma en el teléfono, la 013 fija los roles con firma por persona, la 014 el plan B, los días especiales y la unión de dos planes, y la 015 el bienestar (se anota, nunca se interpreta, con la franja de edad en vez de la fecha de nacimiento). La 016 fija el tema oscuro (se elige en Ajustes, se recuerda y no destella) y la 017 la lonchera, el recetario y el modo viaje: todo se arma con el plan y en el teléfono. La 018 fija que la cámara solo ve: un modelo pequeño que corre en el teléfono nombra lo que ve y el código decide todo lo demás, sin que la foto se guarde ni salga. La 019 fija que el lector de etiquetas solo transcribe y el código decide: el texto se lee en el teléfono, se coteja con el plan y un texto mal leído jamás da «apto»; el catálogo de productos de Colombia (Open Food Facts, ODbL) se baja una vez y se busca en el teléfono, sin que la foto ni lo escaneado salgan. La 020 fija las lecciones para la familia (parafraseadas y con su fuente), el registro «Cuando le ofrecen algo» (sin texto libre; madre y padre ven todo, la regla la cumple la app y no la criptografía) y la aventura del niño: una sola energía que solo sube y que nunca sale de comer, y el modo niño con salida de adulto. La 021 fija lo que aprende la app: la adherencia en palabras y conteos (jamás un porcentaje), lo que se repite sin causa y con su conteo, el día de hoy y qué preparar, y un gemelo que es estadística propia en el teléfono, sin IA, que calla hasta tener 14 días anotados; madre y padre ven lo aprendido y quien cuida ese día ve el día de hoy."
     },
     {
       "clave": "dependencias_runtime",
@@ -429,10 +429,10 @@
     {
       "clave": "peso_brochure",
       "etiqueta": "Peso de este brochure",
-      "valor": 102543,
+      "valor": 102672,
       "unidad": "bytes",
       "fuente": "medido",
-      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-24 sobre la rama de la familia y el niño (S14). Autocontenido: cero recursos externos, incluidas las seis muestras de interfaz (SVG en línea, no imágenes)."
+      "detalle": "Bytes de docs/BROCHURE.html, medidos con wc -c el 2026-11-25 sobre la rama de lo que aprende (S15). Autocontenido: cero recursos externos, incluidas las seis muestras de interfaz (SVG en línea, no imágenes)."
     }
   ],
   "stack": [

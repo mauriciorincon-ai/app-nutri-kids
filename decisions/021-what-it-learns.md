@@ -164,3 +164,13 @@ The card renders in its baseline state (nothing noted, no age band) during prere
 ### 13. Logs and Sentry
 
 Nothing noted or learned is logged. The only events are `kind` and counts, as before.
+
+### 14. Known limits (builder defaults, declared)
+
+- **Past days are judged against the current plan.** `judgeDay` builds a past day's checklist with today's diet, so if the professional's plan changes, older days are read against the new plan. The app keeps no plan history, and the radar and the twin only look 28 and 90 days back. Said in the manual.
+- **A food noted nearly every day gives no signal.** The radar compares days with the food against days without it (`without.length >= RADAR_MIN_HITS`); when there are fewer than three days without it, there is nothing to compare and no pattern is shown.
+- **The twin's «accepts» looks only at the last 90 days** (`TWIN_WINDOW`), like the rest of the twin.
+- **Layout shift is zero only in the empty state.** With one saved context Lighthouse measured CLS 0.049 on `/`, and 0.106 with two, because the lists under the card grow after hydration. A fixed `min-height` would leave a large blank area on every phone, so the default is to accept it and say so here.
+- **Before the family loads**, a phone with a family briefly reads its role as «no family» (`phase "off"`), so `seesAll` is true for an instant and the twin's adjustment line can show to a non-parent. It is the same pattern S14 uses for the pressure log. Closing it needs a «loaded» flag in the family view, which touches the controller and is out of this sprint; the family is switched on in S17.
+- **The count rings are plum.** The rings of «lo que se repite» used the turquoise of the «happy» mood, which could read as «good». The owner chose plum (`--mood-anxious`), the same colour as the day card, 2026-11-25. The count is also always written in the ring, so it never depends on colour.
+- **Owner's decision on the family-not-loaded instant (above):** closed in the sprint that switches the family on, marked as a **priority**. Phrase, verbatim: «Se cierra en S7 pero se marca como prioritario el cierre». The builder reads «S7» as S17, the sprint that turns the family on, as the question named it.
