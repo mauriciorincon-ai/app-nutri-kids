@@ -38,6 +38,8 @@ export default defineConfig({
         "src/lib/family-learn/**",
         "src/lib/pressure/**",
         "src/lib/adventure/**",
+        // S15: adherencia, radar, riesgo del día y gemelo (regla 2: > 80 %).
+        "src/lib/insights/**",
       ],
       thresholds: {
         lines: 80,

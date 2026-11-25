@@ -152,6 +152,9 @@ export function radar(
     for (const signal of SIGNALS) {
       const hits = withFood.filter((d) => sig.get(d.day)!.has(signal)).length;
       if (!passes(hits, withFood.length)) continue;
+      // Un alimento que casi todos los días está anotado no distingue nada: sin días «sin él» que
+      // comparar, cualquier señal frecuente se le pegaría (ADR-021 §3).
+      if (without.length < RADAR_MIN_HITS) continue;
       const base = without.length
         ? without.filter((d) => sig.get(d.day)!.has(signal)).length /
           without.length

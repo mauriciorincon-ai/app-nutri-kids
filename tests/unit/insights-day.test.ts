@@ -335,6 +335,22 @@ describe("el gemelo", () => {
     expect(t.adjust.new).toBeUndefined();
   });
 
+  it("lo que acepta mejor mira como mucho los últimos 90 días", () => {
+    const pear = [
+      { id: "pera", verdict: "accepts" as const, texture: "soft" as const },
+    ];
+    // 120 días anotados; lo aceptado está solo en los más viejos (más de 90 días atrás).
+    const ds = keys(120).map((k, i) => day(k, { foods: i >= 95 ? pear : [] }));
+    const t = twin(input(ds));
+    expect(t.learning).toBe(false);
+    expect(t.accepts).toEqual([]);
+    // El mismo historial dentro de la ventana sí cuenta.
+    const recent = keys(120).map((k, i) =>
+      day(k, { foods: i < 20 ? pear : [] }),
+    );
+    expect(twin(input(recent)).accepts.length).toBeGreaterThan(0);
+  });
+
   it("acepta mejor por grupo del plan y por textura, con su evidencia, y encadena con lo que el plan tiene sin ofrecer", () => {
     const fruit = (
       id: string,

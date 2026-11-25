@@ -1,5 +1,5 @@
 import type { InsightDay } from "@/lib/diet/day-log";
-import { dateKey, resolveItemStatus } from "@/lib/diet/logic";
+import { resolveItemStatus } from "@/lib/diet/logic";
 import type { DietPlan } from "@/lib/diet/schema";
 import type { PressureEntry } from "@/lib/pressure/values";
 import {
@@ -99,10 +99,10 @@ function effectOf(f: Omit<TwinFactor, "effect">): TwinFactor["effect"] {
 }
 
 export function twin(i: TwinInput): Twin {
-  const todayKey = dateKey(i.now);
   const keys = dayKeys(i.now, TWIN_WINDOW, 1).filter(
     (k) => i.since === null || k > i.since,
   );
+  const inWindow = new Set(keys);
   const map = byDay(i.days);
   const accepted = acceptedByDay(i.pressure);
   const checks = keys
@@ -158,7 +158,7 @@ export function twin(i: TwinInput): Twin {
       const f = parseFoodKey(key);
       if (f) seen.add(f.foodId);
     }
-    if (!(d.day > (i.since ?? "") && d.day < todayKey)) continue;
+    if (!inWindow.has(d.day)) continue;
     for (const [key, v] of Object.entries(d.wellbeing.food)) {
       const f = parseFoodKey(key);
       if (!f || v.verdict === null) continue;

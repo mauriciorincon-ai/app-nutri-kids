@@ -333,6 +333,17 @@ describe("el radar de lo que se repite", () => {
     ).toEqual([]);
   });
 
+  it("un alimento anotado casi todos los días no atrae ninguna señal: no hay días «sin él» con qué comparar", () => {
+    const days = window
+      .slice(0, 10)
+      .map((k, i) =>
+        day(k, { foods: ["pera"], well: i < 8 ? { pain: "tummy" } : {} }),
+      );
+    expect(
+      radar(diet(), days, [], NOW).patterns.filter((p) => p.kind === "signal"),
+    ).toEqual([]);
+  });
+
   it("hoy no entra: el día aún no termina", () => {
     const days = [
       day("2026-08-10", { skip: [MERIENDA] }),
@@ -408,12 +419,35 @@ describe("textos de «Lo que aprende» (es/en)", () => {
     }
   });
 
-  it("todo lo que coincide se comenta con el nutricionista", () => {
+  it("todo lo que coincide se comenta con el nutricionista; una reacción además remite al plan de emergencia", () => {
     expect(learnText.es.signalNote).toMatch(/nutricionista/);
     expect(learnText.en.signalNote).toMatch(/nutritionist/);
+    expect(learnText.es.radarFooter).toMatch(/nutricionista/);
+    expect(learnText.en.radarFooter).toMatch(/nutritionist/);
+    expect(learnText.es.signalReactionNote).toMatch(
+      /plan de emergencia.*nutricionista/,
+    );
+    expect(learnText.en.signalReactionNote).toMatch(
+      /emergency plan.*nutritionist/,
+    );
   });
 
   it("fill deja intacto un marcador sin valor", () => {
     expect(fill("{a} y {b}", { a: 1 })).toBe("1 y {b}");
+  });
+});
+
+describe("las claves de día no dependen de la hora ni del cambio de hora", () => {
+  it("a las 00:00:30 y a las 23:59:30 dan los mismos días, sin saltos ni repetidos", () => {
+    const early = dayKeys(new Date("2026-03-08T00:00:30"), 400, 0);
+    const late = dayKeys(new Date("2026-03-08T23:59:30"), 400, 0);
+    expect(early).toEqual(late);
+    expect(new Set(early).size).toBe(early.length);
+    // Cada clave es el día anterior de la anterior: ningún día se salta ni se repite (cambios de hora incluidos).
+    for (let i = 1; i < early.length; i++) {
+      const prev = keyToDate(early[i - 1]);
+      prev.setDate(prev.getDate() - 1);
+      expect(early[i]).toBe(dayKeys(prev, 1, 0)[0]);
+    }
   });
 });

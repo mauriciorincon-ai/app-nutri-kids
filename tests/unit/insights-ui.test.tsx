@@ -21,7 +21,15 @@ import LearnPage from "@/app/aprende/page";
 import { DayCard } from "@/components/learn/day-card";
 import { DietProvider } from "@/components/diet-provider";
 import { I18nProvider } from "@/i18n";
-import { clearDayLog, getWellbeing, setHabit } from "@/lib/diet/day-log";
+import {
+  clearDayLog,
+  getWellbeing,
+  markDone,
+  setCtx,
+  setHabit,
+} from "@/lib/diet/day-log";
+import { buildDayChecklist } from "@/lib/diet/logic";
+import { getDemoDiet } from "@/lib/diet/storage";
 import { clearProfileNotes, setAgeBand } from "@/lib/diet/profile-notes";
 import { notifyLocalStore } from "@/lib/local-store";
 import { TWIN_KEY } from "@/lib/insights/twin-store";
@@ -163,6 +171,31 @@ describe("«El día de hoy» en Hoy (G-Plan 2a)", () => {
     await userEvent.click(screen.getByTestId("ctx-away"));
     expect(screen.getByTestId("day-level")).toHaveTextContent("Mochila ligera");
     expect(getWellbeing(today).ctx).toEqual({});
+  });
+
+  it("si lo aprendido baja el nivel a ligero pero algo sigue por preparar, la tarjeta no dice que no hay nada", async () => {
+    // 20 días anotados: los 4 «fuera de casa» salieron dentro del plan; en el resto, la mitad no.
+    for (let i = 1; i <= 20; i++) {
+      const d = new Date(today.getTime() - i * 24 * 3600 * 1000);
+      const off = i >= 5 && i % 2 === 0;
+      for (const item of buildDayChecklist(getDemoDiet(), d, []).items)
+        if (item.kind !== "water" && !(off && item.checkId === "meal:merienda"))
+          markDone(d, item.checkId, "12:00");
+      if (i <= 4) setCtx(d, "away", true);
+    }
+    setCtx(today, "away", true);
+    ui(<DayCard today={today} />);
+    expect(await screen.findByTestId("day-level")).toHaveTextContent(
+      "Mochila ligera",
+    );
+    expect(screen.getByTestId("day-card")).toHaveAttribute("data-level", "low");
+    expect(screen.getByTestId("day-prepare")).toBeVisible();
+    expect(screen.getByTestId("day-card")).not.toHaveTextContent(
+      "Hoy no hay nada especial que preparar.",
+    );
+    expect(screen.getByTestId("day-card")).toHaveTextContent(
+      "esto puede servir igual",
+    );
   });
 
   it("la noche corta pesa según su edad; sin edad o sin sueño, lo dice y no suma", async () => {

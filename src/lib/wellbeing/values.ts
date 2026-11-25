@@ -7,7 +7,7 @@ import type { Reg, RegMap } from "@/lib/family/merge";
  * los cargan las pantallas que los muestran.
  *
  * Nada de esto es una escala clínica ni un puntaje: son palabras de casa que quien cuida elige.
- * La app jamás las interpreta, las suma ni las compara entre sí.
+ * Aquí jamás se interpretan, suman ni comparan entre sí; lo que se repite lo cuenta `lib/insights` (S15), en conteos y sin causas.
  */
 
 /** Cómo llega a la comida (semáforo emocional). Un toque, junto a la marca de esa comida. */

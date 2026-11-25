@@ -37,7 +37,7 @@ export const PREPARE_HREF: Record<Prepare, string> = {
   lunchbox: "/lonchera",
   "family-yes-no": "/familia",
   "plan-late": "/#plan-b",
-  accepted: "/bienestar",
+  accepted: "/perfil",
 };
 
 const PREPARE_BY_FACTOR: Record<RiskFactor, Prepare[]> = {
