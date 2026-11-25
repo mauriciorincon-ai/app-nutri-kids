@@ -40,7 +40,7 @@ import {
 import type { DietPlan, LocalizedText } from "@/lib/diet/schema";
 import { adherence, calendar } from "@/lib/insights/adherence";
 import { keyToDate, type DayStatus } from "@/lib/insights/days";
-import { radar, type RadarPattern } from "@/lib/insights/radar";
+import { radar, RADAR_MIN_DAYS, type RadarPattern } from "@/lib/insights/radar";
 import { twin } from "@/lib/insights/twin";
 import { eraseTwin } from "@/lib/insights/twin-store";
 import { seesAll } from "@/lib/pressure/pattern";
@@ -361,7 +361,7 @@ function Learned() {
         </h2>
         {rad.quiet ? (
           <p data-testid="learn-radar-quiet">
-            {fmt(t.radarQuiet, { min: 7, count: rad.recorded })}
+            {fmt(t.radarQuiet, { min: RADAR_MIN_DAYS, count: rad.recorded })}
           </p>
         ) : rad.patterns.length === 0 ? (
           <p data-testid="learn-radar-none">{t.radarNone}</p>
@@ -387,10 +387,10 @@ function Learned() {
                         aria-hidden
                         className="grid size-11 place-items-center rounded-full"
                         style={{
-                          background: `conic-gradient(var(--mood-happy) 0 ${Math.round((p.hits / p.of) * 100)}%, var(--border) 0)`,
+                          background: `conic-gradient(var(--mood-anxious) 0 ${Math.round((p.hits / p.of) * 100)}%, var(--border) 0)`,
                         }}
                       >
-                        <span className="grid size-8 place-items-center rounded-full bg-card text-xs font-bold">
+                        <span className="grid size-8 place-items-center rounded-full bg-card text-[10px] font-bold leading-none">
                           {p.hits}/{p.of}
                         </span>
                       </span>
@@ -402,7 +402,9 @@ function Learned() {
                               aria-hidden
                               className="mt-0.5 size-4 shrink-0"
                             />
-                            {t.signalNote}
+                            {p.signal === "reaction"
+                              ? t.signalReactionNote
+                              : t.signalNote}
                           </p>
                         ) : null}
                       </div>

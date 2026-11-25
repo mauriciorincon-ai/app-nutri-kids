@@ -34,7 +34,7 @@ import {
 /**
  * Bienestar de hoy (S10 · ADR-015): cómo está (palabras simples, sin escala), sus hábitos
  * contra la referencia de su edad (con la fuente a la vista) y el agua. Solo anota: nada se
- * interpreta, se suma ni se compara. Una «reacción» ofrece el plan de emergencia, jamás una
+ * interpreta, se suma ni se compara aquí (lo que se repite lo cuenta «Lo que aprende», sin diagnosticar). Una «reacción» ofrece el plan de emergencia, jamás una
  * indicación.
  */
 export default function WellbeingPage() {

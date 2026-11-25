@@ -83,7 +83,7 @@ export function PlanBCard() {
 
   return (
     <section
-      className="flex flex-col gap-3 rounded-xl border bg-card px-4 py-4"
+      className="flex scroll-mt-4 flex-col gap-3 rounded-xl border bg-card px-4 py-4"
       id="plan-b"
       aria-labelledby="planb-title"
       data-testid="plan-b"

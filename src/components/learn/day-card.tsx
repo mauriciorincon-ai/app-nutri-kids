@@ -114,7 +114,9 @@ export function DayCard({ today }: { today: Date | null }) {
             {t.levels[risk.level]}
           </p>
           <p className="text-sm text-muted-foreground">
-            {t.levelHints[risk.level]}
+            {risk.level === "low" && risk.prepare.length > 0
+              ? t.levelHintLowPrepare
+              : t.levelHints[risk.level]}
           </p>
         </div>
       </div>

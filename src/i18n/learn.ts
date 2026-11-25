@@ -36,6 +36,7 @@ type Text = {
   place: string;
   signal: string;
   signalNote: string;
+  signalReactionNote: string;
   radarFooter: string;
   groups: { when: string; where: string; what: string };
   weekdays: Record<Weekday, string>;
@@ -44,9 +45,9 @@ type Text = {
   signals: Record<Signal, string>;
   // --- El día de hoy y qué preparar (Hoy) ---
   dayTitle: string;
-  dayLead: string;
   levels: Record<RiskLevel, string>;
   levelHints: Record<RiskLevel, string>;
+  levelHintLowPrepare: string;
   legendTitle: string;
   whyTitle: string;
   why: Record<RiskFactor, string>;
@@ -121,7 +122,10 @@ const es: Text = {
     "Se anotó «{signal}» los días en que también se anotó {food}: coincidió {hits} de {of} veces.",
   signalNote:
     "Una coincidencia no dice por qué pasa: coméntalo con tu nutricionista.",
-  radarFooter: "Nada de esto cambia el plan: lo cambia solo tu profesional.",
+  signalReactionNote:
+    "Si hubo una reacción, sigue el plan de emergencia de tu profesional; está en Bienestar. Una coincidencia no dice por qué pasa: coméntalo con tu nutricionista.",
+  radarFooter:
+    "Nada de esto cambia el plan: lo cambia solo tu profesional. Si algo te llama la atención, coméntalo con tu nutricionista.",
   groups: { when: "Cuándo", where: "Dónde", what: "Qué coincidió" },
   weekdays: {
     mon: "Los lunes",
@@ -158,7 +162,6 @@ const es: Text = {
     stool: "deposiciones distintas",
   },
   dayTitle: "El día de hoy",
-  dayLead: "Lo que ya se sabe de hoy y qué conviene tener a mano.",
   levels: {
     low: "Mochila ligera",
     mid: "Mochila con algo más",
@@ -166,9 +169,11 @@ const es: Text = {
   },
   levelHints: {
     low: "Hoy no hay nada especial que preparar.",
-    mid: "Hay una cosa para tener a mano.",
+    mid: "Hay algo para tener a mano.",
     high: "Hay varias cosas para tener a mano.",
   },
+  levelHintLowPrepare:
+    "Con lo anotado, hoy pesa poco; esto puede servir igual.",
   legendTitle: "Los tres niveles",
   whyTitle: "Por qué",
   why: {
@@ -228,9 +233,9 @@ const es: Text = {
     new: "alguien nuevo",
   },
   factorUp:
-    "Con {factor}: {withOff} de {withDays} días anotados tuvieron algo distinto al plan; sin eso, {withoutOff} de {withoutDays}. Pesa un poco más.",
+    "Los días con «{factor}»: {withOff} de {withDays} días anotados tuvieron algo distinto al plan; sin eso, {withoutOff} de {withoutDays}. Pesa un poco más.",
   factorDown:
-    "Con {factor}: {withOff} de {withDays} días anotados tuvieron algo distinto al plan; sin eso, {withoutOff} de {withoutDays}. Pesa un poco menos.",
+    "Los días con «{factor}»: {withOff} de {withDays} días anotados tuvieron algo distinto al plan; sin eso, {withoutOff} de {withoutDays}. Pesa un poco menos.",
   acceptsTitle: "Lo que acepta mejor",
   acceptsNone: "Todavía nada se acepta claramente mejor que lo demás.",
   acceptGroup: "Del grupo «{name}»: lo aceptó {hits} de {of} veces.",
@@ -280,10 +285,13 @@ const en: Text = {
     "{weekday}, something differed from the plan: it matched {hits} of {of} times.",
   place: "{place}, of what was offered, it was accepted {hits} of {of} times.",
   signal:
-    "«{signal}» was noted on days when {food} was also noted: it matched {hits} of {of} times.",
+    "“{signal}” was noted on days when {food} was also noted: it matched {hits} of {of} times.",
   signalNote:
     "Matching doesn't say why it happens: talk it over with your nutritionist.",
-  radarFooter: "None of this changes the plan: only your professional does.",
+  signalReactionNote:
+    "If there was a reaction, follow your professional's emergency plan; it is in Wellbeing. Matching doesn't say why it happens: talk it over with your nutritionist.",
+  radarFooter:
+    "None of this changes the plan: only your professional does. If something catches your eye, talk it over with your nutritionist.",
   groups: { when: "When", where: "Where", what: "What matched" },
   weekdays: {
     mon: "On Mondays",
@@ -320,8 +328,6 @@ const en: Text = {
     stool: "different stools",
   },
   dayTitle: "Today",
-  dayLead:
-    "What is already known about today and what is worth having at hand.",
   levels: {
     low: "Light backpack",
     mid: "Backpack with a little more",
@@ -329,9 +335,11 @@ const en: Text = {
   },
   levelHints: {
     low: "Nothing special to prepare today.",
-    mid: "There is one thing to have at hand.",
+    mid: "There is something to have at hand.",
     high: "There are a few things to have at hand.",
   },
+  levelHintLowPrepare:
+    "From what was noted, today weighs little; this can still help.",
   legendTitle: "The three levels",
   whyTitle: "Why",
   why: {
@@ -393,9 +401,9 @@ const en: Text = {
     new: "someone new",
   },
   factorUp:
-    "With {factor}: {withOff} of {withDays} noted days had something different from the plan; without it, {withoutOff} of {withoutDays}. It weighs a little more.",
+    "On days with “{factor}”: {withOff} of {withDays} noted days had something different from the plan; without it, {withoutOff} of {withoutDays}. It weighs a little more.",
   factorDown:
-    "With {factor}: {withOff} of {withDays} noted days had something different from the plan; without it, {withoutOff} of {withoutDays}. It weighs a little less.",
+    "On days with “{factor}”: {withOff} of {withDays} noted days had something different from the plan; without it, {withoutOff} of {withoutDays}. It weighs a little less.",
   acceptsTitle: "What they accept best",
   acceptsNone: "Nothing is clearly accepted better than the rest yet.",
   acceptGroup: "From the group “{name}”: accepted {hits} of {of} times.",
