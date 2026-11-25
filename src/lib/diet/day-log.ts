@@ -389,9 +389,7 @@ function toWellbeing(regs: DayRegs | undefined): DayWellbeing {
 
 /** La lonchera no es «bienestar» para el historial: un día con solo lonchera no sale ahí. */
 const wellbeingIsEmpty = (w: DayWellbeing) =>
-  WELLBEING_MAPS.every(
-    (n) => n === "lunch" || Object.keys(w[n]).length === 0,
-  );
+  WELLBEING_MAPS.every((n) => n === "lunch" || Object.keys(w[n]).length === 0);
 
 export function getWellbeing(date: Date): DayWellbeing {
   return toWellbeing(readStore()[dateKey(date)]);
@@ -431,6 +429,25 @@ export function listRecordedEntries(): RecordedDay[] {
     )
     .map(({ day, record }) => ({ day, record }))
     .sort((a, b) => (a.day < b.day ? 1 : a.day > b.day ? -1 : 0));
+}
+
+/** Un día tal como lo leen «Lo que aprende» y el riesgo del día (S15 · ADR-021). */
+export type InsightDay = {
+  day: string;
+  record: DayRecord;
+  wellbeing: DayWellbeing;
+};
+
+/**
+ * Todos los días del registro con marcas, notas y bienestar, leyendo el store UNA sola vez. Los
+ * motores de `lib/insights` deciden qué cuenta; aquí no se filtra ni se interpreta nada.
+ */
+export function listInsightDays(): InsightDay[] {
+  return Object.entries(readStore()).map(([day, regs]) => ({
+    day,
+    record: toRecord(regs),
+    wellbeing: toWellbeing(regs),
+  }));
 }
 
 /** Días con algún registro, del más reciente al más antiguo (solo las claves). */
