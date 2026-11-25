@@ -119,3 +119,51 @@ export function adherence(
     hardest,
   };
 }
+
+/** Una casilla del calendario: el día y cómo fue; `null` es un día que aún no llega. */
+export type CalendarCell = { day: string; status: DayStatus } | null;
+
+/**
+ * Las últimas cuatro semanas como calendario (lunes a domingo, la semana de hoy al final). Un día
+ * sin anotar sale «sin anotar», nunca como una falta (G-Plan 1a): el dibujo no resta nada.
+ */
+export function calendar(
+  diet: DietPlan,
+  days: readonly InsightDay[],
+  pressure: readonly PressureEntry[],
+  now: Date,
+): CalendarCell[][] {
+  const map = byDay(days);
+  const accepted = acceptedByDay(pressure);
+  const todayKey = dateKey(now);
+  const sinceMonday = (now.getDay() + 6) % 7;
+  const rows: CalendarCell[][] = [];
+  for (let w = 0; w < 4; w++) {
+    const row: CalendarCell[] = [];
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - sinceMonday - (3 - w) * 7 + d,
+        12,
+      );
+      const key = dateKey(date);
+      row.push(
+        key > todayKey
+          ? null
+          : {
+              day: key,
+              status: judgeDay(
+                diet,
+                key,
+                map.get(key),
+                accepted.get(key) ?? 0,
+                now,
+              ).status,
+            },
+      );
+    }
+    rows.push(row);
+  }
+  return rows;
+}

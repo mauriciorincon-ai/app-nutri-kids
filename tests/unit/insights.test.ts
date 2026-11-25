@@ -6,7 +6,7 @@ import { looksLikeMedicalAdvice } from "@/lib/diet/guardrails";
 import { buildDayChecklist } from "@/lib/diet/logic";
 import type { DietPlan } from "@/lib/diet/schema";
 import { getDemoDiet } from "@/lib/diet/storage";
-import { adherence, HARDEST_MIN } from "@/lib/insights/adherence";
+import { adherence, calendar, HARDEST_MIN } from "@/lib/insights/adherence";
 import { dayKeys, judgeDay, keyToDate } from "@/lib/insights/days";
 import {
   radar,
@@ -65,6 +65,7 @@ function day(key: string, o: DayOpts = {}): InsightDay {
       well: o.well ?? {},
       habits: {},
       lunch: {},
+      ctx: {},
     },
   };
 }
@@ -185,6 +186,33 @@ describe("la adherencia, en palabras y conteos (G-Plan 1a)", () => {
     const a = adherence(diet(), days, [], NOW);
     const nums = JSON.stringify(a).match(/\d+\.\d+/g);
     expect(nums).toBeNull();
+  });
+});
+
+describe("el calendario de cuatro semanas", () => {
+  it("son cuatro filas de lunes a domingo, la semana de hoy al final y sin días del futuro", () => {
+    const rows = calendar(diet(), [], [], NOW);
+    expect(rows).toHaveLength(4);
+    for (const r of rows) expect(r).toHaveLength(7);
+    // NOW es lunes 10 de agosto: la última fila empieza hoy y el resto de la semana aún no llega.
+    expect(rows[3][0]?.day).toBe("2026-08-10");
+    expect(rows[3].slice(1)).toEqual([null, null, null, null, null, null]);
+    expect(rows[0][0]?.day).toBe("2026-07-20");
+    expect(rows.flat().filter((c) => c !== null)).toHaveLength(22);
+  });
+
+  it("un día sin anotar es «sin anotar», y uno anotado se juzga igual que en la semana", () => {
+    const days = [day("2026-08-04"), day("2026-08-05", { skip: [MERIENDA] })];
+    const cells = new Map(
+      calendar(diet(), days, [], NOW)
+        .flat()
+        .filter((c) => c !== null)
+        .map((c) => [c!.day, c!.status]),
+    );
+    expect(cells.get("2026-08-04")).toBe("in");
+    expect(cells.get("2026-08-05")).toBe("off");
+    expect(cells.get("2026-08-06")).toBe("none");
+    expect(cells.get("2026-07-21")).toBe("none");
   });
 });
 
