@@ -1,6 +1,7 @@
 import { getDeviceId } from "@/lib/device";
 import { mergeMap, type Reg, type RegMap } from "@/lib/family/merge";
 import {
+  coerceCtx,
   coerceFood,
   coerceHabit,
   coerceWell,
@@ -86,6 +87,8 @@ export type DayWellbeing = {
   habits: Record<string, number>;
   /** La lonchera (S11): alimento → puesta, comida o volvió. */
   lunch: Record<string, LunchState>;
+  /** El contexto del día (S15): evento social, fuera de casa, alguien nuevo. Solo «sí». */
+  ctx: Record<string, true>;
 };
 type DayLogStore = Record<string, DayRegs>;
 
@@ -200,6 +203,7 @@ function coerceWellbeing(value: Record<string, unknown>, regs: DayRegs): void {
       well: coerceWell,
       habits: coerceHabit,
       lunch: (k, raw) => (lunchKeyOk(k) && isLunchState(raw) ? raw : null),
+      ctx: coerceCtx,
     };
   for (const name of WELLBEING_MAPS) {
     const map = value[name];
@@ -379,6 +383,7 @@ function toWellbeing(regs: DayRegs | undefined): DayWellbeing {
     well: {},
     habits: {},
     lunch: {},
+    ctx: {},
   };
   if (!regs) return out;
   for (const name of WELLBEING_MAPS)
@@ -387,9 +392,14 @@ function toWellbeing(regs: DayRegs | undefined): DayWellbeing {
   return out;
 }
 
-/** La lonchera no es «bienestar» para el historial: un día con solo lonchera no sale ahí. */
+/**
+ * La lonchera y el contexto del día no son «bienestar» para el historial: un día con solo eso
+ * no sale ahí.
+ */
 const wellbeingIsEmpty = (w: DayWellbeing) =>
-  WELLBEING_MAPS.every((n) => n === "lunch" || Object.keys(w[n]).length === 0);
+  WELLBEING_MAPS.every(
+    (n) => n === "lunch" || n === "ctx" || Object.keys(w[n]).length === 0,
+  );
 
 export function getWellbeing(date: Date): DayWellbeing {
   return toWellbeing(readStore()[dateKey(date)]);
@@ -681,6 +691,12 @@ export function setLunch(
   if (!lunchKeyOk(key)) return;
   if (state !== null && !isLunchState(state)) return;
   setWellbeing(date, "lunch", key, state);
+}
+
+/** Marca o quita (null) un aviso del contexto del día: evento social, fuera de casa, alguien nuevo. */
+export function setCtx(date: Date, key: string, on: boolean): void {
+  if (coerceCtx(key, true) === null) return;
+  setWellbeing(date, "ctx", key, on ? true : null);
 }
 
 /** Limpieza total (la usa "borrar datos"): borra el store activo y cualquier versión vieja. */

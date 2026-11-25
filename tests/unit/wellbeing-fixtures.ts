@@ -17,6 +17,6 @@ export function dayWellbeing(
     };
   return {
     day,
-    wellbeing: { moods: {}, food, well: {}, habits: {}, lunch: {} },
+    wellbeing: { moods: {}, food, well: {}, habits: {}, lunch: {}, ctx: {} },
   };
 }

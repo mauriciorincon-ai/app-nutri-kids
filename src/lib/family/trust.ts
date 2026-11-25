@@ -18,6 +18,7 @@ import {
   coerceHabit,
   coerceWell,
   isAgeBand,
+  isCtx,
   isHabit,
   isLunchState,
   isMood,
@@ -156,6 +157,11 @@ const WELLBEING_RULES: Record<
   lunch: {
     write: (key) => (lunchKeyOk(key) ? { k: "lunch" } : null),
     valid: (_k, v) => v === null || isLunchState(v),
+  },
+  // S15 · contexto del día: lo anotan un padre, quien cuida y el colegio; el nutricionista no.
+  ctx: {
+    write: (key) => (isCtx(key) ? { k: "ctx" } : null),
+    valid: (_k, v) => v === null || v === true,
   },
 };
 

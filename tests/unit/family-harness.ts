@@ -1,4 +1,5 @@
 // Arnés compartido de las pruebas de familia: teléfonos en memoria contra el doble del servidor.
+import { WELLBEING_MAPS } from "@/lib/wellbeing/values";
 import type { DayRegs } from "@/lib/diet/day-log";
 import type { ProfileRegs } from "@/lib/diet/profile-notes";
 import { familyApi } from "@/lib/family/client";
@@ -84,8 +85,8 @@ export function phone(id: string, name: string, now = { t: 1_000 }) {
         marks: mergeMap(cur.marks, regs.marks),
         notes: mergeMap(cur.notes, regs.notes),
       };
-      // S10: los cuatro mapas del bienestar se mezclan igual que las marcas y las notas.
-      for (const m of ["moods", "food", "well", "habits", "lunch"] as const) {
+      // S10 y S15: los mapas del bienestar y el contexto se mezclan igual que las marcas y las notas.
+      for (const m of WELLBEING_MAPS) {
         const merged = mergeMap(
           (cur[m] ?? {}) as RegMap<unknown>,
           (regs[m] ?? {}) as RegMap<unknown>,

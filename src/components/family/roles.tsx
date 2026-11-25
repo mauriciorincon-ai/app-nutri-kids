@@ -304,6 +304,7 @@ export function People({
           meals: [],
           self: p.self,
           seen: p.seen,
+          joined: null,
         }));
   return (
     <section className="flex flex-col gap-2">

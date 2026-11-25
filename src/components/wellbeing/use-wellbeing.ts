@@ -22,6 +22,7 @@ const EMPTY: DayWellbeing = {
   well: {},
   habits: {},
   lunch: {},
+  ctx: {},
 };
 
 /** Lo anotado del bienestar de un día (null = aún sin fecha del aparato). */

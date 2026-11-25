@@ -23,6 +23,7 @@ import {
   type PressureShared,
 } from "@/lib/pressure/shared";
 import type { PressureEntry } from "@/lib/pressure/values";
+import { WELLBEING_MAPS } from "@/lib/wellbeing/values";
 import {
   appendOp,
   chooseChain,
@@ -148,9 +149,10 @@ const planKey = (p: { t: number; by: string }) => `${p.t}.${p.by}`;
 const hasDay = (r: DayRegs) =>
   Object.keys(r.marks).length > 0 ||
   Object.keys(r.notes).length > 0 ||
-  [r.moods, r.food, r.well, r.habits, r.lunch].some(
-    (m) => m && Object.keys(m).length > 0,
-  );
+  WELLBEING_MAPS.some((n) => {
+    const m = r[n];
+    return m && Object.keys(m).length > 0;
+  });
 const hasProfile = (r: ProfileRegs) =>
   r.textures !== undefined ||
   r.age !== undefined ||
